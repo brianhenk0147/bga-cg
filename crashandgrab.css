@@ -1,0 +1,861 @@
+/**
+ *------
+ * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+ * CrashAndGrab implementation : © <Your name here> <Your email address here>
+ *
+ * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
+ * See http://en.boardgamearena.com/#!doc/Studio for more information.
+ * -----
+ *
+ * crashandgrab.css
+ *
+ * CrashAndGrab stylesheet
+ *
+ */
+
+/*
+    This is the CSS stylesheet of your game User Interface.
+
+    Styles defined on this file will be applied to the HTML elements you define in your
+    HTML template (crashandgrab_crashandgrab.tpl), and to HTML elements you create dynamically
+    (in crashandgrab.js).
+
+    Usually, you are using CSS to:
+
+    1°) define the overall layout of your game
+        (ex: place the board on the top left, place player's hand beside, place the deck on the right, ...).
+
+    2°) create your CSS-sprites:
+        All images of your games should be gathered into a small number of image files. Then, using
+        background-image and background-position CSS properties, you create HTML blocks that can
+        display these images correctly (see example below).
+
+    3°) ... anything else:
+        It is really easy to add and remove CSS classes dynamically from your Javascript with
+        dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class
+        (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why,
+        very often, using CSS classes for the logic of your user interface allow you to do complex
+        thing easily.
+
+
+     Note: on the production platform, this file will be compressed and comments will be removed.
+           Consequently, don't hesitate to put as many comments as necessary.
+*/
+
+
+/* Note: you must not use any @import directive */
+
+
+/********* You can start writing your CSS below this line: **********/
+
+
+/*
+    Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
+
+    .white_token {
+        background-image: url('img/tokens.png');
+        background-position: 0px 0px;
+    }
+    .black_token {
+        background-image: url('img/tokens.png');
+        background-position: -20px 0px;
+    }
+    .token {
+        width: 20px;
+        height: 20px;
+        background-repeat: none;
+    }
+*/
+
+
+/***** GENERAL LAYOUT *****/
+#hand_and_mats_column {
+    display: inline-block;
+}
+#board_tile_column {
+    display: inline-block;
+    vertical-align: top;
+}
+#garments_column {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.component_rounding {
+    border-radius: 10px;
+    border: 1px black solid;
+
+    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
+.component_circle {
+    border-radius: 50px;
+    border: 1px black solid;
+
+    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
+/***** DIRECTIONS *****/
+
+/* this is really a column */
+#direction_left {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 380px;
+
+    width: 82px;
+    height: 82px;
+
+    background-image: url('img/direction_tokens.png');
+    background-position: 0px 0px;
+}
+
+/* this is really a column */
+#direction_right {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 30px;
+
+    width: 82px;
+    height: 82px;
+
+    background-image: url('img/direction_tokens.png');
+    background-position: -246px 0px;
+}
+
+#direction_up {
+    margin-left: 300px;
+
+    width: 82px;
+    height: 82px;
+
+    background-image: url('img/direction_tokens.png');
+    background-position: -164px 0px;
+}
+
+#direction_down {
+    margin-left: 300px;
+
+    width: 82px;
+    height: 82px;
+
+    background-image: url('img/direction_tokens.png');
+    background-position: -82px 0px;
+}
+
+
+/***** BOARD *****/
+.grid-container {
+  display: inline-grid;
+  grid-gap: 0px;
+}
+
+.board_row_0 {grid-row: 1;}
+.board_row_1 {grid-row: 2;}
+.board_row_2 {grid-row: 3;}
+.board_row_3 {grid-row: 4;}
+.board_row_4 {grid-row: 5;}
+.board_row_5 {grid-row: 6;}
+
+.board_column_0 {grid-column:1;}
+.board_column_1 {grid-column:2;}
+.board_column_2 {grid-column:3;}
+.board_column_3 {grid-column:4;}
+.board_column_4 {grid-column:5;}
+.board_column_5 {grid-column:6;}
+
+.square {
+    width: 54px;
+    height: 54px;
+/*    position: absolute; */
+    border-style: solid;
+    border-width: 1px;
+
+}
+
+.highlighted_square
+{
+/*  background-color:rgba(0,0,255,0.3); // blue highlight */
+
+    background-color: white;
+    opacity: 0.6;
+    filter:alpha(opacity=60);
+    cursor: pointer;
+
+    box-sizing: border-box;
+    border: 3px solid red;
+}
+
+
+
+.top_of_tile { margin-top: 10px; }
+.bottom_of_tile { margin-bottom: 10px; }
+.left_of_tile { margin-left: 10px; }
+.right_of_tile { margin-right: 10px; }
+
+.board_tile_image { background-image: url('img/tiles_for_bga_1485.jpg'); }
+
+.board_tile_image_1_A_0 {
+  background-position: 0px 0px;
+}
+.board_tile_image_1_A_1 {
+  background-position: 0px -248px;
+}
+.board_tile_image_1_A_2 {
+  background-position: 0px -495px;
+}
+.board_tile_image_1_A_3 {
+  background-position: 0px -743px;
+}
+
+.board_tile_image_1_B_0 {
+  background-position: 0px 990px;
+}
+.board_tile_image_1_B_1 {
+  background-position: 0px -1237px;
+}
+.board_tile_image_1_B_2 {
+  background-position: 0px -1485px;
+}
+.board_tile_image_1_B_3 {
+  background-position: 0px -1733px;
+}
+
+.board_tile_image_2_A_0 {
+  background-position: -248px 0px;
+}
+.board_tile_image_2_A_1 {
+  background-position: -248px -248px;
+}
+.board_tile_image_2_A_2 {
+  background-position: -248px -495px;
+}
+.board_tile_image_2_A_3 {
+  background-position: -248px -743px;
+}
+
+.board_tile_image_2_B_0 {
+  background-position: -248px 990px;
+}
+.board_tile_image_2_B_1 {
+  background-position: -248px -1237px;
+}
+.board_tile_image_2_B_2 {
+  background-position: -248px -1485px;
+}
+.board_tile_image_2_B_3 {
+  background-position: -248px -1733px;
+}
+
+.board_tile_image_3_A_0 {
+  background-position: -495px 0px;
+}
+.board_tile_image_3_A_1 {
+  background-position: -495px -248px;
+}
+.board_tile_image_3_A_2 {
+  background-position: -495px -495px;
+}
+.board_tile_image_3_A_3 {
+  background-position: -495px -743px;
+}
+
+.board_tile_image_3_B_0 {
+  background-position: -495px 990px;
+}
+.board_tile_image_3_B_1 {
+  background-position: -495px -1237px;
+}
+.board_tile_image_3_B_2 {
+  background-position: -495px -1485px;
+}
+.board_tile_image_3_B_3 {
+  background-position: -495px -1733px;
+}
+
+.board_tile_image_4_A_0 {
+  background-position: -743px 0px;
+}
+.board_tile_image_4_A_1 {
+  background-position: -743px -248px;
+}
+.board_tile_image_4_A_2 {
+  background-position: -743px -495px;
+}
+.board_tile_image_4_A_3 {
+  background-position: -743px -743px;
+}
+
+.board_tile_image_4_B_0 {
+  background-position: -743px 990px;
+}
+.board_tile_image_4_B_1 {
+  background-position: -743px -1237px;
+}
+.board_tile_image_4_B_2 {
+  background-position: -743px -1485px;
+}
+.board_tile_image_4_B_3 {
+  background-position: -743px -1733px;
+}
+
+.board_tile_image_5_A_0 {
+  background-position: -990px 0px;
+}
+.board_tile_image_5_A_1 {
+  background-position: -990px -248px;
+}
+.board_tile_image_5_A_2 {
+  background-position: -990px -495px;
+}
+.board_tile_image_5_A_3 {
+  background-position: -990px -743px;
+}
+
+.board_tile_image_5_B_0 {
+  background-position: -990px 990px;
+}
+.board_tile_image_5_B_1 {
+  background-position: -990px -1237px;
+}
+.board_tile_image_5_B_2 {
+  background-position: -990px -1485px;
+}
+.board_tile_image_5_B_3 {
+  background-position: -990px -1733px;
+}
+
+.board_tile_image_6_A_0 {
+  background-position: -1237px 0px;
+}
+.board_tile_image_6_A_1 {
+  background-position: -1237px -248px;
+}
+.board_tile_image_6_A_2 {
+  background-position: -1237px -495px;
+}
+.board_tile_image_6_A_3 {
+  background-position: -1237px -743px;
+}
+
+.board_tile_image_6_B_0 {
+  background-position: -1237px 990px;
+}
+.board_tile_image_6_B_1 {
+  background-position: -1237px -1237px;
+}
+.board_tile_image_6_B_2 {
+  background-position: -1237px -1485px;
+}
+.board_tile_image_6_B_3 {
+  background-position: -1237px -1733px;
+}
+
+
+.rotate_2 {
+  /*transform: rotate(180deg);*/
+  background-position: -1485px 0px;
+  background-position
+}
+
+.row_of_tiles
+{
+  width: 950px;
+  display: inline-block;
+
+}
+
+.board_tile
+{
+  width: 246px;
+  height: 246px;
+  display: inline-block;
+  padding-left: 4px;
+  padding-top: 4px;
+}
+
+.single_column_board_tile
+{
+      width: 54px;
+      height: 246px;
+      display: inline-block;
+      vertical-align: top;
+      margin-left: 3px;
+      margin-right: 5px;
+      padding-top: 3px;
+}
+
+.single_row_board_tile
+{
+      width: 246px;
+      height: 54px;
+      display: inline-block;
+      padding-left: 4px;
+      padding-top: 4px;
+}
+
+.single_square_board_tile
+{
+      height: 54px;
+      width: 54px;
+      display: inline-block;
+      margin: 4px;
+}
+
+.board_tile_row
+{
+  display: inline-block;
+
+}
+
+.space {
+    width: 54px;
+    height: 54px;
+    display: inline-block;
+
+    margin: 0px;
+/*
+    border-style: solid;
+    border-width: 1px;
+*/
+}
+
+.single_column_board_tile .space {
+        margin-bottom: 6px;
+}
+
+#board_tile_container
+{
+  width: 890px;
+}
+
+
+
+
+/***** ZIGS *****/
+#myhand_wrap {
+  margin-bottom: 10px;
+}
+
+#myhand {
+    width: 350px;
+}
+
+.myZig {
+    width: 82px;
+    height: 82px;
+    background-image: url('img/movement_cards_sprite.jpg');
+}
+
+.zigBack {
+    width: 82px;
+    height: 82px;
+    background-image: url('img/zig_back.jpg');
+
+    margin-left: 5px;
+}
+
+.stockitem {
+    cursor: pointer;
+    position: absolute;
+
+    border-radius: 10px;
+    border: 1px black solid;
+
+    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
+.cardSelected
+{
+    border: 1px solid red ! important;
+}
+
+.cardUnselected
+{
+    border-width: 1px ! important;
+}
+
+.zig_holder
+{
+  width: 100px;
+  height: 100px;
+  display: inline-block;
+
+  margin-top: -110px;
+  margin-left: 20px;
+
+}
+
+
+/***** TRAPS *****/
+.myTrap
+{
+    width: 150px;
+    height: 210px;
+    background-image: url('img/traps_sprite.jpg');
+}
+
+.trapBack
+{
+    width: 150px;
+    height: 210px;
+    background-image: url('img/trap_back.jpg');
+}
+
+.trapHand
+{
+    width: 150px;
+    height: 210px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+
+
+/***** MATS *****/
+.opponent_mat_holder {
+      margin-top: -70px;
+}
+
+.ostrichMat {
+  width: 230px;
+  height: 316px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+
+#ostrich_mat_ff0000 {
+    background-image: url('img/ostrich_mat_ff0000.jpg');
+}
+
+#ostrich_mat_008000 {
+    background-image: url('img/ostrich_mat_008000.jpg');
+}
+
+#ostrich_mat_0000ff {
+    background-image: url('img/ostrich_mat_0000ff.jpg');
+}
+
+#ostrich_mat_ffa500 {
+    background-image: url('img/ostrich_mat_ffa500.jpg');
+}
+
+.mat_row {
+    margin-left: 5px;
+    margin-bottom: 2px;
+    width: 385px;
+}
+
+.mat_inner_row {
+    height: 54px;
+}
+
+#mat_head_row
+{
+    margin-top: 38px;
+}
+
+.mat_head_wearing_holder
+{
+  width: 54px;
+  height: 54px;
+
+  margin-left: 40px;
+
+  display: inline-block;
+  position: relative; /* must be absolute or relative to use slideToObject */
+
+}
+
+.mat_head_backpack_holder
+{
+    width: 35px;
+    height: 54px;
+
+    display: inline-block;
+    position: relative; /* must be absolute or relative to use slideToObject */
+
+}
+
+#mat_body_row
+{
+    margin-top: 6px;
+}
+
+.mat_body_wearing_holder
+{
+  width: 54px;
+  height: 54px;
+
+  margin-left: 24px;
+
+  display: inline-block;
+  position: relative; /* must be absolute or relative to use slideToObject */
+}
+
+.mat_body_backpack_holder
+{
+    width: 35px;
+    height: 54px;
+
+    margin-top: 5px;
+
+    display: inline-block;
+    position: relative; /* must be absolute or relative to use slideToObject */
+}
+
+#mat_legs_row
+{
+    margin-top: 2px;
+}
+
+.mat_legs_wearing_holder
+{
+  width: 54px;
+  height: 54px;
+
+  margin-top: -1px;
+  margin-left: 24px;
+
+  display: inline-block;
+  position: relative; /* must be absolute or relative to use slideToObject */
+}
+
+.mat_legs_backpack_holder
+{
+    width: 35px;
+    height: 54px;
+
+    margin-top: 4px;
+
+    display: inline-block;
+    position: relative; /* must be absolute or relative to use slideToObject */
+}
+
+#mat_feet_row
+{
+    margin-top: 4px;
+}
+
+.mat_feet_wearing_holder
+{
+  width: 54px;
+  height: 54px;
+
+  margin-left: 24px;
+
+  display: inline-block;
+  position: relative; /* must be absolute or relative to use slideToObject */
+}
+
+.mat_feet_backpack_holder
+{
+    width: 35px;
+    height: 54px;
+
+    margin-top: 1px;
+
+    display: inline-block;
+    position: relative; /* must be absolute or relative to use slideToObject */
+}
+
+
+/***** DISCS *****/
+.disc {
+    width: 36px;
+    height: 36px;
+    position: relative;
+    background-image: url('img/ostrich_token.png');
+}
+.disccolor_ff0000 { background-position: 0px 0px;   }
+.disccolor_008000 { background-position: -36px 0px;   }
+.disccolor_0000ff { background-position: -72px 0px;   }
+.disccolor_ffa500 { background-position: -108px 0px;   }
+
+
+
+
+/***** ZAG *****/
+.zag {
+    width: 76px;
+    height: 76px;
+    position: absolute;
+    margin-left: 35px;
+    margin-top: -75px;
+    background-image: url('img/zag_token_circle.png');
+
+}
+
+.zag_holder {
+    width: 76px;
+    height: 76px;
+    display: inline-block;
+
+}
+
+
+
+/***** GARMENTS *****/
+#garments_container
+{
+    height: 350px;
+}
+
+.highlighted_garment_pile
+{
+    background-color: white;
+    opacity: 0.6;
+    filter:alpha(opacity=60);
+
+    cursor: pointer;
+
+    border: 5px solid red ! important;
+}
+
+/* This is the container holding a single garment */
+.garment_holder {
+  width: 54px;
+  height: 54px;
+
+  display: inline-block;
+  position: relative;  /* must be absolute or relative to use slideToObject */
+}
+
+/*
+#garment_holder_head_ff0000 { background-position: 0px 0px;   }
+#garment_holder_head_008000 { background-position: -36px 0px;   }
+#garment_holder_head_0000ff { background-position: -72px 0px;   }
+#garment_holder_head_ffa500 { background-position: -108px 0px;   }
+*/
+
+.available_garment_group {
+    margin-left: 5px;
+    margin-bottom: 2px;
+    width: 240px;
+}
+
+/* this is the class for a single garment */
+.garment {
+    width: 54px;
+    height: 54px;
+    position: relative;  /* must be absolute or relative to use slideToObject */
+    display: inline-block;
+    background-image: url('img/garments.jpg');
+}
+
+.highlighted_garment
+{
+    box-sizing: border-box;
+    border: 3px solid red;
+    cursor: pointer;
+}
+
+/* these are each individual garment */
+/* red garments */
+#garment_head_ff0000 { background-position: -162px 0px;   }
+#garment_body_ff0000 { background-position: -162px -54px;   }
+#garment_legs_ff0000 { background-position: -162px -108px;   }
+#garment_feet_ff0000 { background-position: -162px -162px;   }
+
+/* green garments */
+#garment_head_008000 { background-position: 0px 0px;   }
+#garment_body_008000 { background-position: 0px -54px;   }
+#garment_legs_008000 { background-position: 0px -108px;   }
+#garment_feet_008000 { background-position: 0px -162px;   }
+
+/* blue garments */
+#garment_head_0000ff { background-position: -54px 0px;   }
+#garment_body_0000ff { background-position: -54px -54px;   }
+#garment_legs_0000ff { background-position: -54px -108px;   }
+#garment_feet_0000ff { background-position: -54px -162px;   }
+
+/* yellow garments */
+#garment_head_ffa500 { background-position: -108px 0px;   }
+#garment_body_ffa500 { background-position: -108px -54px;   }
+#garment_legs_ffa500 { background-position: -108px -108px;   }
+#garment_feet_ffa500 { background-position: -108px -162px;   }
+
+
+
+/***** PLAYER BOARDS *****/
+.player_board_info
+{
+    margin-top: 10px;
+}
+
+.player_board_ostrich_and_crown_holder {
+    width: 50px;
+    height: 60px;
+    margin-left: 5px;
+    display: inline-block;
+    float: left;
+}
+
+#player_board_crown {
+    width: 25px;
+    height: 16px;
+    margin-left: 3px;
+    background-image: url('img/crown_25_16.png');
+    position: relative;
+}
+
+.player_board_crown_holder {
+    display: block;
+    width: 25px;
+    height: 16px;
+
+}
+
+.player_board_ostrich_holder {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+}
+
+
+.player_board_direction_holder {
+  width: 50px;
+  display: block;
+  float: left;
+}
+
+.player_board_arrow {
+    width: 45px;
+    height: 80px;
+    margin-left: 3px;
+    background-image: url('img/arrow_90.png');
+    position: relative;
+}
+
+
+.player_board_trap_and_zag_holder {
+  width: 20px;
+  height: 60px;
+  display: inline-block;
+  float: left;
+}
+
+.player_board_trap_holder {
+  display: inline-block;
+  width: 25px;
+  height: 25px;
+}
+
+.player_board_zag_holder {
+  display: block;
+  width: 25px;
+  height: 25px;
+}
