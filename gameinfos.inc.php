@@ -22,7 +22,7 @@ $gameinfos = array(
 'artist' => 'Loic Billiau',
 
 // Year of FIRST publication of this game. Can be negative.
-'year' => 2025,
+'year' => 2024,
 
 // Game publisher (use empty string if there is no publisher)
 'publisher' => 'Pull the Pin Games',
@@ -117,7 +117,7 @@ $gameinfos = array(
     //  default: 740
     //  maximum possible value: 740 (ie: your game interface should fit with a 740px width (correspond to a 1024px screen)
     //  minimum possible value: 320 (the lowest value you specify, the better the display is on mobile)
-    'min' => 740,
+    'min' => 750,
 
     // Maximum width
     //  default: null (ie: no limit, the game interface is as big as the player's screen allows it).

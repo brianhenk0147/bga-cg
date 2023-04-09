@@ -108,14 +108,45 @@ function (dojo, declare) {
                 numberOfPlayers++;
             }
 
-            if(numberOfPlayers > 3)
-            { // we are not controlling multiple ostriches
+            if(numberOfPlayers < 5)
+            { // 1-4 players
 
                 // hide the extra tiles
-                dojo.removeClass( 'board_tile_5', 'board_tile_image' );
-                dojo.removeClass( 'board_tile_6', 'board_tile_image' );
+                //dojo.removeClass( 'board_tile_5', 'board_tile_image' );
+                //dojo.removeClass( 'board_tile_6', 'board_tile_image' );
 
-                dojo.style('direction_right', "marginLeft", "-255px"); // move the right direction to where the extra tiles would have been
+                dojo.destroy('board_tile_container_5');
+                dojo.destroy('board_tile_container_6');
+
+                // center the directions based on the number of players
+                dojo.style('direction_left', "marginTop", "240px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_right', "marginTop", "240px"); // move the right direction to where the extra tiles would have been
+
+                dojo.style('board_tile_column', "width", "645px"); // set the width of the board based on saucer count
+            }
+            else if(numberOfPlayers == 5)
+            { // we are playing with 5 players
+
+              dojo.destroy('board_tile_container_4');
+              dojo.destroy('board_tile_container_6');
+
+                // center the directions based on the number of players
+                dojo.style('direction_left', "marginTop", "290px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_right', "marginTop", "290px"); // move the right direction to where the extra tiles would have been
+
+                dojo.style('board_tile_column', "width", "695px"); // set the width of the board based on saucer count
+            }
+            else if(numberOfPlayers == 6)
+            { // we are playing with 6 players
+
+              dojo.destroy('board_tile_container_4');
+              dojo.destroy('board_tile_container_5');
+
+                // center the directions based on the number of players
+                dojo.style('direction_left', "marginTop", "340px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_right', "marginTop", "340px"); // move the right direction to where the extra tiles would have been
+
+                dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
             }
 
             this.playerHand = new ebg.stock(); // create the place we will store this player's hand
@@ -240,11 +271,33 @@ function (dojo, declare) {
 
                 if( square.space_type !== null )
                 {
-/*                    // temporarily show the space type on the screen
+/*
+                    // temporarily show the space type on the screen
                     var main = $('square_'+square.x+'_'+square.y);
                     console.log("setting innerHTML of " + square.x + ", " + square.y);
                     main.innerHTML = square.space_type;
 */
+                    // temporarily show the space type on the screen
+                    var main = $('square_'+square.x+'_'+square.y);
+                    console.log("setting innerHTML of " + square.x + ", " + square.y);
+                    var type = square.space_type;
+                    if(type =='S')
+                    {
+                      main.style.backgroundColor='green';
+                    }
+                    if(type =='D')
+                    {
+                      main.style.backgroundColor='red';
+                    }
+                    if(type =='C')
+                    {
+                      main.style.backgroundColor='yellow';
+                    }
+                    if(type =='O')
+                    {
+                      main.style.backgroundColor='pink';
+                    }
+
                 }
             }
 

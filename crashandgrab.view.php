@@ -136,13 +136,21 @@
 
 
         $this->page->begin_block( "crashandgrab_crashandgrab", "garment_set" );
+        $playerIndex = 0;
         foreach( $ostriches as $ostrich )
         {
+            $leftOrRight = "garment_column_right";
+            if($playerIndex % 2 == 0)
+            {
+                $leftOrRight = "garment_column_left";
+            }
+
                 $this->page->insert_block( "garment_set", array(
                                                     "PLAYER_COLOR" => $ostrich['color'],
-                                                    "PLAYER_ID" => $ostrich['owner']
+                                                    "PLAYER_ID" => $ostrich['owner'],
+                                                    "LEFT_OR_RIGHT" => $leftOrRight
                                                      ) );
-
+                $playerIndex++;
         }
 
 

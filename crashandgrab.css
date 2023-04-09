@@ -69,16 +69,46 @@
 
 
 /***** GENERAL LAYOUT *****/
+#board_area {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    /*width: 710px;*/
+    float: left;
+}
+
+#board_area div {
+    outline: 1px solid red;
+}
+
+#middle_board_row {
+  display: block;
+}
+
+#outer_board_left_column {
+  display: inline-block;
+  vertical-align: top;
+  width: 64px;
+}
+
+#outer_board_right_column {
+  display: inline-block;
+  vertical-align: top;
+  width: 64px;
+}
+
 #hand_and_mats_column {
     display: inline-block;
+    width: 390px;
+    height: 2500px;
 }
+
 #board_tile_column {
     display: inline-block;
+    float: left;
     vertical-align: top;
-}
-#garments_column {
-    display: inline-block;
-    vertical-align: top;
+    width: 810px;
 }
 
 .component_rounding {
@@ -105,14 +135,14 @@
 
 /***** DIRECTIONS *****/
 
+
+
 /* this is really a column */
 #direction_left {
     display: inline-block;
-    vertical-align: top;
-    margin-top: 380px;
 
-    width: 82px;
-    height: 82px;
+    width: 64px;
+    height: 64px;
 
     background-image: url('img/direction_tokens.png');
     background-position: 0px 0px;
@@ -121,34 +151,32 @@
 /* this is really a column */
 #direction_right {
     display: inline-block;
-    vertical-align: top;
-    margin-top: 30px;
 
-    width: 82px;
-    height: 82px;
+    width: 64px;
+    height: 64px;
 
     background-image: url('img/direction_tokens.png');
-    background-position: -246px 0px;
+    background-position: -192px 0px;
 }
 
 #direction_up {
-    margin-left: 300px;
+    margin-left: 320px;
 
-    width: 82px;
-    height: 82px;
+    width: 64px;
+    height: 64px;
 
     background-image: url('img/direction_tokens.png');
-    background-position: -164px 0px;
+    background-position: -128px 0px;
 }
 
 #direction_down {
-    margin-left: 300px;
+    margin-left: 320px;
 
-    width: 82px;
-    height: 82px;
+    width: 64px;
+    height: 64px;
 
     background-image: url('img/direction_tokens.png');
-    background-position: -82px 0px;
+    background-position: -64px 0px;
 }
 
 
@@ -173,8 +201,8 @@
 .board_column_5 {grid-column:6;}
 
 .square {
-    width: 54px;
-    height: 54px;
+    width: 46px;
+    height: 46px;
 /*    position: absolute; */
     border-style: solid;
     border-width: 1px;
@@ -368,46 +396,116 @@
 
 .row_of_tiles
 {
-  width: 950px;
+
   display: inline-block;
 
 }
 
 .board_tile
 {
-  width: 246px;
-  height: 246px;
+  width: 198px;
+  height: 198px;
   display: inline-block;
-  padding-left: 4px;
-  padding-top: 4px;
+  padding-left: 1px;
+  padding-right: 1px;
+  padding-top: 0px;
+}
+
+.board_tile_1_2 {
+  width: 46px;
+  height: 100px;
+  display: inline-block;
+  vertical-align: top;
+
+  margin-left: 0px;
+  margin-right: 0px;
+
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-top: 3px;
+}
+
+.board_tile_4_2 {
+  width: 198px;
+  height: 100px;
+  display: inline-block;
+
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-top: 1px;
+
+  padding-left: 1px;
+  padding-top: 1px;
+  padding-right: 0px;
+}
+
+.board_tile_2_2 {
+  width: 98px;
+  height: 98px;
+  display: inline-block;
+  padding-left: 1px;
+  padding-top: 1px;
+  padding-right: 1px;
+  padding-bottom: 1px;
 }
 
 .single_column_board_tile
 {
-      width: 54px;
-      height: 246px;
+      width: 46px;
+      height: 198px;
       display: inline-block;
       vertical-align: top;
-      margin-left: 3px;
-      margin-right: 5px;
-      padding-top: 3px;
+      margin-left: 0px;
+      margin-right: 0px;
+      padding-top: 1px;
 }
 
-.single_row_board_tile
+.double_column_board_tile
 {
-      width: 246px;
-      height: 54px;
-      display: inline-block;
-      padding-left: 4px;
-      padding-top: 4px;
+  width: 98px;
+  height: 198px;
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 1px;
+  margin-right: 1px;
+
+  padding-left: 0px;
+  padding-top: 1px;
 }
 
-.single_square_board_tile
+.board_tile_4_1
 {
-      height: 54px;
-      width: 54px;
+      width: 197px;
+      height: 46px;
       display: inline-block;
-      margin: 4px;
+
+      margin-left: 0px;
+      margin-right: 0px;
+      padding-left: 0px;
+      padding-right: 0px;
+      padding-top: 1px;
+
+}
+
+.single_row_2_width_board_tile
+{
+    width: 100px;
+    height: 46px;
+    display: inline-block;
+    padding-left: 4px;
+    padding-top: 4px;
+}
+
+.board_tile_1_1
+{
+      height: 46px;
+      width: 46px;
+      display: inline-block;
+
+      padding-left: 1px;
+      padding-top: 1px;
+      padding-right: 1px;
+      padding-bottom: 1px;
 }
 
 .board_tile_row
@@ -417,8 +515,8 @@
 }
 
 .space {
-    width: 54px;
-    height: 54px;
+    width: 46px;
+    height: 46px;
     display: inline-block;
 
     margin: 0px;
@@ -428,16 +526,34 @@
 */
 }
 
+.board_tile_4_1 .space {
+
+}
+
 .single_column_board_tile .space {
-        margin-bottom: 6px;
+        margin-bottom: 4px;
 }
 
-#board_tile_container
+.double_column_board_tile .space {
+  margin-bottom: 0px;
+}
+
+.board_tile_container
 {
-  width: 890px;
+    display: inline-block;
 }
-
-
+#board_tile_container_4
+{
+    width: 505px;
+}
+#board_tile_container_5
+{
+    width: 555px;
+}
+#board_tile_container_6
+{
+    width: 610px;
+}
 
 
 /***** ZIGS *****/
@@ -447,6 +563,13 @@
 
 #myhand {
     width: 350px;
+}
+
+#player_hand_container {
+  display: inline-block;
+float: left;
+    width: 500px;
+    height: 107px;
 }
 
 .myZig {
@@ -525,6 +648,8 @@
 
 
 /***** MATS *****/
+
+
 .opponent_mat_holder {
       margin-top: -70px;
 }
@@ -553,14 +678,20 @@
     background-image: url('img/ostrich_mat_ffa500.jpg');
 }
 
+.mat_and_stuff_row {
+    width: 500px;
+    display: inline-block;
+}
+
 .mat_row {
+  display: inline-block;
     margin-left: 5px;
     margin-bottom: 2px;
     width: 385px;
 }
 
 .mat_inner_row {
-    height: 54px;
+    height: 46px;
 }
 
 #mat_head_row
@@ -570,8 +701,8 @@
 
 .mat_head_wearing_holder
 {
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
 
   margin-left: 40px;
 
@@ -583,7 +714,7 @@
 .mat_head_backpack_holder
 {
     width: 35px;
-    height: 54px;
+    height: 46px;
 
     display: inline-block;
     position: relative; /* must be absolute or relative to use slideToObject */
@@ -597,8 +728,8 @@
 
 .mat_body_wearing_holder
 {
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
 
   margin-left: 24px;
 
@@ -609,7 +740,7 @@
 .mat_body_backpack_holder
 {
     width: 35px;
-    height: 54px;
+    height: 46px;
 
     margin-top: 5px;
 
@@ -624,8 +755,8 @@
 
 .mat_legs_wearing_holder
 {
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
 
   margin-top: -1px;
   margin-left: 24px;
@@ -637,7 +768,7 @@
 .mat_legs_backpack_holder
 {
     width: 35px;
-    height: 54px;
+    height: 46px;
 
     margin-top: 4px;
 
@@ -652,8 +783,8 @@
 
 .mat_feet_wearing_holder
 {
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
 
   margin-left: 24px;
 
@@ -664,7 +795,7 @@
 .mat_feet_backpack_holder
 {
     width: 35px;
-    height: 54px;
+    height: 46px;
 
     margin-top: 1px;
 
@@ -711,7 +842,13 @@
 /***** GARMENTS *****/
 #garments_container
 {
-    height: 350px;
+  width: 500px;
+    display: inline-block;
+    vertical-align: top;
+    margin-bottom: 20px;
+
+
+    background-color: gray; /* TODO: make this some sort of lost crewmembers mat image */
 }
 
 .highlighted_garment_pile
@@ -727,8 +864,8 @@
 
 /* This is the container holding a single garment */
 .garment_holder {
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
 
   display: inline-block;
   position: relative;  /* must be absolute or relative to use slideToObject */
@@ -744,16 +881,26 @@
 .available_garment_group {
     margin-left: 5px;
     margin-bottom: 2px;
-    width: 240px;
+    width: 210px;
 }
+
+.garment_column_left {
+    float: left;
+}
+
+.garment_column_right {
+  float: right;
+}
+
+
 
 /* this is the class for a single garment */
 .garment {
-    width: 54px;
-    height: 54px;
+    width: 46px;
+    height: 46px;
     position: relative;  /* must be absolute or relative to use slideToObject */
     display: inline-block;
-    background-image: url('img/garments.jpg');
+    background-image: url('img/crewmembers.png');
 }
 
 .highlighted_garment
@@ -765,28 +912,28 @@
 
 /* these are each individual garment */
 /* red garments */
-#garment_head_ff0000 { background-position: -162px 0px;   }
-#garment_body_ff0000 { background-position: -162px -54px;   }
-#garment_legs_ff0000 { background-position: -162px -108px;   }
-#garment_feet_ff0000 { background-position: -162px -162px;   }
+#garment_head_ff0000 { background-position: -138px 0px;   }
+#garment_body_ff0000 { background-position: -138px -46px;   }
+#garment_legs_ff0000 { background-position: -138px -92px;   }
+#garment_feet_ff0000 { background-position: -138px -138px;   }
 
 /* green garments */
 #garment_head_008000 { background-position: 0px 0px;   }
-#garment_body_008000 { background-position: 0px -54px;   }
-#garment_legs_008000 { background-position: 0px -108px;   }
-#garment_feet_008000 { background-position: 0px -162px;   }
+#garment_body_008000 { background-position: 0px -46px;   }
+#garment_legs_008000 { background-position: 0px -92px;   }
+#garment_feet_008000 { background-position: 0px -138px;   }
 
 /* blue garments */
-#garment_head_0000ff { background-position: -54px 0px;   }
-#garment_body_0000ff { background-position: -54px -54px;   }
-#garment_legs_0000ff { background-position: -54px -108px;   }
-#garment_feet_0000ff { background-position: -54px -162px;   }
+#garment_head_0000ff { background-position: -46px 0px;   }
+#garment_body_0000ff { background-position: -46px -46px;   }
+#garment_legs_0000ff { background-position: -46px -92px;   }
+#garment_feet_0000ff { background-position: -46px -138px;   }
 
 /* yellow garments */
-#garment_head_ffa500 { background-position: -108px 0px;   }
-#garment_body_ffa500 { background-position: -108px -54px;   }
-#garment_legs_ffa500 { background-position: -108px -108px;   }
-#garment_feet_ffa500 { background-position: -108px -162px;   }
+#garment_head_ffa500 { background-position: -92px 0px;   }
+#garment_body_ffa500 { background-position: -92px -46px;   }
+#garment_legs_ffa500 { background-position: -92px -92px;   }
+#garment_feet_ffa500 { background-position: -92px -138px;   }
 
 
 
