@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
 
 CREATE TABLE IF NOT EXISTS `tile` (
   `tile_number` smallint(5) unsigned NOT NULL,
+  `tile_position` smallint(5) unsigned NOT NULL,
   `tile_x` smallint(5) unsigned NOT NULL,
   `tile_y` smallint(5) unsigned NOT NULL,
   `tile_use_side_A` smallint(5) unsigned NOT NULL,

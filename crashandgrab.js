@@ -119,10 +119,12 @@ function (dojo, declare) {
                 dojo.destroy('board_tile_container_6');
 
                 // center the directions based on the number of players
-                dojo.style('direction_left', "marginTop", "240px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_right', "marginTop", "240px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_left', "marginTop", "224px"); // move the left direction to where the extra tiles would have been
+                dojo.style('direction_right', "marginTop", "224px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_up', "marginLeft", "292px");
+                dojo.style('direction_down', "marginLeft", "292px");
 
-                dojo.style('board_tile_column', "width", "645px"); // set the width of the board based on saucer count
+                dojo.style('board_tile_column', "width", "685px"); // set the width of the board based on saucer count
             }
             else if(numberOfPlayers == 5)
             { // we are playing with 5 players
@@ -131,10 +133,12 @@ function (dojo, declare) {
               dojo.destroy('board_tile_container_6');
 
                 // center the directions based on the number of players
-                dojo.style('direction_left', "marginTop", "290px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_right', "marginTop", "290px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_left', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_right', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_up', "marginLeft", "322px");
+                dojo.style('direction_down', "marginLeft", "322px");
 
-                dojo.style('board_tile_column', "width", "695px"); // set the width of the board based on saucer count
+                dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
             }
             else if(numberOfPlayers == 6)
             { // we are playing with 6 players
@@ -143,10 +147,12 @@ function (dojo, declare) {
               dojo.destroy('board_tile_container_5');
 
                 // center the directions based on the number of players
-                dojo.style('direction_left', "marginTop", "340px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_right', "marginTop", "340px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_left', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_right', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_up', "marginLeft", "348px");
+                dojo.style('direction_down', "marginLeft", "348px");
 
-                dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
+                dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
             }
 
             this.playerHand = new ebg.stock(); // create the place we will store this player's hand
@@ -283,19 +289,19 @@ function (dojo, declare) {
                     var type = square.space_type;
                     if(type =='S')
                     {
-                      main.style.backgroundColor='green';
+                      main.style.backgroundColor='rgba(0, 255, 0, 0.3)';
                     }
                     if(type =='D')
                     {
-                      main.style.backgroundColor='red';
+                      main.style.backgroundColor='yellow';
                     }
                     if(type =='C')
                     {
-                      main.style.backgroundColor='yellow';
+                      main.style.backgroundColor='rgba(0, 0, 255, 0.3)';
                     }
                     if(type =='O')
                     {
-                      main.style.backgroundColor='pink';
+                      main.style.backgroundColor='rgba(255, 0, 0, 0.3)';
                     }
 
                 }

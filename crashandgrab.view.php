@@ -76,6 +76,15 @@
         $this->tpl['TILE_6_NUMBER'] = $this->game->getTileNumber(6);
         $this->tpl['TILE_6_SIDE'] = $this->game->getTileSide(6);
         $this->tpl['TILE_6_ROTATION'] = $this->game->getTileRotation(6);
+        $this->tpl['TILE_7_NUMBER'] = $this->game->getTileNumber(7);
+        $this->tpl['TILE_7_SIDE'] = $this->game->getTileSide(7);
+        $this->tpl['TILE_7_ROTATION'] = $this->game->getTileRotation(7);
+        $this->tpl['TILE_8_NUMBER'] = $this->game->getTileNumber(8);
+        $this->tpl['TILE_8_SIDE'] = $this->game->getTileSide(8);
+        $this->tpl['TILE_8_ROTATION'] = $this->game->getTileRotation(8);
+        $this->tpl['TILE_9_NUMBER'] = $this->game->getTileNumber(9);
+        $this->tpl['TILE_9_SIDE'] = $this->game->getTileSide(9);
+        $this->tpl['TILE_9_ROTATION'] = $this->game->getTileRotation(9);
 
         /*
 

@@ -121,12 +121,15 @@ class CrashAndGrab extends Table
 				$this->initializeStats();
 
 				//$numberOfPlayers = 5; // HARDCODE FOR NOW SINCE MORE PLAYERS BREAKS IT
-				$numberOfSaucers = $this->getNumberOfSaucersFromNumberOfPlayers(count($players));
+
+				$numberOfSaucers = $this->getNumberOfSaucersFromNumberOfPlayers();
 				$this->initializeBoard($numberOfSaucers); // randomly choose which tiles to use depending on number of players
 
-				$this->initializeOstriches();
+				$this->initializeSaucers();
 
-				$this->initializeGarments();
+				$this->initializeCrewmembers();
+
+				$this->initializeStartingBonuses(count($players));
 
 				$this->initializeZigCards();
 
@@ -267,9 +270,8 @@ class CrashAndGrab extends Table
     function getGameProgression()
     {
 				$players = self::loadPlayersBasicInfos();
-				$numberOfPlayers = count($players); // get the number of players in the game
 
-				$maxGarments = ($numberOfPlayers * 3) + 1; // get the maximum number of garments that can be acquired before winning
+				$maxGarments = ($this->getNumberOfPlayers() * 3) + 1; // get the maximum number of garments that can be acquired before winning
 				$numberOfGarmentsAcquired = $this->countTotalAcquiredGarments();
 
 				$percentageCompleted = intval(100 * ($numberOfGarmentsAcquired / $maxGarments)); // divide current by max and multiply by 100 to get an integer between 1-100
@@ -367,90 +369,23 @@ class CrashAndGrab extends Table
 				$this->trapCards->shuffle( 'trapCardDeck' ); // shuffle it
 		}
 
-		function initializeGarments()
+		function initializeCrewmembers()
 		{
+				$locX = 0;
+				$locY = 0;
+				$location = 'pile';
 
-				//$ostriches = $this->getOstrichesInOrder(); // get all ostriches
+				$allSaucers = $this->getAllSaucers();
+				foreach( $allSaucers as $saucer )
+				{ // go through each saucer
+						$color = $saucer['ostrich_color'];
+						$type = 0; // insert the HEAD piece
 
-				$ostriches = self::getObjectListFromDB( "SELECT ostrich_color color, ostrich_owner owner
-																											 FROM ostrich
-																											 WHERE 1" );
-
-
-				shuffle($ostriches); // randomize the order
-
-				for($i=0; $i < count($ostriches); $i++)
-				{ // go through our ostriches
-
-						$thisOstrich = $ostriches[$i];
-						$color = $thisOstrich['color'];
-						$owner = $thisOstrich['owner'];
-						$locX = 0;
-						$locY = 0;
-						$location = 'pile'; // by default, assign to the garment pile
-
-						// HEAD
-						$type = 0; // HEAD
-						if($i==0)
-						{ // this ostrich is first player (so it is NOT a starting garment)
-
-								// set the NON-starting-garment attributes
-								$locX = 0;
-								//$locY = 0;
-								$locY = $i;
-								$location = 'pile';
-
-
-								$this->giveCrown($color); // give the ostrich the crown
-								$this->gamestate->changeActivePlayer( $owner ); // set the active player (this cannot be done in an activeplayer game state)
-						}
-						else if($i==1 || $i==2 || ($i==3 && $this->getNumberOfPlayers() > 4) || ($i==4 && $this->getNumberOfPlayers() > 5))
-						{ // this is a starting garment
-
-								// get the X and Y positions of the ostrich to which the garment belongs
-								$ostrichX = self::getUniqueValueFromDb("SELECT ostrich_x FROM ostrich WHERE ostrich_color='$color'");
-								$ostrichY = self::getUniqueValueFromDb("SELECT ostrich_y FROM ostrich WHERE ostrich_color='$color'");
-
-								$furthestEmptyCrates = $this->getFurthestEmptyCrates($ostrichX, $ostrichY);
-
-								if(!is_null($furthestEmptyCrates))
-								{
-									$locX = 2;
-									//$locY = 2;
-									$locY = $i;
-								}
-								else
-								{
-								//NOTE: We are randomizing ties instead of letting the player choose like in the physical version.
-								shuffle($furthestEmptyCrates); // randomize in case of ties
-								//$locX = $furthestEmptyCrates[0]['board_x'];
-								//$locY = $furthestEmptyCrates[0]['board_y'];
-								$locX = 0;
-								$locY = $i;
-								}
-								$location = 'board';
-						}
-						else
-						{ // this is NOT a starting garment and NOT the first player
-								$locX = 0;
-								//$locY = 0;
-								$locY = $i;
-								$location = 'pile';
-						}
-
-						// insert the HEAD piece
 						$sqlGarment = "INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES ";
 						$sqlGarment .= "(".$locX.",".$locY.",'".$location."','".$color."',".$type.") ";
 						//echo "locX ($locX) locY ($locY) location($location) color ($color) type ($type) <br>";
 						//self::DbQUery("INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES (0,0,'pile','ff0000',0)");
 						self::DbQuery( $sqlGarment );
-
-						// the rest will all be in the garment
-						$locX = 0;
-						//$locY = 0;
-						$locY = $i;
-						$location = 'pile';
-
 
 						// BODY
 						$type = 1; // BODY
@@ -469,16 +404,94 @@ class CrashAndGrab extends Table
 						$sqlGarment = "INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES ";
 						$sqlGarment .= "(".$locX.",".$locY.",'".$location."','".$color."',".$type.") ";
 						self::DbQuery( $sqlGarment );
-
-
 				}
-
 		}
 
-		function initializeOstriches()
+		function initializeStartingBonuses()
+		{
+				$activePlayerId = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
+				//throw new feException( "this player is going first: $activePlayer");
+
+				$playerIdGoingSecond = $this->getPlayerAfter($activePlayerId);
+				$playerIdGoingFirst = $this->getPlayerBefore($playerIdGoingSecond);
+
+//throw new feException( "playerIdGoingFirst: $playerIdGoingFirst playerIdGoingSecond: $playerIdGoingSecond");
+
+				if($this->getNumberOfPlayers() == 2)
+				{ // 2 players (4 saucers)
+
+						// get player who is going first
+						// give one of their Saucers the Probe
+						// locate their other Saucer's Pilot
+
+						// get the player who is NOT going first
+						// give one of their Saucers a Booster
+						// locate their other Saucer's Pilot
+				}
+				else
+				{ // all other player counts (1 Saucer per player)
+
+						$playerGoingFirstSaucers = $this->getSaucersForPlayer($playerIdGoingFirst);
+						foreach( $playerGoingFirstSaucers as $saucer )
+						{ // go through each saucer
+								$saucerColor = $saucer['ostrich_color'];
+								$this->giveProbe($saucerColor); // saucer of player going first gets the Probe
+						}
+
+						$playerGoingSecondSaucers = $this->getSaucersForPlayer($playerIdGoingSecond);
+						foreach( $playerGoingSecondSaucers as $saucer )
+						{ // go through each saucer
+								$saucerColor = $saucer['ostrich_color'];
+
+								if($this->getNumberOfPlayers() == 3)
+								{
+										$this->locatePilot($saucerColor); // locate this Saucer's Pilot Crewmember
+								}
+								else
+								{
+										$this->takeBooster($saucerColor); // give this Saucer a Booster
+								}
+						}
+
+						$allSaucers = $this->getAllSaucers();
+						foreach( $allSaucers as $saucer )
+						{ // go through each saucer
+								$saucerColor = $saucer['ostrich_color'];
+								$saucerOwner = $saucer['ostrich_owner'];
+
+								if($saucerOwner == "$playerIdGoingFirst" )
+								{
+										// skip the first and second player
+										//throw new feException( "playerIdGoingFirst: $playerIdGoingFirst playerIdGoingSecond: $playerIdGoingSecond");
+								}
+								else if($saucerOwner == $playerIdGoingSecond)
+								{
+
+								}
+								else
+								{ // this is one of the saucers we haven't set yet
+											$this->locatePilot($saucerColor); // locate this Saucer's Pilot Crewmember
+								}
+						}
+
+
+					// saucer who is going first gets the Probe
+					//   2 players: other saucer
+					// saucer who is going second:
+					//   4+ saucers: take a Booster
+					//   3 saucers: locate a Pilot
+					// all other saucers locate a Pilot
+
+				}
+		}
+
+		function initializeSaucers()
 		{
 				$startingLocations = $this->getStartingOstrichLocations();
 				shuffle($startingLocations); // randomize the order
+
+				//$count = count($startingLocations);
+				//throw new feException( "Count starting locations:$count");
 
 				$locationListIndex = 0;
 				$sqlGetPlayers = "SELECT player_id, player_color ";
@@ -493,20 +506,15 @@ class CrashAndGrab extends Table
 						$locX = $startingLocations[$locationListIndex]['board_x'];
 						$locY = $startingLocations[$locationListIndex]['board_y'];
 
-
 						$sqlOstrich = "INSERT INTO ostrich (ostrich_x,ostrich_y,ostrich_color,ostrich_owner,ostrich_has_zag,ostrich_is_chosen, ostrich_has_crown) VALUES ";
 						$sqlOstrich .= "(".$locX.",".$locY.",'".$playerColor."',".$playerId.",0,0,0) ";
 						//$sqlOstrich .= "('".$locX."','".$locY."','".addslashes($player['player_color'])."','".$player_id."')";
 
-						if(($this->getNumberOfPlayers() == 2 || $this->getNumberOfPlayers() == 3) && $locationListIndex == 0)
+						if(($this->getNumberOfPlayers() == 2) && $locationListIndex == 0)
 						{
 								// add a second ostrich for this player
 						}
-						else if(($this->getNumberOfPlayers() == 2 || $this->getNumberOfPlayers() == 3) && $locationListIndex == 1)
-						{
-								// add a second ostrich for this player
-						}
-						else if($this->getNumberOfPlayers() == 3 && $locationListIndex == 2)
+						else if(($this->getNumberOfPlayers() == 2) && $locationListIndex == 1)
 						{
 								// add a second ostrich for this player
 						}
@@ -515,7 +523,7 @@ class CrashAndGrab extends Table
 
 
 
-						$locationListIndex++; // go to the next starting location
+						//$locationListIndex++; // go to the next starting location
 				}
 
 				if(false)
@@ -661,7 +669,18 @@ class CrashAndGrab extends Table
 		{
 				return self::getObjectListFromDB( "SELECT board_x, board_y
 																					 FROM board
-																					 WHERE board_space_type='O'" );
+																					 WHERE board_space_type='1' OR
+ 																					 board_space_type='2' OR
+																					 board_space_type='3' OR
+																					 board_space_type='4' OR
+																					 board_space_type='5' OR
+																					 board_space_type='6' OR
+																					 board_space_type='7' OR
+																					 board_space_type='8' OR
+ 																					 board_space_type='9' OR
+																					 board_space_type='10' OR
+ 																					 board_space_type='11' OR
+																					 board_space_type='12'" );
 		}
 
 		function getPlayersWithOstriches()
@@ -692,7 +711,19 @@ class CrashAndGrab extends Table
 				return $result;
 		}
 
-		function getAllOstrichesAndOwners()
+		function getAllCrewmembers()
+		{
+				return self::getObjectListFromDB( "SELECT *
+																					 FROM garment ORDER BY garment_color" );
+		}
+
+		function getAllSaucers()
+		{
+				return self::getObjectListFromDB( "SELECT *
+																					 FROM ostrich ORDER BY ostrich_owner" );
+		}
+
+		function getAllSaucersByPlayer()
 		{
 				$result = array();
 
@@ -860,7 +891,7 @@ class CrashAndGrab extends Table
 				$result = array();
 
 				$garmentChooser = $this->peekGarmentReplacementQueue(); // find the garment chooser
-				$garmentChoosersOstriches = $this->getAllPlayersOstriches($garmentChooser); // get all of the ostriches belonging to the player
+				$garmentChoosersOstriches = $this->getSaucersForPlayer($garmentChooser); // get all of the ostriches belonging to the player
 
 				// go through each crate
 				$allCrates = self::getObjectListFromDB( "SELECT board_x, board_y
@@ -1108,34 +1139,64 @@ class CrashAndGrab extends Table
 		{
 				$tileNumber = null;
 
+				$firstTileX = 1;
+				$firstTileY = 1;
+				$secondTileX = 5;
+				$secondTileY = 1;
+				$thirdTileX = 1;
+				$thirdTileY = 5;
+				$fourthTileX = 5;
+				$fourthTileY = 5;
+				$seventhTileX = 0; // this will be overwritten
+				$eighthTileY = 0; // this will be overwritten
+
+				if($this->getNumberOfPlayers() == 5)
+				{ // we need to extend the board by 1
+						$secondTileX = 6;
+						$thirdTileY = 6;
+						$fourthTileX = 6;
+						$fourthTileY = 6;
+						$seventhTileX = 6;
+						$eighthTileY = 6;
+				}
+				elseif($this->getNumberOfPlayers() == 6)
+				{ // we need to extend the board by 2
+						$secondTileX = 7;
+						$thirdTileY = 7;
+						$fourthTileX = 7;
+						$fourthTileY = 7;
+						$seventhTileX = 7;
+						$eighthTileY = 7;
+				}
+
 				switch($tilePosition)
 				{
 						case 1:
-							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=1 AND tile_y=1 LIMIT 1");
+							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=$firstTileX AND tile_y=$firstTileY LIMIT 1");
 							break;
 						case 2:
-							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=5 AND tile_y=1 LIMIT 1");
+							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=$secondTileX AND tile_y=$secondTileY LIMIT 1");
 							break;
 						case 3:
-							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=1 AND tile_y=5 LIMIT 1");
+							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=$thirdTileX AND tile_y=$thirdTileY LIMIT 1");
 							break;
 						case 4:
-							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=5 AND tile_y=5 LIMIT 1");
+							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=$fourthTileX AND tile_y=$fourthTileY LIMIT 1");
 							break;
 						case 5:
-							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=9 AND tile_y=1 LIMIT 1");
+							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=1 AND tile_y=5 LIMIT 1");
 							break;
 						case 6:
-							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=5 AND tile_y=1 LIMIT 1");
 							break;
 						case 7:
-							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=$seventhTileX AND tile_y=5 LIMIT 1");
 							break;
 						case 8:
-							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=5 AND tile_y=$eighthTileY LIMIT 1");
 							break;
 						case 9:
-							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$tileNumber = self::getUniqueValueFromDb("SELECT tile_number FROM tile WHERE tile_x=5 AND tile_y=5 LIMIT 1");
 							break;
 				}
 
@@ -1152,34 +1213,65 @@ class CrashAndGrab extends Table
 		function getTileSide($tilePosition)
 		{
 				$sideAsInt = 2;
+
+				$firstTileX = 1;
+				$firstTileY = 1;
+				$secondTileX = 5;
+				$secondTileY = 1;
+				$thirdTileX = 1;
+				$thirdTileY = 5;
+				$fourthTileX = 5;
+				$fourthTileY = 5;
+  			$seventhTileX = 0; // this will be overwritten
+				$eighthTileY = 0; // this will be overwritten
+
+				if($this->getNumberOfPlayers() == 5)
+				{ // we need to extend the board by 1
+						$secondTileX = 6;
+						$thirdTileY = 6;
+						$fourthTileX = 6;
+						$fourthTileY = 6;
+						$seventhTileX = 6;
+						$eighthTileY = 6;
+				}
+				elseif($this->getNumberOfPlayers() == 6)
+				{ // we need to extend the board by 2
+						$secondTileX = 7;
+						$thirdTileY = 7;
+						$fourthTileX = 7;
+						$fourthTileY = 7;
+						$seventhTileX = 7;
+						$eighthTileY = 7;
+				}
+
 				switch($tilePosition)
 				{
 						case 1:
-							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=1 AND tile_y=1 LIMIT 1");
+							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=$firstTileX AND tile_y=$firstTileY LIMIT 1");
 							break;
 						case 2:
-							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=5 AND tile_y=1 LIMIT 1");
+							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=$secondTileX AND tile_y=$secondTileY LIMIT 1");
 							break;
 						case 3:
-							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=1 AND tile_y=5 LIMIT 1");
+							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=$thirdTileX AND tile_y=$thirdTileY LIMIT 1");
 							break;
 						case 4:
-							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=5 AND tile_y=5 LIMIT 1");
+							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=$fourthTileX AND tile_y=$fourthTileY LIMIT 1");
 							break;
 						case 5:
-							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=9 AND tile_y=1 LIMIT 1");
+							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=1 AND tile_y=5 LIMIT 1");
 							break;
 						case 6:
-							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=5 AND tile_y=1 LIMIT 1");
 							break;
 						case 7:
-							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=$seventhTileX AND tile_y=5 LIMIT 1");
 							break;
 						case 8:
-							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=5 AND tile_y=$eighthTileY LIMIT 1");
 							break;
 						case 9:
-							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$sideAsInt = self::getUniqueValueFromDb("SELECT tile_use_side_A FROM tile WHERE tile_x=5 AND tile_y=5 LIMIT 1");
 							break;
 				}
 
@@ -1200,34 +1292,65 @@ class CrashAndGrab extends Table
 		function getTileRotation($tilePosition)
 		{
 				$rotation = 5;
+
+				$firstTileX = 1;
+				$firstTileY = 1;
+				$secondTileX = 5;
+				$secondTileY = 1;
+				$thirdTileX = 1;
+				$thirdTileY = 5;
+				$fourthTileX = 5;
+				$fourthTileY = 5;
+				$seventhTileX = 0; // this will be overwritten
+				$eighthTileY = 0; // this will be overwritten
+
+				if($this->getNumberOfPlayers() == 5)
+				{ // we need to extend the board by 1
+						$secondTileX = 6;
+						$thirdTileY = 6;
+						$fourthTileX = 6;
+						$fourthTileY = 6;
+						$seventhTileX = 6;
+						$eighthTileY = 6;
+				}
+				elseif($this->getNumberOfPlayers() == 6)
+				{ // we need to extend the board by 2
+						$secondTileX = 7;
+						$thirdTileY = 7;
+						$fourthTileX = 7;
+						$fourthTileY = 7;
+						$seventhTileX = 7;
+						$eighthTileY = 7;
+				}
+
 				switch($tilePosition)
 				{
 						case 1:
-							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=1 AND tile_y=1 LIMIT 1");
+							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=$firstTileX AND tile_y=$firstTileY LIMIT 1");
 							break;
 						case 2:
-							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=5 AND tile_y=1 LIMIT 1");
+							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=$secondTileX AND tile_y=$secondTileY LIMIT 1");
 							break;
 						case 3:
-							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=1 AND tile_y=5 LIMIT 1");
+							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=$thirdTileX AND tile_y=$thirdTileY LIMIT 1");
 							break;
 						case 4:
-							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=5 AND tile_y=5 LIMIT 1");
+							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=$fourthTileX AND tile_y=$fourthTileY LIMIT 1");
 							break;
 						case 5:
-							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=9 AND tile_y=1 LIMIT 1");
+							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=1 AND tile_y=5 LIMIT 1");
 							break;
 						case 6:
-							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=5 AND tile_y=1 LIMIT 1");
 							break;
 						case 7:
-							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=$seventhTileX AND tile_y=5 LIMIT 1");
 							break;
 						case 8:
-							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=5 AND tile_y=$eighthTileY LIMIT 1");
 							break;
 						case 9:
-							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=9 AND tile_y=5 LIMIT 1");
+							$rotation = self::getUniqueValueFromDb("SELECT tile_degree_rotation FROM tile WHERE tile_x=5 AND tile_y=5 LIMIT 1");
 							break;
 				}
 
@@ -1251,55 +1374,206 @@ class CrashAndGrab extends Table
 				return self::getUniqueValueFromDb("SELECT tile_y FROM tile WHERE tile_number=$tileNumber");
 		}
 
-		function getTileXFromTilePosition($tilePosition, $numberOfSaucers)
+		function getNumberOfRowsFromTilePosition($tilePosition)
 		{
 				switch($tilePosition)
 				{
+						case 1: // 4x4
+								return 4;
+							break;
+						case 2: // 4x4
+								return 4;
+							break;
+						case 3: // 4x4
+								return 4;
+							break;
+						case 4: // 4x4
+								return 4;
+							break;
+						case 5: // left-most 4x1 or 4x2
+							if($this->getNumberOfPlayers() == 6)
+							{
+								return 2;
+							}
+							else
+							{
+								return 1;
+							}
+						break;
+						case 6: // top-most 4x1 or 4x2
+								return 4;
+						break;
+						case 7: // right-most 4x1 or 4x2
+							if($this->getNumberOfPlayers() == 6)
+							{
+								return 2;
+							}
+							else
+							{
+								return 1;
+							}
+						break;
+						case 8: // bottom-most 4x1 or 4x2
+								return 4;
+						break;
+						case 9: // center tile
+							if($this->getNumberOfPlayers() == 6)
+							{
+								return 2;
+							}
+							else
+							{
+								return 1;
+							}
+						break;
+				}
+
+		}
+
+		function getNumberOfColumnsFromTilePosition($tilePosition)
+		{
+
+				switch($tilePosition)
+				{
+						case 1: // 4x4
+								return 4;
+							break;
+						case 2: // 4x4
+								return 4;
+							break;
+						case 3: // 4x4
+								return 4;
+							break;
+						case 4: // 4x4
+								return 4;
+							break;
+						case 5: // left-most 4x1 or 4x2
+								return 4;
+							break;
+						case 6: // top-most 4x1 or 4x2
+							if($this->getNumberOfPlayers() == 6)
+							{
+								return 2;
+							}
+							else
+							{
+								return 1;
+							}
+						break;
+						case 7: // right-most 4x1 or 4x2
+								return 4;
+						break;
+						case 8: // bottom-most 4x1 or 4x2
+							if($this->getNumberOfPlayers() == 6)
+							{
+								return 2;
+							}
+							else
+							{
+								return 1;
+							}
+						break;
+						case 9: // center 1x1 or 2x2 tile
+						if($this->getNumberOfPlayers() == 6)
+						{
+							return 2;
+						}
+						else
+						{
+							return 1;
+						}
+						break;
+				}
+		}
+
+		function getTileXFromTilePosition($tilePosition)
+		{
+				$firstTileX = 1;
+				$secondTileX = 5;
+				$thirdTileX = 1;
+				$fourthTileX = 5;
+				$seventhTileX = 0; // this will be overwritten
+
+				if($this->getNumberOfPlayers() == 5)
+				{ // we need to extend the board by 1
+						$secondTileX = 6;
+						$fourthTileX = 6;
+						$seventhTileX = 6;
+				}
+				elseif($this->getNumberOfPlayers() == 6)
+				{ // we need to extend the board by 2
+						$secondTileX = 7;
+						$fourthTileX = 7;
+						$seventhTileX = 7;
+				}
+
+				switch($tilePosition)
+				{
 						case 1:
-							return 1;
+							return $firstTileX;
 						case 2:
-							return 5;
+							return $secondTileX;
 						case 3:
-							return 1;
+							return $thirdTileX;
 						case 4:
-							return 5;
+							return $fourthTileX;
 						case 5:
 							return 1;
 						case 6:
 							return 5;
 						case 7:
-							return 1;
+							return $seventhTileX;
 						case 8:
 							return 5;
 						case 9:
-							return 3;
+							return 5;
 				}
 
 				return 0;
 		}
 
-		function getTileYFromTilePosition($tilePosition, $numberOfSaucers)
+		function getTileYFromTilePosition($tilePosition)
 		{
+
+				$firstTileY = 1;
+				$secondTileY = 1;
+				$thirdTileY = 5;
+				$fourthTileY = 5;
+				$eighthTileY = 0; // this will be overwritten
+
+				if($this->getNumberOfPlayers() == 5)
+				{ // we need to extend the board by 1
+						$thirdTileY = 6;
+						$fourthTileY = 6;
+						$eighthTileY = 6;
+				}
+				elseif($this->getNumberOfPlayers() == 6)
+				{ // we need to extend the board by 2
+						$thirdTileY = 7;
+						$fourthTileY = 7;
+						$eighthTileY = 7;
+				}
+
 				switch($tilePosition)
 				{
 						case 1:
-							return 1;
+							return $firstTileY;
 						case 2:
-							return 1;
+							return $secondTileY;
 						case 3:
-							return 5;
+							return $thirdTileY;
 						case 4:
-							return 5;
+							return $fourthTileY;
 						case 5:
-							return 1;
+							return 5;
 						case 6:
-							return 5;
-						case 7:
 							return 1;
-						case 8:
+						case 7:
 							return 5;
+						case 8:
+							return $eighthTileY;
 						case 9:
-							return 3;
+							return 5;
 				}
 
 				return 0;
@@ -1310,10 +1584,10 @@ class CrashAndGrab extends Table
 		function insertBoardTile($tilePosition, $tileNumberToUse, $useSideA, $degreeRotation, $numberOfSaucers)
 		{
 
-				$tileX = $this->getTileXFromTilePosition($tilePosition, $numberOfSaucers); // get the coordinates on the board where this tile will start
-				$tileY = $this->getTileYFromTilePosition($tilePosition, $numberOfSaucers); // get the coordinates on the board where this tile will start
-				$sqlBoardTile = "INSERT INTO tile (tile_number,tile_x,tile_y,tile_use_side_A,tile_degree_rotation) VALUES ";
-				$sqlBoardTile .= "(".$tileNumberToUse.",".$tileX.",".$tileY.",".$useSideA.",".$degreeRotation.") ";
+				$tileX = $this->getTileXFromTilePosition($tilePosition); // get the coordinates on the board where this tile will start
+				$tileY = $this->getTileYFromTilePosition($tilePosition); // get the coordinates on the board where this tile will start
+				$sqlBoardTile = "INSERT INTO tile (tile_number,tile_position,tile_x,tile_y,tile_use_side_A,tile_degree_rotation) VALUES ";
+				$sqlBoardTile .= "(".$tileNumberToUse.",".$tilePosition.",".$tileX.",".$tileY.",".$useSideA.",".$degreeRotation.") ";
 
 				self::DbQuery( $sqlBoardTile );
 		}
@@ -1368,60 +1642,117 @@ class CrashAndGrab extends Table
 
 						// insert into tiles table
 						$this->insertBoardTile($tilePosition, $thisTile, $useSideA, $degreeRotation, $numberOfSaucers);
-						$this->setBoardTile($thisTile, $useSideA, $degreeRotation); // use what's in the tile table to set the board for this particular tile
+						$this->setBoardTile($thisTile, $useSideA, $degreeRotation, $tilePosition); // use what's in the tile table to set the board for this particular tile
 				}
 
 				if($numberOfSaucers == 5)
 				{
-						$possibleOneByFourTiles = range(5,8); // array from 5-8
+
+						$possibleOneByFourTiles = range(5,8); // array from 5-8 representing the physical tile number
 						shuffle($possibleOneByFourTiles); // randomly order the tiles
 
-						for ($tilePosition = 5; $tilePosition <= 8; $tilePosition++)
-						{
-								$thisTile = $possibleOneByFourTiles[$tilePosition-5];
+						$tilePosition = 5; // this is the left-most 4x1 tile
+						$thisTile = $possibleOneByFourTiles[0]; // this is one of the 4x1 tiles
+						$useSideADivider = rand(0,1); // whether we use side A or B
+						$degreeRotation = rand(0,1); // first start with 0 or 1 and then we multiply next
+						$degreeRotationDivider = $degreeRotation * 2; // we want it to either be 0 or 2, which is 0 degrees or 180 degrees rotated
 
-								// insert 4x1 (tile positions 5-8)
-								$useSideADivider = rand(0,1);
-								$degreeRotationDivider = rand(0,1);
-								$degreeRotationDivider = $degreeRotation * 2; // we want it to either be 0 or 2, which is 0 degrees or 180 degrees rotated
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
 
-								$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
-								$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider); // use what's in the tile table to set the board for this particular tile
-						}
+						$tilePosition = 6; // this is the top-most 4x1 tile
+						$thisTile = $possibleOneByFourTiles[1]; // this is one of the 4x1 tiles
+						$useSideADivider = rand(0,1); // whether we use side A or B
+						$degreeRotation = rand(0,1); // first start with 0 or 1 and then we multiply next
+						$degreeRotationDivider = ($degreeRotation * 2) + 1; // we want it to either be 1 or 3, which is 90 degrees or 270 degrees rotated
 
-						// insert 1x1 divider tile (tile position 9)
-						$thisTile = 9; // there is only one 1x1 tile and it is tile number 9
-						$tilePosition = 9; // the center tile is always in position 9
-						$useSideACenter = rand(0,1);
-						$degreeRotationCenter = rand(0,3);
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
 
-						// insert into tiles table
-						$this->insertBoardTile($tilePosition, $thisTile, $useSideACenter, $degreeRotationCenter, $numberOfSaucers);
-						$this->setBoardTile($thisTile, $useSideACenter, $degreeRotationCenter); // use what's in the tile table to set the board for this particular tile
+						$tilePosition = 7; // this is the right-most 4x1 tile
+						$thisTile = $possibleOneByFourTiles[2]; // this is one of the 4x1 tiles
+						$useSideADivider = rand(0,1); // whether we use side A or B
+						$degreeRotation = rand(0,1); // first start with 0 or 1 and then we multiply next
+						$degreeRotationDivider = $degreeRotation * 2; // we want it to either be 0 or 2, which is 0 degrees or 180 degrees rotated
 
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
+
+						$tilePosition = 8; // this is the bottom-most 4x1 tile
+						$thisTile = $possibleOneByFourTiles[3]; // this is one of the 4x1 tiles
+						$useSideADivider = rand(0,1); // whether we use side A or B
+						$degreeRotation = rand(0,1); // first start with 0 or 1 and then we multiply next
+						$degreeRotationDivider = ($degreeRotation * 2) + 1; // we want it to either be 1 or 3, which is 90 degrees or 270 degrees rotated
+
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
+
+						$tilePosition = 9; // insert 1x1 divider tile (tile position 9)
+						$thisTile = 9; // this is the 1x1 tile
+						$useSideADivider = rand(0,1); // whether we use side A or B
+						$degreeRotationDivider = rand(0,3); // how much we rotate it, not that it really matters with a 1x1 tile
+
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
 				}
 
 				if($numberOfSaucers == 6)
 				{
-						// insert 4x2 tiles (tile positions 5-9)
+						$possibleTwoByFourTiles = range(10,13); // array from 10-13 representing the physical tile number
+						shuffle($possibleTwoByFourTiles); // randomly order the tiles
 
+						$tilePosition = 5; // this is the left-most 4x2 tile
+						$thisTile = $possibleTwoByFourTiles[0]; // this is one of the 4x2 tiles
+						$useSideADivider = rand(0,1); // whether we use side A or B
+						$degreeRotation = rand(0,1); // first start with 0 or 1 and then we multiply next
+						$degreeRotationDivider = $degreeRotation * 2; // we want it to either be 0 or 2, which is 0 degrees or 180 degrees rotated
 
-						// insert 2x2 divider tile (tile position 9)
-						$thisTile = 14; // there is only one 2x2 tile and it is tile number 14
-						$tilePosition = 9; // the center tile is always in position 9
-						$useSideACenter = rand(0,1);
-						$degreeRotationCenter = rand(0,3);
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
 
-						// insert into tiles table
-						$this->insertBoardTile($tilePosition, $thisTile, $useSideACenter, $degreeRotationCenter, $numberOfSaucers);
-						$this->setBoardTile($thisTile, $useSideACenter, $degreeRotationCenter); // use what's in the tile table to set the board for this particular tile
+						$tilePosition = 6; // this is the top-most 4x2 tile
+						$thisTile = $possibleTwoByFourTiles[1]; // this is one of the 4x2 tiles
+						$useSideADivider = rand(0,1); // whether we use side A or B
+						$degreeRotation = rand(0,1); // first start with 0 or 1 and then we multiply next
+						$degreeRotationDivider = ($degreeRotation * 2) + 1; // we want it to either be 1 or 3, which is 90 degrees or 270 degrees rotated
+
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
+
+						$tilePosition = 7; // this is the right-most 4x2 tile
+						$thisTile = $possibleTwoByFourTiles[2]; // this is one of the 4x2 tiles
+						$useSideADivider = rand(0,1); // whether we use side A or B
+						$degreeRotation = rand(0,1); // first start with 0 or 1 and then we multiply next
+						$degreeRotationDivider = $degreeRotation * 2; // we want it to either be 0 or 2, which is 0 degrees or 180 degrees rotated
+
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
+
+						$tilePosition = 8; // this is the bottom-most 4x2 tile
+						$thisTile = $possibleTwoByFourTiles[3]; // this is one of the 4x2 tiles
+						$useSideADivider = rand(0,1); // whether we use side A or B
+						$degreeRotation = rand(0,1); // first start with 0 or 1 and then we multiply next
+						$degreeRotationDivider = ($degreeRotation * 2) + 1; // we want it to either be 1 or 3, which is 90 degrees or 270 degrees rotated
+
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
+
+						$tilePosition = 9; // insert 2x2 divider tile (tile position 9)
+						$thisTile = 14; // this is the 2x2 tile
+						$useSideADivider = 0; // we only need one side
+						$degreeRotationDivider = rand(0,3); // how much we rotate it
+
+						$this->insertBoardTile($tilePosition, $thisTile, $useSideADivider, $degreeRotationDivider, $numberOfSaucers);
+						$this->setBoardTile($thisTile, $useSideADivider, $degreeRotationDivider, $tilePosition); // use what's in the tile table to set the board for this particular tile
+
 				}
 
 
 		}
 
-		// tileNumber: The unique number designation given to a specific, physical tile.
-		function setBoardTile($tileNumber, $useSideA, $degreeRotation)
+		// tileNumber: The unique number designation given to a specific, physical tile. There are 14 different ones.
+		// tilePosition: Where on the board a tile is located. There are 9 different places a tile can be located.
+		function setBoardTile($tileNumber, $useSideA, $degreeRotation, $tilePosition)
 		{
 				$tileSpaceValues = array(array());
 				switch($tileNumber)
@@ -1430,19 +1761,19 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","B","C"),
-									array("B","B","O","B"),
-									array("B","O","B","S"),
-									array("S","B","B","B")
+									array("B","1","B","S"),
+									array("B","B","3","B"),
+									array("S","B","B","B"),
+									array("2","B","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("C","B","B","S"),
-									array("B","O","B","B"),
-									array("B","B","O","B"),
-									array("S","B","B","B")
+									array("B","B","2","B"),
+									array("1","S","B","B"),
+									array("B","B","B","S"),
+									array("B","B","B","3")
 								);
 							}
 						break;
@@ -1450,19 +1781,19 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","S","C"),
-									array("O","B","B","B"),
-									array("B","O","B","B"),
-									array("B","S","B","B")
+									array("4","B","S","B"),
+									array("B","B","B","5"),
+									array("B","S","B","B"),
+									array("B","6","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","S","B"),
-									array("B","O","B","O"),
+									array("4","B","B","B"),
 									array("S","B","B","B"),
-									array("C","B","B","B")
+									array("B","B","5","B"),
+									array("B","6","B","S")
 								);
 							}
 						break;
@@ -1471,18 +1802,18 @@ class CrashAndGrab extends Table
 							{ // USE SIDE A
 								$tileSpaceValues = array(
 									array("S","B","B","B"),
-									array("B","B","O","B"),
-									array("B","O","B","B"),
-									array("B","S","B","C")
+									array("B","S","B","7"),
+									array("B","B","9","B"),
+									array("8","B","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","S","B","C"),
-									array("B","B","O","B"),
-									array("O","B","B","B"),
-									array("B","B","S","B")
+									array("8","S","B","B"),
+									array("B","B","B","9"),
+									array("B","B","S","B"),
+									array("B","B","7","B")
 								);
 							}
 						break;
@@ -1490,19 +1821,19 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","O","B","B"),
-									array("B","C","B","S"),
-									array("S","B","O","B"),
-									array("B","B","B","B")
+									array("B","B","10","B"),
+									array("B","B","B","S"),
+									array("S","11","B","B"),
+									array("B","B","B","12")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","B","B"),
+									array("B","10","B","B"),
 									array("B","B","S","B"),
-									array("S","B","O","C"),
-									array("B","O","B","B")
+									array("B","S","B","12"),
+									array("B","B","11","B")
 								);
 							}
 						break;
@@ -1510,19 +1841,13 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("S","B","B","B"),
-									array("B","B","O","B"),
-									array("B","C","B","S"),
-									array("B","B","B","O")
+									array("B","B","B","S")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("S","C","B","B"),
-									array("B","B","O","B"),
-									array("B","B","B","O"),
-									array("B","S","B","B")
+									array("B","B","S","B")
 								);
 							}
 						break;
@@ -1530,19 +1855,13 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","B","B","S"),
-									array("S","C","B","O"),
 									array("B","B","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("O","B","B","B"),
-									array("B","O","B","B"),
-									array("B","B","C","S"),
-									array("S","B","B","B")
+									array("B","B","B","B")
 								);
 							}
 						break;
@@ -1550,18 +1869,12 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("O","B","B","S"),
-									array("S","C","B","B"),
-									array("B","B","B","B")
+									array("B","S","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","O","B","B"),
-									array("B","B","C","S"),
 									array("S","B","B","B")
 								);
 							}
@@ -1570,39 +1883,28 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","O","B","S"),
-									array("S","C","B","B"),
 									array("B","B","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","B","B"),
-									array("B","O","B","B"),
-									array("B","B","C","S"),
-									array("S","B","B","O")
+									array("B","B","B","B")
 								);
 							}
 						break;
+
 						case 9:
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","O","B","S"),
-									array("S","C","B","B"),
-									array("B","B","B","B")
+									array("S")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","B","B"),
-									array("B","O","B","B"),
-									array("O","B","C","S"),
-									array("S","B","B","B")
+									array("B")
 								);
 							}
 						break;
@@ -1610,19 +1912,15 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","O","B","B"),
-									array("B","B","O","S"),
-									array("S","C","B","B"),
-									array("B","B","B","B")
+									array("B","B","B","B"),
+									array("S","B","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","O","B","B"),
-									array("B","B","C","S"),
-									array("S","B","B","B")
+									array("B","B","B","B"),
+									array("B","S","B","B")
 								);
 							}
 						break;
@@ -1630,19 +1928,15 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","O","B","S"),
-									array("S","C","B","B"),
-									array("B","B","B","B")
+									array("B","B","B","B"),
+									array("B","B","S","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","O","B","B"),
-									array("B","B","C","S"),
-									array("S","B","B","B")
+									array("B","B","B","B"),
+									array("B","B","B","S")
 								);
 							}
 						break;
@@ -1650,19 +1944,15 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","O","B","S"),
-									array("S","C","B","B"),
+									array("S","B","B","B"),
 									array("B","B","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","O","B","B"),
-									array("B","B","C","S"),
-									array("S","B","B","B")
+									array("B","S","B","B"),
+									array("B","B","B","B")
 								);
 							}
 						break;
@@ -1670,19 +1960,15 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","B","B","S"),
-									array("S","C","B","B"),
-									array("B","O","B","B")
+									array("B","B","S","B"),
+									array("B","B","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","B","B"),
-									array("B","O","B","B"),
-									array("B","B","C","S"),
-									array("S","B","O","B")
+									array("B","B","B","S"),
+									array("B","B","B","B")
 								);
 							}
 						break;
@@ -1690,19 +1976,15 @@ class CrashAndGrab extends Table
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","O","B"),
-									array("B","B","B","S"),
-									array("S","C","B","O"),
-									array("B","B","B","B")
+									array("B","B"),
+									array("B","S")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","B","B"),
-									array("B","O","B","B"),
-									array("O","B","C","S"),
-									array("S","B","B","B")
+									array("S","B"),
+									array("B","B")
 								);
 							}
 						break;
@@ -1715,19 +1997,22 @@ class CrashAndGrab extends Table
 						$tileSpaceValues = $this->rotateMatrix90($tileSpaceValues);
 				}
 
-				$this->setBoardSpaceValues($tileNumber, $tileSpaceValues);
+				$this->setBoardSpaceValues($tileNumber, $tileSpaceValues, $tilePosition);
 		}
 
-		function setBoardSpaceValues($tileNumber, $tileSpaceValues)
+		function setBoardSpaceValues($tileNumber, $tileSpaceValues, $tilePosition)
 		{
 				$startingX = $this->getTileXFromTileNumber($tileNumber);
 				$startingY = $this->getTileYFromTileNumber($tileNumber);
 
-				for( $x=0; $x<4; $x++ )
-				{ // go through 4 columns
+				$columns = $this->getNumberOfColumnsFromTilePosition($tilePosition);
+				$rows = $this->getNumberOfRowsFromTilePosition($tilePosition);
 
-						for( $y=0; $y<4; $y++ )
-						{ // go through 4 rows
+				for( $x=0; $x<$columns; $x++ )
+				{ // go through columns
+
+						for( $y=0; $y<$rows; $y++ )
+						{ // go through rows
 
 								$disc_value = $tileSpaceValues[$y][$x];
 								$boardX = $x+$startingX;
@@ -1764,9 +2049,9 @@ class CrashAndGrab extends Table
 				self::DbQuery( $sql );
 		}
 
-		function getNumberOfSaucersFromNumberOfPlayers($numberOfPlayers)
+		function getNumberOfSaucersFromNumberOfPlayers()
 		{
-				switch($numberOfPlayers)
+				switch($this->getNumberOfPlayers())
 				{
 						case 2:
 							return 4;
@@ -1791,7 +2076,8 @@ class CrashAndGrab extends Table
 
 		function getNumberOfPlayers()
 		{
-				$numberOfPlayers = 0;
+			return $this->getGameStateValue("NUMBER_OF_PLAYERS");
+/*				$numberOfPlayers = 0;
 
 				$players = self::getObjectListFromDB( "SELECT player_id
 																											 FROM player
@@ -1803,6 +2089,7 @@ class CrashAndGrab extends Table
 				}
 
 				return $numberOfPlayers;
+*/
 		}
 
 		function setOstrichToNotStealable($ostrich)
@@ -1979,6 +2266,26 @@ class CrashAndGrab extends Table
 				$this->setState_TrapAndCliffAndGarmentCleanup();
 		}
 
+		function moveCrewmemberToBoard($garmentId, $xDestination, $yDestination)
+		{
+				// update the database to give the garment to the ostrich
+				$sql = "UPDATE garment SET garment_x=$xDestination,garment_y=$yDestination,garment_location='board' WHERE garment_id=$garmentId";
+				self::DbQuery( $sql );
+
+				$garmentColor = self::getUniqueValueFromDb("SELECT garment_color FROM garment WHERE garment_id=$garmentId");
+				$garmentType = self::getUniqueValueFromDb("SELECT garment_type FROM garment WHERE garment_id=$garmentId");
+
+				$garmentTypeString = $this->convertGarmentTypeIntToString($garmentType);
+
+				// notify players that this garment has been acquired
+				self::notifyAllPlayers( "replacementGarmentSpaceChosen", clienttranslate( 'A garment is being replaced.' ), array(
+						'garmentColor' => $garmentColor,
+					  'garmentType' => $garmentTypeString,
+						'xDestination' => $xDestination,
+						'yDestination' => $yDestination
+				) );
+		}
+
 		function moveGarmentToBoard($garmentId, $xDestination, $yDestination)
 		{
 				// update the database to give the garment to the ostrich
@@ -2140,6 +2447,7 @@ class CrashAndGrab extends Table
 
 		function triggerTrap()
 		{
+
 				$trapCardToExecute = $this->getTrapCardToExecute(); // OBJECT of the card with multiple keys/values
 				$trapCardOwner = $this->getOwnerOfTrapCard($trapCardToExecute['uniqueCardId']); // the player who played the trap card
 				$trapCardOwnerName = self::getPlayerNameById($trapCardOwner);
@@ -2244,7 +2552,7 @@ class CrashAndGrab extends Table
 
 								// rotate that tile
 								//echo "setting board tile number $tileNumber at position $tilePosition with useSideA of $useSideA and degree rotation $degreeRotation";
-								$this->setBoardTile($tileNumber, $useSideA, $degreeRotation); // update the board table with each new space value
+								$this->setBoardTile($tileNumber, $useSideA, $degreeRotation, $tilePosition); // update the board table with each new space value
 								$this->updateTileRotations($tileNumber, $degreeRotation); // also update the tile table with the new degree rotation
 
 
@@ -2324,7 +2632,7 @@ class CrashAndGrab extends Table
 
 								// rotate that tile
 								//echo "setting board tile number $tileNumber at position $tilePosition with useSideA of $useSideA and degree rotation $degreeRotation";
-								$this->setBoardTile($tileNumber, $useSideA, $degreeRotation); // update the board table with each new space value
+								$this->setBoardTile($tileNumber, $useSideA, $degreeRotation, $tilePosition); // update the board table with each new space value
 								$this->updateTileRotations($tileNumber, $degreeRotation); // also update the tile table with the new degree rotation
 
 
@@ -2692,7 +3000,7 @@ class CrashAndGrab extends Table
 						$playerId = $player['player_id']; // get the player ID of this player
 
 						$allPlayersOstrichesHaveZag = true;
-						$allPlayersOstriches = $this->getAllPlayersOstriches($playerId);
+						$allPlayersOstriches = $this->getSaucersForPlayer($playerId);
 						foreach( $allPlayersOstriches as $ostrich )
 						{ // go through each ostrich owned by this player
 								if(!$this->doesOstrichHaveZag($ostrich['ostrich_color']))
@@ -2863,18 +3171,18 @@ class CrashAndGrab extends Table
 				return self::getUniqueValueFromDb("SELECT card_location_arg FROM trapCards WHERE card_id=$cardId");
 		}
 
-		function getAllPlayersOstriches($playerId)
+		function getSaucersForPlayer($playerId)
 		{
 				return self::getObjectListFromDB( "SELECT ostrich_color
 																										 FROM ostrich
 																										 WHERE ostrich_owner=$playerId" );
 		}
 
-		// Same as getAllPlayersOstriches except in array form.
-		function getMyOstriches($playerId)
+		// Same as getSaucersForPlayer except in array form.
+		function getSaucerArrayForPlayer($playerId)
 		{
 				$result = array();
-				$ostrichesObjectForm = $this->getAllPlayersOstriches($playerId);
+				$ostrichesObjectForm = $this->getSaucersForPlayer($playerId);
 			  $ostrichIndex = 0;
 				foreach($ostrichesObjectForm as $ostrich)
 				{
@@ -3192,6 +3500,11 @@ class CrashAndGrab extends Table
 				return $boardValue;
 		}
 
+		function getCrewmemberIdFromColorAndType($color, $typeAsInt)
+		{
+				return self::getUniqueValueFromDb("SELECT garment_id FROM garment WHERE garment_color='$color' AND garment_type=$typeAsInt LIMIT 1");
+		}
+
 		function getGarmentIdFromType($garmentTypeAsString, $garmentColor)
 		{
 			  $garmentAsInt = $this->convertGarmentTypeStringToInt($garmentTypeAsString);
@@ -3254,7 +3567,7 @@ class CrashAndGrab extends Table
 												$this->drawTrap($ownerOfOstrichMoving);
 										}
 
-										$this->giveCrown($ostrichMoving);
+										$this->giveProbe($ostrichMoving);
 
 								}
 								else if($boardValue == "S")
@@ -3312,7 +3625,7 @@ class CrashAndGrab extends Table
 												$this->drawTrap($ownerOfOstrichMoving);
 										}
 
-										$this->giveCrown($ostrichMoving);
+										$this->giveProbe($ostrichMoving);
 
 								}
 								else if($boardValue == "S")
@@ -3374,7 +3687,7 @@ class CrashAndGrab extends Table
 											$this->drawTrap($ownerOfOstrichMoving);
 									}
 
-										$this->giveCrown($ostrichMoving);
+										$this->giveProbe($ostrichMoving);
 
 								}
 								else if($boardValue == "S")
@@ -3429,7 +3742,7 @@ class CrashAndGrab extends Table
 												$this->drawTrap($ownerOfOstrichMoving);
 										}
 
-										$this->giveCrown($ostrichMoving);
+										$this->giveProbe($ostrichMoving);
 
 								}
 								else if($boardValue == "S")
@@ -3483,7 +3796,83 @@ class CrashAndGrab extends Table
 				return self::getUniqueValueFromDb("SELECT ostrich_color FROM ostrich WHERE ostrich_has_crown=1");
 		}
 
-		function giveCrown($ostrich)
+		function takeBooster($saucerColor)
+		{
+
+		}
+
+		function isCrashSiteEmpty($crashSiteNumber)
+		{
+				// get the X and Y position of the given crash site
+				$crashSiteX = $this->getXOfCrashSite($crashSiteNumber);
+				$crashSiteY = $this->getYOfCrashSite($crashSiteNumber);
+
+				// see if there are any Crewmembers on it
+				$allCrewmembers = $this->getAllCrewmembers();
+				foreach( $allCrewmembers as $crewmember )
+				{ // go through each saucer
+						$crewmemberX = $crewmember['garment_x'];
+						$crewmemberY = $crewmember['garment_y'];
+						$crewmemberLocation = $crewmember['garment_location'];
+
+						if($crewmemberLocation == 'board' &&
+						$crewmemberX == $crashSiteX &&
+						$crewmemberY == $crashSiteY)
+						{ // there is a saucer on this board space
+								return false;
+						}
+				}
+
+
+				// see if there are any Saucers on it
+				$allSaucers = $this->getAllSaucers();
+				foreach( $allSaucers as $saucer )
+				{ // go through each saucer
+						$saucerX = $saucer['ostrich_x'];
+						$saucerY = $saucer['ostrich_y'];
+
+						if($crashSiteX == $saucerX && $crashSiteY == $saucerY)
+						{ // there is a saucer on this board space
+								return false;
+						}
+				}
+
+				return true;
+		}
+
+		// Returns a random empty crash site number (1-12). If it cannot find one, it will return 0;
+		function getEmptyCrashSite()
+		{
+				$crashSiteNumber = rand(1,12);
+				$isCrashSiteEmpty = $this->isCrashSiteEmpty($crashSiteNumber);
+				$attemptsCount = 0;
+				while (!$isCrashSiteEmpty && $attemptsCount < 100)
+				{
+						$crashSiteNumber = rand(1,12);
+						$isCrashSiteEmpty = $this->isCrashSiteEmpty($crashSiteNumber);
+						$attemptsCount++;
+				}
+
+				if(!$isCrashSiteEmpty)
+				{ // we could not find an empty crash site
+						return 0;
+				}
+
+				return $crashSiteNumber;
+		}
+
+		function locatePilot($saucerColor)
+		{
+				$crashSite = $this->getEmptyCrashSite();
+				$locX = $this->getXOfCrashSite($crashSite);
+				$locY = $this->getYOfCrashSite($crashSite);
+				$type = 0; // this is the Pilot
+				$crewmemberId = $this->getCrewmemberIdFromColorAndType($saucerColor, $type);
+
+				$this->moveCrewmemberToBoard($crewmemberId, $locX, $locY);
+		}
+
+		function giveProbe($ostrich)
 		{
 				$ostrichWithCrown = $this->getOstrichWithCrown();
 
@@ -3766,12 +4155,12 @@ class CrashAndGrab extends Table
 						$x = 0;
 				}
 
-				if($x > 8 && $this->getGameStateValue("NUMBER_OF_PLAYERS") > 3)
+				if($x > 8 && $this->getNumberOfPlayers() > 3)
 				{ // we've gone off the cliff to the right
 						$x = 9;
 				}
 
-				if($x > 12 && $this->getGameStateValue("NUMBER_OF_PLAYERS") < 4)
+				if($x > 12 && $this->getNumberOfPlayers() < 4)
 				{ // we've gone off the cliff to the right
 						$x = 9;
 				}
@@ -3878,6 +4267,16 @@ class CrashAndGrab extends Table
 								'players' => $playerIdList,
 								'turnOrder' => $turnOrder
 				) );
+		}
+
+		function getXOfCrashSite($crashSiteNumber)
+		{
+				return self::getUniqueValueFromDb("SELECT board_x FROM board WHERE board_space_type=$crashSiteNumber");
+		}
+
+		function getYOfCrashSite($crashSiteNumber)
+		{
+				return self::getUniqueValueFromDb("SELECT board_y FROM board WHERE board_space_type=$crashSiteNumber");
 		}
 
 		function getGarmentLocation($garmentTypeInt, $garmentColor)
@@ -4413,7 +4812,7 @@ class CrashAndGrab extends Table
 				$player_name = self::getCurrentPlayerName(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
 				// get all of this player's ostriches
-				$theirOstriches = $this->getAllPlayersOstriches($player_id);
+				$theirOstriches = $this->getSaucersForPlayer($player_id);
 
 				$chosenCards = $this->movementCards->getCardsInLocation( 'zigChosen', $player_id ); // get the cards that were selected but their direciton wasn't set
 				$playedCards = $this->movementCards->getCardsInLocation( 'played', $player_id ); // get the cards that were selected and had their direction set
@@ -5044,7 +5443,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function argGetOstriches()
 		{
 				return array(
-						'allOstriches' => self::getAllOstrichesAndOwners()
+						'allOstriches' => self::getAllSaucersByPlayer()
 				);
 		}
 
