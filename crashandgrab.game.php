@@ -384,7 +384,7 @@ class CrashAndGrab extends Table
 						$sqlGarment = "INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES ";
 						$sqlGarment .= "(".$locX.",".$locY.",'".$location."','".$color."',".$type.") ";
 						//echo "locX ($locX) locY ($locY) location($location) color ($color) type ($type) <br>";
-						//self::DbQUery("INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES (0,0,'pile','ff0000',0)");
+						//self::DbQUery("INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES (0,0,'pile','f6033b',0)");
 						self::DbQuery( $sqlGarment );
 
 						// BODY
@@ -487,7 +487,7 @@ class CrashAndGrab extends Table
 
 		function initializeSaucers()
 		{
-				$startingLocations = $this->getStartingOstrichLocations();
+				$startingLocations = $this->getAllCrashSites(); // get all crash sites
 				shuffle($startingLocations); // randomize the order
 
 				//$count = count($startingLocations);
@@ -523,7 +523,7 @@ class CrashAndGrab extends Table
 
 
 
-						//$locationListIndex++; // go to the next starting location
+						$locationListIndex++; // go to the next starting location
 				}
 
 				if(false)
@@ -665,7 +665,7 @@ class CrashAndGrab extends Table
 				return $newDirectionAsString;
 		}
 
-		function getStartingOstrichLocations()
+		function getAllCrashSites()
 		{
 				return self::getObjectListFromDB( "SELECT board_x, board_y
 																					 FROM board
@@ -4382,17 +4382,23 @@ class CrashAndGrab extends Table
 		{
 				switch($ostrichColor)
 				{
-						case "ff0000":
+						case "f6033b":
 							return "RED";
 
-						case "ffa500":
+						case "fedf3d":
 							return "YELLOW";
 
-            case "0000ff":
+            case "0090ff":
 							return "BLUE";
 
-            case "008000":
+            case "01b508":
 							return "GREEN";
+
+						case "b92bba":
+							return "PURPLE";
+
+						case "c9d2db":
+							return "GRAY";
 				}
 
 				return "unknown";

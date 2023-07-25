@@ -1144,7 +1144,7 @@
 
 // Templates
 
-var jstpl_disc='<div class="disc disccolor_${color}" id="disc_${color}"></div>';
+var jstpl_disc='<div class="disc disccolor_${color} saucer_float" id="disc_${color}"></div>';
 
 var jstpl_zag='<div class="zag component_circle" id="zag_${color}"></div>';
 

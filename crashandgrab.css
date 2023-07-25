@@ -503,7 +503,7 @@
 .board_tile_image_9_9_B_0
 {
 
-  background-position: 0px -51px;
+  background-position: 0px -55px;
 }
 
 /* 6 PLAYER HORIZONTAL */
@@ -953,20 +953,20 @@ float: left;
   display: inline-block;
 }
 
-#ostrich_mat_ff0000 {
-    background-image: url('img/ostrich_mat_ff0000.jpg');
+#ostrich_mat_f6033b {
+    background-image: url('img/ostrich_mat_f6033b.jpg');
 }
 
-#ostrich_mat_008000 {
-    background-image: url('img/ostrich_mat_008000.jpg');
+#ostrich_mat_01b508 {
+    background-image: url('img/ostrich_mat_01b508.jpg');
 }
 
-#ostrich_mat_0000ff {
-    background-image: url('img/ostrich_mat_0000ff.jpg');
+#ostrich_mat_0090ff {
+    background-image: url('img/ostrich_mat_0090ff.jpg');
 }
 
-#ostrich_mat_ffa500 {
-    background-image: url('img/ostrich_mat_ffa500.jpg');
+#ostrich_mat_fedf3d {
+    background-image: url('img/ostrich_mat_fedf3d.jpg');
 }
 
 .mat_and_stuff_row {
@@ -1097,15 +1097,20 @@ float: left;
 
 /***** DISCS *****/
 .disc {
-    width: 36px;
-    height: 36px;
+    width: 49px;
+    height: 47px;
     position: relative;
-    background-image: url('img/ostrich_token.png');
+    background-image: url('img/saucer_token.png');
+    -webkit-filter: drop-shadow(2px 2px 2px #222);
+    filter:         drop-shadow(2px 2px 2px #222);
 }
-.disccolor_ff0000 { background-position: 0px 0px;   }
-.disccolor_008000 { background-position: -36px 0px;   }
-.disccolor_0000ff { background-position: -72px 0px;   }
-.disccolor_ffa500 { background-position: -108px 0px;   }
+
+.disccolor_01b508 { background-position: -49px 0px;   } /* green */
+.disccolor_0090ff { background-position: -98px 0px;   } /* blue */
+.disccolor_fedf3d { background-position: -147px 0px;   } /* yellow */
+.disccolor_f6033b { background-position: 0px 0px;   } /* red */
+.disccolor_c9d2db { background-position: -245px 0px;   } /* gray */
+.disccolor_b92bba { background-position: -196px 0px;   } /* purple */
 
 
 
@@ -1133,7 +1138,7 @@ float: left;
 /***** GARMENTS *****/
 #garments_container
 {
-  width: 500px;
+  width: 540px;
     display: inline-block;
     vertical-align: top;
     margin-bottom: 20px;
@@ -1166,16 +1171,16 @@ float: left;
 }
 
 /*
-#garment_holder_head_ff0000 { background-position: 0px 0px;   }
-#garment_holder_head_008000 { background-position: -36px 0px;   }
-#garment_holder_head_0000ff { background-position: -72px 0px;   }
-#garment_holder_head_ffa500 { background-position: -108px 0px;   }
+#garment_holder_head_f6033b { background-position: 0px 0px;   }
+#garment_holder_head_01b508 { background-position: -36px 0px;   }
+#garment_holder_head_0090ff { background-position: -72px 0px;   }
+#garment_holder_head_fedf3d { background-position: -108px 0px;   }
 */
 
 .available_garment_group {
     margin-left: 5px;
     margin-bottom: 2px;
-    width: 210px;
+    width: 220px;
 }
 
 .garment_column_left {
@@ -1208,28 +1213,40 @@ float: left;
 
 /* these are each individual garment */
 /* red garments */
-#garment_head_ff0000 { background-position: -138px 0px;   }
-#garment_body_ff0000 { background-position: -138px -46px;   }
-#garment_legs_ff0000 { background-position: -138px -92px;   }
-#garment_feet_ff0000 { background-position: -138px -138px;   }
+#garment_head_f6033b { background-position: -141px 0px;   }
+#garment_body_f6033b { background-position: -141px -47px;   }
+#garment_legs_f6033b { background-position: -141px -94px;   }
+#garment_feet_f6033b { background-position: -141px -141px;   }
 
 /* green garments */
-#garment_head_008000 { background-position: 0px 0px;   }
-#garment_body_008000 { background-position: 0px -46px;   }
-#garment_legs_008000 { background-position: 0px -92px;   }
-#garment_feet_008000 { background-position: 0px -138px;   }
+#garment_head_01b508 { background-position: 0px 0px;   }
+#garment_body_01b508 { background-position: 0px -47px;   }
+#garment_legs_01b508 { background-position: 0px -94px;   }
+#garment_feet_01b508 { background-position: 0px -141px;   }
 
 /* blue garments */
-#garment_head_0000ff { background-position: -46px 0px;   }
-#garment_body_0000ff { background-position: -46px -46px;   }
-#garment_legs_0000ff { background-position: -46px -92px;   }
-#garment_feet_0000ff { background-position: -46px -138px;   }
+#garment_head_0090ff { background-position: -47px 0px;   }
+#garment_body_0090ff { background-position: -47px -47px;   }
+#garment_legs_0090ff { background-position: -47px -94px;   }
+#garment_feet_0090ff { background-position: -47px -141px;   }
 
 /* yellow garments */
-#garment_head_ffa500 { background-position: -92px 0px;   }
-#garment_body_ffa500 { background-position: -92px -46px;   }
-#garment_legs_ffa500 { background-position: -92px -92px;   }
-#garment_feet_ffa500 { background-position: -92px -138px;   }
+#garment_head_fedf3d { background-position: -94px 0px;   }
+#garment_body_fedf3d { background-position: -94px -47px;   }
+#garment_legs_fedf3d { background-position: -94px -94px;   }
+#garment_feet_fedf3d { background-position: -94px -141px;   }
+
+/* purple garments */
+#garment_head_b92bba { background-position: -235px 0px;   }
+#garment_body_b92bba { background-position: -235px -47px;   }
+#garment_legs_b92bba { background-position: -235px -94px;   }
+#garment_feet_b92bba { background-position: -235px -141px;   }
+
+/* gray garments */
+#garment_head_c9d2db { background-position: -188px 0px;   }
+#garment_body_c9d2db { background-position: -188px -47px;   }
+#garment_legs_c9d2db { background-position: -188px -94px;   }
+#garment_feet_c9d2db { background-position: -188px -141px;   }
 
 
 
@@ -1301,4 +1318,23 @@ float: left;
   display: block;
   width: 25px;
   height: 25px;
+}
+
+/* FLOAT */
+@keyframes float {
+	0% {
+		transform: translatey(0px);
+	}
+	50% {
+		transform: translatey(-7px);
+	}
+	100% {
+		transform: translatey(0px);
+	}
+}
+
+.saucer_float
+{
+	transform: translatey(0px);
+	animation: float 6s ease-in-out infinite;
 }

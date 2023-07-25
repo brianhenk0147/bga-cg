@@ -31,10 +31,12 @@ function (dojo, declare) {
             // this.myGlobalValue = 0;
 
             // colors
-            this.REDCOLOR = "ff0000";
-            this.YELLOWCOLOR = "ffa500";
-            this.BLUECOLOR = "0000ff";
-            this.GREENCOLOR = "008000";
+            this.REDCOLOR = "f6033b";
+            this.YELLOWCOLOR = "fedf3d";
+            this.BLUECOLOR = "0090ff";
+            this.GREENCOLOR = "01b508";
+            this.PURPLECOLOR = "b92bba";
+            this.GRAYCOLOR = "c9d2db";
 
             // ostriches this player controls
             this.ostrich1 = "";
@@ -197,7 +199,7 @@ function (dojo, declare) {
                 var turnOrder = card.turn; // clockwise or counterclockwise
                 var distance = card.distance; // 0, 1, 2, 3
                 var player_id = card.player; // player number like 2342823
-                var color = card.color; // ostrich color like ff0000
+                var color = card.color; // ostrich color like f6033b
                 var degreesRotated = this.getDegreesRotated(card.ostrich_last_direction); // the number of degrees rotated based on direction
 
                 console.log( "Loading a played card with turn order " + turnOrder + " distance " + distance + " player " + player_id + " and color " + color + " and degrees rotated " + degreesRotated + "." );
@@ -209,7 +211,7 @@ function (dojo, declare) {
             for( i in this.gamedatas.zigChosen )
             {
                 var card = this.gamedatas.zigChosen[i];
-                var ostrichGettingZig = card.color; // ostrich color like ff0000
+                var ostrichGettingZig = card.color; // ostrich color like f6033b
                 var card_id = card.id; // card ID
                 var player_id = card.player; // player number like 2342823
                 var clockwise = card.turn; // clockwise or counterclockwise
@@ -736,7 +738,7 @@ function (dojo, declare) {
                         if ( this.isCurrentPlayerActive() )
                         { // the active player is clicking
 
-                            var node = evt.currentTarget.id; // get the node like garment_head_ff0000
+                            var node = evt.currentTarget.id; // get the node like garment_head_f6033b
                             var garmentType = node.split('_')[1]; // the type of garment like head, legs, etc.
                             var garmentColor = node.split('_')[2]; // the color of the owning ostrich
                             console.log("clicked on garment " + garmentType + " " + garmentColor);
@@ -751,7 +753,7 @@ function (dojo, declare) {
                         if ( this.isCurrentPlayerActive() )
                         { // the active player is clicking
 
-                            var node = evt.currentTarget.id; // get the node like garment_head_ff0000
+                            var node = evt.currentTarget.id; // get the node like garment_head_f6033b
                             var garmentType = node.split('_')[1]; // the type of garment like head, legs, etc.
                             var garmentColor = node.split('_')[2]; // the color of the owning ostrich
                             console.log("clicked on garment " + garmentType + " " + garmentColor);
@@ -1086,8 +1088,8 @@ this.unhighlightAllGarments();
                           for( var ostrich in myOstriches )
                           {
                               console.log("my ostrich:" + myOstriches[ostrich]);
-                              var ostrichColor = myOstriches[ostrich]; // get color signifier like ff0000
-                              var ostrichName = this.getOstrichName(ostrichColor); // convert ff0000 into RED
+                              var ostrichColor = myOstriches[ostrich]; // get color signifier like f6033b
+                              var ostrichName = this.getOstrichName(ostrichColor); // convert f6033b into RED
 
                               var methodName = 'onDiscard3Claim'+ostrichName;
                               var buttonId = 'discard3Claim'+ostrichName+'_button';
@@ -1142,9 +1144,9 @@ this.unhighlightAllGarments();
                             const keysUnderPlayer = Object.keys(allPlayersWithOstriches[playerKey]);
                             for (const ostrichColorKey of keysUnderPlayer)
                             { // go through each ostrich
-                                var ostrichColor = ostrichColorKey; // get color signifier like ff0000
+                                var ostrichColor = ostrichColorKey; // get color signifier like f6033b
                                 console.log("color:" + ostrichColor);
-                                var ostrichName = this.getOstrichName(ostrichColor); // convert ff0000 into RED
+                                var ostrichName = this.getOstrichName(ostrichColor); // convert f6033b into RED
                                 var buttonText = 'Choose Zig for '+ostrichName;
                                 if(keysUnderPlayer.length < 2)
                                 { // this player only controls a single ostrich
@@ -1199,17 +1201,23 @@ console.log("disableEnableChooseButtons");
                     if( this.isCurrentPlayerActive() )
                     { // this player is active (they have a trap card and they haven't yet said they aren't playing it)
 
-                      if(this.ostrich1 != "ff0000" && this.ostrich2 != "ff0000")
+                      if(this.ostrich1 != "f6033b" && this.ostrich2 != "f6033b")
                           this.addActionButton( 'trapRed_button', _('RED'), 'onTrapRed' );
 
-                      if(this.ostrich1 != "ffa500" && this.ostrich2 != "ffa500")
+                      if(this.ostrich1 != "fedf3d" && this.ostrich2 != "fedf3d")
                           this.addActionButton( 'trapYellow_button', _('YELLOW'), 'onTrapYellow' );
 
-                      if(this.ostrich1 != "0000ff" && this.ostrich2 != "0000ff")
+                      if(this.ostrich1 != "0090ff" && this.ostrich2 != "0090ff")
                           this.addActionButton( 'trapBlue_button', _('BLUE'), 'onTrapBlue' );
 
-                      if(this.ostrich1 != "008000" && this.ostrich2 != "008000")
+                      if(this.ostrich1 != "01b508" && this.ostrich2 != "01b508")
                           this.addActionButton( 'trapGreen_button', _('GREEN'), 'onTrapGreen' );
+
+                      if(this.ostrich1 != "01b508" && this.ostrich2 != "b92bba")
+                          this.addActionButton( 'trapGreen_button', _('PURPLE'), 'onTrapGreen' );
+
+                      if(this.ostrich1 != "01b508" && this.ostrich2 != "c9d2db")
+                          this.addActionButton( 'trapGreen_button', _('GRAY'), 'onTrapGreen' );
 
                       this.addActionButton( 'noTrap_button', _('Do Not Trap'), 'noTrap', null, false, 'red' );
 
@@ -1394,13 +1402,13 @@ console.log("disableEnableChooseButtons");
         {
             switch( ostrich )
             {
-                  case "ff0000":
+                  case "f6033b":
                       return "RED";
-                  case "ffa500":
+                  case "fedf3d":
                       return "YELLOW";
-                  case "0000ff":
+                  case "0090ff":
                       return "BLUE";
-                  case "008000":
+                  case "01b508":
                       return "GREEN";
             }
 
@@ -1876,6 +1884,20 @@ console.log("disableEnableChooseButtons");
             this.sendClaimZag(this.YELLOWCOLOR, cardsDiscarded); // tell the server which cards we are discarding for the zag and which ostrich is doing it
         },
 
+        onDiscard3ClaimPURPLE: function()
+        {
+            var cardsDiscarded = this.convertSelectedCardsToString();
+
+            this.sendClaimZag(this.PURPLECOLOR, cardsDiscarded); // tell the server which cards we are discarding for the zag and which ostrich is doing it
+        },
+
+        onDiscard3ClaimGRAY: function()
+        {
+            var cardsDiscarded = this.convertSelectedCardsToString();
+
+            this.sendClaimZag(this.GRAYCOLOR, cardsDiscarded); // tell the server which cards we are discarding for the zag and which ostrich is doing it
+        },
+
         onDiscard3Cancel: function()
         {
             this.mustChooseZagDiscards = false;
@@ -2032,7 +2054,7 @@ console.log("disableEnableChooseButtons");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("ff0000", cardId);
+            this.sendZigChoice("f6033b", cardId);
         },
 
         onOstrichZigChoice_BLUE: function()
@@ -2045,7 +2067,7 @@ console.log("disableEnableChooseButtons");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("0000ff", cardId);
+            this.sendZigChoice("0090ff", cardId);
         },
 
         onOstrichZigChoice_GREEN: function()
@@ -2058,7 +2080,7 @@ console.log("disableEnableChooseButtons");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("008000", cardId);
+            this.sendZigChoice("01b508", cardId);
         },
 
         onOstrichZigChoice_YELLOW: function()
@@ -2071,31 +2093,69 @@ console.log("disableEnableChooseButtons");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("ffa500", cardId);
+            this.sendZigChoice("fedf3d", cardId);
+        },
+
+        onOstrichZigChoice_PURPLE: function()
+        {
+            var selectedCards = this.playerHand.getSelectedItems(); // get the cards that were selected
+
+            var cardId = 0;
+            for( var i in selectedCards )
+            { // go through cards but there should only be 1
+                cardId = selectedCards[i].id;
+            }
+
+            this.sendZigChoice("b92bba", cardId);
+        },
+
+        onOstrichZigChoice_GRAY: function()
+        {
+            var selectedCards = this.playerHand.getSelectedItems(); // get the cards that were selected
+
+            var cardId = 0;
+            for( var i in selectedCards )
+            { // go through cards but there should only be 1
+                cardId = selectedCards[i].id;
+            }
+
+            this.sendZigChoice("c9d2db", cardId);
         },
 
         onOstrichMoveChoiceRed: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("ff0000");
+            this.sendExecuteMove("f6033b");
         },
 
         onOstrichMoveChoiceBlue: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("0000ff");
+            this.sendExecuteMove("0090ff");
         },
 
         onOstrichMoveChoiceGreen: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("008000");
+            this.sendExecuteMove("01b508");
         },
 
         onOstrichMoveChoiceYellow: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("ffa500");
+            this.sendExecuteMove("fedf3d");
+        },
+
+        onOstrichMoveChoicePurple: function()
+        {
+            this.ostrichChosen = true;
+            this.sendExecuteMove("b92bba");
+        },
+
+        onOstrichMoveChoiceGray: function()
+        {
+            this.ostrichChosen = true;
+            this.sendExecuteMove("c9d2db");
         },
 
         onMoveClick: function()
@@ -2210,6 +2270,58 @@ console.log("disableEnableChooseButtons");
 
                         // slide the card from current player's hand to targeted ostrich's mat
                         this.slideToObject( 'trap_hand_'+this.player_id+'_item_'+card_id, 'ostrich_mat_'+this.YELLOWCOLOR).play();
+
+                    }, function( is_error) { } );
+              }
+          }
+        },
+
+        onTrapPurple: function()
+        { // the player would like to play a trap
+          console.log( "DO set a trap" );
+
+          if( this.checkAction( 'setTrap', false ) )
+          {
+              this.resetPlanPhaseVariables(); // now that we are in the trap phase, we can reset PLAN phase variables TODO: we probably don't need this... refactor to remove
+
+              var items = this.trapHand.getAllItems(); // get all traps in this player's hand
+
+              if( items.length > 0 )
+              { // there is at least one card in hand
+                    var card_id = items[0].id; // the id of the trap card
+
+                    // SET THE TRAP
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actSetTrap.html", { ostrich: this.PURPLECOLOR, lock: true }, this, function( result )
+                    { // we successfully set the trap
+
+                        // slide the card from current player's hand to targeted ostrich's mat
+                        this.slideToObject( 'trap_hand_'+this.player_id+'_item_'+card_id, 'ostrich_mat_'+this.PURPLECOLOR).play();
+
+                    }, function( is_error) { } );
+              }
+          }
+        },
+
+        onTrapGray: function()
+        { // the player would like to play a trap
+          console.log( "DO set a trap" );
+
+          if( this.checkAction( 'setTrap', false ) )
+          {
+              this.resetPlanPhaseVariables(); // now that we are in the trap phase, we can reset PLAN phase variables TODO: we probably don't need this... refactor to remove
+
+              var items = this.trapHand.getAllItems(); // get all traps in this player's hand
+
+              if( items.length > 0 )
+              { // there is at least one card in hand
+                    var card_id = items[0].id; // the id of the trap card
+
+                    // SET THE TRAP
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actSetTrap.html", { ostrich: this.GRAYCOLOR, lock: true }, this, function( result )
+                    { // we successfully set the trap
+
+                        // slide the card from current player's hand to targeted ostrich's mat
+                        this.slideToObject( 'trap_hand_'+this.player_id+'_item_'+card_id, 'ostrich_mat_'+this.GRAYCOLOR).play();
 
                     }, function( is_error) { } );
               }
@@ -2856,7 +2968,7 @@ console.log("disableEnableChooseButtons");
         notif_otherPlayerTrapSet: function( notif )
         {
             console.log("Entered notif_otherPlayerTrapSet.");
-            var ostrichTargeted = notif.args.ostrichTargeted; // color of the ostrich targeted (ff0000)
+            var ostrichTargeted = notif.args.ostrichTargeted; // color of the ostrich targeted (f6033b)
             var nameOfOstrichTargeted = notif.args.nameOfOstrichTargeted; // the friendly name of the ostrich targted (red)
             var playerWhoPlayedTrap = notif.args.playerWhoPlayed; // the player who played the trap
             var player_name = notif.args.player_name; // the name of the player who played the trap on the ostrich
@@ -2876,7 +2988,7 @@ console.log("disableEnableChooseButtons");
         notif_myTrapSet: function( notif )
         {
             console.log("Entered notif_myTrapSet.");
-            var ostrichTargeted = notif.args.ostrichTargeted; // color of the ostrich targeted (ff0000)
+            var ostrichTargeted = notif.args.ostrichTargeted; // color of the ostrich targeted (f6033b)
             var nameOfOstrichTargeted = notif.args.nameOfOstrichTargeted; // the friendly name of the ostrich targted (red)
             var cardId = notif.args.cardId; // the id of the card used
             var player_name = notif.args.player_name; // the name of the player who played the trap on the ostrich
