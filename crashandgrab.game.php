@@ -122,7 +122,7 @@ class CrashAndGrab extends Table
 
 				//$numberOfPlayers = 5; // HARDCODE FOR NOW SINCE MORE PLAYERS BREAKS IT
 
-				$numberOfSaucers = $this->getNumberOfSaucersFromNumberOfPlayers();
+				$numberOfSaucers = $this->getNumberOfSaucers();
 				$this->initializeBoard($numberOfSaucers); // randomly choose which tiles to use depending on number of players
 
 				$this->initializeSaucers();
@@ -131,20 +131,9 @@ class CrashAndGrab extends Table
 
 				$this->initializeStartingBonuses(count($players));
 
-				$this->initializeZigCards();
+				$this->initializeMoveCards();
 
-				// And then deal 4 zig cards to each player
-		     foreach( $players as $player_id => $player )
-		     {
-		        $cards = $this->movementCards->pickCards( 4, 'movementCardDeck', $player_id );
-						$this->updateZigDrawStats($cards, $player_id); // update the statistics about zig cards being drawn
-
-		        // Notify player about their cards
-		        self::notifyPlayer( $player_id, 'newZigs', '', array(
-		            'cards' => $cards
-		         ) );
-
-		     }
+				$this->dealMoveCards();
 
 				 $this->initializeTrapCards();
 
@@ -209,7 +198,30 @@ class CrashAndGrab extends Table
 				$result['stateName'] = $this->getStateName(); // send the state name in case the client needs it
 
 				// put the cards that are in this player's hand into the array that is returned to the UI/javascript/client layer with the key "hand"
-        $result['hand'] = $this->movementCards->getCardsInLocation( 'hand', $player_id );
+				$saucers = $this->getAllSaucers();
+				$result['hand'] = null;
+				foreach( $saucers as $saucer )
+				{ // go through each saucer
+						$saucerColor = $saucer['ostrich_color'];
+
+	    			self::warn("<b>Saucer Color:</b> $saucerColor"); // log to sql database
+
+						if(is_null($result['hand']))
+						{ // first saucer
+							self::warn("<b>HAND NULL</b>"); // log to sql database
+
+								$result['hand'] = $this->movementCards->getCardsInLocation( $saucerColor ); // get the cards for this saucer
+								//$result['hand'] = $this->movementCards->getCardsInLocation( 'hand' ); // get the cards for this saucer
+  					}
+						else
+						{ // they had a second saucer
+														self::warn("<b>HAND not NULL</b>"); // log to sql database
+								//array_merge($result['hand'], $this->movementCards->getCardsInLocation( 'hand_{$saucerColor}' ) ); // merge their other saucer with this saucer
+								$result['hand'] = array_merge($result['hand'], $this->movementCards->getCardsInLocation( $saucerColor ) ); // merge their other saucer with this saucer
+						}
+				}
+
+
 
         // put the cards that are played by a player into the array that is returned to the UI/javascript/client layer with the key "played_playerid"
         $result['played'] = self::getObjectListFromDB( "SELECT card_id id, card_type turn, card_type_arg distance, card_location_arg player, card_ostrich color, ostrich_last_direction
@@ -292,19 +304,12 @@ class CrashAndGrab extends Table
 
 		function initializeStats()
 		{
-				self::initStat( 'table', 'x_drawn', 0 );
-				self::initStat( 'table', 'ones_drawn', 0 );
-				self::initStat( 'table', 'twos_drawn', 0 );
-				self::initStat( 'table', 'threes_drawn', 0 );
+
 
 				self::initStat( 'player', 'turns_number', 0 );
 				self::initStat( 'player', 'rounds_started', 0 );
 				self::initStat( 'player', 'zags_claimed', 0 );
 				self::initStat( 'player', 'traps_drawn', 0 ); // number of traps the player has drawn
-				self::initStat( 'player', 'x_drawn', 0 );
-				self::initStat( 'player', 'ones_drawn', 0 );
-				self::initStat( 'player', 'twos_drawn', 0 );
-				self::initStat( 'player', 'threes_drawn', 0 );
 
 				self::initStat( 'player', 'ran_off_cliff', 0 );
 				self::initStat( 'player', 'pushed_ostrich_off_cliff', 0 );
@@ -319,25 +324,60 @@ class CrashAndGrab extends Table
 				self::initStat( 'player', 'garments_stolen_from_me', 0 );
 		}
 
-		function initializeZigCards()
+		function initializeMoveCards()
 		{
+				$numberOfSaucers = $this->getNumberOfSaucers();
 				// Create Movement Cards
 				// type: clockwise, counterclockwise
 				// type_arg: 0=X, 1=1, 2=2, 3=3
 				$movementCardsList = array(
-						array( 'type' => 'clockwise', 'type_arg' => 0, 'card_location' => 'movementCardDeck','nbr' => 4),
-						array( 'type' => 'clockwise', 'type_arg' => 1, 'card_location' => 'movementCardDeck','nbr' => 6),
-						array( 'type' => 'clockwise', 'type_arg' => 2, 'card_location' => 'movementCardDeck','nbr' => 9),
-						array( 'type' => 'clockwise', 'type_arg' => 3, 'card_location' => 'movementCardDeck','nbr' => 11),
-						array( 'type' => 'counterclockwise', 'type_arg' => 0, 'card_location' => 'movementCardDeck','nbr' => 4),
-						array( 'type' => 'counterclockwise', 'type_arg' => 1, 'card_location' => 'movementCardDeck','nbr' => 6),
-						array( 'type' => 'counterclockwise', 'type_arg' => 2, 'card_location' => 'movementCardDeck','nbr' => 9),
-						array( 'type' => 'counterclockwise', 'type_arg' => 3, 'card_location' => 'movementCardDeck','nbr' => 11)
+						array( 'type' => 'unused', 'type_arg' => 0,'nbr' => $numberOfSaucers),
+						array( 'type' => 'unused', 'type_arg' => 1,'nbr' => $numberOfSaucers),
+						array( 'type' => 'unused', 'type_arg' => 2,'nbr' => $numberOfSaucers)
 				);
 
 				$this->movementCards->createCards( $movementCardsList, 'movementCardDeck' ); // create the deck
+		}
 
-				$this->movementCards->shuffle( 'movementCardDeck' ); // shuffle it
+		// Deal one of each card to each player.
+		function dealMoveCards()
+		{
+				$xCards = $this->movementCards->getCardsOfType( 'unused', 0 );
+				$twoCards = $this->movementCards->getCardsOfType( 'unused', 1 );
+				$threeCards = $this->movementCards->getCardsOfType( 'unused', 2 );
+
+				$i = 0;
+				$allSaucers = $this->getAllSaucers();
+				foreach( $allSaucers as $saucer )
+				{ // go through each saucer
+						$saucerColor = $saucer['ostrich_color'];
+						$saucerOwner = $saucer['ostrich_owner'];
+
+						// grab one of each card type to give to this saucer
+						$myX = array_values($xCards)[$i];
+						$myX_id = $myX['id'];
+						$myTwo = array_values($twoCards)[$i];
+						$myTwo_id = $myTwo['id'];
+						$myThree = array_values($threeCards)[$i];
+						$myThree_id = $myThree['id'];
+
+						// set the card_location to the saucer color
+						$this->movementCards->moveCard( $myX_id, $saucerColor );
+						$this->movementCards->moveCard( $myTwo_id, $saucerColor );
+						$this->movementCards->moveCard( $myThree_id, $saucerColor );
+/*
+						$cards = [
+							"x" => $cardX,
+							"two" => $card2,
+							"three" => $card3,
+						];
+
+						self::notifyPlayer( $saucerOwner, 'newZigs', '', array(
+								'cards' => $cards
+						 ) );
+*/
+						 $i++;
+				}
 		}
 
 		function initializeTrapCards()
@@ -2049,7 +2089,7 @@ class CrashAndGrab extends Table
 				self::DbQuery( $sql );
 		}
 
-		function getNumberOfSaucersFromNumberOfPlayers()
+		function getNumberOfSaucers()
 		{
 				switch($this->getNumberOfPlayers())
 				{
@@ -2888,7 +2928,7 @@ class CrashAndGrab extends Table
 
 		function rotateOstriches($tileNumberToRotate, $isClockwise)
 		{
-				$allOstriches = $this->getOstrichesInOrder(); // get all ostriches
+				$allOstriches = $this->getSaucersInOrder(); // get all ostriches
 
 				foreach($allOstriches as $ostrich)
 				{
@@ -3195,7 +3235,7 @@ class CrashAndGrab extends Table
 				return $result;
 		}
 
-		function getOstrichesInOrder()
+		function getSaucersInOrder()
 		{
 		        $result = array();
 
@@ -4020,7 +4060,7 @@ class CrashAndGrab extends Table
 				$ostrichTakingTurn = $this->getOstrichWhoseTurnItIs();
 				$ownerOfOstrichTakingTurn = $this->getOwnerIdOfOstrich($ostrichTakingTurn); // get the player whose turn it is
 
-				$allOstriches = $this->getOstrichesInOrder();
+				$allOstriches = $this->getSaucersInOrder();
 
 				foreach($allOstriches as $ostrichObject)
 				{
@@ -4620,42 +4660,6 @@ class CrashAndGrab extends Table
 				{ // movement is complete
 					$this->setState_TrapAndCliffAndGarmentCleanup();
 				}
-		}
-
-		function updateZigDrawStats($cardsDrawn, $playerDrew)
-		{
-
-				foreach($cardsDrawn as $card)
-				{
-						$cardid = $card['id']; // internal id
-						$wise = $card['type']; // clockwise or counterclockwise
-						$distance = $card['type_arg']; // distance 0, 1, 2, 3
-						$play = $card['location_arg']; // player ID
-
-						//echo "distance drawn $distance";
-
-						switch($distance)
-						{
-								case 0:
-										self::incStat( 1, 'x_drawn', $playerDrew ); // increase end game player stat
-										self::incStat( 1, 'x_drawn' ); // increase end game table stat
-								break;
-								case 1:
-										self::incStat( 1, 'ones_drawn', $playerDrew ); // increase end game player stat
-										self::incStat( 1, 'ones_drawn' ); // increase end game table stat
-								break;
-								case 2:
-										self::incStat( 1, 'twos_drawn', $playerDrew ); // increase end game player stat
-										self::incStat( 1, 'twos_drawn' ); // increase end game table stat
-								break;
-								case 3:
-										self::incStat( 1, 'threes_drawn', $playerDrew ); // increase end game player stat
-										self::incStat( 1, 'threes_drawn' ); // increase end game table stat
-								break;
-						}
-				}
-
-
 		}
 
 //////////////////////////////////////////////////////////////////////////////

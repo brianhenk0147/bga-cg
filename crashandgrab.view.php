@@ -127,26 +127,28 @@
         */
 
         $players = $this->game->loadPlayersBasicInfos(); // get the player name, color, and ID
-        $ostriches = $this->game->getOstrichesInOrder();
+        $saucers = $this->game->getSaucersInOrder();
 
         global $g_user;
         $current_player_id = $g_user->get_id();
 
-        $this->page->begin_block( "crashandgrab_crashandgrab", "ostrich" );
-        foreach( $ostriches as $ostrich )
+        // SAUCER MAT AREAS
+        $this->page->begin_block( "crashandgrab_crashandgrab", "saucer" );
+        foreach( $saucers as $saucer )
         {
-                $this->page->insert_block( "ostrich", array(
-                                                    "PLAYER_COLOR" => $ostrich['color'],
-                                                    "PLAYER_ID" => $ostrich['owner'],
-                                                    "PLAYER_NAME" => $ostrich['ownerName']
+                $this->page->insert_block( "saucer", array(
+                                                    "PLAYER_COLOR" => $saucer['color'],
+                                                    "PLAYER_ID" => $saucer['owner'],
+                                                    "PLAYER_NAME" => $saucer['ownerName']
                                                      ) );
 
         }
 
 
-        $this->page->begin_block( "crashandgrab_crashandgrab", "garment_set" );
+        // GARMENTS
+        $this->page->begin_block( "crashandgrab_crashandgrab", "lost_crewmembers" );
         $playerIndex = 0;
-        foreach( $ostriches as $ostrich )
+        foreach( $saucers as $saucer )
         {
             $leftOrRight = "garment_column_right";
             if($playerIndex % 2 == 0)
@@ -154,9 +156,9 @@
                 $leftOrRight = "garment_column_left";
             }
 
-                $this->page->insert_block( "garment_set", array(
-                                                    "PLAYER_COLOR" => $ostrich['color'],
-                                                    "PLAYER_ID" => $ostrich['owner'],
+                $this->page->insert_block( "lost_crewmembers", array(
+                                                    "PLAYER_COLOR" => $saucer['color'],
+                                                    "PLAYER_ID" => $saucer['owner'],
                                                     "LEFT_OR_RIGHT" => $leftOrRight
                                                      ) );
                 $playerIndex++;

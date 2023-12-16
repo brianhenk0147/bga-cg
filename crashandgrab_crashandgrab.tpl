@@ -1069,29 +1069,31 @@
   </div> <!--board_tile_column -->
 
   <div id="garments_container">
-      <!-- BEGIN garment_set -->
+      <!-- BEGIN lost_crewmembers -->
           <div class="available_garment_group {LEFT_OR_RIGHT}">
               <div id="garment_holder_head_{PLAYER_COLOR}" class="garment_holder"></div>
               <div id="garment_holder_body_{PLAYER_COLOR}" class="garment_holder"></div>
               <div id="garment_holder_legs_{PLAYER_COLOR}" class="garment_holder"></div>
               <div id="garment_holder_feet_{PLAYER_COLOR}" class="garment_holder"></div>
           </div>
-      <!-- END garment_set -->
+      <!-- END lost_crewmembers -->
   </div>
 
-        <div id="player_hand_container">
-            <div id="myhand_wrap">
-
-                <div id="myhand">
-                </div>
-            </div>
-        </div>
-
-          <!-- BEGIN ostrich -->
+          <!-- BEGIN saucer -->
               <div class="mat_and_stuff_row">
                   <div class="mat_row">
-                      <div class="playertablename" style="color:#{PLAYER_COLOR}">
+                      <div class="saucer_owner_{PLAYER_COLOR}" style="color:#{PLAYER_COLOR}">
                         {PLAYER_NAME}
+                      </div>
+
+                      <div id="upgrade_hand_{PLAYER_COLOR}" style="color:#{PLAYER_COLOR}">
+
+                      </div>
+
+                      <div id="move_card_hand_{PLAYER_COLOR}" class="move_card_hand" style="color:#{PLAYER_COLOR}">
+                          <div id="move_card_1_{PLAYER_COLOR}" class="move_card_in_hand"></div>
+                          <div id="move_card_2_{PLAYER_COLOR}" class="move_card_in_hand"></div>
+                          <div id="move_card_0_{PLAYER_COLOR}" class="move_card_in_hand"></div>
                       </div>
 
                       <div id="ostrich_mat_{PLAYER_COLOR}" class="opponent_mat_holder ostrichMat">
@@ -1131,7 +1133,7 @@
                   </div>
               </div>
 
-          <!-- END ostrich -->
+          <!-- END saucer -->
 
 
 
@@ -1157,7 +1159,7 @@ var jstpl_ostrichmat = '<div class="ostrichMat" id="ostrichmat_${color}" style="
 
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->
-var jstpl_mymovementcard = '<div class="myZig component_rounding" id="mymovementcard_${player_id}" style="background-position:-${x}px -${y}px">\
+var jstpl_mymovementcard = '<div class="move_card component_rounding" id="mymovementcard_${player_id}" style="background-position:-${x}px -${y}px">\
                         </div>';
 
 <!-- match the class to the css class for the image location -->
@@ -1198,6 +1200,8 @@ var jstpl_player_board = '<div class="player_board_info">\
 
 var jstpl_crown = '<div id="player_board_crown" class="starting_color_${color}"></div>';
 var jstpl_arrow = '<div id="player_board_arrow_${id}" class="player_board_arrow" style="background-position:-${x}px -${y}px"></div>';
+
+var jstpl_moveCard = '<div id="player_board_${distance}_${color}" class="move_card component_rounding" style="background-position:-${x}px -${y}px"></div>';
 
 
 </script>

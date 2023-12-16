@@ -44,7 +44,6 @@ function (dojo, declare) {
             this.lastMovedOstrich = ""; // this is the color of the ostrich that was last moved
 
             // zig cards
-            this.playerHand = null;
             this.movementcardwidth = 82;
             this.movementcardheight = 82;
 
@@ -157,38 +156,21 @@ function (dojo, declare) {
                 dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
             }
 
-            this.playerHand = new ebg.stock(); // create the place we will store this player's hand
-            this.playerHand.create( this, $('myhand'), this.movementcardwidth, this.movementcardheight );
-            this.playerHand.image_items_per_row = 4; // the number of card images per row in the image
-            dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onPlayerHandSelectionChanged below
-
-            // Create one of each type of zig card so we can add them to the playerHand stock as needed throughout
-            // the game and it will know what we're talking about when we do.
-            for( var turnOrderRow=0;turnOrderRow<=1;turnOrderRow++ )
-            {
-                for( var distanceColumn=0;distanceColumn<=3;distanceColumn++ )
-                {
-                  console.log( "Creating a zig card type using row " + turnOrderRow + " and column " + distanceColumn + "." );
-
-                    // The ID of the card representing the position within the sprite.
-                    var card_type_id = this.getCardUniqueId( turnOrderRow, distanceColumn );
-
-                    console.log( "This card is type " + card_type_id + "." );
-
-                    // ARGUMENTS:
-                    // type id
-                    // weight of the card (for sorting purpose)
-                    // the URL of our CSS sprite
-                    // the position of our card image in the CSS sprite
-                    this.playerHand.addItemType( card_type_id, distanceColumn, g_gamethemeurl+'img/movement_cards_sprite.jpg', card_type_id );
-                }
-            }
-
-            // zig cards in player's hand
+            // move cards in hand
+            console.log( "getting HAND move cards " );
             for( var i in this.gamedatas.hand )
             {
+                console.log( "card in hand: " + i );
                 var card = this.gamedatas.hand[i];
-                this.drawZig(card); // draw a zig card into your hand
+                var color = card.location; // saucer color like f6033b
+                var distance = card.type_arg; // 0, 1, 2
+                var used = card.type; // unused or used
+                var usedInt = this.convertUsedStringToInt(used); // 0 or 1
+
+                console.log( "with color " + color + " and distance " + distance + " used " + used );
+
+
+                this.putMoveCardInPlayerHand(used,distance,color);
             }
 
             // zig cards played on table with both zig and direction chosen
@@ -208,6 +190,7 @@ function (dojo, declare) {
 
 
             // zig cards played on table with ONLY the zig chosen
+            console.log( "getting PLAYED move cards " );
             for( i in this.gamedatas.zigChosen )
             {
                 var card = this.gamedatas.zigChosen[i];
@@ -576,86 +559,6 @@ function (dojo, declare) {
                     }
                 },
 
-                disableEnableChooseButtons: function()
-                {
-                    var blueButton = document.getElementById("ostrichBLUE_button");
-                    var redButton = document.getElementById("ostrichRED_button");
-                    var yellowButton = document.getElementById("ostrichYELLOW_button");
-                    var greenButton = document.getElementById("ostrichGREEN_button");
-
-                    var selectedCards = this.playerHand.getSelectedItems(); // get the cards that were selected
-                    if(selectedCards.length == 0)
-                    { // no cards are selected
-
-                          if(blueButton){
-                              dojo.addClass( 'ostrichBLUE_button', 'disabled'); //disable the button
-                          }
-                          if(redButton){
-                              dojo.addClass( 'ostrichRED_button', 'disabled'); //disable the button
-                          }
-                          if(yellowButton){
-                              dojo.addClass( 'ostrichYELLOW_button', 'disabled'); //disable the button
-                          }
-                          if(greenButton){
-                              dojo.addClass( 'ostrichGREEN_button', 'disabled'); //disable the button
-                          }
-                    }
-                    else
-                    { // at least one card is selected
-                          if(blueButton){
-                              dojo.removeClass( 'ostrichBLUE_button', 'disabled'); //enable the button
-                          }
-                          if(redButton){
-                              dojo.removeClass( 'ostrichRED_button', 'disabled'); //enable the button
-                          }
-                          if(yellowButton){
-                              dojo.removeClass( 'ostrichYELLOW_button', 'disabled'); //enable the button
-                          }
-                          if(greenButton){
-                              dojo.removeClass( 'ostrichGREEN_button', 'disabled'); //enable the button
-                          }
-                    }
-                },
-
-                disableEnableClaimZagButtons: function()
-                {
-                    var blueClaimZagButton = document.getElementById("discard3ClaimBLUE_button");
-                    var redClaimZagButton = document.getElementById("discard3ClaimRED_button");
-                    var yellowClaimZagButton = document.getElementById("discard3ClaimYELLOW_button");
-                    var greenClaimZagButton = document.getElementById("discard3ClaimGREEN_button");
-
-                    var selectedCards = this.playerHand.getSelectedItems(); // get the cards that were selected
-                    if(selectedCards.length < 3)
-                    { // less than 3 cards are selected
-                          if(blueClaimZagButton){
-                              dojo.addClass( 'discard3ClaimBLUE_button', 'disabled'); //disable the button
-                          }
-                          if(redClaimZagButton){
-                              dojo.addClass( 'discard3ClaimRED_button', 'disabled'); //disable the button
-                          }
-                          if(yellowClaimZagButton){
-                              dojo.addClass( 'discard3ClaimYELLOW_button', 'disabled'); //disable the button
-                          }
-                          if(greenClaimZagButton){
-                              dojo.addClass( 'discard3ClaimGREEN_button', 'disabled'); //disable the button
-                          }
-                    }
-                    else {
-                      if(blueClaimZagButton){
-                          dojo.removeClass( 'discard3ClaimBLUE_button', 'disabled'); //enable the button
-                      }
-                      if(redClaimZagButton){
-                          dojo.removeClass( 'discard3ClaimRED_button', 'disabled'); //enable the button
-                      }
-                      if(yellowClaimZagButton){
-                          dojo.removeClass( 'discard3ClaimYELLOW_button', 'disabled'); //enable the button
-                      }
-                      if(greenClaimZagButton){
-                          dojo.removeClass( 'discard3ClaimGREEN_button', 'disabled'); //enable the button
-                      }
-                    }
-                },
-
                 // The player is selecting a card for any of these reasons:
                 //     A) They are choosing the Zig they will play this round.
                 //     B) They are choosing 3 Zigs to discard to claim a Zag.
@@ -665,9 +568,6 @@ function (dojo, declare) {
 
                     if(this.isCurrentPlayerActive() && this.checkPossibleActions('selectZigs'))
                     { // we are allowed to select cards based on our current state
-
-                        this.disableEnableChooseButtons();
-                        this.disableEnableClaimZagButtons();
 
                         var selectedCards = this.playerHand.getSelectedItems(); // get the cards that were selected
                         for( var i in selectedCards )
@@ -1110,12 +1010,11 @@ this.unhighlightAllGarments();
 
                           this.addActionButton( 'askClaimZagNo_button', _('Skip'), 'onNoClaimZag' );
 
-                          this.disableEnableClaimZagButtons(); // make sure the claim zag buttons are correctly enabled/disabled
                       }
                   break;
 
                   case 'chooseZigPhase':
-                    this.canWeClaimZag = this.checkCanWeClaimZag(); // check if we have 3 matching cards
+                    this.canWeClaimZag = false;
                     console.log( "onUpdateActionButtons->chooseZigPhase with playedCardThisTurn="+this.playedCardThisTurn+" and this.choseDirectionThisTurn="+this.choseDirectionThisTurn + " askedZag="+this.askedZag+" canWeClaimZag:"+this.canWeClaimZag+" mustChooseZagDiscards="+this.mustChooseZagDiscards + " this.ostrich1HasZag="+this.ostrich1HasZag );
 
                     var allPlayersWithOstriches = args.allPlayersWithOstriches;
@@ -1158,6 +1057,7 @@ this.unhighlightAllGarments();
                                 var distance = allPlayersWithOstriches[playerKey][ostrichColor]['zigDistance'];
                                 console.log("distance:" + distance);
 
+
                                 if(distance != 20)
                                 { // this ostrich has its zig chosen
                                     showStartOverButton = true; // we should allow the player to start over
@@ -1171,7 +1071,7 @@ this.unhighlightAllGarments();
                                 if(showDirectionButtons)
                                 { // we do want to show direction buttons
                                     this.removeActionButtons(); // remove any action buttons that are currently showing
-
+                                    console.log("creating direction buttons");
                                     this.addActionButton( 'zigDirectionBridge_button', _('BRIDGE'), 'onDirectionZigChoiceBridge' );
                                     this.addActionButton( 'zigDirectionCactus_button', _('CACTUS'), 'onDirectionZigChoiceCactus' );
                                     this.addActionButton( 'zigDirectionRiver_button', _('RIVER'), 'onDirectionZigChoiceRiver' );
@@ -1179,13 +1079,18 @@ this.unhighlightAllGarments();
                                 }
                                 else
                                 { // we want to show zig choice buttons
+                                    console.log("creating ostrich button");
+                                    console.log("ostrichName:" + ostrichName);
+                                    console.log("buttonText:" + buttonText);
+                                    console.log("ostrichName:" + ostrichName);
                                     this.addActionButton( 'ostrich'+ostrichName+'_button', _(buttonText), 'onOstrichZigChoice_'+ostrichName );
-console.log("disableEnableChooseButtons");
-                                    this.disableEnableChooseButtons(); // make sure the choose buttons are correctly enabled/disabled
+
                                 }
                             }
                         }
                     }
+
+                    console.log("showStartOverButton:" + showStartOverButton);
 
                     if(showStartOverButton)
                     {
@@ -1353,34 +1258,6 @@ console.log("disableEnableChooseButtons");
 
         */
 
-        // Card Types:
-        // 0 = clockwise X
-        // 1 = clockwise 1
-        // 2 = clockwise 2
-        // 3 = clockwise 3
-        // 4 = counterclockwise X
-        // 5 = counterclockwise 1
-        // 6 = counterclockwise 2
-        // 7 = counterclockwise 3
-        checkCanWeClaimZag: function()
-        {
-            if(this.ostrich1HasZag)
-            { // I already have a zag so I can't claim one
-                return false;
-            }
-
-            console.log("Can we claim a Zag?");
-            var zigHand = this.playerHand.getAllItems(); // get the cards in the player's hand
-
-            if(this.doCardsMatch(zigHand))
-            { // they all match or are X
-                return true;
-            }
-            else
-            { // the do not all match
-                return false;
-            }
-        },
 
         convertGarmentTypeIntToString: function(typeAsInt)
         {
@@ -1398,6 +1275,17 @@ console.log("disableEnableChooseButtons");
             }
         },
 
+        convertUsedStringToInt: function(usedAsString)
+        {
+            switch( usedAsString )
+            {
+                  case "unused":
+                      return 0;
+                  case "used":
+                      return 1;
+            }
+        },
+
         getOstrichName: function(ostrich)
         {
             switch( ostrich )
@@ -1410,6 +1298,10 @@ console.log("disableEnableChooseButtons");
                       return "BLUE";
                   case "01b508":
                       return "GREEN";
+                  case "b92bba":
+                      return "PURPLE";
+                  case "c9d2db":
+                      return "GRAY";
             }
 
             return "";
@@ -1513,6 +1405,19 @@ console.log("disableEnableChooseButtons");
                 y: y,
                 id: player_id
             } ) , arrowHolder );
+        },
+
+        putMoveCardInPlayerHand: function( used, distance, saucer_color )
+        {
+            var divHolder = 'move_card_'+distance+'_'+saucer_color;
+            console.log("placing move card in:"+divHolder);
+            var usedInt = this.convertUsedStringToInt(used);
+            dojo.place( this.format_block( 'jstpl_moveCard', {
+                x: distance * this.movementcardwidth,
+                y: usedInt,
+                color: saucer_color,
+                distance: distance
+            } ) , divHolder );
         },
 
         setTurnDirectionArrow: function(x, y, player_id)
@@ -2475,9 +2380,10 @@ console.log("disableEnableChooseButtons");
 
             var turnOrder = card.type; // clockwise or counterclockwise
             var distance = card.type_arg; // 0, 1, 2, 3
+            var locationArg = card.location_arg;
             var typeID = this.getCardUniqueId( turnOrder, distance );
 
-            console.log( "Adding a card with unique ID " + card.id + " and type ID " + typeID + " to the player hand with turnOrder " + turnOrder + " and distance " + distance + "." );
+            console.log( "Adding a card with unique ID " + card.id + " and type ID " + typeID + " to the player hand with turnOrder " + turnOrder + " and distance " + distance + " and location_arg " + locationArg + "." );
 
             this.playerHand.addToStockWithId( typeID, card.id );
 

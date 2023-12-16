@@ -55,18 +55,6 @@ $stats_type = array(
         "turns_number" => array("id"=> 10,
                     "name" => totranslate("Turns Taken"),
                     "type" => "int" ),
-        "x_drawn" => array("id"=> 11,
-                    "name" => totranslate("Xs Drawn By All Players"),
-                    "type" => "int" ),
-        "ones_drawn" => array("id"=> 12,
-                    "name" => totranslate("1s Drawn By All Players"),
-                    "type" => "int" ),
-        "twos_drawn" => array("id"=> 13,
-                    "name" => totranslate("2s Drawn By All Players"),
-                    "type" => "int" ),
-        "threes_drawn" => array("id"=> 14,
-                    "name" => totranslate("3s Drawn By All Players"),
-                    "type" => "int" ),
 
 
 /*
@@ -103,19 +91,19 @@ $stats_type = array(
                     "type" => "int" ),
 
         "x_drawn" => array("id"=> 14,
-                    "name" => totranslate("Xs Drawn"),
+                    "name" => totranslate("delete me"),
                     "type" => "int" ),
 
         "ones_drawn" => array("id"=> 15,
-                    "name" => totranslate("1s Drawn"),
+                    "name" => totranslate("delete me"),
                     "type" => "int" ),
 
         "twos_drawn" => array("id"=> 16,
-                    "name" => totranslate("2s Drawn"),
+                    "name" => totranslate("delete me"),
                     "type" => "int" ),
 
         "threes_drawn" => array("id"=> 17,
-                    "name" => totranslate("3s Drawn"),
+                    "name" => totranslate("delete me"),
                     "type" => "int" ),
 
         "ran_off_cliff" => array("id"=> 18,

@@ -863,10 +863,18 @@ float: left;
     height: 107px;
 }
 
-.myZig {
+.move_card {
     width: 82px;
     height: 82px;
     background-image: url('img/movement_cards_sprite.jpg');
+}
+
+.move_card_hand {
+
+}
+
+.move_card_in_hand {
+    display: inline-block;
 }
 
 .zigBack {
