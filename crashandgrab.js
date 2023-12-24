@@ -38,19 +38,34 @@ function (dojo, declare) {
             this.PURPLECOLOR = "b92bba";
             this.GRAYCOLOR = "c9d2db";
 
-            // ostriches this player controls
-            this.ostrich1 = "";
-            this.ostrich2 = "";
+            // saucer1/saucer2 agnostic... just whichever on they are currently choosing now
+            this.SAUCER_SELECTED = ''; // when choosing Move cards, this is the saucer the player is choosing moves for
+            this.MOVE_CARD_SELECTED = ''; // when choosing Move cards, this is set to the id of the move card currently selected
+
+            this.CHOSEN_MOVE_CARD_SAUCER_1 = ''; // the move card chosen for Saucer 1 this round
+            this.CHOSEN_DIRECTION_SAUCER_1 = ''; // the direction chosen for Saucer 1 this round
+            this.CHOSEN_MOVE_CARD_SAUCER_2 = ''; // the move card chosen for Saucer 2 this round
+            this.CHOSEN_DIRECTION_SAUCER_2 = ''; // the direction chosen for Saucer 2 this round
+
+            // saucers this player controls
+            this.saucer1 = "";
+            this.saucer2 = "";
             this.lastMovedOstrich = ""; // this is the color of the ostrich that was last moved
+
+            this.playerSaucerMoves = null; // save the list of players/saucers/move cards/spaces so it can be used elsewhere
 
             // zig cards
             this.movementcardwidth = 82;
             this.movementcardheight = 82;
 
-            // trap cards
+            // upgrade cards
             this.trapHand = null;
-            this.trapcardwidth = 150;
-            this.trapcardheight = 210;
+            this.upgradecardwidth = 82;
+            this.upgradecardheight = 58;
+
+            // saucer mat
+            this.saucermatwidth = 154;
+            this.saucermatheight = 154;
 
             // sub-states
             this.playedCardThisTurn = false; // true if I have chosen the Zig I will play this round
@@ -64,8 +79,8 @@ function (dojo, declare) {
             this.chosen_card_id = -1;
             this.chosen_card_direction="";
 
-            this.ostrich1HasZag = false; // true if ostrich 1 has a zag
-            this.ostrich2HasZag = false; // true if ostrich 2 has a zag
+            this.saucer1HasZag = false; // true if ostrich 1 has a zag
+            this.saucer2HasZag = false; // true if ostrich 2 has a zag
             this.canWeClaimZag = false; // true if we have 3 matching Zigs
             this.mustChooseZagDiscards = false; // true if the player has chosen to discard Zigs for a Zag but they haven't chosen yet
             this.askedZag = false; // true if the player has declined to claim a Zag
@@ -104,57 +119,21 @@ function (dojo, declare) {
   //              dojo.addClass( 'overall_player_board_'+player_id, 'player_board_container' );
               console.log("player:"+player);
 
-                var playerBoardDiv = $('player_board_' + player_id);
-                dojo.place(this.format_block('jstpl_player_board', player), playerBoardDiv);
-                numberOfPlayers++;
+              numberOfPlayers++; // count number of players to use later
             }
 
-            if(numberOfPlayers < 5)
-            { // 1-4 players
 
-                // hide the extra tiles
-                //dojo.removeClass( 'board_tile_5', 'board_tile_image' );
-                //dojo.removeClass( 'board_tile_6', 'board_tile_image' );
-
-                dojo.destroy('board_tile_container_5');
-                dojo.destroy('board_tile_container_6');
-
-                // center the directions based on the number of players
-                dojo.style('direction_left', "marginTop", "224px"); // move the left direction to where the extra tiles would have been
-                dojo.style('direction_right', "marginTop", "224px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_up', "marginLeft", "292px");
-                dojo.style('direction_down', "marginLeft", "292px");
-
-                dojo.style('board_tile_column', "width", "685px"); // set the width of the board based on saucer count
+            for( var i in gamedatas.ostrich )
+            { // go through each saucer
+                var saucer = gamedatas.ostrich[i];
+console.log("owner:"+saucer.owner+" color:"+saucer.color);
+                this.placePlayerBoardForSaucer(saucer.owner, saucer.color); // put everything for this saucer on the player's board
             }
-            else if(numberOfPlayers == 5)
-            { // we are playing with 5 players
 
-              dojo.destroy('board_tile_container_4');
-              dojo.destroy('board_tile_container_6');
 
-                // center the directions based on the number of players
-                dojo.style('direction_left', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_right', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_up', "marginLeft", "322px");
-                dojo.style('direction_down', "marginLeft", "322px");
 
-                dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
-            }
-            else if(numberOfPlayers == 6)
-            { // we are playing with 6 players
+            this.placeBoard(numberOfPlayers);
 
-              dojo.destroy('board_tile_container_4');
-              dojo.destroy('board_tile_container_5');
-
-                // center the directions based on the number of players
-                dojo.style('direction_left', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_right', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_up', "marginLeft", "348px");
-                dojo.style('direction_down', "marginLeft", "348px");
-
-                dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
-            }
 
             // move cards in hand
             console.log( "getting HAND move cards " );
@@ -172,6 +151,10 @@ function (dojo, declare) {
 
                 this.putMoveCardInPlayerHand(used,distance,color);
             }
+            // First Param: css class to target
+            // Second Param: type of events
+            // Third Param: the method that will be called when the event defined by the second parameter happen
+            this.addEventToClass('move_card', 'onclick', 'onClick_moveCard'); // add the click handler to all move cards
 
             // zig cards played on table with both zig and direction chosen
             for( i in this.gamedatas.played )
@@ -213,9 +196,9 @@ function (dojo, declare) {
                 } ), 'zig_holder_'+ostrichGettingZig );
             }
 
-
+var color = 'f6033b';
             this.trapHand = new ebg.stock(); // create the place we will store the trap cards the player has drawn
-            this.trapHand.create( this, $('trap_hand_'+this.player_id), this.trapcardwidth, this.trapcardheight );
+            this.trapHand.create( this, $('upgrade_hand_'+color), this.upgradecardwidth, this.upgradecardheight );
             this.trapHand.image_items_per_row = 4; // the number of card images per row in the sprite image
             dojo.connect( this.trapHand, 'onChangeSelection', this, 'onTrapHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
 
@@ -226,18 +209,18 @@ function (dojo, declare) {
             // weight of the card (for sorting purpose)
             // the URL of our CSS sprite
             // the position of our card image in the CSS sprite
-            this.trapHand.addItemType( 0, 0, g_gamethemeurl+'img/traps_sprite.jpg', 0 );
-            this.trapHand.addItemType( 1, 1, g_gamethemeurl+'img/traps_sprite.jpg', 1 );
-            this.trapHand.addItemType( 2, 2, g_gamethemeurl+'img/traps_sprite.jpg', 2 );
-            this.trapHand.addItemType( 3, 3, g_gamethemeurl+'img/traps_sprite.jpg', 3 );
-            this.trapHand.addItemType( 4, 4, g_gamethemeurl+'img/traps_sprite.jpg', 4 );
-            this.trapHand.addItemType( 5, 5, g_gamethemeurl+'img/traps_sprite.jpg', 5 );
-            this.trapHand.addItemType( 6, 6, g_gamethemeurl+'img/traps_sprite.jpg', 6 );
-            this.trapHand.addItemType( 7, 7, g_gamethemeurl+'img/traps_sprite.jpg', 7 );
-            this.trapHand.addItemType( 8, 8, g_gamethemeurl+'img/traps_sprite.jpg', 8 );
-            this.trapHand.addItemType( 9, 9, g_gamethemeurl+'img/traps_sprite.jpg', 9 );
-            this.trapHand.addItemType( 10, 10, g_gamethemeurl+'img/traps_sprite.jpg', 10 );
-            this.trapHand.addItemType( 11, 11, g_gamethemeurl+'img/traps_sprite.jpg', 11 );
+            this.trapHand.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 0 );
+            this.trapHand.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 1 );
+            this.trapHand.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 2 );
+            this.trapHand.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 3 );
+            this.trapHand.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 4 );
+            this.trapHand.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 5 );
+            this.trapHand.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 6 );
+            this.trapHand.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 7 );
+            this.trapHand.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 8 );
+            this.trapHand.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 9 );
+            this.trapHand.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 10 );
+            this.trapHand.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 11 );
 
             // trap cards in player's hand
             for( var i in this.gamedatas.trapHands )
@@ -274,11 +257,11 @@ function (dojo, declare) {
                     var type = square.space_type;
                     if(type =='S')
                     {
-                      main.style.backgroundColor='rgba(0, 255, 0, 0.3)';
+                      //main.style.backgroundColor='rgba(0, 255, 0, 0.3)'; // transparent green
                     }
                     if(type =='D')
-                    {
-                      main.style.backgroundColor='yellow';
+                    { // board edge
+                      //main.style.backgroundColor='yellow';
                     }
                     if(type =='C')
                     {
@@ -297,8 +280,8 @@ function (dojo, declare) {
             // Third Param: the method that will be called when the event defined by the second parameter happen
             this.addEventToClass( "space", "onclick", "onClickSpace");
 
-            this.ostrich1 = ""; // clear out the global variable for ostrich1
-            this.ostrich2 = ""; // clear out the global variable for ostrich2
+            this.saucer1 = ""; // clear out the global variable for saucer1
+            this.saucer2 = ""; // clear out the global variable for saucer2
             for( var i in gamedatas.ostrich )
             { // go through each ostrich
                 var singleOstrich = gamedatas.ostrich[i];
@@ -307,33 +290,33 @@ function (dojo, declare) {
                 if(singleOstrich.owner == this.player_id)
                 { // this is my ostrich
 
-                    if(this.ostrich1 == "")
+                    if(this.saucer1 == "")
                     { // we don't have our first ostrich yet
-                        this.ostrich1 = singleOstrich.color;
+                        this.saucer1 = singleOstrich.color;
                         console.log("Our first ostrich will have color " + singleOstrich.color);
                         this.hasMultipleOstriches = false; // set the global variable that we are using a single ostrich that will be used everywhere
 
                         if(singleOstrich.has_zag == 1)
                         {
-                            this.ostrich1HasZag = true;
+                            this.saucer1HasZag = true;
                         }
                         else {
-                            this.ostrich1HasZag = false;
+                            this.saucer1HasZag = false;
                         }
 
                     }
                     else
                     { // we already set our first ostrich so this must be our second ostrich
-                        this.ostrich2 = singleOstrich.color;
+                        this.saucer2 = singleOstrich.color;
                         this.hasMultipleOstriches = true; // set the global variable that we are using multiple ostriches that will be used everywhere
                         console.log("Our second ostrich will have color " + singleOstrich.color);
 
                         if(singleOstrich.has_zag == 1)
                         {
-                            this.ostrich2HasZag = true;
+                            this.saucer2HasZag = true;
                         }
                         else {
-                            this.ostrich2HasZag = false;
+                            this.saucer2HasZag = false;
                         }
 
                     }
@@ -366,10 +349,7 @@ function (dojo, declare) {
                     }
                 }
 
-
-
-                this.putOstrichOnTile( singleOstrich.x, singleOstrich.y, singleOstrich.owner, singleOstrich.color ); // add the ostrich to the board
-                this.putOstrichOnPlayerBoard(singleOstrich.owner, singleOstrich.color); // put an ostrich token on the player board for this player
+                this.putSaucerOnTile( singleOstrich.x, singleOstrich.y, singleOstrich.owner, singleOstrich.color ); // add the ostrich to the board
 
                 // add a zag token if they have one
                 if(singleOstrich.has_zag == 1)
@@ -454,7 +434,7 @@ function (dojo, declare) {
             // Second Param: type of events
             // Third Param: the method that will be called when the event defined by the second parameter happen
             this.addEventToClass( "garment", "onclick", "onClickGarment");
-
+            this.addEventToClass('direction_token', 'onclick', 'onClick_moveCardDirection'); // add the click handler to all direction tokens
 
 
             // set these:
@@ -488,44 +468,6 @@ function (dojo, declare) {
 
                 */
 
-/* was working find just wanted to try to not make a call to the game server
-                onPlayerHandSelectionChanged: function(  )
-                {
-                    console.log( "A card was selected." );
-                    var items = this.playerHand.getSelectedItems();
-
-                    if( items.length > 0 )
-                    { // a card is selected
-                        console.log( "The card is in a player's hand." );
-
-                        //if( this.checkAction( 'playCard', true ) ) // checks active player too, which only works for activePlayer states and doesn't work here
-                        if(this.checkPossibleActions('playCard'))
-                        { // Can play a card
-                            console.log( "They CAN play this card." );
-
-                            var card_id = items[0].id;
-
-                            console.log("starting call to playCard at server.");
-                            // call to the server to do the playCard action
-                            this.ajaxcall( "/crashandgrab/crashandgrab/playCard.html", {
-                                    id: card_id,
-                                    lock: true
-                                    }, this, function( result ) {  }, function( is_error) { } );
-
-                            console.log("finished call to playCard at server.");
-                            this.playedCardThisTurn = true; // move into the sub-state where you choose direction (EVENTUALLY MOVE THIS TO WHEN YOU GET THE NOTIFICATION THAT IT WAS PLAYED)
-
-                            this.playerHand.unselectAll();
-                        }
-                        else
-                        {
-                            console.log( "They can NOT play this card." );
-                            this.playerHand.unselectAll();
-                        }
-                    }
-
-                },
-*/
                 onTrapHandSelectionChanged: function( )
                 {
                     console.log( "A trap card was selected." );
@@ -560,12 +502,42 @@ function (dojo, declare) {
                 },
 
                 // The player is selecting a card for any of these reasons:
-                //     A) They are choosing the Zig they will play this round.
-                //     B) They are choosing 3 Zigs to discard to claim a Zag.
-                onPlayerHandSelectionChanged: function(  )
+                //     A) They are choosing the move card they will play this round.
+                //     B)
+                onClick_moveCard: function( evt )
                 {
-                    console.log( "A zig card was clicked." );
+                    var htmlIdOfCard = evt.currentTarget.id;
+                    console.log( "A move card was clicked with node "+htmlIdOfCard+"." );
 
+                    var color = htmlIdOfCard.split('_')[3]; // 0090ff
+
+                    if(this.checkPossibleActions('clickDistance') && color == this.SAUCER_SELECTED)
+                    { // we are allowed to select cards based on our current state
+                        dojo.stopEvent( evt ); // Preventing default browser reaction
+
+                        this.MOVE_CARD_SELECTED = htmlIdOfCard; // this is the currently selected move card
+                        this.saveMoveCardSelection(color, htmlIdOfCard); // save the move card for this saucer in case it is the final selection
+
+                        this.unselectAllMoveCards(); // UNSELECT ALL other move cards so we can select a different one
+                        this.highlightAllSaucerMoveCards(color); // HIGHLIGHT ALL move cards for this saucer
+                        this.unhighlightSpecificMoveCard(htmlIdOfCard); // UNHIGHLIGHT this SPECIFIC move card
+                        this.selectSpecificMoveCard(htmlIdOfCard); // SELECT this SPECIFIC move card
+
+
+                        this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED); // highlight possible destinations on board
+                        // maybe highlight corresponding button to show it was selected
+                        // unselect other cards in case they were selected
+                        // maybe unselect other buttons if we highlight their selection
+
+                        //this.clickDistance(htmlIdOfCard); // send this distance to the server
+                    }
+                    else
+                    {
+                        this.showMessage( _("You cannot do anything with this move card right now."), 'error' );
+                        return;
+                    }
+
+/*
                     if(this.isCurrentPlayerActive() && this.checkPossibleActions('selectZigs'))
                     { // we are allowed to select cards based on our current state
 
@@ -598,6 +570,96 @@ function (dojo, declare) {
                             dojo.addClass( htmlIdOfCard, 'cardUnselected' ); // give this card a new CSS class
 
                         }
+                    }
+*/
+                },
+
+                onClick_saucerDuringMoveCardSelection: function( evt )
+                {
+                    var htmlIdOfSaucer = evt.currentTarget.id;
+                    console.log( "A saucer was clicked during move card selection with node "+htmlIdOfSaucer+"." );
+                    if(document.getElementById(htmlIdOfSaucer))
+                    { // this component exists
+                        var color = htmlIdOfSaucer.split('_')[1]; // b92bba
+
+                        this.SAUCER_SELECTED = color; // save which saucer is now selected
+
+                        this.highlightAllPlayerSaucers(this.player_id); // highlight all player saucers
+                        this.selectSpecificSaucer(color); // select that saucer
+
+                        this.highlightAllSaucerMoveCards(color); // highlight the move cards now that it's time to choose one
+                        this.selectSelectedMoveCard(color); // select the move card that is currently selected by this saucer (or none if none are selected)
+
+                        this.highlightSpacesForSelectedSaucer(color); // highlight the board spaces for the selected saucer and move card (or none if none are selected)
+
+                        this.highlightDirectionsForSaucer(color); // highlight the direction for the selected saucer and move card
+                    }
+                },
+
+                onClick_moveCardDirection: function( evt )
+                {
+                    var htmlIdOfToken = evt.currentTarget.id;
+                    console.log( "A direction token was clicked with node "+htmlIdOfToken+"." );
+
+                    if(document.getElementById(htmlIdOfToken))
+                    { // this component exists
+                        this.saveDirectionSelection(this.SAUCER_SELECTED, htmlIdOfToken);
+
+                        this.selectSpecificDirection(htmlIdOfToken); // select this token
+
+                        // set the available spaces (use the existing method with a new optional paramter for direction)
+                    }
+                },
+
+                clickDistance: function( node )
+                {
+                    var distance = node.split('_')[2]; // 0, 1, 2
+                    var color = node.split('_')[3]; // fedf3d
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickedMoveCard.html", {
+                                                                                distance: distance,
+                                                                                color: color,
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+
+                },
+
+                saveMoveCardSelection: function(color, htmlIdOfCard)
+                {
+                    // set the move card for this saucer in case it is the final selection
+                    if(this.saucer1 == color)
+                    {
+                        this.CHOSEN_MOVE_CARD_SAUCER_1 = htmlIdOfCard;
+                    }
+                    else
+                    {
+                        this.CHOSEN_MOVE_CARD_SAUCER_2 = htmlIdOfCard;
+                    }
+                },
+
+                saveDirectionSelection: function(saucerColor, htmlIdOfToken)
+                {
+                    // set the move card for this direction in case it is the final selection
+                    if(this.saucer1 == saucerColor)
+                    {
+                        this.CHOSEN_DIRECTION_SAUCER_1 = htmlIdOfToken;
+                    }
+                    else
+                    {
+                        this.CHOSEN_DIRECTION_SAUCER_2 = htmlIdOfToken;
                     }
                 },
 
@@ -971,7 +1033,70 @@ this.unhighlightAllGarments();
                     this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
                     this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
                     break;
-*/
+*/                case 'chooseMoveCard':
+                      console.log( "onUpdateActionButtons->chooseMoveCard" );
+                      this.playerSaucerMoves = args.playerSaucerMoves; // save the list of players/saucers/move cards/spaces so it can be used elsewhere
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+
+                          if(this.SAUCER_SELECTED == '')
+                          { // NO saucer is selected
+
+                              this.highlightAllPlayerSaucers(this.player_id); // highlight all saucers belonging to the player
+
+                          }
+                          else
+                          { // a saucer is selected
+
+                              // select just the saucer selected
+                              this.selectSpecificSaucer(this.SAUCER_SELECTED);
+                              this.unhighlightAllSaucers(); // unhighlight all saucers now that they selected one
+
+                              if(this.MOVE_CARD_SELECTED == '')
+                              { // NO move card is selected
+
+                                  // highlight the move cards
+                                  this.highlightAllSaucerMoveCards(this.SAUCER_SELECTED);
+                              }
+                              else
+                              { // a move card is selected
+
+                                  // select Move card
+                                  this.selectSpecificMoveCard(this.MOVE_CARD_SELECTED);
+
+                                  // highlight all spaces available
+                                  this.highlightPossibleMoveSelections(args.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED);
+                              }
+                          }
+
+
+                        //var buttonLabel = playerSaucerMoves[key]['buttonLabel'];
+                        //var isDisabled = playerSaucerMoves[key]['isDisabled'];
+                        //var hoverOverText = playerSaucerMoves[key]['hoverOverText']; // hover over text or '' if we don't want a hover over
+                        //var actionName = playerSaucerMoves[key]['actionName']; // shoot, useEquipment
+                        //var makeRed = playerSaucerMoves[key]['makeRed'];
+
+                        //this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                      }
+
+                  break;
+                  case 'chooseXVal':
+                  var buttonList = args.moveCardButtons;
+                  // USE THIS FRAMEWORK BUT NEED TO UPDATE FOR X VALUES
+                    const buttonKeys = Object.keys(buttonList);
+                    for (const buttonKey of buttonKeys)
+                    { // go through each button
+
+                        var buttonLabel = buttonList[buttonKey]['buttonLabel'];
+                        var isDisabled = buttonList[buttonKey]['isDisabled'];
+                        var hoverOverText = buttonList[buttonKey]['hoverOverText']; // hover over text or '' if we don't want a hover over
+                        var actionName = buttonList[buttonKey]['actionName']; // shoot, useEquipment
+                        var makeRed = buttonList[buttonKey]['makeRed'];
+
+                        this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                    }
+
+                  break;
                   case 'claimZag':
                       console.log( "onUpdateActionButtons->claimZag" );
 
@@ -1015,7 +1140,7 @@ this.unhighlightAllGarments();
 
                   case 'chooseZigPhase':
                     this.canWeClaimZag = false;
-                    console.log( "onUpdateActionButtons->chooseZigPhase with playedCardThisTurn="+this.playedCardThisTurn+" and this.choseDirectionThisTurn="+this.choseDirectionThisTurn + " askedZag="+this.askedZag+" canWeClaimZag:"+this.canWeClaimZag+" mustChooseZagDiscards="+this.mustChooseZagDiscards + " this.ostrich1HasZag="+this.ostrich1HasZag );
+                    console.log( "onUpdateActionButtons->chooseZigPhase with playedCardThisTurn="+this.playedCardThisTurn+" and this.choseDirectionThisTurn="+this.choseDirectionThisTurn + " askedZag="+this.askedZag+" canWeClaimZag:"+this.canWeClaimZag+" mustChooseZagDiscards="+this.mustChooseZagDiscards + " this.saucer1HasZag="+this.saucer1HasZag );
 
                     var allPlayersWithOstriches = args.allPlayersWithOstriches;
                     console.log("allPlayersWithOstriches:");
@@ -1106,22 +1231,22 @@ this.unhighlightAllGarments();
                     if( this.isCurrentPlayerActive() )
                     { // this player is active (they have a trap card and they haven't yet said they aren't playing it)
 
-                      if(this.ostrich1 != "f6033b" && this.ostrich2 != "f6033b")
+                      if(this.saucer1 != "f6033b" && this.saucer2 != "f6033b")
                           this.addActionButton( 'trapRed_button', _('RED'), 'onTrapRed' );
 
-                      if(this.ostrich1 != "fedf3d" && this.ostrich2 != "fedf3d")
+                      if(this.saucer1 != "fedf3d" && this.saucer2 != "fedf3d")
                           this.addActionButton( 'trapYellow_button', _('YELLOW'), 'onTrapYellow' );
 
-                      if(this.ostrich1 != "0090ff" && this.ostrich2 != "0090ff")
+                      if(this.saucer1 != "0090ff" && this.saucer2 != "0090ff")
                           this.addActionButton( 'trapBlue_button', _('BLUE'), 'onTrapBlue' );
 
-                      if(this.ostrich1 != "01b508" && this.ostrich2 != "01b508")
+                      if(this.saucer1 != "01b508" && this.saucer2 != "01b508")
                           this.addActionButton( 'trapGreen_button', _('GREEN'), 'onTrapGreen' );
 
-                      if(this.ostrich1 != "01b508" && this.ostrich2 != "b92bba")
+                      if(this.saucer1 != "01b508" && this.saucer2 != "b92bba")
                           this.addActionButton( 'trapGreen_button', _('PURPLE'), 'onTrapGreen' );
 
-                      if(this.ostrich1 != "01b508" && this.ostrich2 != "c9d2db")
+                      if(this.saucer1 != "01b508" && this.saucer2 != "c9d2db")
                           this.addActionButton( 'trapGreen_button', _('GRAY'), 'onTrapGreen' );
 
                       this.addActionButton( 'noTrap_button', _('Do Not Trap'), 'noTrap', null, false, 'red' );
@@ -1258,6 +1383,31 @@ this.unhighlightAllGarments();
 
         */
 
+        addButtonToActionBar: function(buttonLabel, isDisabled, hoverOverText, actionName, makeRed)
+        {
+            var buttonId = 'button_' + buttonLabel; // the html id for this button
+
+            var clickMethod = 'onClick_' + actionName;
+            if(makeRed == true)
+            { // make this button red
+                this.addActionButton( buttonId, _(buttonLabel), clickMethod, null, false, 'red' );
+            }
+            else
+            { // keep this button the default blue
+                this.addActionButton( buttonId, _(buttonLabel), clickMethod );
+            }
+
+            if (isDisabled == true)
+            { // we want to disble this button
+               dojo.addClass( buttonId, 'disabled'); // disable the button
+            }
+
+            if(hoverOverText && hoverOverText != '')
+            { // there is a hover over text we want to add
+                this.addTooltip( buttonId, _(hoverOverText), '' ); // add a tooltip to explain why it is disabled or how to use it
+            }
+        },
+
 
         convertGarmentTypeIntToString: function(typeAsInt)
         {
@@ -1309,12 +1459,252 @@ this.unhighlightAllGarments();
 
         unhighlightAllSpaces: function()
         {
-            dojo.query( '.highlighted_square' ).removeClass( 'highlighted_square' ); // remove highlights from all spaces
+            dojo.query( '.highlighted_square' ).removeClass( 'highlighted_square' ); // remove highlights from all spaces (white)
+            dojo.query( '.spaceHighlighted' ).removeClass( 'spaceHighlighted' ); // remove highlights from all spaces (green)
+
         },
 
         unhighlightAllGarments: function()
         {
           dojo.query( '.highlighted_garment' ).removeClass( 'highlighted_garment' ); // remove highlights from all garments
+        },
+
+
+
+        selectSpecificSaucer: function(color)
+        {
+            this.unselectAllSaucers(); // unselect all saucers that may have been selected previously
+            var htmlIdSaucer = "saucer_"+color;
+            dojo.removeClass( htmlIdSaucer, 'cardHighlighted' ); // unhighlight it
+            dojo.addClass( htmlIdSaucer, 'cardSelected' ); // select it
+
+        },
+
+        unhighlightAllSaucers: function()
+        {
+          dojo.query( '.saucer' ).removeClass( 'cardHighlighted' );
+        },
+
+        unselectAllSaucers: function()
+        {
+          dojo.query( '.saucer' ).removeClass( 'cardSelected' );
+        },
+
+        highlightAllPlayerSaucers: function(playerId)
+        {
+            var htmlIdSaucer1 = "saucer_"+this.saucer1;
+            dojo.removeClass( htmlIdSaucer1, 'cardSelected' ); // unselect it
+            dojo.addClass( htmlIdSaucer1, 'cardHighlighted' ); // highlight it
+            dojo.connect( $(htmlIdSaucer1), 'onclick', this, 'onClick_saucerDuringMoveCardSelection' ); // attached our saucer tokens to this onclick handler
+
+            var htmlIdSaucer2 = "saucer_"+this.saucer2;
+            if(document.getElementById(htmlIdSaucer2))
+            { // this component exists
+                dojo.removeClass( htmlIdSaucer2, 'cardSelected' ); // unselect it
+                dojo.addClass( htmlIdSaucer2, 'cardHighlighted' ); // highlight it
+                dojo.connect( $(htmlIdSaucer2), 'onclick', this, 'onClick_saucerDuringMoveCardSelection' ); // attached our saucer tokens to this onclick handler
+            }
+
+        },
+
+        highlightSpecificPlayerSaucer: function(saucer)
+        {
+console.log("highlightSpecificPlayerSaucer");
+        },
+
+        highlightDirectionsForSaucer: function(color)
+        {
+            this.unhighlightAllDirections();
+            if(this.saucer1 == color)
+            { // we are selecting for saucer 1
+
+                if(this.CHOSEN_DIRECTION_SAUCER_1 != '')
+                { // we have previously selected a direction
+                    this.selectSpecificDirection(this.CHOSEN_DIRECTION_SAUCER_1);
+                }
+                else
+                { // we have not yet selected a direction
+                    this.highlightAllDirections();
+                }
+            }
+            else
+            { // we are selecting for saucer 2
+                if(this.CHOSEN_DIRECTION_SAUCER_2 != '')
+                { // we have previously selected a direction
+                    this.selectSpecificDirection(this.CHOSEN_DIRECTION_SAUCER_2);
+                }
+                else
+                { // we have not yet selected a direction
+                    this.highlightAllDirections();
+                }
+            }
+
+        },
+
+        selectSpecificDirection: function(directionAsHtmlId)
+        {
+            this.unselectAllDirections();
+            this.unhighlightAllDirections();
+            dojo.addClass( directionAsHtmlId, 'cardSelected' ); // select it
+        },
+
+        unselectAllDirections: function()
+        {
+            dojo.query( '.direction_token' ).removeClass( 'cardSelected' );
+        },
+
+        highlightAllDirections: function()
+        {
+            this.unselectAllDirections();
+            dojo.query( '.direction_token' ).addClass( 'cardHighlighted' );
+        },
+
+        unhighlightAllDirections: function()
+        {
+            dojo.query( '.direction_token' ).removeClass( 'cardHighlighted' );
+        },
+
+        highlightSpecificDirection: function(directionAsHtmlId)
+        {
+            this.unselectAllDirections();
+            this.unhighlightAllDirections();
+            dojo.addClass( directionAsHtmlId, 'cardHighlighted' ); // highlight it
+        },
+
+        highlightSpacesForSelectedSaucer: function(color)
+        {
+            this.unhighlightAllSpaces(); // unhighlight all board move spaces
+            if(this.saucer1 == color)
+            { // we are selecting for saucer 1
+
+                if(this.CHOSEN_MOVE_CARD_SAUCER_1 != '')
+                {
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, this.CHOSEN_MOVE_CARD_SAUCER_1);
+                }
+            }
+            else
+            { // we are selecting for saucer 2
+                if(this.CHOSEN_MOVE_CARD_SAUCER_2 != '')
+                {
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, this.CHOSEN_MOVE_CARD_SAUCER_2);
+                }
+            }
+        },
+
+        selectSelectedMoveCard: function(color)
+        {
+console.log("selectSelectedMoveCard of color: "+color);
+            this.unselectAllMoveCards(); // unselect all other move cards so we can select a different one
+
+            if(this.saucer1 == color)
+            { // we are selecting a move card in saucer 1's hand
+                if(this.CHOSEN_MOVE_CARD_SAUCER_1 != '')
+                { // this saucer has a previously selected move card
+                    this.selectSpecificMoveCard(this.CHOSEN_MOVE_CARD_SAUCER_1);
+                }
+            }
+            else
+            { // we are selecting a move card in saucer 2's hand
+                if(this.CHOSEN_MOVE_CARD_SAUCER_2 != '')
+                { // this saucer has a previously selected move card
+                    this.selectSpecificMoveCard(this.CHOSEN_MOVE_CARD_SAUCER_2);
+                }
+            }
+        },
+
+        highlightAllSaucerMoveCards: function(color)
+        {
+            this.unhighlightAllMoveCards(); // remove highlights from all
+
+            var htmlId0 = "move_card_0_"+color;
+            if(document.getElementById(htmlId0))
+            { // this component exists
+                dojo.addClass( htmlId0, 'cardHighlighted' ); // highlight it
+            }
+
+            var htmlId1 = "move_card_1_"+color;
+            if(document.getElementById(htmlId1))
+            { // this component exists
+                dojo.addClass( htmlId1, 'cardHighlighted' ); // highlight it
+            }
+
+            var htmlId2 = "move_card_2_"+color;
+            if(document.getElementById(htmlId2))
+            { // this component exists
+                dojo.addClass( htmlId2, 'cardHighlighted' ); // highlight it
+            }
+        },
+
+        unhighlightAllMoveCards: function()
+        {
+            dojo.query( '.move_card_in_hand' ).removeClass( 'cardHighlighted' ); // remove highlights from all
+        },
+
+        unselectAllMoveCards: function()
+        {
+            dojo.query( '.move_card_in_hand' ).removeClass( 'cardSelected' ); // remove highlights from all
+        },
+
+        unhighlightSpecificMoveCard: function(htmlIdOfCard)
+        {
+            dojo.removeClass( htmlIdOfCard, 'cardHighlighted' ); // give this card a new CSS class
+        },
+
+        selectSpecificMoveCard: function(htmlIdOfCard)
+        {
+            this.unhighlightSpecificMoveCard(htmlIdOfCard); // remove highlighting if it has any
+            dojo.addClass( htmlIdOfCard, 'cardSelected' ); // give this card a new CSS class
+        },
+
+        highlightSpace: function(htmlOfSpace)
+        {
+            dojo.addClass( htmlOfSpace, 'spaceHighlighted' ); // give this card a new CSS class
+        },
+
+        highlightPossibleMoveSelections: function(playerSaucerMoves, playerId, saucerSelected, moveCardSelectedHtmlId)
+        {
+            this.unhighlightAllSpaces();
+
+            var moveCardSelected = moveCardSelectedHtmlId.split('_')[2]; // 0, 1, 2
+
+            const playerKeys = Object.keys(playerSaucerMoves);
+
+            for (const playerKey of playerKeys)
+            { // go through each player
+                if(playerKey == playerId)
+                { // these are the saucers for this player
+                    const saucerKeys = Object.keys(playerSaucerMoves[playerKey]);
+//console.log("saucerKeys:");
+//console.log(saucerKeys);
+                    for (const saucerKey of saucerKeys)
+                    { // go through each saucer (color)
+//console.log("comparing saucerKey " + saucerKey + " to saucerSelected " + saucerSelected);
+                        if(saucerKey == saucerSelected)
+                        { // this is the saucer that is currently selected
+
+                            const moveCardKeys = Object.keys(playerSaucerMoves[playerKey][saucerKey]);
+                            for (const moveCardKey of moveCardKeys)
+                            { // go through each available move card for this saucer
+
+//console.log("comparing moveCardKey " + moveCardKey + " to moveCardSelected " + moveCardSelected);
+                                if(moveCardKey == moveCardSelected)
+                                { // this is the move card currently selected
+
+                                    const spaceKeys = Object.keys(playerSaucerMoves[playerKey][saucerKey][moveCardKey]);
+                                    for (const spaceKey of spaceKeys)
+                                    { // go through each space available move card for this saucer
+
+                                        var space = playerSaucerMoves[playerKey][saucerKey][moveCardKey][spaceKey]; // 8_7, 3_4
+                                        console.log("for player " + playerKey+" saucer " + saucerKey + " move card " + moveCardKey + " we found a valid space of " + space);
+                                        var htmlOfSpace = 'square_'+space; // square_6_5
+                                        this.highlightSpace(htmlOfSpace);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         },
 
 
@@ -1371,21 +1761,76 @@ this.unhighlightAllGarments();
             this.mustSkateboard = false;
         },
 
-        putOstrichOnTile: function( x, y, owner, color )
+        placePlayerBoardForSaucer: function(owner, color)
         {
-            dojo.place( this.format_block( 'jstpl_disc', {
+            var playerBoardDiv = $('player_board_' + owner);
+
+            dojo.place( this.format_block( 'jstpl_player_board_for_saucer', {
+                color: color,
+                owner: owner
+            } ) , playerBoardDiv );
+
+        },
+
+        placeBoard: function(numberOfPlayers)
+        {
+          console.log("numberOfPlayers:"+numberOfPlayers);
+            if(numberOfPlayers < 5)
+            { // 1-4 players
+
+                // hide the extra tiles
+                //dojo.removeClass( 'board_tile_5', 'board_tile_image' );
+                //dojo.removeClass( 'board_tile_6', 'board_tile_image' );
+
+                dojo.destroy('board_tile_container_5');
+                dojo.destroy('board_tile_container_6');
+
+                // center the directions based on the number of players
+                dojo.style('direction_left', "marginTop", "224px"); // move the left direction to where the extra tiles would have been
+                dojo.style('direction_right', "marginTop", "224px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_up', "marginLeft", "292px");
+                dojo.style('direction_down', "marginLeft", "292px");
+
+                dojo.style('board_tile_column', "width", "685px"); // set the width of the board based on saucer count
+            }
+            else if(numberOfPlayers == 5)
+            { // we are playing with 5 players
+
+              dojo.destroy('board_tile_container_4');
+              dojo.destroy('board_tile_container_6');
+
+                // center the directions based on the number of players
+                dojo.style('direction_left', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_right', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_up', "marginLeft", "322px");
+                dojo.style('direction_down', "marginLeft", "322px");
+
+                dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
+            }
+            else if(numberOfPlayers == 6)
+            { // we are playing with 6 players
+
+              dojo.destroy('board_tile_container_4');
+              dojo.destroy('board_tile_container_5');
+
+                // center the directions based on the number of players
+                dojo.style('direction_left', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_right', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_up', "marginLeft", "348px");
+                dojo.style('direction_down', "marginLeft", "348px");
+
+                dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
+            }
+        },
+
+        putSaucerOnTile: function( x, y, owner, color )
+        {
+            dojo.place( this.format_block( 'jstpl_saucer', {
                 color: color
             } ) , 'square_'+x+'_'+y );
 
             //this.placeOnObject( 'disc_'+color, 'square_'+x+'_'+y );
-            this.slideToObject( 'disc_'+color, 'square_'+x+'_'+y ).play();
-        },
-
-        putOstrichOnPlayerBoard: function(owner, color )
-        {
-            dojo.place( this.format_block( 'jstpl_disc', {
-                color: color
-            } ) , 'player_board_ostrich_holder_'+color );
+            this.slideToObject( 'saucer_'+color, 'square_'+x+'_'+y ).play();
         },
 
         putCrownOnPlayerBoard: function( color )
@@ -1442,7 +1887,7 @@ this.unhighlightAllGarments();
                 color: color
             } ) , 'discs' );
           */
-            this.slideToObject( 'disc_'+ostrichMoving, 'square_'+xDestination+'_'+yDestination ).play(); // should be ostrich_COLOR
+            this.slideToObject( 'saucer_'+ostrichMoving, 'square_'+xDestination+'_'+yDestination ).play(); // should be ostrich_COLOR
 
             if(spaceType == "D")
             { // this ostrich fell off a cliff
@@ -1812,40 +2257,40 @@ this.unhighlightAllGarments();
         {
           console.log( "onNewDirectionBridge" );
 
-          this.sendMoveInNewDirection(this.ostrich1, "BRIDGE");
+          this.sendMoveInNewDirection(this.saucer1, "BRIDGE");
         },
 
         onNewDirectionCactus: function()
         {
           console.log( "onNewDirectionCactus" );
 
-          this.sendMoveInNewDirection(this.ostrich1, "CACTUS");
+          this.sendMoveInNewDirection(this.saucer1, "CACTUS");
         },
 
         onNewDirectionRiver: function()
         {
           console.log( "onNewDirectionRiver" );
 
-          this.sendMoveInNewDirection(this.ostrich1, "RIVER");
+          this.sendMoveInNewDirection(this.saucer1, "RIVER");
         },
 
         onNewDirectionMountain: function()
         {
           console.log( "onNewDirectionMountain" );
 
-          this.sendMoveInNewDirection(this.ostrich1, "MOUNTAIN");
+          this.sendMoveInNewDirection(this.saucer1, "MOUNTAIN");
         },
 
         onZagBridge: function()
         {
           console.log( "onZagBridge" );
 
-          if(this.ostrich2 == this.lastMovedOstrich)
+          if(this.saucer2 == this.lastMovedOstrich)
           {
-              this.ostrich2HasZag = false; // take away the zag
+              this.saucer2HasZag = false; // take away the zag
           }
           else {
-              this.ostrich1HasZag = false; // take away the zag
+              this.saucer1HasZag = false; // take away the zag
           }
 
           dojo.destroy('zag_'+this.lastMovedOstrich); // destroy zag token
@@ -1857,12 +2302,12 @@ this.unhighlightAllGarments();
         {
           console.log( "onZagCactus" );
 
-          if(this.ostrich2 == this.lastMovedOstrich)
+          if(this.saucer2 == this.lastMovedOstrich)
           {
-              this.ostrich2HasZag = false; // take away the zag
+              this.saucer2HasZag = false; // take away the zag
           }
           else {
-              this.ostrich1HasZag = false; // take away the zag
+              this.saucer1HasZag = false; // take away the zag
           }
 
           dojo.destroy('zag_'+this.lastMovedOstrich); // destroy zag token
@@ -1874,12 +2319,12 @@ this.unhighlightAllGarments();
         {
           console.log( "onZagRiver" );
 
-          if(this.ostrich2 == this.lastMovedOstrich)
+          if(this.saucer2 == this.lastMovedOstrich)
           {
-              this.ostrich2HasZag = false; // take away the zag
+              this.saucer2HasZag = false; // take away the zag
           }
           else {
-              this.ostrich1HasZag = false; // take away the zag
+              this.saucer1HasZag = false; // take away the zag
           }
 
           dojo.destroy('zag_'+this.lastMovedOstrich); // destroy zag token
@@ -1891,12 +2336,12 @@ this.unhighlightAllGarments();
         {
           console.log( "onZagMountain" );
 
-          if(this.ostrich2 == this.lastMovedOstrich)
+          if(this.saucer2 == this.lastMovedOstrich)
           {
-              this.ostrich2HasZag = false; // take away the zag
+              this.saucer2HasZag = false; // take away the zag
           }
           else {
-              this.ostrich1HasZag = false; // take away the zag
+              this.saucer1HasZag = false; // take away the zag
           }
 
           dojo.destroy('zag_'+this.lastMovedOstrich); // destroy zag token
@@ -2272,12 +2717,12 @@ this.unhighlightAllGarments();
         {
           console.log( "DO use a Zag" );
 
-          if(this.ostrich2 == this.lastMovedOstrich)
+          if(this.saucer2 == this.lastMovedOstrich)
           {
-              this.ostrich2HasZag = false; // take away the zag
+              this.saucer2HasZag = false; // take away the zag
           }
           else {
-              this.ostrich1HasZag = false; // take away the zag
+              this.saucer1HasZag = false; // take away the zag
           }
 
           this.showZagDirectionButtons(); // show buttons for each direction they can zag
@@ -2398,8 +2843,10 @@ this.unhighlightAllGarments();
 
             var cardName = card.type; // Twirlybird, Scrambler
             var cardID = card.type_arg; // unique id like 0, 1, 2, 3
+            var color = card.location; // color like ff0000
+            var owner = card.location_arg; // player ID
 
-            console.log( "Adding a trap card with unique ID " + card.id + " and card ID " + cardID + " and name " + cardName + " to the player's hand." );
+            console.log( "Adding a trap card with unique ID " + card.id + " and card ID " + cardID + " and name " + cardName + " and color " + color + " and owner " + owner + " to the player's hand." );
 
             this.trapHand.addToStockWithId( cardID, card.id );
 
@@ -2424,10 +2871,10 @@ this.unhighlightAllGarments();
             { // it doesn't exist yet
                 dojo.place(
                       this.format_block( 'jstpl_trapBack', {
-                          x: this.trapcardwidth*(rowId),
-                          y: this.trapcardheight*(columnId),
+                          x: this.upgradecardwidth*(rowId),
+                          y: this.upgradecardheight*(columnId),
                           player_id: playerWhoGetsIt
-                } ), 'trap_hand_'+playerWhoGetsIt );
+                } ), 'upgrade_hand_f6033b' );
             }
         },
 
@@ -2461,7 +2908,7 @@ this.unhighlightAllGarments();
             // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
             //
 
-            dojo.subscribe( 'zigChosen', this, "notif_zigChosen" );
+            dojo.subscribe( 'moveCardChosen', this, "notif_moveCardChosen" );
             dojo.subscribe( 'iChoseDirection', this, "notif_iChoseDirection" );
             dojo.subscribe( 'otherPlayerPlayedZig', this, "notif_otherPlayerPlayedZig" );
             dojo.subscribe( 'iStartZigPhaseOver', this, "notif_iStartZigPhaseOver" );
@@ -2505,8 +2952,8 @@ this.unhighlightAllGarments();
 
         */
 
-        // This is sent only to the player who chooses their Zig.
-        notif_zigChosen: function( notif )
+        // This is sent only to the player who chooses the Move card for the round.
+        notif_moveCardChosen: function( notif )
         {
             var ostrichGettingZig = notif.args.ostrich_color; // this is the ostrich moving
             var card_id = notif.args.card_id; // this is the ostrich taking its turn
@@ -2671,12 +3118,12 @@ this.unhighlightAllGarments();
             { // we are the player who claimed the zag
 
                 // this ostrich has a zag so we should give them the option to use it after they move on their turn
-                if(this.ostrich2 == ostrich)
+                if(this.saucer2 == ostrich)
                 {
-                    this.ostrich2HasZag = true; // save that this ostrich has a zag
+                    this.saucer2HasZag = true; // save that this ostrich has a zag
                 }
                 else {
-                    this.ostrich1HasZag = true; // save that this ostrich has a zag
+                    this.saucer1HasZag = true; // save that this ostrich has a zag
                 }
 
                 // DISCARD the cards used

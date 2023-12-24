@@ -1096,7 +1096,7 @@
                           <div id="move_card_0_{PLAYER_COLOR}" class="move_card_in_hand"></div>
                       </div>
 
-                      <div id="ostrich_mat_{PLAYER_COLOR}" class="opponent_mat_holder ostrichMat">
+                      <div id="saucer_mat_{PLAYER_COLOR}" class="opponent_mat_holder ostrichMat">
                           <div id="mat_head_row" class="mat_inner_row">
                               <div id="mat_head_backpack_2_{PLAYER_COLOR}" class="mat_head_backpack_holder"></div>
                               <div id="mat_head_backpack_3_{PLAYER_COLOR}" class="mat_head_backpack_holder"></div>
@@ -1122,9 +1122,6 @@
                               <div id="mat_feet_wearing_1_{PLAYER_COLOR}" class="mat_feet_wearing_holder"></div>
                           </div>
                       </div>
-
-                      <div id="trap_hand_{PLAYER_ID}" class="trapHand">
-                      </div>
                   </div>
 
                   <div class="zig_and_zag_row">
@@ -1146,16 +1143,11 @@
 
 // Templates
 
-var jstpl_disc='<div class="disc disccolor_${color} saucer_float" id="disc_${color}"></div>';
+var jstpl_saucer='<div class="saucer saucer_color_${color} saucer_float" id="saucer_${color}"></div>';
 
 var jstpl_zag='<div class="zag component_circle" id="zag_${color}"></div>';
 
 var jstpl_garment='<div class="garment" id="garment_${garment_type}_${color}"></div>';
-
-<!-- match the class to the css class for the image location -->
-<!-- match the id to the js file when you dojo.place it -->
-var jstpl_ostrichmat = '<div class="ostrichMat" id="ostrichmat_${color}" style="background-position:-${x}px -${y}px">\
-                                                </div>';
 
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->
@@ -1174,34 +1166,40 @@ var jstpl_myTrapInHand = '<div class="myTrapInHand component_rounding" id="myTra
 
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->
-var jstpl_trapBack = '<div class="trapBack component_rounding" id="trapBack_${player_id}" style="background-position:-${x}px -${y}px">\
+var jstpl_trapBack = '<div class="myTrap component_rounding" id="trapBack_${player_id}" style="background-position:-${x}px -${y}px">\
                     </div>';
 
-var jstpl_player_board = '<div class="player_board_info">\
-                              <div id="player_board_ostrich_and_crown_holder_${color}" class="player_board_ostrich_and_crown_holder">\
-                                <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
-                                <div id="player_board_ostrich_holder_${color}" class="player_board_ostrich_holder"></div>\
-                              </div>\
-                              <div id="player_board_trap_and_zag_holder_${color}" class="player_board_trap_and_zag_holder">\
-                                <div id="player_board_trap_holder_${color}" class="player_board_trap_holder"></div>\
-                                <div id="player_board_zag_holder_${color}" class="player_board_zag_holder"></div>\
-                              </div>\
-                              <div id="player_board_direction_holder_${id}" class="player_board_direction_holder"></div>\
-                              </div>\
-                              <div id="player_board_ostrich_and_crown_holder_${color}" class="player_board_ostrich_and_crown_holder">\
-                                <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
-                                <div id="player_board_ostrich_holder_${color}" class="player_board_ostrich_holder"></div>\
-                              </div>\
-                              <div id="player_board_trap_and_zag_holder_${color}" class="player_board_trap_and_zag_holder">\
-                                <div id="player_board_trap_holder_${color}" class="player_board_trap_holder"></div>\
-                                <div id="player_board_zag_holder_${color}" class="player_board_zag_holder"></div>\
-                              </div>\
-                          </div>';
+
+var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}">\
+                                        <div id="player_board_ostrich_and_crown_holder_${color}" class="player_board_ostrich_and_crown_holder">\
+                                          <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
+                                          <div id="player_board_ostrich_holder_${color}" class="player_board_ostrich_holder"></div>\
+                                        </div>\
+                                        <div id="player_board_saucer_mat_holder_${color}" class="player_board_saucer_mat_holder">\
+                                          <div id="player_board_saucer_mat_pilot_${color}" class="player_board_saucer_mat_pilot"></div>\
+                                          <div id="player_board_saucer_mat_engineer_${color}" class="player_board_saucer_mat_engineer"></div>\
+                                          <div id="player_board_saucer_mat_doctor_${color}" class="player_board_saucer_mat_doctor"></div>\
+                                          <div id="player_board_saucer_mat_scientist_${color}" class="player_board_saucer_mat_scientist"></div>\
+                                        </div>\
+                                        <div id="player_board_trap_and_zag_holder_${color}" class="player_board_trap_and_zag_holder">\
+                                          <div id="player_board_trap_holder_${color}" class="player_board_trap_holder"></div>\
+                                          <div id="player_board_zag_holder_${color}" class="player_board_zag_holder"></div>\
+                                        </div>\
+                                        <div id="player_board_direction_holder_${owner}" class="player_board_direction_holder"></div>\
+                                        <div id="player_board_ostrich_and_crown_holder_${color}" class="player_board_ostrich_and_crown_holder">\
+                                          <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
+                                          <div id="player_board_ostrich_holder_${color}" class="player_board_ostrich_holder"></div>\
+                                        </div>\
+                                        <div id="player_board_trap_and_zag_holder_${color}" class="player_board_trap_and_zag_holder">\
+                                          <div id="player_board_trap_holder_${color}" class="player_board_trap_holder"></div>\
+                                          <div id="player_board_zag_holder_${color}" class="player_board_zag_holder"></div>\
+                                        </div>\
+                                    </div>';
 
 var jstpl_crown = '<div id="player_board_crown" class="starting_color_${color}"></div>';
 var jstpl_arrow = '<div id="player_board_arrow_${id}" class="player_board_arrow" style="background-position:-${x}px -${y}px"></div>';
 
-var jstpl_moveCard = '<div id="player_board_${distance}_${color}" class="move_card component_rounding" style="background-position:-${x}px -${y}px"></div>';
+var jstpl_moveCard = '<div id="move_card_${distance}_${color}" class="move_card component_rounding" style="background-position:-${x}px -${y}px"></div>';
 
 
 </script>

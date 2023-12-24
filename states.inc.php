@@ -65,13 +65,13 @@ $machinestates = array(
     // PLAN PHASE (simultaneous)
 
     2 => array(
-    		"name" => "chooseZigPhase",
-    		"description" => clienttranslate('Everyone is choosing their Zig.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose a Zig card.'),
+    		"name" => "chooseMoveCard",
+    		"description" => clienttranslate('Everyone is choosing their Move.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose a Move card.'),
     		"type" => "multipleactiveplayer",
-        'args' => 'argGetPlayersWithOstriches',
-    		"possibleactions" => array( "selectZigs", "chooseZig", "chooseDirection", "hideTurnDirection" ),
-    		"transitions" => array( "zigChosen" => 2, "directionChosen" => 2, "startOver" => 2, "directionsChosen" => 6 )
+        'args' => 'argGetAllPlayerSaucerMoves',
+    		"possibleactions" => array( "clickDistance", "undoChooseMoveCard" ),
+    		"transitions" => array( "zigChosen" => 2, "startOver" => 2, "directionsChosen" => 6 )
     ),
 
     // SET TRAPS PHASE (simultaneous timed)
@@ -273,6 +273,16 @@ $machinestates = array(
 
     23 => array(
     		"name" => "askWhichGarmentToSteal",
+    		"description" => clienttranslate('${actplayer} is choosing which garment they will steal.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose which off-colored garment to steal.'),
+    		"type" => "activeplayer",
+        'args' => 'argStealableGarments',
+        "possibleactions" => array( "stealGarmentClick" ),
+    		"transitions" => array( "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "endTurn" => 8 )
+    ),
+
+    30 => array(
+    		"name" => "chooseMoveCardDirection",
     		"description" => clienttranslate('${actplayer} is choosing which garment they will steal.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose which off-colored garment to steal.'),
     		"type" => "activeplayer",

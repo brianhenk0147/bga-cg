@@ -64,13 +64,13 @@
     */
 
     // A player has chosen their Zig card.
-    public function actChooseZigCard()
+    public function actClickedMoveCard()
     {
         self::setAjaxMode();
-        $card_id = self::getArg( "id", AT_posint, true );
-        $ostrich_color = self::getArg( "ostrich", AT_alphanum, true ); // ff0000, 0000ff, etc.
+        $distance = self::getArg( "distance", AT_alphanum, true ); // 0, 1, 2
+        $color = self::getArg( "color", AT_alphanum, true ); // ff0000, 0000ff, etc.
 
-        $this->game->executeChooseZig( $ostrich_color, $card_id );
+        $this->game->executeClickedMoveCard( $distance, $color );
         self::ajaxResponse( );
     }
 

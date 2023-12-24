@@ -835,7 +835,7 @@
 }
 #board_tile_container_4
 {
-    width: 514px;
+    width: 522px;
 }
 #board_tile_container_5
 {
@@ -909,6 +909,21 @@ float: left;
     border-width: 1px ! important;
 }
 
+.cardHighlighted
+{
+    border: 1px solid green ! important;
+}
+
+.cardUnhighlighted
+{
+    border-width: 1px ! important;
+}
+
+.spaceHighlighted
+{
+  background-color: rgba(0, 255, 0, 0.3); /* highligh green semitransparent */
+}
+
 .zig_holder
 {
   width: 100px;
@@ -924,25 +939,21 @@ float: left;
 /***** TRAPS *****/
 .myTrap
 {
-    width: 150px;
-    height: 210px;
-    background-image: url('img/traps_sprite.jpg');
-}
-
-.trapBack
-{
-    width: 150px;
-    height: 210px;
-    background-image: url('img/trap_back.jpg');
+    width: 82px;
+    height: 58px;
+    background-image: url('img/ship_upgrades_82_58.jpg');
 }
 
 .trapHand
 {
-    width: 150px;
-    height: 210px;
+    width: 82px;
+    height: 58px;
     display: inline-block;
     vertical-align: top;
 }
+
+
+/***** BUTTONS *****/
 
 
 
@@ -953,28 +964,50 @@ float: left;
       margin-top: -70px;
 }
 
-.ostrichMat {
-  width: 230px;
-  height: 316px;
+.player_board_saucer_mat_holder {
+  width: 154px;
+  height: 154px;
   margin-top: 10px;
   margin-bottom: 10px;
   display: inline-block;
+  background-image: url('img/ship_mats_154_154.png');
 }
 
-#ostrich_mat_f6033b {
-    background-image: url('img/ostrich_mat_f6033b.jpg');
+.saucer_color_01b508 { background-position: -49px 0px;   } /* green */
+.saucer_color_0090ff { background-position: -98px 0px;   } /* blue */
+.saucer_color_fedf3d { background-position: -147px 0px;   } /* yellow */
+.saucer_color_f6033b { background-position: 0px 0px;   } /* red */
+.saucer_color_c9d2db { background-position: -245px 0px;   } /* gray */
+.saucer_color_b92bba { background-position: -196px 0px;   } /* purple */
+
+/* green */
+#player_board_saucer_mat_holder_01b508 {
+    background-position: 0px 0px;
 }
 
-#ostrich_mat_01b508 {
-    background-image: url('img/ostrich_mat_01b508.jpg');
+/* blue */
+#player_board_saucer_mat_holder_0090ff {
+    background-position: -154px 0px;
 }
 
-#ostrich_mat_0090ff {
-    background-image: url('img/ostrich_mat_0090ff.jpg');
+/* yellow */
+#player_board_saucer_mat_holder_fedf3d {
+    background-position: -308px 0px;
 }
 
-#ostrich_mat_fedf3d {
-    background-image: url('img/ostrich_mat_fedf3d.jpg');
+/* red */
+#player_board_saucer_mat_holder_f6033b {
+    background-position: -462px 0px;
+}
+
+/* gray */
+#player_board_saucer_mat_holder_c9d2db {
+    background-position: -616px 0px;
+}
+
+/* purple */
+#player_board_saucer_mat_holder_b92bba {
+    background-position: -770px 0px;
 }
 
 .mat_and_stuff_row {
@@ -1103,8 +1136,8 @@ float: left;
 }
 
 
-/***** DISCS *****/
-.disc {
+/***** SAUCERS *****/
+.saucer {
     width: 49px;
     height: 47px;
     position: relative;
@@ -1113,12 +1146,12 @@ float: left;
     filter:         drop-shadow(2px 2px 2px #222);
 }
 
-.disccolor_01b508 { background-position: -49px 0px;   } /* green */
-.disccolor_0090ff { background-position: -98px 0px;   } /* blue */
-.disccolor_fedf3d { background-position: -147px 0px;   } /* yellow */
-.disccolor_f6033b { background-position: 0px 0px;   } /* red */
-.disccolor_c9d2db { background-position: -245px 0px;   } /* gray */
-.disccolor_b92bba { background-position: -196px 0px;   } /* purple */
+.saucer_color_01b508 { background-position: -49px 0px;   } /* green */
+.saucer_color_0090ff { background-position: -98px 0px;   } /* blue */
+.saucer_color_fedf3d { background-position: -147px 0px;   } /* yellow */
+.saucer_color_f6033b { background-position: 0px 0px;   } /* red */
+.saucer_color_c9d2db { background-position: -245px 0px;   } /* gray */
+.saucer_color_b92bba { background-position: -196px 0px;   } /* purple */
 
 
 
