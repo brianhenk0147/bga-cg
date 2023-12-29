@@ -30,12 +30,12 @@
 
       <div id="outer_board">
         <div id="outer_board_top_row">
-          <div id="direction_up" class="direction_token"></div>
+          <div id="direction_sun" class="direction_token"></div>
           <div id="replacement_garment_chosen_holder"></div>
         </div>
         <div id="middle_board_row">
           <div id="outer_board_left_column">
-            <div id="direction_left" class="direction_token"></div>
+            <div id="direction_constellation" class="direction_token"></div>
           </div>
 
           <div id="board_tile_container_4" class="board_tile_container"><!-- needed to remove whitespace
@@ -1051,7 +1051,7 @@
     --></div><!-- board_tile_container_6
 
     --><div id="outer_board_right_column"><!-- needed to remove whitespace
-        --><div id="direction_right" class="direction_token"></div><!-- needed to remove whitespace
+        --><div id="direction_asteroids" class="direction_token"></div><!-- needed to remove whitespace
     --></div><!-- needed to remove whitespace
 
 --></div> <!--middle_board_row-->
@@ -1063,7 +1063,7 @@
 
 
       <div id="outer_board_bottom_row">
-        <div id="direction_down" class="direction_token"></div>
+        <div id="direction_meteor" class="direction_token"></div>
       </div>
     </div> <!--outer_board-->
   </div> <!--board_tile_column -->
@@ -1091,9 +1091,9 @@
                       </div>
 
                       <div id="move_card_hand_{PLAYER_COLOR}" class="move_card_hand" style="color:#{PLAYER_COLOR}">
-                          <div id="move_card_1_{PLAYER_COLOR}" class="move_card_in_hand"></div>
-                          <div id="move_card_2_{PLAYER_COLOR}" class="move_card_in_hand"></div>
-                          <div id="move_card_0_{PLAYER_COLOR}" class="move_card_in_hand"></div>
+                          <div id="move_card_holder_1_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
+                          <div id="move_card_holder_2_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
+                          <div id="move_card_holder_0_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
                       </div>
 
                       <div id="saucer_mat_{PLAYER_COLOR}" class="opponent_mat_holder ostrichMat">
@@ -1122,11 +1122,6 @@
                               <div id="mat_feet_wearing_1_{PLAYER_COLOR}" class="mat_feet_wearing_holder"></div>
                           </div>
                       </div>
-                  </div>
-
-                  <div class="zig_and_zag_row">
-                      <div id="zig_holder_{PLAYER_COLOR}" class="zig_holder"></div>
-                      <div id="zag_holder_{PLAYER_COLOR}" class="zag_holder"></div>
                   </div>
               </div>
 
@@ -1181,20 +1176,18 @@ var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}">
                                           <div id="player_board_saucer_mat_doctor_${color}" class="player_board_saucer_mat_doctor"></div>\
                                           <div id="player_board_saucer_mat_scientist_${color}" class="player_board_saucer_mat_scientist"></div>\
                                         </div>\
+                                        <div id="player_board_direction_holder_${owner}" class="player_board_direction_holder"></div>\
                                         <div id="player_board_trap_and_zag_holder_${color}" class="player_board_trap_and_zag_holder">\
                                           <div id="player_board_trap_holder_${color}" class="player_board_trap_holder"></div>\
+                                          <div id="player_board_move_card_holder_${color}" class="move_card_holder"></div>\
                                           <div id="player_board_zag_holder_${color}" class="player_board_zag_holder"></div>\
                                         </div>\
-                                        <div id="player_board_direction_holder_${owner}" class="player_board_direction_holder"></div>\
                                         <div id="player_board_ostrich_and_crown_holder_${color}" class="player_board_ostrich_and_crown_holder">\
                                           <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
                                           <div id="player_board_ostrich_holder_${color}" class="player_board_ostrich_holder"></div>\
                                         </div>\
-                                        <div id="player_board_trap_and_zag_holder_${color}" class="player_board_trap_and_zag_holder">\
-                                          <div id="player_board_trap_holder_${color}" class="player_board_trap_holder"></div>\
-                                          <div id="player_board_zag_holder_${color}" class="player_board_zag_holder"></div>\
-                                        </div>\
                                     </div>';
+
 
 var jstpl_crown = '<div id="player_board_crown" class="starting_color_${color}"></div>';
 var jstpl_arrow = '<div id="player_board_arrow_${id}" class="player_board_arrow" style="background-position:-${x}px -${y}px"></div>';

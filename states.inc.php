@@ -70,7 +70,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must choose a Move card.'),
     		"type" => "multipleactiveplayer",
         'args' => 'argGetAllPlayerSaucerMoves',
-    		"possibleactions" => array( "clickDistance", "undoChooseMoveCard" ),
+    		"possibleactions" => array( "clickDistance", "undoChooseMoveCard", "confirmMove" ),
     		"transitions" => array( "zigChosen" => 2, "startOver" => 2, "directionsChosen" => 6 )
     ),
 

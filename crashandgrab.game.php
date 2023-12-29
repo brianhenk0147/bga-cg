@@ -57,10 +57,10 @@ class CrashAndGrab extends Table
 				$this->trapCards->autoreshuffle_custom = array('trapCardDeck' => 'discard');
 				$this->trapCards->autoreshuffle = true; // automatically reshuffle when you run out of cards
 
-				$this->UP_DIRECTION = "MOUNTAIN";
-				$this->DOWN_DIRECTION = "BRIDGE";
-				$this->LEFT_DIRECTION = "RIVER";
-				$this->RIGHT_DIRECTION = "CACTUS";
+				$this->UP_DIRECTION = 'sun';
+				$this->DOWN_DIRECTION = 'meteor';
+				$this->LEFT_DIRECTION = 'constellation';
+				$this->RIGHT_DIRECTION = 'asteroids';
 
 				$this->LAST_MOVED_OSTRICH = "";
 	}
@@ -609,24 +609,44 @@ class CrashAndGrab extends Table
 		function getUniqueSaucerColor()
 		{
 				$possibleColors = array( "f6033b", "01b508", "0090ff", "fedf3d", "b92bba", "c9d2db" );
+
+				// remove colors that belong to a player
 				$sqlGetPlayerColors = "SELECT player_color ";
 				$sqlGetPlayerColors .= "FROM player ";
 				$sqlGetPlayerColors .= "WHERE 1";
-				$dbres = self::DbQuery( $sqlGetPlayerColors );
-				while( $player = mysql_fetch_assoc( $dbres ) )
-				{
+				$usedPlayerColors = self::DbQuery( $sqlGetPlayerColors );
+				while( $player = mysql_fetch_assoc( $usedPlayerColors ) )
+				{ // go through PLAYER colors
 						$playerColor = $player['player_color']; // get the color this player was assigned
 						if (($key = array_search($playerColor, $possibleColors)) !== false)
 						{ // get the index that holds this color
 	    					unset($possibleColors[$key]); // remove this color from the list of possible colors
+								//$possibleColors[$key] = "used";
 						}
 				}
 
+				// remove colors that already belong to another ostrich
+				$sqlGetSaucerColors = "SELECT ostrich_color ";
+				$sqlGetSaucerColors .= "FROM ostrich ";
+				$sqlGetSaucerColors .= "WHERE 1";
+				$usedColors = self::DbQuery( $sqlGetSaucerColors );
+				while( $ostrich = mysql_fetch_assoc( $usedColors ) )
+				{
+						$playerColor = $ostrich['ostrich_color']; // get the color this player was assigned
+						if (($key = array_search($playerColor, $possibleColors)) !== false)
+						{ // get the index that holds this color
+	    					unset($possibleColors[$key]); // remove this color from the list of possible colors
+								//$possibleColors[$key] = "used";
+						}
+				}
+
+				// take a random color that remains
 				shuffle($possibleColors); // randomly order the colors
 				foreach($possibleColors as $color)
 				{
+						//if($color != "used")
 						if($color)
-						{ // this didn't get unset
+						{ // this hasn't already been used
 								return $color; // return one of them
 						}
 				}
@@ -872,23 +892,27 @@ class CrashAndGrab extends Table
 						foreach( $movesForSaucer as $cardType => $moveCard )
 						{ // go through each move card for this saucer
 
-								$spacesForCard = $moveCard['spaces'];
+								$directionsWithSpaces = $moveCard['directions'];
 								//$count = count($spacesForCard);
 								//throw new feException( "spacesForCard Count:$count" );
 
 								$result[$owner][$color][$cardType] = array(); // make an array for the list of spaces available using this card
 
-								$spaceId = 0;
-								foreach( $spacesForCard as $space )
+								foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
 								{ // go through each space
-										$column = $space['column'];
-										$row = $space['row'];
 
-										$result[$owner][$color][$cardType][$spaceId] = $column.'_'.$row;
+										$result[$owner][$color][$cardType][$direction] = array(); // we need an array for the spaces we get with this card type and direction
 
-										$spaceId++;
+										foreach( $directionWithSpaces as $space )
+										{ // go through each space
+												$column = $space['column'];
+												$row = $space['row'];
+
+												$formattedSpace = $column.'_'.$row;
+
+												array_push($result[$owner][$color][$cardType][$direction], $formattedSpace);
+										}
 								}
-
 						}
 				}
 
@@ -909,19 +933,16 @@ class CrashAndGrab extends Table
 				{ // 0, 1, 2
 						$result[$distanceType] = array(); // this saucer, this card
 
-						$result[$distanceType]['spaces'] = array(); // list of spaces for this saucer, this card
+						$result[$distanceType]['directions'] = array(); // list of spaces for this saucer, this card
 
 						$saucerX = $this->getSaucerXLocation($color); // this saucer's starting column
 						$saucerY = $this->getSaucerYLocation($color); // this saucer's starting row
 
-						$sunDestinations = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'sun'); // destinations for this saucer, this card, in the sun direction
-						$asteroidsDestinations = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
-						$meteorDestinations = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'meteor'); // destinations for this saucer, this card, in the meteor direction
-						$constellationDestinations = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'constellation'); // destinations for this saucer, this card, in the constellation direction
 
-
-
-						$result[$distanceType]['spaces'] = array_merge( $sunDestinations, $asteroidsDestinations, $meteorDestinations, $constellationDestinations);
+						$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'sun'); // destinations for this saucer, this card, in the sun direction
+						$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
+						$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'meteor'); // destinations for this saucer, this card, in the meteor direction
+						$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'constellation'); // destinations for this saucer, this card, in the constellation direction
 
 				}
 
@@ -949,14 +970,16 @@ class CrashAndGrab extends Table
 
 								switch($direction)
 								{
-										case 'sun':
-										case 'meteor':
-												return $this->getAllSpacesInColumn($startColumn);
+										case $this->UP_DIRECTION:
+												return $this->getAllSpacesInColumnUp($startRow, $startColumn);
+										case $this->DOWN_DIRECTION:
+												return $this->getAllSpacesInColumnDown($startRow, $startColumn);
 										break;
 
-										case 'asteroids':
-										case 'constellation':
-												return $this->getAllSpacesInRow($startRow);
+										case $this->RIGHT_DIRECTION:
+												return $this->getAllSpacesInRowRight($startColumn, $startRow);
+										case $this->LEFT_DIRECTION:
+												return $this->getAllSpacesInRowLeft($startColumn, $startRow);
 										break;
 
 										default:
@@ -2589,11 +2612,11 @@ class CrashAndGrab extends Table
 				return self::getUniqueValueFromDb("SELECT max(board_y) FROM `board`;");
 		}
 
-		function getAllSpacesInColumn($column)
+		function getAllSpacesInColumnUp($startingY, $column)
 		{
 				$result = array();
 
-				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_x=$column;" );
+				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_x=$column AND board_y < $startingY;" );
 
 				foreach( $spaces as $space )
 				{ // go through each space
@@ -2607,11 +2630,11 @@ class CrashAndGrab extends Table
 				return $result;
 		}
 
-		function getAllSpacesInRow($row)
+		function getAllSpacesInColumnDown($startingY, $column)
 		{
 				$result = array();
 
-				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_y=$row;" );
+				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_x=$column AND board_y > $startingY;" );
 
 				foreach( $spaces as $space )
 				{ // go through each space
@@ -2619,6 +2642,44 @@ class CrashAndGrab extends Table
 						$spaceArray = array();
 						$spaceArray['row'] = $space['board_y'];
 						$spaceArray['column'] = $space['board_x'];
+						array_push($result, $spaceArray); // add this space to the list of move destinations
+				}
+
+				return $result;
+		}
+
+		function getAllSpacesInRowLeft($startingX, $row)
+		{
+				$result = array();
+
+				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_y=$row AND board_x < $startingX;" );
+
+				foreach( $spaces as $space )
+				{ // go through each space
+
+						$spaceArray = array();
+						$spaceArray['row'] = $space['board_y'];
+						$spaceArray['column'] = $space['board_x'];
+
+						array_push($result, $spaceArray); // add this space to the list of move destinations
+				}
+
+				return $result;
+		}
+
+		function getAllSpacesInRowRight($startingX, $row)
+		{
+				$result = array();
+
+				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_y=$row AND board_x > $startingX;" );
+
+				foreach( $spaces as $space )
+				{ // go through each space
+
+						$spaceArray = array();
+						$spaceArray['row'] = $space['board_y'];
+						$spaceArray['column'] = $space['board_x'];
+
 						array_push($result, $spaceArray); // add this space to the list of move destinations
 				}
 
@@ -5087,6 +5148,16 @@ class CrashAndGrab extends Table
 				$this->setOstrichToChosen($ostrich);
 
 				$this->gamestate->nextState( "zigChosen" ); // stay in this phase
+		}
+
+		function executeClickedConfirmMove( $saucer1Color, $saucer1Distance, $saucer1Direction, $saucer2Color, $saucer2Distance, $saucer2Direction )
+    {
+				// Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
+        self::checkAction( 'confirmMove' );
+throw new feException( "Clicked confirm move.");
+
+				// validate the move
+				// move to next phase when everyone else confirms
 		}
 
 		function executeClickedMoveCard( $distance, $color )

@@ -38,6 +38,12 @@ function (dojo, declare) {
             this.PURPLECOLOR = "b92bba";
             this.GRAYCOLOR = "c9d2db";
 
+            // directions
+            this.UP_DIRECTION = 'sun';
+    				this.DOWN_DIRECTION = 'meteor';
+    				this.LEFT_DIRECTION = 'constellation';
+    				this.RIGHT_DIRECTION = 'asteroids';
+
             // saucer1/saucer2 agnostic... just whichever on they are currently choosing now
             this.SAUCER_SELECTED = ''; // when choosing Move cards, this is the saucer the player is choosing moves for
             this.MOVE_CARD_SELECTED = ''; // when choosing Move cards, this is set to the id of the move card currently selected
@@ -434,7 +440,7 @@ var color = 'f6033b';
             // Second Param: type of events
             // Third Param: the method that will be called when the event defined by the second parameter happen
             this.addEventToClass( "garment", "onclick", "onClickGarment");
-            this.addEventToClass('direction_token', 'onclick', 'onClick_moveCardDirection'); // add the click handler to all direction tokens
+            this.addEventToClass('direction_token', 'onclick', 'onClick_direction'); // add the click handler to all direction tokens
 
 
             // set these:
@@ -501,6 +507,57 @@ var color = 'f6033b';
                     }
                 },
 
+                onClick_confirmMove: function( evt )
+                {
+                    console.log( "Clicked confirm move button." );
+
+                    if(this.isCurrentPlayerActive() && this.checkAction( 'confirmMove', true ))
+                    { // player is allowed to discard a trap card (nomessage parameter is true so that an error message is not displayed)
+
+                        var saucer1Color = this.saucer1; // 01b508
+                        var saucer1Distance = this.CHOSEN_MOVE_CARD_SAUCER_1; // move_card_1_01b508
+                        if(saucer1Distance != '')
+                          saucer1Distance = saucer1Distance.split('_')[2]; // 0, 1, 2
+
+                        var saucer1Direction = this.CHOSEN_DIRECTION_SAUCER_1; // direction_asteroids
+                        if(saucer1Direction != '')
+                          saucer1Direction = saucer1Direction.split('_')[1]; // asteroids
+
+                        var saucer2Color = this.saucer2; // 01b508
+                        var saucer2Distance = this.CHOSEN_MOVE_CARD_SAUCER_2;
+                        if(saucer2Distance != '')
+                          saucer2Distance = saucer2Distance.split('_')[2]; // 0, 1, 2
+
+                        var saucer2Direction = this.CHOSEN_DIRECTION_SAUCER_2; // direction_asteroids
+                        if(saucer2Direction != '')
+                          saucer2Direction = saucer2Direction.split('_')[1]; // asteroids
+
+
+                        this.ajaxcall( "/crashandgrab/crashandgrab/actClickedConfirmMove.html", {
+                                                                                    saucer1Color: saucer1Color,
+                                                                                    saucer1Distance: saucer1Distance,
+                                                                                    saucer1Direction: saucer1Direction,
+                                                                                    saucer2Color: saucer2Color,
+                                                                                    saucer2Distance: saucer2Distance,
+                                                                                    saucer2Direction: saucer2Direction,
+                                                                                    lock: true
+                                                                                 },
+                                         this, function( result ) {
+
+                                            // What to do after the server call if it succeeded
+                                            // (most of the time: nothing)
+
+
+
+                                         }, function( is_error) {
+
+                                            // What to do after the server call in anyway (success or failure)
+                                            // (most of the time: nothing)
+
+                        } );
+                    }
+                },
+
                 // The player is selecting a card for any of these reasons:
                 //     A) They are choosing the move card they will play this round.
                 //     B)
@@ -508,106 +565,149 @@ var color = 'f6033b';
                 {
                     var htmlIdOfCard = evt.currentTarget.id;
                     console.log( "A move card was clicked with node "+htmlIdOfCard+"." );
-
                     var color = htmlIdOfCard.split('_')[3]; // 0090ff
 
-                    if(this.checkPossibleActions('clickDistance') && color == this.SAUCER_SELECTED)
-                    { // we are allowed to select cards based on our current state
-                        dojo.stopEvent( evt ); // Preventing default browser reaction
-
-                        this.MOVE_CARD_SELECTED = htmlIdOfCard; // this is the currently selected move card
-                        this.saveMoveCardSelection(color, htmlIdOfCard); // save the move card for this saucer in case it is the final selection
-
-                        this.unselectAllMoveCards(); // UNSELECT ALL other move cards so we can select a different one
-                        this.highlightAllSaucerMoveCards(color); // HIGHLIGHT ALL move cards for this saucer
-                        this.unhighlightSpecificMoveCard(htmlIdOfCard); // UNHIGHLIGHT this SPECIFIC move card
-                        this.selectSpecificMoveCard(htmlIdOfCard); // SELECT this SPECIFIC move card
-
-
-                        this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED); // highlight possible destinations on board
-                        // maybe highlight corresponding button to show it was selected
-                        // unselect other cards in case they were selected
-                        // maybe unselect other buttons if we highlight their selection
-
-                        //this.clickDistance(htmlIdOfCard); // send this distance to the server
-                    }
-                    else
+                    if(!this.isCurrentPlayerActive())
                     {
-                        this.showMessage( _("You cannot do anything with this move card right now."), 'error' );
+                        console.log( "We are not the current active player." );
                         return;
                     }
 
-/*
-                    if(this.isCurrentPlayerActive() && this.checkPossibleActions('selectZigs'))
-                    { // we are allowed to select cards based on our current state
-
-                        var selectedCards = this.playerHand.getSelectedItems(); // get the cards that were selected
-                        for( var i in selectedCards )
-                        { // go through selected cards
-                            var htmlIdOfCard = 'myhand_item_'+selectedCards[i].id;
-                            //console.log("selecting htmlIdOfCard:"+htmlIdOfCard);
-                            dojo.addClass( htmlIdOfCard, 'cardSelected' ); // give this card a new CSS class
-                        }
-
-                        // go through unselected cards
-                        var unselectedCards = this.playerHand.getUnselectedItems(); // get the cards that were selected
-                        for( var i in unselectedCards )
-                        {
-                            var htmlIdOfCard = 'myhand_item_'+unselectedCards[i].id;
-                            dojo.removeClass( htmlIdOfCard, 'cardSelected' ); // give this card a new CSS class
-                            dojo.addClass( htmlIdOfCard, 'cardUnselected' ); // give this card a new CSS class
-
-                        }
+                    if(this.MOVE_CARD_SELECTED == htmlIdOfCard)
+                    {
+                        console.log( "This move card is already selected." );
+                        return;
                     }
-                    else
-                    { // we are not in a state where we can select Zigs
-                        this.playerHand.unselectAll();
-                        var unselectedCards = this.playerHand.getUnselectedItems(); // get the cards that were selected
-                        for( var i in unselectedCards )
-                        {
-                            var htmlIdOfCard = 'myhand_item_'+unselectedCards[i].id;
-                            dojo.removeClass( htmlIdOfCard, 'cardSelected' ); // give this card a new CSS class
-                            dojo.addClass( htmlIdOfCard, 'cardUnselected' ); // give this card a new CSS class
 
-                        }
+                    if(false)
+                    { // this card has already been used
+                        console.log( "This card was used last round and cannot be used this round." );
+                        return;
                     }
-*/
+
+                    if(color != this.SAUCER_SELECTED)
+                    { // no saucer is selected or a different saucer is selected
+                        console.log( "The saucer belonging to this card is not selected." );
+                        return;
+                    }
+
+                    if( !this.checkPossibleActions('clickDistance') )
+                    { // we are not allowed to select cards based on our current state
+                        console.log( "The current state does not allow this card to be clicked." );
+                        return;
+                    }
+
+                    if( (this.saucer1 == color && this.CHOSEN_MOVE_CARD_SAUCER_1 == htmlIdOfCard) ||
+                      (this.saucer2 == color && this.CHOSEN_MOVE_CARD_SAUCER_2 == htmlIdOfCard) )
+                    { // this move card is already set
+                        console.log( "This move card is already set." );
+                        return;
+                    }
+
+                    // if a different move card is chosen, bring that move card back to your hand
+                    if( (this.CHOSEN_MOVE_CARD_SAUCER_1 != '' && this.saucer1 == color && this.CHOSEN_MOVE_CARD_SAUCER_1 != htmlIdOfCard) )
+                    {
+                        this.returnMoveCardToHandOfSaucer(color);
+                        this.unselectAllDirections();
+                        this.CHOSEN_MOVE_CARD_SAUCER_1 = '';
+                    }
+
+                    if(this.CHOSEN_MOVE_CARD_SAUCER_2 != '' && this.saucer2 == color && this.CHOSEN_MOVE_CARD_SAUCER_2 != htmlIdOfCard)
+                    { // a different move card is currently set
+                        this.returnMoveCardToHandOfSaucer(color);
+                        this.unselectAllDirections();
+                        this.CHOSEN_MOVE_CARD_SAUCER_2 = '';
+                    }
+
+                    this.MOVE_CARD_SELECTED = htmlIdOfCard; // this is the currently selected move card
+                    this.saveMoveCardSelection(color, htmlIdOfCard); // save the move card for this saucer in case it is the final selection
+
+                    this.unselectAllMoveCards(); // UNSELECT ALL other move cards so we can select a different one
+                    this.selectSpecificMoveCard(htmlIdOfCard); // SELECT this SPECIFIC move card
+
+                    //this.highlightAllMoveCardsForSaucer(color); // HIGHLIGHT ALL move cards for this saucer
+                    //this.unhighlightSpecificMoveCard(htmlIdOfCard); // UNHIGHLIGHT this SPECIFIC move card
+                    this.unhighlightAllMoveCards(); // UNhighlight ALL move cards
+
+
+                    this.highlightDirectionsForSaucer(color); // HIGHLIGHT the DIRECTIONS for the selected saucer and move card
+
+
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED); // highlight possible destinations on board
                 },
 
                 onClick_saucerDuringMoveCardSelection: function( evt )
                 {
                     var htmlIdOfSaucer = evt.currentTarget.id;
                     console.log( "A saucer was clicked during move card selection with node "+htmlIdOfSaucer+"." );
-                    if(document.getElementById(htmlIdOfSaucer))
-                    { // this component exists
-                        var color = htmlIdOfSaucer.split('_')[1]; // b92bba
+                    var saucerColor = htmlIdOfSaucer.split('_')[1]; // b92bba
 
-                        this.SAUCER_SELECTED = color; // save which saucer is now selected
-
-                        this.highlightAllPlayerSaucers(this.player_id); // highlight all player saucers
-                        this.selectSpecificSaucer(color); // select that saucer
-
-                        this.highlightAllSaucerMoveCards(color); // highlight the move cards now that it's time to choose one
-                        this.selectSelectedMoveCard(color); // select the move card that is currently selected by this saucer (or none if none are selected)
-
-                        this.highlightSpacesForSelectedSaucer(color); // highlight the board spaces for the selected saucer and move card (or none if none are selected)
-
-                        this.highlightDirectionsForSaucer(color); // highlight the direction for the selected saucer and move card
+                    if(this.SAUCER_SELECTED == htmlIdOfSaucer)
+                    { // this saucer is already selected
+                        console.log("This saucer is already selected.");
+                        return;
                     }
+
+                    if(this.MOVE_CARD_SELECTED != '')
+                    {
+                        var moveCardColor = this.MOVE_CARD_SELECTED.split('_')[3]; // 0090ff
+                        if(moveCardColor != saucerColor)
+                        { // a different saucer's move card is currently selected
+                            this.unselectSpecificMoveCard(this.MOVE_CARD_SELECTED);
+                        }
+                    }
+
+                    this.SAUCER_SELECTED = saucerColor; // save which saucer is now selected
+
+
+                    //this.highlightAllPlayerSaucers(this.player_id); // highlight all player saucers
+                    this.unhighlightAllSaucers(); // UNhighlight ALL saucers
+                    this.selectSpecificSaucer(saucerColor); // select that saucer
+
+                    if((this.saucer1 == saucerColor && this.CHOSEN_MOVE_CARD_SAUCER_1 == '') ||
+                       (this.saucer2 == saucerColor && this.CHOSEN_MOVE_CARD_SAUCER_2 == ''))
+                    { // we have not yet chosen a move card for this saucer
+                        this.highlightAllMoveCardsForSaucer(saucerColor); // highlight the move cards now that it's time to choose one
+                    }
+
+                    this.selectSelectedMoveCard(saucerColor); // select the move card that is currently selected by this saucer (or none if none are selected)
+
+                    this.selectSelectedDirection(saucerColor); // select the direction that is currently selected by this saucer (or none if none are selected)
+
+                    this.highlightSpacesForSelectedSaucer(saucerColor); // highlight the board spaces for the selected saucer and move card (or none if none are selected)
                 },
 
-                onClick_moveCardDirection: function( evt )
+                onClick_direction: function( evt )
                 {
                     var htmlIdOfToken = evt.currentTarget.id;
                     console.log( "A direction token was clicked with node "+htmlIdOfToken+"." );
+                    var direction = htmlIdOfToken.split('_')[1]; // sun, constellation
 
-                    if(document.getElementById(htmlIdOfToken))
-                    { // this component exists
-                        this.saveDirectionSelection(this.SAUCER_SELECTED, htmlIdOfToken);
+                    this.saveDirectionSelection(this.SAUCER_SELECTED, htmlIdOfToken);
 
-                        this.selectSpecificDirection(htmlIdOfToken); // select this token
+                    //this.highlightAllDirections(); // highlight all the directions because people can still change them
+                    this.unhighlightAllDirections(); // UNhighlight ALL directions
+                    this.selectSpecificDirection(htmlIdOfToken); // select this token
 
-                        // set the available spaces (use the existing method with a new optional paramter for direction)
+                    this.highlightPlayerSaucersWhoHaveNotChosen(); // highlight this player's saucers that haven't chosen yet
+
+                    // set the available spaces (use the existing method with a new optional paramter for direction)
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED, direction); // highlight possible destinations on board
+
+
+                    // move the selected move card to its spot on the ship mat if it's not already there
+
+                    if( $(this.MOVE_CARD_SELECTED) )
+                    { // this card exists
+                        console.log('Move card FROM ' + this.MOVE_CARD_SELECTED + ' to player_board_move_card_holder_' + this.SAUCER_SELECTED + '.');
+                        //this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id ); // teleport card FROM, TO
+
+                        var destinationHtmlId = 'player_board_move_card_holder_'+this.SAUCER_SELECTED;
+                        this.attachToNewParent( this.MOVE_CARD_SELECTED, destinationHtmlId ); // needed so it doesn't slide under the player board
+                        this.slideToObject( this.MOVE_CARD_SELECTED, destinationHtmlId ).play(); // slide card FROM, TO
+
+                        this.rotateTo( this.MOVE_CARD_SELECTED, this.getDegreesRotated(direction) );
+                        $(this.MOVE_CARD_SELECTED).style.removeProperty('left'); // remove left property (doesn't seem to work)
                     }
                 },
 
@@ -1042,32 +1142,49 @@ this.unhighlightAllGarments();
                           if(this.SAUCER_SELECTED == '')
                           { // NO saucer is selected
 
-                              this.highlightAllPlayerSaucers(this.player_id); // highlight all saucers belonging to the player
+                              if(!this.hasSaucerChosenMoveAndDirection(this.saucer1))
+                              { // this saucer still needs to choose move card or direction
+                                  this.highlightSpecificPlayerSaucer(this.saucer1); // highlight it
+                              }
 
+                              if(!this.hasSaucerChosenMoveAndDirection(this.saucer2))
+                              { // this saucer still needs to choose move card or direction
+                                  this.highlightSpecificPlayerSaucer(this.saucer2); // highlight it
+                              }
                           }
                           else
                           { // a saucer is selected
 
                               // select just the saucer selected
                               this.selectSpecificSaucer(this.SAUCER_SELECTED);
-                              this.unhighlightAllSaucers(); // unhighlight all saucers now that they selected one
+                              //this.unhighlightAllSaucers(); // unhighlight all saucers now that they selected one
 
                               if(this.MOVE_CARD_SELECTED == '')
                               { // NO move card is selected
 
                                   // highlight the move cards
-                                  this.highlightAllSaucerMoveCards(this.SAUCER_SELECTED);
+                                  this.unhighlightAllMoveCards();
+                                  this.highlightAllMoveCardsForSaucer(this.SAUCER_SELECTED);
                               }
                               else
-                              { // a move card is selected
+                              { // a move card is chosen for the selected saucer
 
                                   // select Move card
+                                  this.unhighlightAllMoveCards();
                                   this.selectSpecificMoveCard(this.MOVE_CARD_SELECTED);
 
                                   // highlight all spaces available
                                   this.highlightPossibleMoveSelections(args.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED);
                               }
                           }
+
+                          var buttonLabel = "Confirm";
+                          var isDisabled = false; // TODO: Update this to be disabled until moves are selected
+                          var hoverOverText = "Confirm your moves."; // hover over text or '' if we don't want a hover over
+                          var actionName = "confirmMove"; // shoot, useEquipment
+                          var makeRed = false;
+
+                          this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
 
 
                         //var buttonLabel = playerSaucerMoves[key]['buttonLabel'];
@@ -1408,6 +1525,36 @@ this.unhighlightAllGarments();
             }
         },
 
+        hasSaucerChosenMoveAndDirection: function(saucerColor)
+        {
+
+            console.log("hasSaucerChosenMoveAndDirection");
+            console.log("CHOSEN_MOVE_CARD_SAUCER_1 " + this.CHOSEN_MOVE_CARD_SAUCER_1);
+            console.log("CHOSEN_DIRECTION_SAUCER_1 " + this.CHOSEN_DIRECTION_SAUCER_1);
+            console.log("saucerColor " + saucerColor);
+            console.log("this.saucer1 " + this.saucer1);
+            console.log("CHOSEN_MOVE_CARD_SAUCER_2 " + this.CHOSEN_MOVE_CARD_SAUCER_2);
+            console.log("CHOSEN_DIRECTION_SAUCER_2 " + this.CHOSEN_DIRECTION_SAUCER_2);
+            console.log("this.saucer2 " + this.saucer2);
+
+
+            if(saucerColor == '')
+            {
+              return true;
+            }
+
+            if(saucerColor == this.saucer1 && this.CHOSEN_MOVE_CARD_SAUCER_1 != '' && this.CHOSEN_DIRECTION_SAUCER_1 != '')
+            {
+              return true;
+            }
+
+            if(saucerColor == this.saucer2 && this.CHOSEN_MOVE_CARD_SAUCER_2 != '' && this.CHOSEN_DIRECTION_SAUCER_2 != '')
+            {
+              return true;
+            }
+console.log("return false");
+            return false;
+        },
 
         convertGarmentTypeIntToString: function(typeAsInt)
         {
@@ -1475,41 +1622,65 @@ this.unhighlightAllGarments();
         {
             this.unselectAllSaucers(); // unselect all saucers that may have been selected previously
             var htmlIdSaucer = "saucer_"+color;
-            dojo.removeClass( htmlIdSaucer, 'cardHighlighted' ); // unhighlight it
-            dojo.addClass( htmlIdSaucer, 'cardSelected' ); // select it
+            dojo.removeClass( htmlIdSaucer, 'saucerHighlighted' ); // unhighlight it
+            dojo.addClass( htmlIdSaucer, 'saucerSelected' ); // select it
 
         },
 
         unhighlightAllSaucers: function()
         {
-          dojo.query( '.saucer' ).removeClass( 'cardHighlighted' );
+          dojo.query( '.saucer' ).removeClass( 'saucerHighlighted' );
         },
 
         unselectAllSaucers: function()
         {
-          dojo.query( '.saucer' ).removeClass( 'cardSelected' );
+          dojo.query( '.saucer' ).removeClass( 'saucerSelected' );
         },
 
         highlightAllPlayerSaucers: function(playerId)
         {
             var htmlIdSaucer1 = "saucer_"+this.saucer1;
-            dojo.removeClass( htmlIdSaucer1, 'cardSelected' ); // unselect it
-            dojo.addClass( htmlIdSaucer1, 'cardHighlighted' ); // highlight it
+            dojo.removeClass( htmlIdSaucer1, 'saucerSelected' ); // unselect it
+            dojo.addClass( htmlIdSaucer1, 'saucerHighlighted' ); // highlight it
             dojo.connect( $(htmlIdSaucer1), 'onclick', this, 'onClick_saucerDuringMoveCardSelection' ); // attached our saucer tokens to this onclick handler
 
             var htmlIdSaucer2 = "saucer_"+this.saucer2;
             if(document.getElementById(htmlIdSaucer2))
             { // this component exists
-                dojo.removeClass( htmlIdSaucer2, 'cardSelected' ); // unselect it
-                dojo.addClass( htmlIdSaucer2, 'cardHighlighted' ); // highlight it
+                dojo.removeClass( htmlIdSaucer2, 'saucerSelected' ); // unselect it
+                dojo.addClass( htmlIdSaucer2, 'saucerHighlighted' ); // highlight it
                 dojo.connect( $(htmlIdSaucer2), 'onclick', this, 'onClick_saucerDuringMoveCardSelection' ); // attached our saucer tokens to this onclick handler
             }
 
         },
 
+        highlightPlayerSaucersWhoHaveNotChosen: function(playerId)
+        {
+            if(!this.hasSaucerChosenMoveAndDirection(this.saucer1))
+            { // saucer 1 has not chosen their move and direction
+                this.highlightSpecificPlayerSaucer(this.saucer1);
+            }
+
+            if(!this.hasSaucerChosenMoveAndDirection(this.saucer2))
+            { // saucer 2 has not chosen their move and direction
+                this.highlightSpecificPlayerSaucer(this.saucer2);
+            }
+        },
+
         highlightSpecificPlayerSaucer: function(saucer)
         {
-console.log("highlightSpecificPlayerSaucer");
+            console.log("highlightSpecificPlayerSaucer");
+            var htmlIdSaucer = "saucer_"+saucer;
+            if(document.getElementById(htmlIdSaucer))
+            { // this component exists
+                dojo.removeClass( htmlIdSaucer, 'saucerSelected' ); // unselect it
+                dojo.addClass( htmlIdSaucer, 'saucerHighlighted' ); // highlight it
+
+                if(true)
+                { // we are in the move card state
+                    dojo.connect( $(htmlIdSaucer), 'onclick', this, 'onClick_saucerDuringMoveCardSelection' ); // attached our saucer tokens to this onclick handler
+                }
+            }
         },
 
         highlightDirectionsForSaucer: function(color)
@@ -1544,31 +1715,31 @@ console.log("highlightSpecificPlayerSaucer");
         selectSpecificDirection: function(directionAsHtmlId)
         {
             this.unselectAllDirections();
-            this.unhighlightAllDirections();
-            dojo.addClass( directionAsHtmlId, 'cardSelected' ); // select it
+            dojo.removeClass( directionAsHtmlId, 'directionHighlighted' ); // unhighlight it
+            dojo.addClass( directionAsHtmlId, 'directionSelected' ); // select it
         },
 
         unselectAllDirections: function()
         {
-            dojo.query( '.direction_token' ).removeClass( 'cardSelected' );
+            dojo.query( '.direction_token' ).removeClass( 'directionSelected' );
         },
 
         highlightAllDirections: function()
         {
             this.unselectAllDirections();
-            dojo.query( '.direction_token' ).addClass( 'cardHighlighted' );
+            dojo.query( '.direction_token' ).addClass( 'directionHighlighted' );
         },
 
         unhighlightAllDirections: function()
         {
-            dojo.query( '.direction_token' ).removeClass( 'cardHighlighted' );
+            dojo.query( '.direction_token' ).removeClass( 'directionHighlighted' );
         },
 
         highlightSpecificDirection: function(directionAsHtmlId)
         {
             this.unselectAllDirections();
             this.unhighlightAllDirections();
-            dojo.addClass( directionAsHtmlId, 'cardHighlighted' ); // highlight it
+            dojo.addClass( directionAsHtmlId, 'directionHighlighted' ); // highlight it
         },
 
         highlightSpacesForSelectedSaucer: function(color)
@@ -1579,14 +1750,41 @@ console.log("highlightSpecificPlayerSaucer");
 
                 if(this.CHOSEN_MOVE_CARD_SAUCER_1 != '')
                 {
-                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, this.CHOSEN_MOVE_CARD_SAUCER_1);
+                    var chosenDirectionSolo = this.CHOSEN_DIRECTION_SAUCER_1.split('_')[1]; // asteroids
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, this.CHOSEN_MOVE_CARD_SAUCER_1, chosenDirectionSolo);
                 }
             }
             else
             { // we are selecting for saucer 2
                 if(this.CHOSEN_MOVE_CARD_SAUCER_2 != '')
                 {
-                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, this.CHOSEN_MOVE_CARD_SAUCER_2);
+                    var chosenDirectionSolo = this.CHOSEN_DIRECTION_SAUCER_2.split('_')[1]; // asteroids
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, this.CHOSEN_MOVE_CARD_SAUCER_2, chosenDirectionSolo);
+                }
+            }
+        },
+
+        selectSelectedDirection: function(color)
+        {
+console.log("selectSelectedDirection of color: "+color);
+            this.unselectAllDirections(); // unselect all other directions so we can select a different one
+
+            if(this.saucer1 == color)
+            { // we are selecting a direction for saucer1
+                if(this.CHOSEN_DIRECTION_SAUCER_1 != '')
+                { // this saucer has a previously selected direction
+
+                        this.selectSpecificDirection(this.CHOSEN_DIRECTION_SAUCER_1);
+
+                }
+            }
+            else
+            { // we are selecting a direction for saucer2
+                if(this.CHOSEN_DIRECTION_SAUCER_2 != '')
+                { // this saucer has a previously selected direction
+
+                        this.selectSpecificDirection(this.CHOSEN_DIRECTION_SAUCER_2);
+
                 }
             }
         },
@@ -1600,60 +1798,119 @@ console.log("selectSelectedMoveCard of color: "+color);
             { // we are selecting a move card in saucer 1's hand
                 if(this.CHOSEN_MOVE_CARD_SAUCER_1 != '')
                 { // this saucer has a previously selected move card
-                    this.selectSpecificMoveCard(this.CHOSEN_MOVE_CARD_SAUCER_1);
+                    //if(this.CHOSEN_DIRECTION_SAUCER_1 == '')
+                    //{ // it doesn't yet have a chosen direction (it's still in hand, not on player board... cause it's weird for a card on player board to be selected)
+                        this.selectSpecificMoveCard(this.CHOSEN_MOVE_CARD_SAUCER_1);
+                    //}
                 }
             }
             else
             { // we are selecting a move card in saucer 2's hand
                 if(this.CHOSEN_MOVE_CARD_SAUCER_2 != '')
                 { // this saucer has a previously selected move card
-                    this.selectSpecificMoveCard(this.CHOSEN_MOVE_CARD_SAUCER_2);
+                    //if(this.CHOSEN_DIRECTION_SAUCER_2 == '')
+                    //{ // it doesn't yet have a chosen direction (it's still in hand, not on player board... cause it's weird for a card on player board to be selected)
+                        this.selectSpecificMoveCard(this.CHOSEN_MOVE_CARD_SAUCER_2);
+                    //}
                 }
             }
         },
 
-        highlightAllSaucerMoveCards: function(color)
+        unselectSpecificMoveCard: function(htmlIdOfCard)
+        {
+            this.MOVE_CARD_SELECTED = '';
+            dojo.removeClass( htmlIdOfCard, 'moveCardSelected' ); // remove a CSS class from this element
+        },
+
+        returnMoveCardToHandOfSaucer: function(color)
+        {
+            this.moveChosenMoveCardBackToHand(color, 0);
+            this.moveChosenMoveCardBackToHand(color, 1);
+            this.moveChosenMoveCardBackToHand(color, 2);
+
+            if(color == this.saucer1)
+            {
+                this.CHOSEN_DIRECTION_SAUCER_1 = '';
+            }
+
+            if(color == this.saucer2)
+            {
+                this.CHOSEN_DIRECTION_SAUCER_2 = '';
+            }
+        },
+
+        moveChosenMoveCardBackToHand: function(color, distanceType)
+        {
+            var htmlId = "move_card_"+ distanceType + "_"+color;
+            var destination = "move_card_holder_" + distanceType + "_"+color;
+            if(document.getElementById(htmlId))
+            { // this component exists
+                console.log('Move card FROM ' + htmlId + ' to player_board_move_card_holder_' + destination + '.');
+                //this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id ); // teleport card FROM, TO
+
+                this.attachToNewParent( htmlId, destination ); // needed so it doesn't slide under the player board
+                this.slideToObject( htmlId, destination ).play(); // slide card FROM, TO
+                this.rotateTo(htmlId, 0); // unrotate it
+                dojo.connect( $(htmlId), 'onclick', this, 'onClick_moveCard' ); // attached our saucer tokens to this onclick handler (must do it after attaching to new parent)
+
+                this.unselectSpecificMoveCard(htmlId);
+                this.unselectAllDirections();
+                this.highlightAllDirections();
+            }
+        },
+
+        highlightAllMoveCardsForSaucer: function(color)
         {
             this.unhighlightAllMoveCards(); // remove highlights from all
 
             var htmlId0 = "move_card_0_"+color;
             if(document.getElementById(htmlId0))
             { // this component exists
-                dojo.addClass( htmlId0, 'cardHighlighted' ); // highlight it
+                if(this.CHOSEN_MOVE_CARD_SAUCER_1 != htmlId0 && this.CHOSEN_MOVE_CARD_SAUCER_2 != htmlId0)
+                { // it's not already chosen
+                    dojo.addClass( htmlId0, 'moveCardHighlighted' ); // highlight it
+                }
             }
 
             var htmlId1 = "move_card_1_"+color;
             if(document.getElementById(htmlId1))
             { // this component exists
-                dojo.addClass( htmlId1, 'cardHighlighted' ); // highlight it
+                if(this.CHOSEN_MOVE_CARD_SAUCER_1 != htmlId1 && this.CHOSEN_MOVE_CARD_SAUCER_2 != htmlId1)
+                { // it's not already chosen
+                    dojo.addClass( htmlId1, 'moveCardHighlighted' ); // highlight it
+                }
             }
 
             var htmlId2 = "move_card_2_"+color;
             if(document.getElementById(htmlId2))
             { // this component exists
-                dojo.addClass( htmlId2, 'cardHighlighted' ); // highlight it
+                if(this.CHOSEN_MOVE_CARD_SAUCER_1 != htmlId2 && this.CHOSEN_MOVE_CARD_SAUCER_2 != htmlId2)
+                { // it's not already chosen
+                    dojo.addClass( htmlId2, 'moveCardHighlighted' ); // highlight it
+                }
             }
         },
 
         unhighlightAllMoveCards: function()
         {
-            dojo.query( '.move_card_in_hand' ).removeClass( 'cardHighlighted' ); // remove highlights from all
+            console.log("unhighlightAllMoveCards");
+            dojo.query( '.move_card' ).removeClass( 'moveCardHighlighted' ); // remove highlights from all
         },
 
         unselectAllMoveCards: function()
         {
-            dojo.query( '.move_card_in_hand' ).removeClass( 'cardSelected' ); // remove highlights from all
+            dojo.query( '.move_card' ).removeClass( 'moveCardSelected' ); // remove highlights from all
         },
 
         unhighlightSpecificMoveCard: function(htmlIdOfCard)
         {
-            dojo.removeClass( htmlIdOfCard, 'cardHighlighted' ); // give this card a new CSS class
+            dojo.removeClass( htmlIdOfCard, 'moveCardHighlighted' ); // remove a CSS class from this element
         },
 
         selectSpecificMoveCard: function(htmlIdOfCard)
         {
             this.unhighlightSpecificMoveCard(htmlIdOfCard); // remove highlighting if it has any
-            dojo.addClass( htmlIdOfCard, 'cardSelected' ); // give this card a new CSS class
+            dojo.addClass( htmlIdOfCard, 'moveCardSelected' ); // give this card a new CSS class
         },
 
         highlightSpace: function(htmlOfSpace)
@@ -1661,8 +1918,9 @@ console.log("selectSelectedMoveCard of color: "+color);
             dojo.addClass( htmlOfSpace, 'spaceHighlighted' ); // give this card a new CSS class
         },
 
-        highlightPossibleMoveSelections: function(playerSaucerMoves, playerId, saucerSelected, moveCardSelectedHtmlId)
+        highlightPossibleMoveSelections: function(playerSaucerMoves, playerId, saucerSelected, moveCardSelectedHtmlId, direction='')
         {
+            console.log("highlightPossibleMoveSelections with player "+playerId+" saucer "+saucerSelected+" move card "+ moveCardSelectedHtmlId + " direction " + direction);
             this.unhighlightAllSpaces();
 
             var moveCardSelected = moveCardSelectedHtmlId.split('_')[2]; // 0, 1, 2
@@ -1690,14 +1948,23 @@ console.log("selectSelectedMoveCard of color: "+color);
                                 if(moveCardKey == moveCardSelected)
                                 { // this is the move card currently selected
 
-                                    const spaceKeys = Object.keys(playerSaucerMoves[playerKey][saucerKey][moveCardKey]);
-                                    for (const spaceKey of spaceKeys)
-                                    { // go through each space available move card for this saucer
+                                    const directionKeys = Object.keys(playerSaucerMoves[playerKey][saucerKey][moveCardKey]);
+                                    for (const directionKey of directionKeys)
+                                    { // go through each direction for this move card
 
-                                        var space = playerSaucerMoves[playerKey][saucerKey][moveCardKey][spaceKey]; // 8_7, 3_4
-                                        console.log("for player " + playerKey+" saucer " + saucerKey + " move card " + moveCardKey + " we found a valid space of " + space);
-                                        var htmlOfSpace = 'square_'+space; // square_6_5
-                                        this.highlightSpace(htmlOfSpace);
+console.log("directionKey is " + directionKey + " and direction is " + direction);
+                                        if(direction == '' || direction == directionKey)
+                                        {
+
+                                            var spaces = playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey]; // array of spaces like 8_7, 3_4
+                                            for (const space of spaces)
+                                            { // go through each direction for this move card
+
+                                                console.log("for player " + playerKey+" saucer " + saucerKey + " move card " + moveCardKey + " direction " + directionKey + " we found a valid space of " + space);
+                                                var htmlOfSpace = 'square_'+space; // square_6_5
+                                                this.highlightSpace(htmlOfSpace);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -1786,10 +2053,10 @@ console.log("selectSelectedMoveCard of color: "+color);
                 dojo.destroy('board_tile_container_6');
 
                 // center the directions based on the number of players
-                dojo.style('direction_left', "marginTop", "224px"); // move the left direction to where the extra tiles would have been
-                dojo.style('direction_right', "marginTop", "224px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_up', "marginLeft", "292px");
-                dojo.style('direction_down', "marginLeft", "292px");
+                dojo.style('direction_constellation', "marginTop", "224px"); // move the left direction to where the extra tiles would have been
+                dojo.style('direction_asteroids', "marginTop", "224px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_sun', "marginLeft", "292px");
+                dojo.style('direction_meteor', "marginLeft", "292px");
 
                 dojo.style('board_tile_column', "width", "685px"); // set the width of the board based on saucer count
             }
@@ -1800,10 +2067,10 @@ console.log("selectSelectedMoveCard of color: "+color);
               dojo.destroy('board_tile_container_6');
 
                 // center the directions based on the number of players
-                dojo.style('direction_left', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_right', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_up', "marginLeft", "322px");
-                dojo.style('direction_down', "marginLeft", "322px");
+                dojo.style('direction_constellation', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_asteroids', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_sun', "marginLeft", "322px");
+                dojo.style('direction_meteor', "marginLeft", "322px");
 
                 dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
             }
@@ -1814,10 +2081,10 @@ console.log("selectSelectedMoveCard of color: "+color);
               dojo.destroy('board_tile_container_5');
 
                 // center the directions based on the number of players
-                dojo.style('direction_left', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_right', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_up', "marginLeft", "348px");
-                dojo.style('direction_down', "marginLeft", "348px");
+                dojo.style('direction_constellation', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_asteroids', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
+                dojo.style('direction_sun', "marginLeft", "348px");
+                dojo.style('direction_meteor', "marginLeft", "348px");
 
                 dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
             }
@@ -1854,7 +2121,7 @@ console.log("selectSelectedMoveCard of color: "+color);
 
         putMoveCardInPlayerHand: function( used, distance, saucer_color )
         {
-            var divHolder = 'move_card_'+distance+'_'+saucer_color;
+            var divHolder = 'move_card_holder_'+distance+'_'+saucer_color;
             console.log("placing move card in:"+divHolder);
             var usedInt = this.convertUsedStringToInt(used);
             dojo.place( this.format_block( 'jstpl_moveCard', {
@@ -2077,15 +2344,20 @@ console.log("selectSelectedMoveCard of color: "+color);
 
         getDegreesRotated: function(directionAsString)
         {
+          console.log("rotating direction:"+directionAsString);
             switch( directionAsString )
             {
-                case "MOUNTAIN":
+                case this.LEFT_DIRECTION:
+                console.log("45");
                   return 45;
-                case "CACTUS":
+                case this.UP_DIRECTION:
+                console.log("315");
                   return 315;
-                case "BRIDGE":
+                case this.RIGHT_DIRECTION:
+                console.log("225");
                   return 225;
-                case "RIVER":
+                case this.DOWN_DIRECTION:
+                console.log("135");
                   return 135;
             }
         },
