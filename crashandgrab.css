@@ -908,6 +908,11 @@ float: left;
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
+.clickable
+{
+    cursor: pointer;
+}
+
 .cardSelected
 {
     border: 2px solid yellow ! important;

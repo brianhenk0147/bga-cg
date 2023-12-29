@@ -629,9 +629,8 @@ var color = 'f6033b';
                     //this.unhighlightSpecificMoveCard(htmlIdOfCard); // UNHIGHLIGHT this SPECIFIC move card
                     this.unhighlightAllMoveCards(); // UNhighlight ALL move cards
 
-
                     this.highlightDirectionsForSaucer(color); // HIGHLIGHT the DIRECTIONS for the selected saucer and move card
-
+                    this.makeAllDirectionTokensClickable(); // make it clear you can click on directions
 
                     this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED); // highlight possible destinations on board
                 },
@@ -668,7 +667,11 @@ var color = 'f6033b';
                        (this.saucer2 == saucerColor && this.CHOSEN_MOVE_CARD_SAUCER_2 == ''))
                     { // we have not yet chosen a move card for this saucer
                         this.highlightAllMoveCardsForSaucer(saucerColor); // highlight the move cards now that it's time to choose one
+                        this.removeClickableFromAllDirectionTokens(); // we don't want direction tokens to appear clickable until a move card is selected
                     }
+
+                    this.makeMoveCardsForSaucerClickable(saucerColor);
+
 
                     this.selectSelectedMoveCard(saucerColor); // select the move card that is currently selected by this saucer (or none if none are selected)
 
@@ -682,6 +685,12 @@ var color = 'f6033b';
                     var htmlIdOfToken = evt.currentTarget.id;
                     console.log( "A direction token was clicked with node "+htmlIdOfToken+"." );
                     var direction = htmlIdOfToken.split('_')[1]; // sun, constellation
+
+                    if(this.MOVE_CARD_SELECTED == '')
+                    { // no move card is selected so it doesn't make sense to select a directions
+                        console.log("no move card is selected");
+                        return;
+                    }
 
                     this.saveDirectionSelection(this.SAUCER_SELECTED, htmlIdOfToken);
 
@@ -1859,6 +1868,47 @@ console.log("selectSelectedMoveCard of color: "+color);
             }
         },
 
+        removeClickableFromAllDirectionTokens: function()
+        {
+            dojo.query( '.direction_token' ).removeClass( 'clickable' );
+        },
+
+        makeAllDirectionTokensClickable: function()
+        {
+            dojo.query( '.direction_token' ).addClass( 'clickable' );
+        },
+
+        removeClickableFromAllMoveCards: function()
+        {
+            dojo.query( '.move_card' ).removeClass( 'clickable' );
+        },
+
+        makeMoveCardsForSaucerClickable: function(color)
+        {
+            this.removeClickableFromAllMoveCards();
+
+            var htmlId0 = "move_card_0_"+color;
+            if(document.getElementById(htmlId0))
+            { // this component exists
+
+                    dojo.addClass( htmlId0, 'clickable' );
+            }
+
+            var htmlId1 = "move_card_1_"+color;
+            if(document.getElementById(htmlId1))
+            { // this component exists
+
+                    dojo.addClass( htmlId1, 'clickable' );
+            }
+
+            var htmlId2 = "move_card_2_"+color;
+            if(document.getElementById(htmlId2))
+            { // this component exists
+
+                    dojo.addClass( htmlId2, 'clickable' );
+            }
+        },
+
         highlightAllMoveCardsForSaucer: function(color)
         {
             this.unhighlightAllMoveCards(); // remove highlights from all
@@ -2092,12 +2142,20 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
         putSaucerOnTile: function( x, y, owner, color )
         {
+            var saucerHtmlId = 'saucer_'+color;
+
             dojo.place( this.format_block( 'jstpl_saucer', {
                 color: color
             } ) , 'square_'+x+'_'+y );
 
             //this.placeOnObject( 'disc_'+color, 'square_'+x+'_'+y );
-            this.slideToObject( 'saucer_'+color, 'square_'+x+'_'+y ).play();
+            this.slideToObject( saucerHtmlId, 'square_'+x+'_'+y ).play();
+
+            if(color == this.saucer1 || color == this.saucer2)
+            { // this saucer is owned by this player
+
+                  dojo.addClass( saucerHtmlId, 'clickable' );
+            }
         },
 
         putCrownOnPlayerBoard: function( color )
