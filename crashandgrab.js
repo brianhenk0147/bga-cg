@@ -3761,11 +3761,11 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
               console.log("DO NOT SHOW");
             }
 
-            for( var i in notif.args.players )
-            { // go through all the players
-                var player = notif.args.players[i];
-                console.log("turnOrder arrow player:"+player.player_id);
-                this.setTurnDirectionArrow(x, y, player.player_id); // we don't want to show the turn direction arrow until it has been chosen for this round
+            for( var player_id in this.gamedatas.players )
+            {
+                var player = this.gamedatas.players[player_id];
+                console.log("turnOrder arrow player:"+player_id);
+                this.setTurnDirectionArrow(x, y, player_id); // we don't want to show the turn direction arrow until it has been chosen for this round
             }
         }
 

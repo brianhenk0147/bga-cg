@@ -2570,6 +2570,19 @@ class CrashAndGrab extends Table
 			self::DbQuery( $sqlUpdate );
 		}
 
+		function convertTurnOrderIntToText($turnOrderInt)
+		{
+				switch($turnOrderInt)
+				{
+						case 0:
+						return clienttranslate("CLOCKWISE");
+						case 1:
+						return clienttranslate("COUNTER-CLOCKWISE");
+						default:
+						return clienttranslate("UNKNOWN");
+				}
+		}
+
 		function resetTurnOrder($clockwise)
 		{
 				$startingOstrichPlayerId = $this->getStartPlayer(); // get the owner of the ostrich with the crown
@@ -4745,7 +4758,7 @@ class CrashAndGrab extends Table
 		{
 				$playerIdList = self::getObjectListFromDB( "SELECT player_id FROM player" );
 
-				$turnOrder = 2;
+				$turnOrder = 2; // default to not showing
 				if($show == true)
 				{ // show the turn direction arrows
 						$turnOrder = self::getUniqueValueFromDb("SELECT ostrich_last_turn_order FROM ostrich WHERE ostrich_has_crown=1");
@@ -5154,10 +5167,16 @@ class CrashAndGrab extends Table
     {
 				// Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
         self::checkAction( 'confirmMove' );
-throw new feException( "Clicked confirm move.");
+//throw new feException( "Clicked confirm move.");
+
+				$playerConfirming = $this->getOwnerIdOfOstrich($saucer1Color);
 
 				// validate the move
+				// roll the rotation die
+
 				// move to next phase when everyone else confirms
+				// and tell the machine state to use transtion "directionChosen" if all players are now unactive
+        $this->gamestate->setPlayerNonMultiactive( $playerConfirming, "allMovesChosen" );
 		}
 
 		function executeClickedMoveCard( $distance, $color )
@@ -5749,6 +5768,34 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						'discardedCard' => $trapCardId,
 						'player_name' => self::getActivePlayerName()
 				) );
+		}
+
+		function rollRotationDie()
+		{
+				//if($this->getNumberOfPlayers() > 2)
+				//{ // we don't care about turn order in a 2-player game
+
+						// roll the rotation die
+						$turnOrderInt = rand(0,1);
+
+						$turnOrderFriendly = $this->convertTurnOrderIntToText($turnOrderInt);
+
+						// notify players of the direction (send clockwise/counter)
+						self::notifyAllPlayers( 'updateTurnOrder', clienttranslate( 'The turn direction this round is ${turnOrderFriendly}.' ), array(
+										'i18n' => array('turnOrderFriendly'),
+										'turnOrderFriendly' => $turnOrderFriendly,
+										'turnOrder' => $turnOrderInt
+						) );
+				//}
+
+				$this->gamestate->nextState( "locateCrashedSaucer" ); // locate first player's saucers (there won't ever be any but let's go anyway)
+		}
+
+		function locateCrashedSaucersForPlayer()
+		{
+				// if the player has any crashed saucers, locate them
+
+				$this->gamestate->nextState( "moveSaucer" );
 		}
 
 		// Called after claimZag to transition to chooseZigPhase and set all players to active.

@@ -71,7 +71,7 @@ $machinestates = array(
     		"type" => "multipleactiveplayer",
         'args' => 'argGetAllPlayerSaucerMoves',
     		"possibleactions" => array( "clickDistance", "undoChooseMoveCard", "confirmMove" ),
-    		"transitions" => array( "zigChosen" => 2, "startOver" => 2, "directionsChosen" => 6 )
+    		"transitions" => array( "zigChosen" => 2, "startOver" => 2, "allMovesChosen" => 25 )
     ),
 
     // SET TRAPS PHASE (simultaneous timed)
@@ -281,15 +281,25 @@ $machinestates = array(
     		"transitions" => array( "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "endTurn" => 8 )
     ),
 
-    30 => array(
-    		"name" => "chooseMoveCardDirection",
-    		"description" => clienttranslate('${actplayer} is choosing which garment they will steal.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which off-colored garment to steal.'),
-    		"type" => "activeplayer",
-        'args' => 'argStealableGarments',
-        "possibleactions" => array( "stealGarmentClick" ),
-    		"transitions" => array( "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "endTurn" => 8 )
+    25 => array(
+        "name" => "rollRotationDie",
+        "description" => "",
+        "type" => "game",
+        "action" => "rollRotationDie",
+        "updateGameProgression" => true,
+        "transitions" => array( "locateCrashedSaucer" => 26 )
     ),
+
+    26 => array(
+        "name" => "playerTurnLocateCrashedSaucer",
+        "description" => "",
+        "type" => "game",
+        "action" => "locateCrashedSaucersForPlayer",
+        "updateGameProgression" => true,
+        "transitions" => array( "moveSaucer" => 2 )
+    ),
+
+
 
 
 /*
