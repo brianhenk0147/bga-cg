@@ -129,24 +129,15 @@ $machinestates = array(
         "transitions" => array( "nextMovementTurn" => 4, "chooseOstrich" => 11, "chooseXValue" => 12, "askTrapBasic" => 19 )
     ),
 
-    // END ONE PLAYER'S MOVE TURN
-    8 => array(
-        "name" => "endMoveTurn",
-        "description" => "",
-        "type" => "game",
-        "action" => "movementTurnCleanup",
-        "updateGameProgression" => false,
-        "transitions" => array( "nextMovementTurn" => 4, "endRound" => 5, "chooseOstrich" => 11, "chooseXValue" => 12, "askTrapBasic" => 19 )
-    ),
-
-    // PLAYER HIT SKATEBOARD SO WE NEED TO ASK WHICH DIRECTION THEY WANT TO TRAVEL
+    // PLAYER HIT ACCELERATOR SO WE NEED TO ASK WHICH DIRECTION THEY WANT TO TRAVEL
     9 => array(
-    		"name" => "askUseSkateboard",
-    		"description" => clienttranslate('${actplayer} is choosing where they will ride their skateboard.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose the direction you will travel on the skateboard.'),
-    		"type" => "activeplayer",
-    		"possibleactions" => array( "executeSkateboardMove" ),
-    		"transitions" => array( "askUseZag" => 14, "askUseSkateboard" => 9, "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "askWhichGarmentToDiscard" => 18, "askToRespawn" => 16, "endGame" => 99 )
+    		"name" => "chooseAcceleratorDirection",
+    		"description" => clienttranslate('${actplayer} is choosing their Accelerator direction.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose the direction you will travel on the Accelerator.'),
+        "type" => "activeplayer",
+        'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
+        "possibleactions" => array( "clickDirection", "clickSpace" ),
+    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endPlayerTurn" => 36 )
     ),
 
     10 => array(
@@ -287,16 +278,72 @@ $machinestates = array(
         "type" => "game",
         "action" => "rollRotationDie",
         "updateGameProgression" => true,
-        "transitions" => array( "locateCrashedSaucer" => 26 )
+        "transitions" => array( "locateCrashedSaucer" => 27, "askWhichSaucerGoesFirst" => 26 )
     ),
 
     26 => array(
+    		"name" => "chooseWhichSaucerGoesFirst",
+    		"description" => clienttranslate('${actplayer} is choosing which saucer will go first.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose which of your saucers will go first.'),
+    		"type" => "activeplayer",
+        'args' => 'argGetSaucerGoFirstButtons',
+        "possibleactions" => array( "clickSaucerToGoFirst" ),
+    		"transitions" => array( "locateCrashedSaucer" => 27 )
+    ),
+
+    27 => array(
         "name" => "playerTurnLocateCrashedSaucer",
-        "description" => "",
+        "description" => clienttranslate('Locating crashed saucers...'),
         "type" => "game",
         "action" => "locateCrashedSaucersForPlayer",
         "updateGameProgression" => true,
-        "transitions" => array( "moveSaucer" => 2 )
+        "transitions" => array( "startSaucerMove" => 28 )
+    ),
+
+    // PLAYER IS STARTING THEIR MOVE FOR THE TURN AND MUST JUST CLICK THE START MOVE BUTTON
+    28 => array(
+    		"name" => "playerTurnStartMove",
+    		"description" => clienttranslate('${actplayer} is starting their move.'),
+    		"descriptionmyturn" => clienttranslate('${you} must start your move.'),
+    		"type" => "activeplayer",
+        "possibleactions" => array( "clickMove" ),
+    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endPlayerTurn" => 36 )
+    ),
+
+    32 => array(
+    		"name" => "chooseIfYouWillUseBooster",
+    		"description" => clienttranslate('${actplayer} is moving.'),
+    		"descriptionmyturn" => clienttranslate('${you} are moving.'),
+    		"type" => "activeplayer",
+        "possibleactions" => array( "clickAcceleratorDirection", "askToUseBooster" ),
+    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35 )
+    ),
+
+    33 => array(
+    		"name" => "chooseBoosterDirection",
+    		"description" => clienttranslate('${actplayer} is moving.'),
+    		"descriptionmyturn" => clienttranslate('${you} are moving.'),
+    		"type" => "activeplayer",
+        "possibleactions" => array( "clickAcceleratorDirection", "askToUseBooster" ),
+    		"transitions" => array( "endTurn" => 8 )
+    ),
+
+    35 => array(
+    		"name" => "playerTurnLocateCrewmembers",
+    		"description" => clienttranslate('${actplayer} is locating a crewmember.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose a crewmember to locate.'),
+    		"type" => "activeplayer",
+        "possibleactions" => array( "clickCrewmemberToLocate" ),
+    		"transitions" => array( "endPlayerTurn" => 36 )
+    ),
+
+    36 => array(
+        "name" => "endPlayerTurn",
+        "description" => clienttranslate('End of turn'),
+        "type" => "game",
+        "action" => "endPlayerTurn",
+        "updateGameProgression" => true,
+        "transitions" => array( "startSaucerMove" => 28, "newRound" => 2 )
     ),
 
 

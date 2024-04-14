@@ -74,6 +74,25 @@
         self::ajaxResponse( );
     }
 
+
+
+    public function actClickedStartMove()
+    {
+        self::setAjaxMode();
+
+        $this->game->executeStartMove();
+        self::ajaxResponse( );
+    }
+
+    public function actClickedSaucerToGoFirst()
+    {
+        self::setAjaxMode();
+        $colorAsFriendlyText = self::getArg( "colorAsFriendlyText", AT_alphanum, true ); // BLUE, RED
+
+        $this->game->executeClickedSaucerToGoFirst( $colorAsFriendlyText );
+        self::ajaxResponse( );
+    }
+
     public function actClickedConfirmMove()
     {
         self::setAjaxMode();

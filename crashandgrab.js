@@ -60,6 +60,8 @@ function (dojo, declare) {
 
             this.playerSaucerMoves = null; // save the list of players/saucers/move cards/spaces so it can be used elsewhere
 
+            this.ANIMATION_SPEED = 500; // the speed of all the animations
+
             // zig cards
             this.movementcardwidth = 82;
             this.movementcardheight = 82;
@@ -436,6 +438,8 @@ var color = 'f6033b';
 
             }
 
+            this.updateTurnOrder(this.gamedatas.turnOrder);
+
             // First Param: css class to target
             // Second Param: type of events
             // Third Param: the method that will be called when the event defined by the second parameter happen
@@ -507,12 +511,68 @@ var color = 'f6033b';
                     }
                 },
 
+                onClick_startMove: function( evt )
+                {
+                    console.log( "Clicked start move." );
+
+                    if(this.isCurrentPlayerActive() && this.checkAction( 'clickMove', true ))
+                    { // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
+
+                        this.ajaxcall( "/crashandgrab/crashandgrab/actClickedStartMove.html", {
+                                                                                    lock: true
+                                                                                 },
+                                         this, function( result ) {
+
+                                            // What to do after the server call if it succeeded
+                                            // (most of the time: nothing)
+
+
+
+                                         }, function( is_error) {
+
+                                            // What to do after the server call in anyway (success or failure)
+                                            // (most of the time: nothing)
+
+                        } );
+                    }
+
+                },
+
+                onClick_selectSaucerToGoFirst: function( evt )
+                {
+                    var htmlIdOfButton = evt.currentTarget.id;
+                    console.log( "Clicked saucer to go first with node "+htmlIdOfButton+"." );
+                    var color = htmlIdOfButton.split('_')[1]; // BLUE, RED
+
+                    if(this.isCurrentPlayerActive() && this.checkAction( 'clickSaucerToGoFirst', true ))
+                    { // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
+
+                        this.ajaxcall( "/crashandgrab/crashandgrab/actClickedSaucerToGoFirst.html", {
+                                                                                    colorAsFriendlyText: color,
+                                                                                    lock: true
+                                                                                 },
+                                         this, function( result ) {
+
+                                            // What to do after the server call if it succeeded
+                                            // (most of the time: nothing)
+
+
+
+                                         }, function( is_error) {
+
+                                            // What to do after the server call in anyway (success or failure)
+                                            // (most of the time: nothing)
+
+                        } );
+                    }
+                },
+
                 onClick_confirmMove: function( evt )
                 {
                     console.log( "Clicked confirm move button." );
 
                     if(this.isCurrentPlayerActive() && this.checkAction( 'confirmMove', true ))
-                    { // player is allowed to discard a trap card (nomessage parameter is true so that an error message is not displayed)
+                    { // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
 
                         var saucer1Color = this.saucer1; // 01b508
                         var saucer1Distance = this.CHOSEN_MOVE_CARD_SAUCER_1; // move_card_1_01b508
@@ -547,7 +607,16 @@ var color = 'f6033b';
                                             // What to do after the server call if it succeeded
                                             // (most of the time: nothing)
 
+                                            this.unselectAllSaucers();
+                                            this.unhighlightAllSaucers();
 
+                                            this.unselectAllMoveCards();
+                                            this.unhighlightAllMoveCards();
+
+                                            this.unselectAllDirections();
+                                            this.unhighlightAllDirections();
+
+                                            this.unhighlightAllSpaces();
 
                                          }, function( is_error) {
 
@@ -632,7 +701,8 @@ var color = 'f6033b';
                     this.highlightDirectionsForSaucer(color); // HIGHLIGHT the DIRECTIONS for the selected saucer and move card
                     this.makeAllDirectionTokensClickable(); // make it clear you can click on directions
 
-                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED); // highlight possible destinations on board
+                    var moveCardSelected = this.MOVE_CARD_SELECTED.split('_')[2]; // 0, 1, 2
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, moveCardSelected); // highlight possible destinations on board
                 },
 
                 onClick_saucerDuringMoveCardSelection: function( evt )
@@ -701,7 +771,8 @@ var color = 'f6033b';
                     this.highlightPlayerSaucersWhoHaveNotChosen(); // highlight this player's saucers that haven't chosen yet
 
                     // set the available spaces (use the existing method with a new optional paramter for direction)
-                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED, direction); // highlight possible destinations on board
+                    var moveCardSelected = this.MOVE_CARD_SELECTED.split('_')[2]; // 0, 1, 2
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, moveCardSelected, direction); // highlight possible destinations on board
 
 
                     // move the selected move card to its spot on the ship mat if it's not already there
@@ -1183,7 +1254,8 @@ this.unhighlightAllGarments();
                                   this.selectSpecificMoveCard(this.MOVE_CARD_SELECTED);
 
                                   // highlight all spaces available
-                                  this.highlightPossibleMoveSelections(args.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, this.MOVE_CARD_SELECTED);
+                                  var moveCardSelected = this.MOVE_CARD_SELECTED.split('_')[2]; // 0, 1, 2
+                                  this.highlightPossibleMoveSelections(args.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, moveCardSelected);
                               }
                           }
 
@@ -1206,7 +1278,46 @@ this.unhighlightAllGarments();
                       }
 
                   break;
+
+                  case 'chooseWhichSaucerGoesFirst':
+                    console.log( "onUpdateActionButtons->chooseWhichSaucerGoesFirst" );
+                    if( this.isCurrentPlayerActive() )
+                    { // this player is active
+                        var saucerButtonList = args.saucerButtons;
+
+                        const saucerButtonKeys = Object.keys(saucerButtonList);
+                        for (const buttonKey of saucerButtonKeys)
+                        { // go through each button
+
+                            var buttonLabel = saucerButtonList[buttonKey]['buttonLabel'];
+                            var isDisabled = saucerButtonList[buttonKey]['isDisabled'];
+                            var hoverOverText = saucerButtonList[buttonKey]['hoverOverText']; // hover over text or '' if we don't want a hover over
+                            var actionName = saucerButtonList[buttonKey]['actionName']; // selectSaucerToGoFirst
+                            var makeRed = saucerButtonList[buttonKey]['makeRed'];
+
+                            this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                        }
+                    }
+                  break;
+
+                  case 'playerTurnStartMove':
+                      console.log( "onUpdateActionButtons->playerTurnStartMove" );
+
+                      if( this.isCurrentPlayerActive() )
+                      {
+                          var buttonLabel = 'Move';
+                          var isDisabled = false;
+                          var hoverOverText = ''; // hover over text or '' if we don't want a hover over
+                          var actionName = 'startMove'; // selectSaucerToGoFirst
+                          var makeRed = false;
+
+                          this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                      }
+
+                  break;
+
                   case 'chooseXVal':
+                  console.log( "onUpdateActionButtons->chooseXVal" );
                   var buttonList = args.moveCardButtons;
                   // USE THIS FRAMEWORK BUT NEED TO UPDATE FOR X VALUES
                     const buttonKeys = Object.keys(buttonList);
@@ -1447,12 +1558,16 @@ this.unhighlightAllGarments();
 
                   break;
 
-                  case 'askUseSkateboard':
-                      console.log( "onUpdateActionButtons for askUseSkateboard with ostrichChosen="+this.ostrichChosen );
+                  case 'chooseAcceleratorDirection':
+                      console.log( "onUpdateActionButtons for chooseAcceleratorDirection with ostrichChosen="+this.ostrichChosen );
 
                       if( this.isCurrentPlayerActive() )
                       { // this is the active player so they need to discard
-                          this.showDirectionChoiceButtons();
+
+                          //this.showDirectionChoiceButtons();
+
+                          // highlight all spaces available
+                          this.highlightPossibleAcceleratorOrBoostMoveSelections(args.playerSaucerAcceleratorMoves);
                       }
                   break;
 
@@ -1760,7 +1875,8 @@ console.log("return false");
                 if(this.CHOSEN_MOVE_CARD_SAUCER_1 != '')
                 {
                     var chosenDirectionSolo = this.CHOSEN_DIRECTION_SAUCER_1.split('_')[1]; // asteroids
-                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, this.CHOSEN_MOVE_CARD_SAUCER_1, chosenDirectionSolo);
+                    var moveCardSelected = this.CHOSEN_MOVE_CARD_SAUCER_1.split('_')[2]; // 0, 1, 2
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, moveCardSelected, chosenDirectionSolo);
                 }
             }
             else
@@ -1768,7 +1884,8 @@ console.log("return false");
                 if(this.CHOSEN_MOVE_CARD_SAUCER_2 != '')
                 {
                     var chosenDirectionSolo = this.CHOSEN_DIRECTION_SAUCER_2.split('_')[1]; // asteroids
-                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, this.CHOSEN_MOVE_CARD_SAUCER_2, chosenDirectionSolo);
+                    var moveCardSelected = this.CHOSEN_MOVE_CARD_SAUCER_2.split('_')[2]; // 0, 1, 2
+                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, color, moveCardSelected, chosenDirectionSolo);
                 }
             }
         },
@@ -1968,12 +2085,63 @@ console.log("selectSelectedMoveCard of color: "+color);
             dojo.addClass( htmlOfSpace, 'spaceHighlighted' ); // give this card a new CSS class
         },
 
-        highlightPossibleMoveSelections: function(playerSaucerMoves, playerId, saucerSelected, moveCardSelectedHtmlId, direction='')
+        highlightPossibleAcceleratorOrBoostMoveSelections: function(playerSaucerMoves, direction='')
         {
-            console.log("highlightPossibleMoveSelections with player "+playerId+" saucer "+saucerSelected+" move card "+ moveCardSelectedHtmlId + " direction " + direction);
+            //console.log("highlightPossibleAcceleratorOrBoostMoveSelections with player "+playerId+" saucer "+saucerSelected+" move card "+ moveCardSelected + " direction " + direction);
             this.unhighlightAllSpaces();
 
-            var moveCardSelected = moveCardSelectedHtmlId.split('_')[2]; // 0, 1, 2
+            const playerKeys = Object.keys(playerSaucerMoves);
+
+            for (const playerKey of playerKeys)
+            { // go through each player
+
+                    const saucerKeys = Object.keys(playerSaucerMoves[playerKey]);
+console.log("saucerKeys:");
+console.log(saucerKeys);
+                    for (const saucerKey of saucerKeys)
+                    { // go through each saucer (color)
+
+
+
+                            const moveCardKeys = Object.keys(playerSaucerMoves[playerKey][saucerKey]);
+console.log("moveCardKeys:");
+console.log(moveCardKeys);
+
+                            for (const moveCardKey of moveCardKeys)
+                            { // go through each available move card for this saucer
+
+
+
+                                    const directionKeys = Object.keys(playerSaucerMoves[playerKey][saucerKey][moveCardKey]);
+                                    for (const directionKey of directionKeys)
+                                    { // go through each direction for this move card
+
+console.log("directionKey is " + directionKey + " and direction is " + direction);
+                                        if(direction == '' || direction == directionKey)
+                                        {
+
+                                            var spaces = playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey]; // array of spaces like 8_7, 3_4
+                                            for (const space of spaces)
+                                            { // go through each direction for this move card
+
+                                                console.log("for player " + playerKey+" saucer " + saucerKey + " move card " + moveCardKey + " direction " + directionKey + " we found a valid space of " + space);
+                                                var htmlOfSpace = 'square_'+space; // square_6_5
+                                                this.highlightSpace(htmlOfSpace);
+                                            }
+                                        }
+                                    }
+
+                            }
+
+                    }
+
+            }
+        },
+
+        highlightPossibleMoveSelections: function(playerSaucerMoves, playerId, saucerSelected, moveCardSelected, direction='')
+        {
+            console.log("highlightPossibleMoveSelections with player "+playerId+" saucer "+saucerSelected+" move card "+ moveCardSelected + " direction " + direction);
+            this.unhighlightAllSpaces();
 
             const playerKeys = Object.keys(playerSaucerMoves);
 
@@ -1982,19 +2150,21 @@ console.log("selectSelectedMoveCard of color: "+color);
                 if(playerKey == playerId)
                 { // these are the saucers for this player
                     const saucerKeys = Object.keys(playerSaucerMoves[playerKey]);
-//console.log("saucerKeys:");
-//console.log(saucerKeys);
+console.log("saucerKeys:");
+console.log(saucerKeys);
                     for (const saucerKey of saucerKeys)
                     { // go through each saucer (color)
-//console.log("comparing saucerKey " + saucerKey + " to saucerSelected " + saucerSelected);
+console.log("comparing saucerKey " + saucerKey + " to saucerSelected " + saucerSelected);
                         if(saucerKey == saucerSelected)
                         { // this is the saucer that is currently selected
 
                             const moveCardKeys = Object.keys(playerSaucerMoves[playerKey][saucerKey]);
+console.log("moveCardKeys:");
+console.log(moveCardKeys);
                             for (const moveCardKey of moveCardKeys)
                             { // go through each available move card for this saucer
 
-//console.log("comparing moveCardKey " + moveCardKey + " to moveCardSelected " + moveCardSelected);
+console.log("comparing moveCardKey " + moveCardKey + " to moveCardSelected " + moveCardSelected);
                                 if(moveCardKey == moveCardSelected)
                                 { // this is the move card currently selected
 
@@ -2021,6 +2191,54 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                         }
                     }
                 }
+            }
+        },
+
+        animateEvent: function(eventStack)
+        {
+            var nextEvent = eventStack.pop();
+            if(nextEvent)
+            {
+                var eventType = nextEvent['event_type']; // saucerMove
+                var saucerMoving = nextEvent['saucer_moving']; // ff0000
+                var destinationX = nextEvent['destination_X']; // 5
+                var destinationY = nextEvent['destination_Y']; // 7
+
+                console.log("event eventType: " + eventType + " saucerMoving: " + saucerMoving + " destinationX: " + destinationX + " destinationY: " + destinationY);
+
+                var animationId = this.slideToObject( 'saucer_'+saucerMoving, 'square_'+destinationX+'_'+destinationY, this.ANIMATION_SPEED );
+                dojo.connect(animationId, 'onEnd', () => {
+                   this.animateEvent(eventStack); // recursively call for the next event
+                });
+                animationId.play();
+            }
+        },
+
+        updateTurnOrder: function(turnOrder)
+        {
+            var x = 0;
+            var y = 0;
+
+            if( turnOrder == 1)
+            { // we are going clockwise
+                x=45;
+                console.log("COUNTER-CLOCKWISE");
+            }
+            else if(turnOrder == 0) {
+                x=0;
+                console.log("CLOCKWISE");
+            }
+            else
+            {
+              x=90;
+              console.log("DO NOT SHOW");
+            }
+
+            for( var player_id in this.gamedatas.players )
+            {
+                var player = this.gamedatas.players[player_id];
+                console.log("turnOrder arrow player:"+player_id);
+                this.setTurnDirectionArrow(x, y, player_id); // we don't want to show the turn direction arrow until it has been chosen for this round
             }
         },
 
@@ -3263,6 +3481,8 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             dojo.subscribe( 'moveGarmentToBoard', this, "notif_moveGarmentToBoard" );
             dojo.subscribe( 'updateScore', this, "notif_updateScore" );
             dojo.subscribe( 'updateTurnOrder', this, "notif_updateTurnOrder" );
+
+            dojo.subscribe( 'animateMovement', this, "notif_animateMovement" );
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -3742,31 +3962,18 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
         notif_updateTurnOrder: function(notif)
         {
-          console.log("Entered notif_updateTurnOrder.");
-            var x = 0;
-            var y = 0;
+            console.log("Entered notif_updateTurnOrder.");
+            var turnOrder = notif.args.turnOrder;
 
-            if(notif.args.turnOrder == 1)
-            { // we are going clockwise
-                x=45;
-                console.log("COUNTER-CLOCKWISE");
-            }
-            else if(notif.args.turnOrder == 0) {
-                x=0;
-                console.log("CLOCKWISE");
-            }
-            else
-            {
-              x=90;
-              console.log("DO NOT SHOW");
-            }
+            this.updateTurnOrder(turnOrder);
+        },
 
-            for( var player_id in this.gamedatas.players )
-            {
-                var player = this.gamedatas.players[player_id];
-                console.log("turnOrder arrow player:"+player_id);
-                this.setTurnDirectionArrow(x, y, player_id); // we don't want to show the turn direction arrow until it has been chosen for this round
-            }
+        notif_animateMovement: function(notif)
+        {
+            var eventStack = notif.args.moveEventList;
+
+
+            this.animateEvent(eventStack);
         }
 
    });
