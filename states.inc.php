@@ -58,7 +58,7 @@ $machinestates = array(
         "description" => "",
         "type" => "manager",
         "action" => "stGameSetup",
-        "transitions" => array( "" => 21 )
+        "transitions" => array( "" => 2 )
     ),
 
     // Note: ID=2 => your first state
@@ -70,7 +70,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must choose a Move card.'),
     		"type" => "multipleactiveplayer",
         'args' => 'argGetAllPlayerSaucerMoves',
-    		"possibleactions" => array( "clickDistance", "undoChooseMoveCard", "confirmMove" ),
+    		"possibleactions" => array( "clickMoveDirection", "clickDistance", "undoChooseMoveCard", "confirmMove" ),
     		"transitions" => array( "zigChosen" => 2, "startOver" => 2, "allMovesChosen" => 25 )
     ),
 
@@ -100,7 +100,7 @@ $machinestates = array(
     // END ROUND PHASE (game)
 
     5 => array(
-        "name" => "endRoundPhase",
+        "name" => "endRoundCleanup",
         "description" => "",
         "type" => "game",
         "action" => "endRoundCleanup",
@@ -136,7 +136,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must choose the direction you will travel on the Accelerator.'),
         "type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
-        "possibleactions" => array( "clickDirection", "clickSpace" ),
+        "possibleactions" => array( "clickAcceleratorDirection", "clickSpace" ),
     		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endPlayerTurn" => 36 )
     ),
 
@@ -160,12 +160,12 @@ $machinestates = array(
     ),
 
     12 => array(
-    		"name" => "chooseXValue",
-    		"description" => clienttranslate('${actplayer} is revealing their Zig.'),
+    		"name" => "chooseDistanceDuringMoveReveal",
+    		"description" => clienttranslate('${actplayer} is choosing their distance.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose the distance you want to travel.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "selectXValue" ),
-    		"transitions" => array( "askTrapBasic" => 19, "nextMovementTurn" => 4, "endTurn" => 8, "allTrappersDone" => 7 )
+    		"transitions" => array( "checkForRevealDecisions" => 38 )
     ),
 
     13 => array(
@@ -244,15 +244,6 @@ $machinestates = array(
     		"transitions" => array( "transitionToChooseZig" => 22, "claimZag" => 20, "chooseZig" => 2 )
     ),
 
-    21 => array(
-        "name" => "chooseFirstState",
-        "description" => "",
-        "type" => "game",
-        "action" => "chooseFirstState",
-        "updateGameProgression" => true,
-        "transitions" => array( "claimZag" => 20, "transitionToChooseZig" => 22, "chooseZig" => 2 )
-    ),
-
     22 => array(
         "name" => "transitionToChooseZig",
         "description" => "",
@@ -272,19 +263,28 @@ $machinestates = array(
     		"transitions" => array( "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "endTurn" => 8 )
     ),
 
+    24 => array(
+        "name" => "checkStartOfTurnUpgrades",
+        "description" => clienttranslate('Checking for start of turn upgrades...'),
+        "type" => "game",
+        "action" => "checkStartOfTurnUpgrades",
+        "updateGameProgression" => false,
+        "transitions" => array( "checkForRevealDecisions" => 38, "askToUseStartOfTurnUpgradeEffects" => 28 )
+    ),
+
     25 => array(
         "name" => "rollRotationDie",
         "description" => "",
         "type" => "game",
         "action" => "rollRotationDie",
         "updateGameProgression" => true,
-        "transitions" => array( "locateCrashedSaucer" => 27, "askWhichSaucerGoesFirst" => 26 )
+        "transitions" => array( "playerTurnStart" => 29 )
     ),
 
     26 => array(
     		"name" => "chooseWhichSaucerGoesFirst",
-    		"description" => clienttranslate('${actplayer} is choosing which saucer will go first.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which of your saucers will go first.'),
+    		"description" => clienttranslate('${actplayer} is choosing which Saucer will go first.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose which of your Saucers will go first.'),
     		"type" => "activeplayer",
         'args' => 'argGetSaucerGoFirstButtons',
         "possibleactions" => array( "clickSaucerToGoFirst" ),
@@ -292,22 +292,40 @@ $machinestates = array(
     ),
 
     27 => array(
-        "name" => "playerTurnLocateCrashedSaucer",
-        "description" => clienttranslate('Locating crashed saucers...'),
+        "name" => "saucerTurnStart",
+        "description" => clienttranslate('Starting Saucer turn...'),
         "type" => "game",
-        "action" => "locateCrashedSaucersForPlayer",
+        "action" => "saucerTurnStart",
         "updateGameProgression" => true,
-        "transitions" => array( "startSaucerMove" => 28 )
+        "transitions" => array( "chooseCrashSiteRegenerationGateway" => 40, "askPreTurnToPlaceCrashedSaucer" => 43, "checkStartOfTurnUpgrades" => 24 )
     ),
 
     // PLAYER IS STARTING THEIR MOVE FOR THE TURN AND MUST JUST CLICK THE START MOVE BUTTON
     28 => array(
-    		"name" => "playerTurnStartMove",
+    		"name" => "playerTurnExecuteMove",
     		"description" => clienttranslate('${actplayer} is starting their move.'),
     		"descriptionmyturn" => clienttranslate('${you} must start your move.'),
     		"type" => "activeplayer",
         "possibleactions" => array( "clickMove" ),
     		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endPlayerTurn" => 36 )
+    ),
+
+    29 => array(
+        "name" => "playerTurnStart",
+        "description" => clienttranslate('Starting player turn...'),
+        "type" => "game",
+        "action" => "playerTurnStart",
+        "updateGameProgression" => false,
+        "transitions" => array( "chooseWhichSaucerGoesFirst" => 26, "saucerTurnStart" => 27 )
+    ),
+
+    31 => array(
+    		"name" => "chooseDirectionAfterPlacement",
+    		"description" => clienttranslate('${actplayer} is placing their Saucer.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose the direction in which your Saucer will travel.'),
+    		"type" => "activeplayer",
+        "possibleactions" => array( "clickDirection" ),
+    		"transitions" => array(  "saucerTurnStart" => 27 )
     ),
 
     32 => array(
@@ -328,6 +346,15 @@ $machinestates = array(
     		"transitions" => array( "endTurn" => 8 )
     ),
 
+    34 => array(
+    		"name" => "allCrashSitesOccupiedChooseSpace",
+    		"description" => clienttranslate('${actplayer} is choosing where to be placed because all Crash Sites are occupied.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose where to be placed because all Crash Sites are occupied.'),
+    		"type" => "activeplayer",
+        "possibleactions" => array( "chooseSpace" ),
+    		"transitions" => array( "chooseDirectionAfterPlacement" => 31 )
+    ),
+
     35 => array(
     		"name" => "playerTurnLocateCrewmembers",
     		"description" => clienttranslate('${actplayer} is locating a crewmember.'),
@@ -343,8 +370,66 @@ $machinestates = array(
         "type" => "game",
         "action" => "endPlayerTurn",
         "updateGameProgression" => true,
-        "transitions" => array( "startSaucerMove" => 28, "newRound" => 2 )
+        "transitions" => array( "playerTurnStart" => 29, "newRound" => 2 )
     ),
+
+    37 => array(
+        "name" => "endRoundPlaceCrashedSaucer",
+        "description" => clienttranslate('${actplayer} is placing a crashed Saucer.'),
+    		"descriptionmyturn" => clienttranslate('${you} must place your Saucer.'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "clickSaucerToPlace" ),
+    		"transitions" => array( "endRoundPlaceCrashedSaucer" => 37, "endRoundCleanUp" => 5, "newRound" => 2  )
+    ),
+
+    38 => array(
+        "name" => "checkForRevealDecisions",
+        "description" => clienttranslate('Checking for reveal decisions...'),
+        "type" => "game",
+        "action" => "checkForRevealDecisions",
+        "updateGameProgression" => false,
+        "transitions" => array( "playerTurnExecuteMove" => 28, "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41 )
+    ),
+
+    40 => array(
+        "name" => "chooseCrashSiteRegenerationGateway",
+        "description" => clienttranslate('${actplayer} is using their Regeneration Gateway.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose where to place your Saucer with your Regeneration Gateway.'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "clickCrashSite" ),
+        "transitions" => array( "saucerTurnStart" => 27  )
+    ),
+
+    41 => array(
+        "name" => "chooseTimeMachineDirection",
+        "description" => clienttranslate('${actplayer} is using their Time Machine.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a Direction for your move because of your Time Machine.'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "clickDirection" ),
+        "transitions" => array( "checkForRevealDecisions" => 38  )
+    ),
+
+    42 => array(
+        "name" => "askToUseStartOfTurnUpgradeEffects",
+        "description" => clienttranslate('${actplayer} is deciding if they will use an Upgrade.'),
+        "descriptionmyturn" => clienttranslate('${you} must decide if you will use an Upgrade.'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "clickUpgrade" ),
+        "transitions" => array( "checkForRevealDecisions" => 38, "usingStartPulseCannon" => 21, "usingStartBlastOffThrusters" => 21  )
+    ),
+
+    43 => array(
+    		"name" => "askPreTurnToPlaceCrashedSaucer",
+    		"description" => clienttranslate('${actplayer} is placing their Saucer.'),
+    		"descriptionmyturn" => clienttranslate('${you} must place your Saucer.'),
+    		"type" => "activeplayer",
+        'args' => 'argGetSaucerToPlaceButton',
+        "possibleactions" => array( "clickSaucer" ),
+    		"transitions" => array(  "chooseDirectionAfterPlacement" => 31, "allCrashSitesOccupiedChooseSpace" => 34 )
+    ),
+
+
+
 
 
 

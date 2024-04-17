@@ -84,6 +84,27 @@
         self::ajaxResponse( );
     }
 
+    public function actClickedAcceleratorDirection()
+    {
+      self::setAjaxMode();
+
+      $direction = self::getArg( "direction", AT_alphanum, true ); // asteroids
+
+      $this->game->executeStartAcceleratorMove($direction);
+
+      self::ajaxResponse( );
+
+    }
+
+    public function actClickedSaucerToPlace()
+    {
+        self::setAjaxMode();
+        $colorAsFriendlyText = self::getArg( "colorAsFriendlyText", AT_alphanum, true ); // BLUE, RED
+
+        $this->game->executeClickedSaucerToPlace( $colorAsFriendlyText );
+        self::ajaxResponse( );
+    }
+
     public function actClickedSaucerToGoFirst()
     {
         self::setAjaxMode();
@@ -216,6 +237,15 @@
         $direction = self::getArg( "direction", AT_alphanum, true ); // BRIDGE, MOUNTAIN, etc.
 
         $this->game->executeZagMove( $direction );
+        self::ajaxResponse( );
+    }
+
+    public function actExecuteDirectionClick()
+    {
+        self::setAjaxMode();
+        $direction = self::getArg( "direction", AT_alphanum, true ); // BRIDGE, MOUNTAIN, etc.
+
+        $this->game->executeDirectionClick( $direction );
         self::ajaxResponse( );
     }
 

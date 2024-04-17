@@ -60,7 +60,7 @@ function (dojo, declare) {
 
             this.playerSaucerMoves = null; // save the list of players/saucers/move cards/spaces so it can be used elsewhere
 
-            this.ANIMATION_SPEED = 500; // the speed of all the animations
+            this.ANIMATION_SPEED = 300; // the speed of all the animations (lower is faster)
 
             // zig cards
             this.movementcardwidth = 82;
@@ -538,6 +538,35 @@ var color = 'f6033b';
 
                 },
 
+                onClick_selectSaucerToPlace: function( evt )
+                {
+                    var htmlIdOfButton = evt.currentTarget.id;
+                    console.log( "Clicked saucer to place with node "+htmlIdOfButton+"." );
+                    var color = htmlIdOfButton.split('_')[1]; // BLUE, RED
+
+
+
+                    //if(this.isCurrentPlayerActive() && this.checkAction( 'clickSaucer', true ))
+                    //{ // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
+
+                        this.ajaxcall( "/crashandgrab/crashandgrab/actClickedSaucerToPlace.html", {
+                                                                                    colorAsFriendlyText: color,
+                                                                                    lock: true
+                                                                                 },
+                                         this, function( result ) {
+
+                                            // What to do after the server call if it succeeded
+                                            // (most of the time: nothing)
+
+                                         }, function( is_error) {
+
+                                            // What to do after the server call in anyway (success or failure)
+                                            // (most of the time: nothing)
+                      } );
+                  //}
+
+                },
+
                 onClick_selectSaucerToGoFirst: function( evt )
                 {
                     var htmlIdOfButton = evt.currentTarget.id;
@@ -756,38 +785,77 @@ var color = 'f6033b';
                     console.log( "A direction token was clicked with node "+htmlIdOfToken+"." );
                     var direction = htmlIdOfToken.split('_')[1]; // sun, constellation
 
-                    if(this.MOVE_CARD_SELECTED == '')
-                    { // no move card is selected so it doesn't make sense to select a directions
-                        console.log("no move card is selected");
-                        return;
+                    if(this.checkPossibleActions('clickAcceleratorDirection'))
+                    { // we are clicking on a direction as we hit an accelerator
+                        dojo.stopEvent( evt ); // Preventing default browser reaction
+
+                        //this.showMessage( _("Accelerator direction click."), 'error' );
+
+                        this.ajaxcall( "/crashandgrab/crashandgrab/actClickedAcceleratorDirection.html", {
+                                                                                    direction: direction,
+                                                                                    lock: true
+                                                                                 },
+                                         this, function( result ) {
+
+                                            // What to do after the server call if it succeeded
+                                            // (most of the time: nothing)
+
+                                            this.unhighlightAllDirections(); // UNhighlight ALL directions
+                                            this.unhighlightAllSpaces(); // unhighlight all board move spaces
+
+                                         }, function( is_error) {
+
+                                            // What to do after the server call in anyway (success or failure)
+                                            // (most of the time: nothing)
+
+                        } );
                     }
+                    else if(this.checkPossibleActions('clickMoveDirection'))
+                    { // we are clicking on a direction while selecting our move card for the round
+                        dojo.stopEvent( evt ); // Preventing default browser reaction
 
-                    this.saveDirectionSelection(this.SAUCER_SELECTED, htmlIdOfToken);
-
-                    //this.highlightAllDirections(); // highlight all the directions because people can still change them
-                    this.unhighlightAllDirections(); // UNhighlight ALL directions
-                    this.selectSpecificDirection(htmlIdOfToken); // select this token
-
-                    this.highlightPlayerSaucersWhoHaveNotChosen(); // highlight this player's saucers that haven't chosen yet
-
-                    // set the available spaces (use the existing method with a new optional paramter for direction)
-                    var moveCardSelected = this.MOVE_CARD_SELECTED.split('_')[2]; // 0, 1, 2
-                    this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, moveCardSelected, direction); // highlight possible destinations on board
+                        //this.showMessage( _("Move direction click."), 'error' );
 
 
-                    // move the selected move card to its spot on the ship mat if it's not already there
 
-                    if( $(this.MOVE_CARD_SELECTED) )
-                    { // this card exists
-                        console.log('Move card FROM ' + this.MOVE_CARD_SELECTED + ' to player_board_move_card_holder_' + this.SAUCER_SELECTED + '.');
-                        //this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id ); // teleport card FROM, TO
+                        if(this.MOVE_CARD_SELECTED == '')
+                        { // no move card is selected so it doesn't make sense to select a directions
+                            console.log("no move card is selected");
+                            return;
+                        }
 
-                        var destinationHtmlId = 'player_board_move_card_holder_'+this.SAUCER_SELECTED;
-                        this.attachToNewParent( this.MOVE_CARD_SELECTED, destinationHtmlId ); // needed so it doesn't slide under the player board
-                        this.slideToObject( this.MOVE_CARD_SELECTED, destinationHtmlId ).play(); // slide card FROM, TO
+                        this.saveDirectionSelection(this.SAUCER_SELECTED, htmlIdOfToken);
 
-                        this.rotateTo( this.MOVE_CARD_SELECTED, this.getDegreesRotated(direction) );
-                        $(this.MOVE_CARD_SELECTED).style.removeProperty('left'); // remove left property (doesn't seem to work)
+                        //this.highlightAllDirections(); // highlight all the directions because people can still change them
+                        this.unhighlightAllDirections(); // UNhighlight ALL directions
+                        this.selectSpecificDirection(htmlIdOfToken); // select this token
+
+                        this.highlightPlayerSaucersWhoHaveNotChosen(); // highlight this player's saucers that haven't chosen yet
+
+                        // set the available spaces (use the existing method with a new optional paramter for direction)
+                        var moveCardSelected = this.MOVE_CARD_SELECTED.split('_')[2]; // 0, 1, 2
+                        this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, moveCardSelected, direction); // highlight possible destinations on board
+
+
+                        // move the selected move card to its spot on the ship mat if it's not already there
+
+                        if( $(this.MOVE_CARD_SELECTED) )
+                        { // this card exists
+                            console.log('Move card FROM ' + this.MOVE_CARD_SELECTED + ' to player_board_move_card_holder_' + this.SAUCER_SELECTED + '.');
+                            //this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id ); // teleport card FROM, TO
+
+                            var destinationHtmlId = 'player_board_move_card_holder_'+this.SAUCER_SELECTED;
+                            this.attachToNewParent( this.MOVE_CARD_SELECTED, destinationHtmlId ); // needed so it doesn't slide under the player board
+                            this.slideToObject( this.MOVE_CARD_SELECTED, destinationHtmlId ).play(); // slide card FROM, TO
+
+                            this.rotateTo( this.MOVE_CARD_SELECTED, this.getDegreesRotated(direction) );
+                            $(this.MOVE_CARD_SELECTED).style.removeProperty('left'); // remove left property (doesn't seem to work)
+                        }
+                    }
+                    else
+                    {
+                        //this.showMessage( _("You cannot do anything with this right now."), 'error' );
+                        return;
                     }
                 },
 
@@ -1279,6 +1347,29 @@ this.unhighlightAllGarments();
 
                   break;
 
+                  case 'askPreTurnToPlaceCrashedSaucer':
+                  console.log( "onUpdateActionButtons->askPreTurnToPlaceCrashedSaucer" );
+
+                  if( this.isCurrentPlayerActive() )
+                  { // this player is active
+                      var saucerButton = args.saucerButton;
+
+                      var buttonLabel = saucerButton['buttonLabel'];
+                      var isDisabled = saucerButton['isDisabled'];
+                      var hoverOverText = saucerButton['hoverOverText']; // hover over text or '' if we don't want a hover over
+                      var actionName = saucerButton['actionName']; // selectSaucerToGoFirst
+                      var makeRed = saucerButton['makeRed'];
+
+                      this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                  }
+                  break;
+
+                  case 'chooseDirectionAfterPlacement':
+
+                      this.showDirectionButtons();
+
+                  break;
+
                   case 'chooseWhichSaucerGoesFirst':
                     console.log( "onUpdateActionButtons->chooseWhichSaucerGoesFirst" );
                     if( this.isCurrentPlayerActive() )
@@ -1300,8 +1391,8 @@ this.unhighlightAllGarments();
                     }
                   break;
 
-                  case 'playerTurnStartMove':
-                      console.log( "onUpdateActionButtons->playerTurnStartMove" );
+                  case 'playerTurnExecuteMove':
+                      console.log( "onUpdateActionButtons->playerTurnExecuteMove" );
 
                       if( this.isCurrentPlayerActive() )
                       {
@@ -1568,6 +1659,8 @@ this.unhighlightAllGarments();
 
                           // highlight all spaces available
                           this.highlightPossibleAcceleratorOrBoostMoveSelections(args.playerSaucerAcceleratorMoves);
+
+                          this.showRestartTurnButton();
                       }
                   break;
 
@@ -2194,7 +2287,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             }
         },
 
-        animateEvent: function(eventStack)
+        animateEvents: function(eventStack)
         {
             var nextEvent = eventStack.pop();
             if(nextEvent)
@@ -2208,7 +2301,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
                 var animationId = this.slideToObject( 'saucer_'+saucerMoving, 'square_'+destinationX+'_'+destinationY, this.ANIMATION_SPEED );
                 dojo.connect(animationId, 'onEnd', () => {
-                   this.animateEvent(eventStack); // recursively call for the next event
+                   this.animateEvents(eventStack); // recursively call for the next event
                 });
                 animationId.play();
             }
@@ -2484,12 +2577,24 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
           this.addActionButton( '3_button', _('3'), 'onXValueSelection' );
           this.addActionButton( '4_button', _('4'), 'onXValueSelection' );
           this.addActionButton( '5_button', _('5'), 'onXValueSelection' );
-          this.addActionButton( '6_button', _('6'), 'onXValueSelection' );
-          this.addActionButton( '7_button', _('7'), 'onXValueSelection' );
-          this.addActionButton( '8_button', _('8'), 'onXValueSelection' );
-          this.addActionButton( '9_button', _('9'), 'onXValueSelection' );
-          this.addActionButton( '10_button', _('10'), 'onXValueSelection' );
-          this.addActionButton( '11_button', _('11'), 'onXValueSelection' );
+//          this.addActionButton( '6_button', _('6'), 'onXValueSelection' );
+//          this.addActionButton( '7_button', _('7'), 'onXValueSelection' );
+//          this.addActionButton( '8_button', _('8'), 'onXValueSelection' );
+//          this.addActionButton( '9_button', _('9'), 'onXValueSelection' );
+//          this.addActionButton( '10_button', _('10'), 'onXValueSelection' );
+//          this.addActionButton( '11_button', _('11'), 'onXValueSelection' );
+        },
+
+        showDirectionButtons: function()
+        {
+            this.addActionButton( this.UP_DIRECTION+'_button', '<div class="'+this.UP_DIRECTION+'"></div>', 'onClick_'+this.UP_DIRECTION+'Direction', null, null, 'gray');
+            this.addActionButton( this.RIGHT_DIRECTION+'_button', '<div class="'+this.RIGHT_DIRECTION+'"></div>', 'onClick_'+this.RIGHT_DIRECTION+'Direction', null, null, 'gray');
+            this.addActionButton( this.DOWN_DIRECTION+'_button', '<div class="'+this.DOWN_DIRECTION+'"></div>', 'onClick_'+this.DOWN_DIRECTION+'Direction', null, null, 'gray');
+            this.addActionButton( this.LEFT_DIRECTION+'_button', '<div class="'+this.LEFT_DIRECTION+'"></div>', 'onClick_'+this.LEFT_DIRECTION+'Direction', null, null, 'gray');
+
+
+            //dojo.addClass('sun_button','bgaimagebutton'); // remove the button outline
+
         },
 
         showZagDirectionButtons: function()
@@ -2502,6 +2607,11 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
           this.addActionButton( 'zagCactus_button', _('CACTUS'), 'onZagCactus' );
           this.addActionButton( 'zagRiver_button', _('RIVER'), 'onZagRiver' );
           this.addActionButton( 'zagMountain_button', _('MOUNTAIN'), 'onZagMountain' );
+        },
+
+        showRestartTurnButton: function()
+        {
+          this.addActionButton( 'restartTurn_button', _('Restart Turn'), 'restartTurn', null, false, 'red' );
         },
 
         showAskToUseZagButtons: function()
@@ -2574,6 +2684,13 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
         { // Tell the server which move was selected for this ostrich.
             console.log("sendZagMove sending direction " + chosenDirection);
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteZagMove.html", { direction: chosenDirection, lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
+        sendDirectionClick: function( chosenDirection )
+        {
+            console.log("sendDirectionClick sending direction " + chosenDirection);
+            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDirectionClick.html", { direction: chosenDirection, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },
 
@@ -2827,6 +2944,31 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
           console.log( "onNewDirectionMountain" );
 
           this.sendMoveInNewDirection(this.saucer1, "MOUNTAIN");
+        },
+
+        onClick_sunDirection: function()
+        {
+            console.log( "onClick_sunDirection" );
+            this.sendDirectionClick(this.UP_DIRECTION);
+
+        },
+
+        onClick_asteroidsDirection: function()
+        {
+            console.log( "onClick_asteroidsDirection" );
+            this.sendDirectionClick(this.RIGHT_DIRECTION);
+        },
+
+        onClick_meteorDirection: function()
+        {
+            console.log( "onClick_meteorDirection" );
+            this.sendDirectionClick(this.DOWN_DIRECTION);
+        },
+
+        onClick_constellationDirection: function()
+        {
+            console.log( "onClick_constellationDirection" );
+            this.sendDirectionClick(this.LEFT_DIRECTION);
         },
 
         onZagBridge: function()
@@ -3259,6 +3401,14 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 this.ajaxcall( "/hearts/hearts/giveCards.html", { cards: to_give, lock: true }, this, function( result ) {
                 }, function( is_error) { } );
             }
+        },
+
+        restartTurn: function()
+        {
+          console.log( "Restart turn" );
+
+          this.showMessage( _("Not implemented yet"), 'error' );
+          return;
         },
 
         useZag: function()
@@ -3973,7 +4123,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             var eventStack = notif.args.moveEventList;
 
 
-            this.animateEvent(eventStack);
+            this.animateEvents(eventStack);
         }
 
    });
