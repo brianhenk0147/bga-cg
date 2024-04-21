@@ -869,10 +869,18 @@ class CrashAndGrab extends Table
 		{
 				$result = array();
 
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$currentState = $this->getStateName();
+				$saucerToPlace = "unknown";
+				if($currentState == "endRoundPlaceCrashedSaucer")
+				{ // we are placing a crashed saucer at the end of a round
+						$saucerToPlace = $this->getSaucerThatCrashed();
+				}
+				elseif($currentState == "askPreTurnToPlaceCrashedSaucer")
+				{ // we are placing a crashed saucer before a player's turn
+						$saucerToPlace = $this->getOstrichWhoseTurnItIs();
+				}
 
-				$saucerColor = $saucerWhoseTurnItIs; // get the color this saucer was assigned
-				$saucerColorFriendly = $this->convertColorToText($saucerColor);
+				$saucerColorFriendly = $this->convertColorToText($saucerToPlace);
 
 				$result['buttonLabel'] = $saucerColorFriendly;
 				$result['hoverOverText'] = '';
@@ -1039,6 +1047,55 @@ class CrashAndGrab extends Table
 				}
 
 				return $result;
+		}
+
+		function getAllSpacesNotInCrewmemberRowColumn()
+		{
+				$result = array();
+
+				$allSpaces = self::getObjectListFromDB( "SELECT board_x, board_y
+																							FROM board" );
+
+				$validSpaceId = 0;
+				foreach($allSpaces as $space)
+				{ // go through all spaces
+						$column = $space['board_x'];
+						$row = $space['board_y'];
+
+						$saucerHere = $this->getOstrichAt($column, $row);
+
+						if(!$this->isInCrewmemberRowOrColumn($row, $column) &&
+						 $row != 0 && $column != 0 &&
+						 	$row != $this->getMaxRows() && $column != $this->getMaxColumns() &&
+							$saucerHere == "")
+						{ // this space is NOT in the row or column of a crewmember, is not off the edge of the board, and does not have a Saucer in it
+
+								// format it in a consistent way so we can understand it on the front end
+								$formattedSpace = $column.'_'.$row;
+
+								// add this space to the list
+								array_push($result, $formattedSpace);
+						}
+				}
+
+				return $result;
+		}
+
+		function isInCrewmemberRowOrColumn($row, $column)
+		{
+				$allCrewmembers = $this->getAllCrewmembers();
+				foreach( $allCrewmembers as $crewmember )
+				{ // go through each crewmember
+						$crewmemberX = $crewmember['garment_x'];
+						$crewmemberY = $crewmember['garment_y'];
+
+						if($crewmemberX == $column || $crewmemberY == $row)
+						{
+								return true;
+						}
+				}
+
+				return false;
 		}
 
 		function getAllPlayerSaucerMoves()
@@ -2883,23 +2940,23 @@ class CrashAndGrab extends Table
 																					 WHERE garment_location='pile'" );
 		}
 
-		function giveGarmentToOstrich($garmentId, $ostrich)
+		function giveCrewmemberToSaucer($crewmemberId, $saucerColor)
 		{
-				$garmentX = self::getUniqueValueFromDb("SELECT garment_x FROM garment WHERE garment_id=$garmentId");
-				$garmentY = self::getUniqueValueFromDb("SELECT garment_y FROM garment WHERE garment_id=$garmentId");
+				$garmentX = self::getUniqueValueFromDb("SELECT garment_x FROM garment WHERE garment_id=$crewmemberId");
+				$garmentY = self::getUniqueValueFromDb("SELECT garment_y FROM garment WHERE garment_id=$crewmemberId");
 
-				// update the database to give the garment to the ostrich
-				$sql = "UPDATE garment SET garment_location='$ostrich',garment_x=0,garment_y=0 WHERE garment_id=$garmentId";
+				// update the database to give the crewmember to the saucer
+				$sql = "UPDATE garment SET garment_location='$saucerColor',garment_x=0,garment_y=0 WHERE garment_id=$crewmemberId";
 				self::DbQuery( $sql );
 
-				$garmentColor = self::getUniqueValueFromDb("SELECT garment_color FROM garment WHERE garment_id=$garmentId");
-				$garmentType = self::getUniqueValueFromDb("SELECT garment_type FROM garment WHERE garment_id=$garmentId");
-				$acquiringPlayer = self::getUniqueValueFromDb("SELECT ostrich_owner FROM ostrich WHERE ostrich_color='$ostrich'");
-
+				$garmentColor = self::getUniqueValueFromDb("SELECT garment_color FROM garment WHERE garment_id=$crewmemberId");
+				$garmentType = self::getUniqueValueFromDb("SELECT garment_type FROM garment WHERE garment_id=$crewmemberId");
+				$acquiringPlayer = self::getUniqueValueFromDb("SELECT ostrich_owner FROM ostrich WHERE ostrich_color='$saucerColor'");
+/*
 				$garmentTypeString = $this->convertGarmentTypeIntToString($garmentType);
 
 				// see if we are wearing this or putting it in our backpack
-				$garmentsOfTypeThisOstrichHas = $this->getGarmentsOstrichHasOfType($ostrich, $garmentType);
+				$garmentsOfTypeThisOstrichHas = $this->getGarmentsOstrichHasOfType($saucerColor, $garmentType);
 				$wearingOrBackpack = "wearing";
 				$garmentsOfThisType = count($garmentsOfTypeThisOstrichHas);
 				if($garmentsOfThisType > 1)
@@ -2921,6 +2978,7 @@ class CrashAndGrab extends Table
 						'garmentColorFriendly' => $this->getOstrichName($garmentColor),
 						'acquiringOstrichOwnerName' => self::getPlayerNameById($acquiringPlayer)
 				) );
+*/
 		}
 
 		function moveGarmentToPile($garmentId)
@@ -3031,7 +3089,7 @@ class CrashAndGrab extends Table
 				$ownerOfSaucerWithProbe = $this->getOwnerIdOfOstrich($saucerWithProbe);
 
 				$player = $ownerOfSaucerWithProbe; // start with the player who has the probe
-				$numberOfPLayers = $this->getNumberOfPlayers();
+				$numberOfPlayers = $this->getNumberOfPlayers();
 
 				for($i=0; $i<$numberOfPlayers; $i++)
 				{ // go through each player in clockwise order
@@ -3043,6 +3101,8 @@ class CrashAndGrab extends Table
 
 								if($this->isSaucerCrashed($saucer['ostrich_color']))
 								{ // this Saucer has crashed
+									//throw new feException( "returning saucer: ".$saucer['ostrich_color']);
+
 										return $saucer['ostrich_color'];
 								}
 						}
@@ -3106,6 +3166,29 @@ class CrashAndGrab extends Table
 				}
 
 				return 0; // if we didn't find any
+		}
+
+		function placeSaucerOnSpace($saucerColor, $locX, $locY)
+		{
+				// put the saucer on this location
+				$sqlOstrich = "UPDATE ostrich SET ostrich_x=".$locX.",ostrich_y=".$locY." WHERE ";
+				$sqlOstrich .= "ostrich_color='".$saucerColor."'";
+				self::DbQuery( $sqlOstrich );
+
+
+				// notify all players of this saucer's new location
+				$boardValue = $this->getBoardSpaceType($locX, $locY);
+				$ostrichOwner = $this->getOwnerIdOfOstrich($saucerColor);
+				self::notifyAllPlayers( "moveOstrich", clienttranslate( '${player_name} placed ${ostrichName} on space ${x}, ${y}.' ), array(
+								'color' => $saucerColor,
+								'ostrichTakingTurn' => $saucerColor,
+								'x' => $locX,
+								'y' => $locY,
+								'spaceType' => $boardValue,
+								'ostrichMovingHasZag' => false,
+								'player_name' => self::getActivePlayerName(),
+								'ostrichName' => $this->getOstrichName($saucerColor)
+				) );
 		}
 
 		function respawnAnOstrich()
@@ -4285,10 +4368,17 @@ class CrashAndGrab extends Table
 								//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
 								if($garmentId != 0)
 								{ // there is a garment here
-										$this->giveGarmentToOstrich($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
-										$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
-										$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
+
+										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
+										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
+										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
+
+										// add an animation event for the crewmember sliding to the saucer
+										array_push($moveEventList, array( 'event_type' => 'crewmemberPickup', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY, 'destination_Y' => $currentY));
+
+										// add the animation for the saucer moving onto the space of the crewmember
+										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 								}
 								else if($boardValue == "C" || $boardValue == "O")
 								{ // this is a CRASH SITE
@@ -4337,6 +4427,7 @@ class CrashAndGrab extends Table
 
 				if($this->RIGHT_DIRECTION == $direction)
 			 	{
+					//throw new feException("Direction ($direction) and distance: $distance");
 						for ($x = 1; $x <= $distance; $x++)
 						{ // go space-by-space starting at your current location until the distance is
 							// used up or we run into a skateboard or ostrich
@@ -4353,10 +4444,12 @@ class CrashAndGrab extends Table
 								//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
 								if($garmentId != 0)
 								{ // there is a garment here
-										$this->giveGarmentToOstrich($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
-										$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
-										$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
+										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
+										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
+										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
+
+										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 								}
 								else if($boardValue == "C" || $boardValue == "O")
 								{ // this is a CRASH SITE
@@ -4385,6 +4478,11 @@ class CrashAndGrab extends Table
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 										return $moveEventList; // return so we don't go any further
 								}
+								else
+								{ // empty space
+										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+								}
+
 
 								$saucerWeCollideWith = $this->getSaucerAt($thisX, $currentY, $saucerMoving); // get any ostriches that might be at this location
 								if($saucerWeCollideWith != "")
@@ -4413,10 +4511,12 @@ class CrashAndGrab extends Table
 								//echo "The garment at ($currentX, $thisY) is: $garmentId <br>";
 								if($garmentId != 0)
 								{ // there is a garment here
-										$this->giveGarmentToOstrich($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
-										$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
-										$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
+										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
+										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
+										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
+
+										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 								}
 								else if($boardValue == "C" || $boardValue == "O")
 								{ // this is a CRASH SITE
@@ -4477,10 +4577,12 @@ class CrashAndGrab extends Table
 								//echo "The garment at ($currentX, $thisY) is: $garmentId <br>";
 								if($garmentId != 0)
 								{ // there is a garment here
-										$this->giveGarmentToOstrich($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
-										$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
-										$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
+										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
+										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
+										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
+
+										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 								}
 								else if($boardValue == "C" || $boardValue == "O")
 								{ // this is an EMPTY CRATE
@@ -4548,7 +4650,7 @@ class CrashAndGrab extends Table
 								//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
 								if($garmentId != 0)
 								{ // there is a garment here
-										$this->giveGarmentToOstrich($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
+										$this->giveCrewmemberToSaucer($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
 										$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 										$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
@@ -4607,7 +4709,7 @@ class CrashAndGrab extends Table
 								//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
 								if($garmentId != 0)
 								{ // there is a garment here
-										$this->giveGarmentToOstrich($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
+										$this->giveCrewmemberToSaucer($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
 										$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 										$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
@@ -4669,7 +4771,7 @@ class CrashAndGrab extends Table
 								//echo "The garment at ($currentX, $thisY) is: $garmentId <br>";
 								if($garmentId != 0)
 								{ // there is a garment here
-										$this->giveGarmentToOstrich($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
+										$this->giveCrewmemberToSaucer($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
 										$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 										$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
@@ -4724,7 +4826,7 @@ class CrashAndGrab extends Table
 								//echo "The garment at ($currentX, $thisY) is: $garmentId <br>";
 								if($garmentId != 0)
 								{ // there is a garment here
-										$this->giveGarmentToOstrich($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
+										$this->giveCrewmemberToSaucer($garmentId, $ostrichMoving); // give the garment to the ostrich (set garment_location to the color)
 										$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 										$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
@@ -5268,10 +5370,11 @@ class CrashAndGrab extends Table
 
 
 
-		public function getStateName() {
+		function getStateName()
+		{
        $state = $this->gamestate->state();
        return $state['name'];
-   }
+   	}
 
 		function saveSaucerMoveCardDistance( $ostrich, $distance )
 		{
@@ -5750,20 +5853,44 @@ class CrashAndGrab extends Table
 		{
 				$hexColor = $this->convertFriendlyColorToHex($colorAsFriendlyText);
 
+				$currentState = $this->getStateName();
+
 				// place it at a random location
 				$foundUnoccupiedCrashSite = $this->randomlyPlaceSaucer($hexColor);
 
 				if($foundUnoccupiedCrashSite)
 				{ // the saucer was successfully placed
 
-						// now this saucer can choose any direction
-						$this->gamestate->nextState( "chooseDirectionAfterPlacement" );
+						if($currentState == "endRoundPlaceCrashedSaucer")
+						{ // we are placing a crashed saucer at the end of a round
+
+								// go back to end round clean-up to see if we have more crashed saucers to place
+								$this->gamestate->nextState( "endRoundCleanUp" );
+						}
+						elseif($currentState == "askPreTurnToPlaceCrashedSaucer")
+						{ // we are placing a crashed saucer before a player's turn
+
+								// now this saucer can choose any direction
+								$this->gamestate->nextState( "chooseDirectionAfterPlacement" );
+						}
 				}
 				else
 				{ // there were no unoccupied crash sites
 
-						// let the player choose a space to be placed
-						$this->gamestate->nextState( "allCrashSitesOccupiedChooseSpace" );
+						if($currentState == "endRoundPlaceCrashedSaucer")
+						{ // we are placing a crashed saucer at the end of a round
+
+							// let the player choose a space to be placed
+							$this->gamestate->nextState( "allCrashSitesOccupiedChooseSpaceEndRound" );
+						}
+						elseif($currentState == "askPreTurnToPlaceCrashedSaucer")
+						{ // we are placing a crashed saucer before a player's turn
+
+							// let the player choose a space to be placed
+							$this->gamestate->nextState( "allCrashSitesOccupiedChooseSpacePreTurn" );
+						}
+
+
 				}
 		}
 
@@ -6056,7 +6183,7 @@ class CrashAndGrab extends Table
 		function executeStartAcceleratorMove($saucerDirection)
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-
+//throw new feException( "executing move in direction: $saucerDirection");
 				$this->saveSaucerMoveCardDirection($saucerWhoseTurnItIs, $saucerDirection); // save the direction
 
 				$this->executeSaucerMove($saucerWhoseTurnItIs);
@@ -6412,6 +6539,44 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				}
 		}
 
+		function executeChooseAnySpaceForSaucer($xLocation, $yLocation)
+		{
+				self::checkAction( 'chooseSaucerSpace', false ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php) -- the false argument says don't check if we are the active player because we might be replacing a garment on another player's turn
+				$formattedSpace = $xLocation.'_'.$yLocation;
+				$saucerColor = $this->getOstrichWhoseTurnItIs();
+
+				$allValidSpaces = $this->getAllSpacesNotInCrewmemberRowColumn();
+				foreach( $allValidSpaces as $space )
+				{ // go through each player who needs to replace a garment
+						//echo "playerID is " + $player['player_id'];
+
+
+
+						if($space == $formattedSpace)
+						{ // this space is valid
+
+								// locate the saucer there and notify all players
+								$this->placeSaucerOnSpace($saucerColor, $xLocation, $yLocation);
+
+								$currentState = $this->getStateName();
+								$saucerToPlace = "unknown";
+								if($currentState == "allCrashSitesOccupiedChooseSpaceEndRound")
+								{ // we are placing a crashed saucer at the end of a round
+										$this->gamestate->nextState( "endRoundCleanUp" ); // back to end round clean-up to see if we need to place any others
+								}
+								elseif($currentState == "allCrashSitesOccupiedChooseSpacePreTurn")
+								{ // we are placing a crashed saucer before a player's turn
+										$this->gamestate->nextState( "chooseDirectionAfterPlacement" ); // let them choose direction
+								}
+
+
+								return true;
+						}
+				}
+
+				throw new BgaUserException( self::_("That is not a valid space to place a Saucer.") );
+		}
+
 		function executeDiscardGarment($garmentType, $garmentColor)
 		{
 				self::checkAction( 'discardGarmentClick' ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php)
@@ -6452,7 +6617,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				}
 
 				$garmentId = $this->getGarmentIdFromType($garmentType, $garmentColor);
-				$this->giveGarmentToOstrich($garmentId, $murdererOfOstrichHoldingGarmentChosen); // update the database giving it to the new player and send notification to all players
+				$this->giveCrewmemberToSaucer($garmentId, $murdererOfOstrichHoldingGarmentChosen); // update the database giving it to the new player and send notification to all players
 				$this->resetCliffPusher($ostrichHoldingGarmentChosen);
 
 				// update stealing stats
@@ -6588,7 +6753,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				return self::getUniqueValueFromDb("SELECT stats_value FROM `stats` WHERE stats_player_id=$playerId AND stats_type=10 LIMIT 1");
 		}
 
-		function haveAllPlayersTakenTheirTurn()
+		function haveAllSaucersTakenTheirTurn()
 		{
 				$turnValueToCompare = -1;
 
@@ -6614,8 +6779,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				return true;
 		}
 
-		// Called once a player has ended their turn.
-		function endPlayerTurn()
+		// Called once a player's saucer has ended their turn.
+		function endSaucerTurn()
 		{
 				$playerWhoseTurnItWas = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$nameOfPlayerWhoseTurnItWas = $this->getPlayerNameFromPlayerId($playerWhoseTurnItWas);
@@ -6639,10 +6804,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						$this->activePrevPlayer(); // go to the next player counter-clockwise in turn order
 				}
 
-				if($this->haveAllPlayersTakenTheirTurn())
+				if($this->haveAllSaucersTakenTheirTurn())
 				{ // round is over
-						$this->gamestate->setAllPlayersMultiactive(); // set all players to active
-						$this->gamestate->nextState( "newRound" );
+						$this->gamestate->nextState( "endRoundCleanUp" );
 				}
 				else
 				{ // someone still has to take their turn
@@ -6737,36 +6901,13 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								//throw new feException( "We found a good spot at X=".$locX." and Y=".$locY." we have saucerHere=".$saucerHere." and crewmemberHere=".$crewmemberHere);
 
 								// put the saucer on this crash site
-								$sqlOstrich = "UPDATE ostrich SET ostrich_x=".$locX.",ostrich_y=".$locY." WHERE ";
-								$sqlOstrich .= "ostrich_color='".$saucerColor."'";
-								self::DbQuery( $sqlOstrich );
+								$this->placeSaucerOnSpace($saucerColor, $locX, $locY);
+
+								return true; // we found an unoccupied crash site
 						}
 				}
 
-				if($locX == 15 || $locY == 15)
-				{ // no unoccupied crash site could be found
-
-						return false; // we could not find an unoccupied crash sites
-				}
-
-				// notify all players of this saucer's new location
-				$boardValue = $this->getBoardSpaceType($locX, $locY);
-				$ostrichOwner = $this->getOwnerIdOfOstrich($saucerColor);
-				self::notifyAllPlayers( "moveOstrich", clienttranslate( '${player_name} pulled the ${ostrichName} ostrich back up and onto a crate.' ), array(
-									'color' => $saucerColor,
-									'ostrichTakingTurn' => $saucerColor,
-									'x' => $locX,
-								  'y' => $locY,
-									'spaceType' => $boardValue,
-									'ostrichMovingHasZag' => false,
-									'player_name' => self::getActivePlayerName(),
-									'ostrichName' => $this->getOstrichName($saucerColor)
-				) );
-
-				//$count = count($startingLocations);
-				//throw new feException( "Count starting locations:$count");
-
-				return true; // we found an unoccupied crash site
+				return false; // we could not find an unoccupied crash sites
 		}
 
 		function checkStartOfTurnUpgrades()
@@ -6863,20 +7004,33 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function endRoundCleanup()
 		{
 
+
+
 				// starting with Probe player and going clockwise, check each Saucer to see if one crashed
-				while($crashedSaucer = $this->getSaucerThatCrashed() != '')
-				{
+				$crashedSaucer = $this->getSaucerThatCrashed();
+				if($crashedSaucer != '')
+				{ // we found a saucer that is crashed
+					//throw new feException( "Crashed saucer: ".$crashedSaucer);
 						$ownerOfSaucer = $this->getOwnerIdOfOstrich($crashedSaucer);
+
+						//throw new feException( "Activating player ".$ownerOfSaucer.".");
 
 						// make the saucer owner active and ask them to click a button to place it
 						$this->gamestate->changeActivePlayer( $ownerOfSaucer );
 						$this->gamestate->nextState( "endRoundPlaceCrashedSaucer" );
 				}
+				else
+				{ // no saucers are crashed
 
-				// move the Probe
+						//throw new feException( "CURRENT ROUND IS ".$this->getGameStateValue("CURRENT_ROUND")." and we are increasing it by 1.");
+						$this->setGameStateValue("CURRENT_ROUND", $this->getGameStateValue("CURRENT_ROUND")+1); // increment the round by 1
 
+						// move the Probe
 
+						$this->gamestate->setAllPlayersMultiactive(); // set all players to active
+				  	$this->gamestate->nextState( "newRound" ); // use the newRound transition to go to the plan phase
 
+				}
 
 /*
 				$this->gamestate->setAllPlayersMultiactive(); // set all players to active
@@ -6928,10 +7082,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				$this->updateTurnOrder(false); // hide the turn direction arrows
 */
-				//throw new feException( "CURRENT ROUND IS ".$this->getGameStateValue("CURRENT_ROUND")." and we are increasing it by 1.");
-				$this->setGameStateValue("CURRENT_ROUND", $this->getGameStateValue("CURRENT_ROUND")+1); // increment the round by 1
 
-		  	$this->gamestate->nextState( "newRound" ); // use the newRound transition to go to the plan phase
 		}
 
 		/// This is called when the saucer movement animation is occuring.
@@ -6968,6 +7119,31 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
         );
     }
     */
+
+		// Get 2 things:
+		// 1. The color of the Saucer we are placing to show in the description box in case the player has 2 Saucers.
+		// 2. The coordinates of all spaces that are valid for placing so we can highlight them on the front end.
+		function argGetAllCrashSitesOccupiedDetails()
+		{
+				$currentState = $this->getStateName();
+				$saucerToPlace = "unknown";
+				if($currentState == "endRoundPlaceCrashedSaucer")
+				{ // we are placing a crashed saucer at the end of a round
+						$saucerToPlace = $this->getSaucerThatCrashed();
+				}
+				elseif($currentState == "askPreTurnToPlaceCrashedSaucer")
+				{ // we are placing a crashed saucer before a player's turn
+						$saucerToPlace = $this->getOstrichWhoseTurnItIs();
+				}
+
+				$saucerColorFriendly = $this->convertColorToText($saucerToPlace);
+
+				// return both the location of all the
+				return array(
+						'saucerColor' => $saucerColorFriendly,
+						'validPlacements' => self::getAllSpacesNotInCrewmemberRowColumn()
+				);
+		}
 
 		function argGetAllPlayerSaucerMoves()
 		{

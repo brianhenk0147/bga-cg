@@ -105,7 +105,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "endRoundCleanup",
         "updateGameProgression" => true,
-        "transitions" => array( "newRound" => 21 )
+        "transitions" => array( "newRound" => 2, "endRoundPlaceCrashedSaucer" => 37 )
     ),
 
     // END PLAN PHASE - ENTER TRAP PHASE
@@ -347,12 +347,13 @@ $machinestates = array(
     ),
 
     34 => array(
-    		"name" => "allCrashSitesOccupiedChooseSpace",
+    		"name" => "allCrashSitesOccupiedChooseSpaceEndRound",
     		"description" => clienttranslate('${actplayer} is choosing where to be placed because all Crash Sites are occupied.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose where to be placed because all Crash Sites are occupied.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose a space to place your ${saucerColor} Saucer that is not in the row or column of a Crewmember.'),
     		"type" => "activeplayer",
-        "possibleactions" => array( "chooseSpace" ),
-    		"transitions" => array( "chooseDirectionAfterPlacement" => 31 )
+        'args' => 'argGetAllCrashSitesOccupiedDetails',
+        "possibleactions" => array( "chooseSaucerSpace" ),
+    		"transitions" => array( "endRoundCleanUp" => 5 )
     ),
 
     35 => array(
@@ -365,21 +366,22 @@ $machinestates = array(
     ),
 
     36 => array(
-        "name" => "endPlayerTurn",
+        "name" => "endSaucerTurn",
         "description" => clienttranslate('End of turn'),
         "type" => "game",
-        "action" => "endPlayerTurn",
+        "action" => "endSaucerTurn",
         "updateGameProgression" => true,
-        "transitions" => array( "playerTurnStart" => 29, "newRound" => 2 )
+        "transitions" => array( "playerTurnStart" => 29, "endRoundCleanUp" => 5 )
     ),
 
     37 => array(
         "name" => "endRoundPlaceCrashedSaucer",
         "description" => clienttranslate('${actplayer} is placing a crashed Saucer.'),
-    		"descriptionmyturn" => clienttranslate('${you} must place your Saucer.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose a Saucer to place.'),
         "type" => "activeplayer",
+        'args' => 'argGetSaucerToPlaceButton',
         "possibleactions" => array( "clickSaucerToPlace" ),
-    		"transitions" => array( "endRoundPlaceCrashedSaucer" => 37, "endRoundCleanUp" => 5, "newRound" => 2  )
+    		"transitions" => array( "allCrashSitesOccupiedChooseSpaceEndRound" => 34, "endRoundCleanUp" => 5, "newRound" => 2  )
     ),
 
     38 => array(
@@ -389,6 +391,16 @@ $machinestates = array(
         "action" => "checkForRevealDecisions",
         "updateGameProgression" => false,
         "transitions" => array( "playerTurnExecuteMove" => 28, "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41 )
+    ),
+
+    39 => array(
+    		"name" => "allCrashSitesOccupiedChooseSpacePreTurn",
+    		"description" => clienttranslate('${actplayer} is choosing where to be placed because all Crash Sites are occupied.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose a space to place your ${saucerColor} Saucer that is not in the row or column of a Crewmember.'),
+    		"type" => "activeplayer",
+        'args' => 'argGetAllCrashSitesOccupiedDetails',
+        "possibleactions" => array( "chooseSaucerSpace" ),
+    		"transitions" => array( "chooseDirectionAfterPlacement" => 31 )
     ),
 
     40 => array(
@@ -425,7 +437,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerToPlaceButton',
         "possibleactions" => array( "clickSaucer" ),
-    		"transitions" => array(  "chooseDirectionAfterPlacement" => 31, "allCrashSitesOccupiedChooseSpace" => 34 )
+    		"transitions" => array(  "chooseDirectionAfterPlacement" => 31, "allCrashSitesOccupiedChooseSpacePreTurn" => 39 )
     ),
 
 

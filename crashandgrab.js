@@ -787,7 +787,7 @@ var color = 'f6033b';
 
                     if(this.checkPossibleActions('clickAcceleratorDirection'))
                     { // we are clicking on a direction as we hit an accelerator
-                        dojo.stopEvent( evt ); // Preventing default browser reaction
+                        //dojo.stopEvent( evt ); // Preventing default browser reaction
 
                         //this.showMessage( _("Accelerator direction click."), 'error' );
 
@@ -812,7 +812,7 @@ var color = 'f6033b';
                     }
                     else if(this.checkPossibleActions('clickMoveDirection'))
                     { // we are clicking on a direction while selecting our move card for the round
-                        dojo.stopEvent( evt ); // Preventing default browser reaction
+                        //dojo.stopEvent( evt ); // Preventing default browser reaction
 
                         //this.showMessage( _("Move direction click."), 'error' );
 
@@ -997,21 +997,28 @@ var color = 'f6033b';
 
                 onClickSpace: function( evt )
                 { // a player clicked on a space
-                    console.log('SPACE CLICK');
+
+                    var node = evt.currentTarget.id;
+                    var chosenSpaceX = node.split('_')[1]; // x location of the space
+                    var chosenSpaceY = node.split('_')[2]; // y location of the space
+                    console.log("clicked on space " + chosenSpaceX + " " + chosenSpaceY);
 
                     if (this.checkPossibleActions( 'spaceClick', true ))
                     { // player clicks on a garment (it must be checkPossibleActions because they could be replacing the garment on another player's turn so we don't want it to check for active player)
-
-                            var node = evt.currentTarget.id;
-                            var chosenSpaceX = node.split('_')[1]; // x location of the space
-                            var chosenSpaceY = node.split('_')[2]; // y location of the space
-                            console.log("clicked on space " + chosenSpaceX + " " + chosenSpaceY);
 
                             if(this.chosenSpaceX != 0 && this.chosenSpaceY != 0)
                             { // the player has chosen both a destination space and a garment
                                 this.ajaxcall( "/crashandgrab/crashandgrab/actReplaceGarmentChooseSpace.html", {garmentDestinationX: chosenSpaceX, garmentDestinationY: chosenSpaceY, lock: true }, this, function( result ) {}, function( is_error ) {} );
                             }
 
+                    }
+                    else if (this.checkPossibleActions( 'chooseSaucerSpace', true ))
+                    { // we are choosing a space to place a Saucer
+                        if(this.chosenSpaceX != 0 && this.chosenSpaceY != 0)
+                        { // the player has chosen both a destination space and a garment
+                            this.ajaxcall( "/crashandgrab/crashandgrab/actChooseAnySpaceForSaucer.html", {garmentDestinationX: chosenSpaceX, garmentDestinationY: chosenSpaceY, lock: true }, this, function( result ) {}, function( is_error ) {} );
+                            this.unhighlightAllSpaces();
+                        }
                     }
                     else
                     { // we cannot perform a garment-clicking action at this time
@@ -1347,8 +1354,9 @@ this.unhighlightAllGarments();
 
                   break;
 
+                  case 'endRoundPlaceCrashedSaucer':
                   case 'askPreTurnToPlaceCrashedSaucer':
-                  console.log( "onUpdateActionButtons->askPreTurnToPlaceCrashedSaucer" );
+                  console.log( "onUpdateActionButtons->placingSaucer" );
 
                   if( this.isCurrentPlayerActive() )
                   { // this player is active
@@ -1367,6 +1375,17 @@ this.unhighlightAllGarments();
                   case 'chooseDirectionAfterPlacement':
 
                       this.showDirectionButtons();
+
+                  break;
+
+                  case 'allCrashSitesOccupiedChooseSpaceEndRound':
+                  case 'allCrashSitesOccupiedChooseSpacePreTurn':
+
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+                          var validSpaces = args.validPlacements;
+                          this.highlightAllOccupiedSpaces(validSpaces);
+                      }
 
                   break;
 
@@ -2178,6 +2197,23 @@ console.log("selectSelectedMoveCard of color: "+color);
             dojo.addClass( htmlOfSpace, 'spaceHighlighted' ); // give this card a new CSS class
         },
 
+        highlightAllOccupiedSpaces: function(validSpaces)
+        {
+            this.unhighlightAllSpaces();
+            //var countOfSpaces = count(validSpaces);
+            //console.log("count spaces to highlight: " + countOfSpaces);
+
+            for (const space of validSpaces)
+            { // go through each space
+
+                var htmlOfSpace = 'square_'+space; // square_6_5
+                console.log("highlighting space: " + htmlOfSpace);
+                this.highlightSpace(htmlOfSpace);
+
+                // hook this space up to the right onClick event
+            }
+        },
+
         highlightPossibleAcceleratorOrBoostMoveSelections: function(playerSaucerMoves, direction='')
         {
             //console.log("highlightPossibleAcceleratorOrBoostMoveSelections with player "+playerId+" saucer "+saucerSelected+" move card "+ moveCardSelected + " direction " + direction);
@@ -2298,6 +2334,17 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 var destinationY = nextEvent['destination_Y']; // 7
 
                 console.log("event eventType: " + eventType + " saucerMoving: " + saucerMoving + " destinationX: " + destinationX + " destinationY: " + destinationY);
+                if(eventType == 'crewmemberPickup')
+                { // the saucer picked up a crewmember
+
+                    this.slideCrewmemberToSaucer();
+
+                    // start a new animation where we don't wait for anything to finish to slide the crewmember to the saucer
+                    var animationId = this.slideToObject( 'saucer_'+saucerMoving, 'square_'+destinationX+'_'+destinationY, this.ANIMATION_SPEED );
+                    dojo.connect(animationId, 'onEnd', () => {
+                    });
+                    animationId.play();
+                }
 
                 var animationId = this.slideToObject( 'saucer_'+saucerMoving, 'square_'+destinationX+'_'+destinationY, this.ANIMATION_SPEED );
                 dojo.connect(animationId, 'onEnd', () => {

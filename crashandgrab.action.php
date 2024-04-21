@@ -285,6 +285,18 @@
       self::ajaxResponse( );
     }
 
+    public function actChooseAnySpaceForSaucer()
+    {
+        self::setAjaxMode();
+        $destination_x = self::getArg( "garmentDestinationX", AT_posint, true );
+        $destination_y = self::getArg( "garmentDestinationY", AT_posint, true );
+
+        //echo "Replacing garment at ($destination_x, $destination_y). <br>";
+
+        $this->game->executeChooseAnySpaceForSaucer( $destination_x, $destination_y );
+        self::ajaxResponse( );
+    }
+
     public function actStealGarment()
     {
         self::setAjaxMode();
