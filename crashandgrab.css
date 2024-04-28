@@ -37,7 +37,6 @@
         very often, using CSS classes for the logic of your user interface allow you to do complex
         thing easily.
 
-
      Note: on the production platform, this file will be compressed and comments will be removed.
            Consequently, don't hesitate to put as many comments as necessary.
 */
@@ -166,6 +165,8 @@
 
     width: 64px;
     height: 64px;
+
+    display: inline-block;
 
     background-image: url('img/direction_tokens.png');
     background-position: -128px 0px;
@@ -1490,6 +1491,27 @@ content: '';
 
 }
 
+/***** ENERGY *****/
+#energy_pile {
+    width: 120px;
+    height: 64px;
+    background-color: #FFAE42;
+
+    display: inline-block;
+    position: relative;
+
+    margin-left: 30px;
+}
+
+.energy_cube {
+    width: 20px;
+    height: 19px;
+    background-image: url('img/energy_cube_20w.png');
+    position: relative;
+
+    z-index: 10;
+}
+
 
 
 /***** GARMENTS *****/
@@ -1559,6 +1581,7 @@ content: '';
     position: relative;  /* must be absolute or relative to use slideToObject */
     display: inline-block;
     background-image: url('img/crewmembers.png');
+    z-index: 10;
 }
 
 .highlighted_garment

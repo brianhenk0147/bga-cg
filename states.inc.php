@@ -93,8 +93,8 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must execute your movement.'),
     		"type" => "activeplayer",
         'args' => 'argExecuteMove',
-    		"possibleactions" => array( "askToUseZig", "useSkateboard", "askToReplaceGarment" ),
-    		"transitions" => array( "askUseZag" => 14, "askUseSkateboard" => 9, "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "askWhichGarmentToDiscard" => 18, "allTrappersDone" => 7, "endGame" => 99 )
+    		"possibleactions" => array( "askToUseZig", "useSkateboard", "placeCrewmemberChooseCrewmember" ),
+    		"transitions" => array( "askUseZag" => 14, "askUseSkateboard" => 9, "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "askWhichGarmentToDiscard" => 18, "allTrappersDone" => 7, "endGame" => 99 )
     ),
 
     // END ROUND PHASE (game)
@@ -137,17 +137,17 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickAcceleratorDirection", "clickSpace" ),
-    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endPlayerTurn" => 36 )
+    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50 )
     ),
 
     10 => array(
-    		"name" => "replaceGarmentChooseGarment",
-    		"description" => "",
-    		"descriptionmyturn" => "",
+    		"name" => "placeCrewmemberChooseCrewmember",
+    		"description" => clienttranslate('${actplayer} must choose a Crewmember to place.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose a Crewmember to place.'),
     		"type" => "activeplayer",
         'args' => 'argGetGarmentsValidForRespawn',
-    		"possibleactions" => array( "replaceGarmentClick" ),
-    		"transitions" => array( "replaceGarmentChooseGarment" => 13, "endTurn" => 8, "askToReplaceGarment" => 10 )
+    		"possibleactions" => array( "chooseLostCrewmember" ),
+    		"transitions" => array( "replaceGarmentChooseGarment" => 13, "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurnCleanUp" => 50 )
     ),
 
     11 => array(
@@ -169,13 +169,13 @@ $machinestates = array(
     ),
 
     13 => array(
-    		"name" => "replaceGarmentChooseSpace",
+    		"name" => "placeCrewmemberChooseSpace",
     		"description" => clienttranslate('${actplayer} must choose the space where the new garment will go.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose the space where the new garment will go.'),
     		"type" => "activeplayer",
         'args' => 'argGetValidGarmentSpawnSpaces',
     		"possibleactions" => array( "spaceClick" ),
-    		"transitions" => array( "nextMovementTurn" => 4, "endTurn" => 8, "askToReplaceGarment" => 10 )
+    		"transitions" => array( "nextMovementTurn" => 4, "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10 )
     ),
 
     14 => array(
@@ -184,7 +184,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('Would you like to zag?'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "answerZagQuestion" ),
-    		"transitions" => array( "askTrapBasic" => 19, "executeMove" => 4, "endTurn" => 8, "askUseSkateboard" => 9, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "askWhichGarmentToDiscard" => 18, "endGame" => 99 )
+    		"transitions" => array( "askTrapBasic" => 19, "executeMove" => 4, "endTurn" => 8, "askUseSkateboard" => 9, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "askWhichGarmentToDiscard" => 18, "endGame" => 99 )
     ),
 
     15 => array(
@@ -193,7 +193,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must discard down to 1 Trap Card.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "discardTrapCard" ),
-    		"transitions" => array( "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15 )
+    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15 )
     ),
 
     16 => array(
@@ -202,7 +202,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} should get this ostrich back in the action.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "answerRespawn" ),
-    		"transitions" => array( "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "nextMovementTurn" => 4, "askStealOrDraw" => 17 )
+    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "nextMovementTurn" => 4, "askStealOrDraw" => 17 )
     ),
 
     17 => array(
@@ -212,7 +212,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argStealableGarments',
     		"possibleactions" => array( "clickDraw2Zigs", "stealGarmentClick" ),
-    		"transitions" => array( "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "chooseGarmentToSteal" => 23, "endTurn" => 8 )
+    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "chooseGarmentToSteal" => 23, "endTurn" => 8 )
     ),
 
     18 => array(
@@ -222,7 +222,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argDiscardableGarments',
     		"possibleactions" => array( "discardGarmentClick" ),
-    		"transitions" => array( "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "endTurn" => 8, "askToRespawn" => 16, "askWhichGarmentToDiscard" => 18 )
+    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "endTurn" => 8, "askToRespawn" => 16, "askWhichGarmentToDiscard" => 18 )
     ),
 
     19 => array(
@@ -260,7 +260,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argStealableGarments',
         "possibleactions" => array( "stealGarmentClick" ),
-    		"transitions" => array( "endTurn" => 8, "askToReplaceGarment" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "endTurn" => 8 )
+    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "endTurn" => 8 )
     ),
 
     24 => array(
@@ -269,7 +269,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "checkStartOfTurnUpgrades",
         "updateGameProgression" => false,
-        "transitions" => array( "checkForRevealDecisions" => 38, "askToUseStartOfTurnUpgradeEffects" => 28 )
+        "transitions" => array( "checkForRevealDecisions" => 38, "askToUseStartOfTurnUpgradeEffects" => 91 )
     ),
 
     25 => array(
@@ -307,7 +307,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must start your move.'),
     		"type" => "activeplayer",
         "possibleactions" => array( "clickMove" ),
-    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endPlayerTurn" => 36 )
+    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "endGame" => 99 )
     ),
 
     29 => array(
@@ -362,7 +362,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must choose a crewmember to locate.'),
     		"type" => "activeplayer",
         "possibleactions" => array( "clickCrewmemberToLocate" ),
-    		"transitions" => array( "endPlayerTurn" => 36 )
+    		"transitions" => array( "endSaucerTurnCleanUp" => 50 )
     ),
 
     36 => array(
@@ -440,6 +440,32 @@ $machinestates = array(
     		"transitions" => array(  "chooseDirectionAfterPlacement" => 31, "allCrashSitesOccupiedChooseSpacePreTurn" => 39 )
     ),
 
+    50 => array(
+        "name" => "endSaucerTurnCleanUp",
+        "description" => clienttranslate('Checking for end of turn tasks...'),
+        "type" => "game",
+        "action" => "endSaucerTurnCleanUp",
+        "updateGameProgression" => true,
+        "transitions" => array( "endSaucerTurnCleanUp" => 50, "crashPenaltyAskWhichToGiveAway" => 51, "crashPenaltyAskWhichToSteal" => 52, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurn" => 36 )
+    ),
+
+    51 => array(
+    		"name" => "crashPenaltyAskWhichToGiveAway",
+    		"description" => clienttranslate('${actplayer} is giving away a Crewmember.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose which Crewmember you will give to PLAYERNAME because you crashed.'),
+    		"type" => "activeplayer",
+        "possibleactions" => array( "clickCrewmember" ),
+    		"transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+    ),
+
+    52 => array(
+        "name" => "crashPenaltyAskWhichToSteal",
+        "description" => clienttranslate('${actplayer} is stealing a Crewmember.'),
+        "descriptionmyturn" => clienttranslate('${you} must gain an Energy or choose a Crewmember to steal from PLAYERNAME because you crashed them.'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "clickCrewmember", "gainEnergy" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+    ),
 
 
 

@@ -38,6 +38,7 @@ function (dojo, declare) {
             this.PURPLECOLOR = "b92bba";
             this.GRAYCOLOR = "c9d2db";
 
+
             // directions
             this.UP_DIRECTION = 'sun';
     				this.DOWN_DIRECTION = 'meteor';
@@ -60,7 +61,8 @@ function (dojo, declare) {
 
             this.playerSaucerMoves = null; // save the list of players/saucers/move cards/spaces so it can be used elsewhere
 
-            this.ANIMATION_SPEED = 300; // the speed of all the animations (lower is faster)
+            this.ANIMATION_SPEED_MOVING_SAUCER = 300; // the speed of moving saucers (lower is faster)
+            this.ANIMATION_SPEED_CREWMEMBER_PICKUP = 900; // the speed of moving a crewmember from the board to a saucer (lower is faster)
 
             // zig cards
             this.movementcardwidth = 82;
@@ -359,14 +361,6 @@ var color = 'f6033b';
 
                 this.putSaucerOnTile( singleOstrich.x, singleOstrich.y, singleOstrich.owner, singleOstrich.color ); // add the ostrich to the board
 
-                // add a zag token if they have one
-                if(singleOstrich.has_zag == 1)
-                { // this ostrich has acquired a zag
-
-                    dojo.place( this.format_block( 'jstpl_zag', {
-                          color: singleOstrich.color
-                    } ) , 'zag_holder_'+singleOstrich.color );
-                }
             }
 
             this.lastMovedOstrich = this.gamedatas.lastMovedOstrich; // this is the color of the ostrich that was last moved
@@ -928,7 +922,7 @@ var color = 'f6033b';
                     console.log('GARMENT CLICK check iscurrentplayeractive() ' + this.isCurrentPlayerActive());
 
 
-                    if (this.checkPossibleActions( 'replaceGarmentClick', true ))
+                    if (this.checkPossibleActions( 'chooseLostCrewmember', true ))
                     { // player clicks on a garment (it must be checkPossibleActions because they could be replacing the garment on another player's turn so we don't want it to check for active player)
 
                             var node = evt.currentTarget.id;
@@ -1082,8 +1076,9 @@ var color = 'f6033b';
 
 
                   break;
-                  case 'replaceGarmentChooseGarment':
-                  console.log( "onEnteringState->replaceGarmentChooseGarment" );
+                  case 'placeCrewmemberChooseCrewmember':
+                  console.log( "onEnteringState->placeCrewmemberChooseCrewmember" );
+                  /*
                   var playerIdRespawningGarment = args.args.playerIdRespawningGarment;
                   var playerNameRespawningGarment = args.args.playerNameRespawningGarment;
 
@@ -1113,7 +1108,7 @@ var color = 'f6033b';
                       } );
                       this.setPlayerInstructions(otherPlayerText);
                   }
-
+*/
                   break;
 
                   case 'replaceGarmentChooseSpace':
@@ -1121,11 +1116,6 @@ var color = 'f6033b';
                   var playerIdRespawningGarmentSpace = args.args.playerIdRespawningGarment;
                   var playerNameRespawningGarmentSpace = args.args.playerNameRespawningGarment;
 
-                  // they will just choose a garment and then choose an empty crate
-                  if( this.player_id == playerIdRespawningGarmentSpace )
-                  { // this player is the one who respawns this garment
-                      var activePlayerText = _("You must choose where on the board this garment will go.");
-                      this.setPlayerInstructions(activePlayerText);
 
                       var validGarmentSpawnSpaces = args.args.validGarmentSpawnSpaces;
                       console.log("validGarmentSpawnSpaces:");
@@ -1139,14 +1129,7 @@ var color = 'f6033b';
                           var htmlIdOfSpace = 'square_'+x+'_'+y;
                           dojo.addClass( htmlIdOfSpace, 'highlighted_square' );
                       }
-                  }
-                  else
-                  {
-                      var otherPlayerText = dojo.string.substitute( _("${playerNameReplacing} is choosing where the new garment will go."), {
-                          playerNameReplacing: playerNameRespawningGarmentSpace
-                      } );
-                      this.setPlayerInstructions(otherPlayerText);
-                  }
+
 
                   break;
 
@@ -1244,8 +1227,8 @@ var color = 'f6033b';
             //this.ostrichChosen = false; // true when the player selects which ostrich they will move this turn
             break;
 
-            case 'replaceGarmentChooseGarment':
-            console.log( "onLeavingState->replaceGarmentChooseGarment" );
+            case 'placeCrewmemberChooseCrewmember':
+            console.log( "onLeavingState->placeCrewmemberChooseCrewmember" );
 this.unhighlightAllGarments();
             break;
 
@@ -1660,11 +1643,7 @@ this.unhighlightAllGarments();
                   case 'discardTrapCards':
                       console.log( "onUpdateActionButtons for discardTrapCards where isCurrentPlayerActive="+this.isCurrentPlayerActive() );
 
-                      if( this.isCurrentPlayerActive() )
-                      { // this is the active player so they need to discard
-                        var translatedText = _("You may only have 1 Trap Card. Please choose which you will discard.");
-                        this.setPlayerInstructions(translatedText);
-                      }
+
 
                   break;
 
@@ -1708,8 +1687,8 @@ this.unhighlightAllGarments();
                       }
                   break;
 
-                  case 'replaceGarmentChooseGarment':
-                  console.log( "onUpdateActionButtons for replaceGarmentChooseGarment" );
+                  case 'placeCrewmemberChooseCrewmember':
+                  console.log( "onUpdateActionButtons for placeCrewmemberChooseCrewmember" );
 
 
                   break;
@@ -1805,6 +1784,26 @@ console.log("return false");
                       return "legs";
                   case "3":
                       return "feet";
+            }
+        },
+
+        convertCrewmemberType: function(crewmemberType)
+        {
+          console.log("converting crewmemberType " + crewmemberType);
+            switch( crewmemberType )
+            {
+                case "head":
+                case "pilot":
+                    return "pilot";
+                case "body":
+                case "engineer":
+                    return "engineer";
+                case "legs":
+                case "doctor":
+                    return "doctor";
+                case "feet":
+                case "scientist":
+                    return "scientist";
             }
         },
 
@@ -2326,27 +2325,47 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
         animateEvents: function(eventStack)
         {
             var nextEvent = eventStack.pop();
+            console.log('nextEvent:'+nextEvent);
             if(nextEvent)
             {
+                // default source and destination to event type saucerMove
                 var eventType = nextEvent['event_type']; // saucerMove
-                var saucerMoving = nextEvent['saucer_moving']; // ff0000
-                var destinationX = nextEvent['destination_X']; // 5
-                var destinationY = nextEvent['destination_Y']; // 7
 
-                console.log("event eventType: " + eventType + " saucerMoving: " + saucerMoving + " destinationX: " + destinationX + " destinationY: " + destinationY);
-                if(eventType == 'crewmemberPickup')
+                var source = 'unknown';
+                var destination = 'unknown';
+                var animationSpeed = this.ANIMATION_SPEED_MOVING_SAUCER;
+
+                console.log("eventType: " + eventType);
+
+
+                if(eventType == 'saucerMove')
                 { // the saucer picked up a crewmember
+                    var saucerMoving = nextEvent['saucer_moving']; // ff0000
+                    var destinationX = nextEvent['destination_X']; // 5
+                    var destinationY = nextEvent['destination_Y']; // 7
 
-                    this.slideCrewmemberToSaucer();
+                    source = 'saucer_'+saucerMoving;
+                    destination = 'square_'+destinationX+'_'+destinationY;
 
-                    // start a new animation where we don't wait for anything to finish to slide the crewmember to the saucer
-                    var animationId = this.slideToObject( 'saucer_'+saucerMoving, 'square_'+destinationX+'_'+destinationY, this.ANIMATION_SPEED );
-                    dojo.connect(animationId, 'onEnd', () => {
-                    });
-                    animationId.play();
+                    animationSpeed = this.ANIMATION_SPEED_MOVING_SAUCER;
+                }
+                else if(eventType == 'crewmemberPickup')
+                { // the saucer picked up a crewmember
+                    var saucerColor = nextEvent['saucer_moving']; // ff0000
+                    var crewmemberColor = nextEvent['crewmember_color']; // ff0000
+
+                    var crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
+                    source = 'garment_'+crewmemberType+'_'+crewmemberColor;
+
+                    var convertedType = this.convertCrewmemberType(crewmemberType); // temp until i fix this weird issue switching these
+                    destination = 'player_board_saucer_mat_'+convertedType+'_'+saucerColor; // player_board_saucer_mat_pilot_0090ff
+
+                    animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
                 }
 
-                var animationId = this.slideToObject( 'saucer_'+saucerMoving, 'square_'+destinationX+'_'+destinationY, this.ANIMATION_SPEED );
+                console.log("event eventType: " + eventType + " source: " + source + " destination: " + destination);
+
+                var animationId = this.slideToObject( source, destination, animationSpeed );
                 dojo.connect(animationId, 'onEnd', () => {
                    this.animateEvents(eventStack); // recursively call for the next event
                 });
@@ -2588,12 +2607,6 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             else {
               this.mustSkateboard = false;
             }
-        },
-
-        showChooseZigButtons: function()
-        {
-            var translatedText = _("Choose which Zig card you will play.");
-            this.setPlayerInstructions(translatedText);
         },
 
         showDirectionChoiceButtons: function()
@@ -3680,6 +3693,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             dojo.subscribe( 'updateTurnOrder', this, "notif_updateTurnOrder" );
 
             dojo.subscribe( 'animateMovement', this, "notif_animateMovement" );
+            dojo.subscribe( 'energyAquired', this, "notif_energyAquired");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -3904,6 +3918,34 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
         },
 
+        notif_energyAquired: function( notif )
+        {
+            console.log("Entered notif_energyAquired.");
+
+            var player = notif.args.player_id;
+            var energyPosition = notif.args.energyPosition;
+            var saucerColor = notif.args.saucerColor;
+
+            // show the zag token on the mat of the ostrich who claimed it
+            dojo.place( this.format_block( 'jstpl_energy', {
+                 location: saucerColor,
+                 position: energyPosition
+            } ) , 'energy_pile');
+
+            var objectMovingId = 'energy_'+saucerColor+'_'+energyPosition;
+            var destination = 'energy_acquired_'+saucerColor;
+
+            var animationId = this.slideToObject( objectMovingId, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
+            dojo.connect(animationId, 'onEnd', () => {
+
+                // put it in the saucer mat energy holder instead of the energy pile
+                this.attachToNewParent( objectMovingId, destination );
+
+                // if this is the active player, enable Move button?
+            });
+            animationId.play();
+        },
+
         notif_acquireGarment: function( notif )
         {
             console.log("Entered notif_acquireGarment.");
@@ -3957,12 +3999,24 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             var xDestination = notif.args.xDestination;
             var yDestination = notif.args.yDestination;
 
-            var garmentHtmlId = 'garment_'+garmentType+'_'+garmentColor;
-            var garmentLocationHtmlId = 'square_'+xDestination+'_'+yDestination;
-            console.log('moving ' + garmentHtmlId + ' to ' + garmentLocationHtmlId);
 
-            this.placeOnObject( garmentHtmlId, 'replacement_garment_chosen_holder' ); // place it where it already is (required to overcome a bug with sliding)
-            this.slideToObject( garmentHtmlId, garmentLocationHtmlId).play(); // slide it to the board
+
+            var source = 'garment_'+garmentType+'_'+garmentColor;
+            var destination = 'square_'+xDestination+'_'+yDestination;
+
+            console.log("moving crewmember to board with source: " + source + " destination: " + destination);
+
+            var animationId = this.slideToObject( source, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
+            dojo.connect(animationId, 'onEnd', () => {
+            });
+            animationId.play();
+
+            //var garmentHtmlId = 'garment_'+garmentType+'_'+garmentColor;
+            //var garmentLocationHtmlId = 'square_'+xDestination+'_'+yDestination;
+            //console.log('moving ' + garmentHtmlId + ' to ' + garmentLocationHtmlId);
+
+            //this.placeOnObject( garmentHtmlId, 'replacement_garment_chosen_holder' ); // place it where it already is (required to overcome a bug with sliding)
+            //this.slideToObject( garmentHtmlId, garmentLocationHtmlId).play(); // slide it to the board
         },
 
         notif_moveGarmentToBoard: function( notif )
