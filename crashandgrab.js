@@ -1348,7 +1348,7 @@ this.unhighlightAllGarments();
                       var buttonLabel = saucerButton['buttonLabel'];
                       var isDisabled = saucerButton['isDisabled'];
                       var hoverOverText = saucerButton['hoverOverText']; // hover over text or '' if we don't want a hover over
-                      var actionName = saucerButton['actionName']; // selectSaucerToGoFirst
+                      var actionName = saucerButton['actionName']; // such as selectSaucerToGoFirst
                       var makeRed = saucerButton['makeRed'];
 
                       this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
@@ -1401,7 +1401,7 @@ this.unhighlightAllGarments();
                           var buttonLabel = 'Move';
                           var isDisabled = false;
                           var hoverOverText = ''; // hover over text or '' if we don't want a hover over
-                          var actionName = 'startMove'; // selectSaucerToGoFirst
+                          var actionName = 'startMove'; // such as selectSaucerToGoFirst
                           var makeRed = false;
 
                           this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);

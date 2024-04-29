@@ -894,12 +894,14 @@ class CrashAndGrab extends Table
 		{
 				$result = array();
 
-				$currentPlayer = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				//$currentPlayer = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				$activePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+
 
 				// all saucers for this player
 				$sqlGetSaucerColors = "SELECT ostrich_color ";
 				$sqlGetSaucerColors .= "FROM ostrich ";
-				$sqlGetSaucerColors .= "WHERE ostrich_owner=$currentPlayer";
+				$sqlGetSaucerColors .= "WHERE ostrich_owner=$activePlayer";
 				$usedColors = self::DbQuery( $sqlGetSaucerColors );
 
 				$index = 0;
@@ -2688,6 +2690,19 @@ class CrashAndGrab extends Table
 				self::DbQuery( $sql );
 		}
 
+		// Returns the number of saucers each player controls.
+		function getSaucersPerPlayer()
+		{
+				if($this->getNumberOfPlayers() < 3)
+				{
+						return 2;
+				}
+				else
+				{
+						return 1;
+				}
+		}
+
 		function getNumberOfSaucers()
 		{
 				switch($this->getNumberOfPlayers())
@@ -4104,7 +4119,7 @@ class CrashAndGrab extends Table
 
 		function getSaucersForPlayer($playerId)
 		{
-				return self::getObjectListFromDB( "SELECT ostrich_color
+				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_turns_taken
 																										 FROM ostrich
 																										 WHERE ostrich_owner=$playerId" );
 		}
@@ -4323,11 +4338,48 @@ class CrashAndGrab extends Table
 				return null; // should never get here
 		}
 
+		function isThisFirstTurnInRoundForPlayer($playerWhoseTurnItIs)
+		{
+				if($this->getSaucersPerPlayer() == 1)
+				{ // players are only controlling a single saucer
+						return true;
+				}
+
+				$turnsTaken = -1; // this will hold the lowest number of turns taken by the player's saucers
+
+				$ostrichSql = "SELECT ostrich_color, ostrich_turns_taken, ostrich_is_chosen ";
+				$ostrichSql .= "FROM ostrich ";
+				$ostrichSql .= "WHERE ostrich_owner=$playerWhoseTurnItIs";
+				$dbresOstrich = self::DbQuery( $ostrichSql );
+				while( $saucer = mysql_fetch_assoc( $dbresOstrich ) )
+				{ // go through each ostrich of this player
+
+						$saucerColor = $saucer['ostrich_color']; // save which color ostrich this is
+						$saucerTurnsTaken = $saucer['ostrich_turns_taken']; // see how many turns this ostrich has taken
+
+						if($turnsTaken == -1)
+						{ // this is the first saucer we've seen for this player
+								$turnsTaken = $saucerTurnsTaken;
+						}
+						else
+						{ // this is the second saucer we've seen for this player
+								if($turnsTaken == $saucerTurnsTaken)
+								{ // they have both taken the same number of turns
+										return true;
+								}
+								else
+								{
+										return false;
+								}
+						}
+				}
+		}
+
 		function getOstrichWhoseTurnItIs()
 		{
 				$activePlayer = self::getActivePlayerId(); // get who the active player is
-				$ostrichColor = "";
-				$turnsTaken = 1000;
+				$firstSaucerColor = "";
+				$turnsTakenByFirstSaucer = 1000;
 
 				//echo "activeplayer $activePlayer <br>";
 
@@ -4341,41 +4393,45 @@ class CrashAndGrab extends Table
 				{ // go through each ostrich of this player
 						$numberOfOstrichesThisPlayerHas++; // add one to the number of ostriches this player has
 
-						$ostrichColor = $ostrich['ostrich_color']; // save which color ostrich this is
+						$saucerIsChosenToGoFirst = $ostrich['ostrich_is_chosen'];
+						$thisSaucerColor = $ostrich['ostrich_color']; // save which color ostrich this is
+						$turnsTakenByThisSaucer = $ostrich['ostrich_turns_taken'];
 
-						if($turnsTaken == 1000)
-						{ // this is the first ostrich
+						if($turnsTakenByFirstSaucer == 1000)
+						{ // this is the first saucer for the player
 
-								$turnsTaken = $ostrich['ostrich_turns_taken']; // save how many turns this ostrich has taken
-
-								if($ostrich['ostrich_is_chosen'] == 1)
-								{ // they have selected this ostrich to go next
-
-										return $ostrich['ostrich_color']; // return this ostrich because the player has already said it's going next
-								}
+								// just save data
+								$turnsTakenByFirstSaucer = $turnsTakenByThisSaucer; // save how many turns this ostrich has taken
+								$firstSaucerColor = $thisSaucerColor;
 						}
 						else
-						{ // this is the second ostrich
-								if($turnsTaken == $ostrich['ostrich_turns_taken'])
-								{ // these ostriches have taken the same number of turns so we don't know which one goes next
-											if($ostrich['ostrich_is_chosen'] == 1)
-											{ // they have selected this ostrich to go first
+						{ // this is the second saucer for the player
+								if($turnsTakenByFirstSaucer == $turnsTakenByThisSaucer)
+								{ // these saucers have taken the same number of turns so we don't know which one goes next
 
-													return $ostrich['ostrich_color']; // return this second ostrich because it is going next
+											if($saucerIsChosenToGoFirst == 1)
+											{ // they have selected this saucer to go first
+
+													return $thisSaucerColor; // return this second ostrich because it is going next
+											}
+											else
+											{ // they must have selected the other to go first
+
+													return $firstSaucerColor; // return this ostrich because the player has already said it's going next
 											}
 								}
 								else
 								{ // one of these ostriches has taken fewer turns than the other
 
-											if($turnsTaken > $ostrich['ostrich_turns_taken'])
+											if($turnsTakenByFirstSaucer > $turnsTakenByThisSaucer)
 											{ // the second ostrich has taken fewer turns
 
-														return $ostrich['ostrich_color']; // so return it since it's next
+														return $thisSaucerColor; // so return it since it's next
 											}
 											else
 											{ // the first ostrich has taken fewer turns
 
-														return $ostrichColor; // so return it since it's next
+														return $firstSaucerColor; // so return it since it's next
 											}
 								}
 						}
@@ -4383,7 +4439,7 @@ class CrashAndGrab extends Table
 
 				if($numberOfOstrichesThisPlayerHas == 1)
 				{ // if that player only has 1 ostrich, return that ostrich
-						return $ostrichColor;
+						return $firstSaucerColor;
 				}
 
 				return ""; // there are multiple ostriches, neither has gone, and neither has been chosen to go first
@@ -4433,6 +4489,8 @@ class CrashAndGrab extends Table
 		// Which type of board space is at this X/Y location?
 		function getBoardSpaceType($x, $y)
 		{
+			//throw new feException("Getting board space type at ($x, $y).");
+
 			  $boardValue = self::getUniqueValueFromDb("SELECT board_space_type FROM board WHERE board_x=$x AND board_y=$y");
 
 				return $boardValue;
@@ -4441,6 +4499,7 @@ class CrashAndGrab extends Table
 		// On which type of board space is this ostrich located?
 		function getBoardSpaceTypeForOstrich($ostrich)
 		{
+			//throw new feException("Getting board space type for saucer ($ostrich).");
 				$x = self::getUniqueValueFromDb("SELECT ostrich_x FROM ostrich WHERE ostrich_color='$ostrich'");
 				$y = self::getUniqueValueFromDb("SELECT ostrich_y FROM ostrich WHERE ostrich_color='$ostrich'");
 
@@ -4500,6 +4559,8 @@ class CrashAndGrab extends Table
 				$moveEventList = array();
 				//$moveEventList[0] = array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => 4, 'destination_Y' => 7);
 				//$moveEventList[1] = array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => 2, 'destination_Y' => 7);
+
+
 
 				if($this->LEFT_DIRECTION == $direction)
 				{ // we're traveling from right to left
@@ -4735,11 +4796,14 @@ class CrashAndGrab extends Table
 
 				if($this->DOWN_DIRECTION == $direction)
 			 	{
+
+
 						for ($y = 1; $y <= $distance; $y++)
 						{ // go space-by-space starting at your current location until the distance is
 							// used up or we run into a skateboard or ostrich
 
 								$thisY = $currentY+$y;
+
 								$boardValue = $this->getBoardSpaceType($currentX,$thisY);
 
 							  $this->setSaucerYValue($saucerMoving, $thisY); // set Y value for Saucer
@@ -5215,6 +5279,13 @@ class CrashAndGrab extends Table
 				 $sql = "UPDATE player SET player_traps_drawn_this_round=player_traps_drawn_this_round+1
 	 										WHERE player_id='$playerId' " ;
 	 						self::DbQuery( $sql );
+		 }
+
+		 function incrementSaucerTurnsTaken($saucerColor)
+		 {
+			 	$updateSql = "UPDATE ostrich SET ostrich_turns_taken=ostrich_turns_taken+1
+										  WHERE ostrich_color='$saucerColor' " ;
+				self::DbQuery( $updateSql );
 		 }
 
 		function incrementPlayerRound($playerId)
@@ -5966,6 +6037,7 @@ class CrashAndGrab extends Table
 
 		function setState_AfterMovementEvents($saucerMoving)
 		{
+			//throw new feException("Getting board space type after move events for saucer ($saucerMoving).");
 				$boardValue = $this->getBoardSpaceTypeForOstrich($saucerMoving); // get the type of space of the ostrich who just moved
 
 				$canUseBoost = false;
@@ -5997,7 +6069,7 @@ class CrashAndGrab extends Table
 		// An action during a player's movement has just completed and we need to know which state to be in next.
 		function setState_PostMovement($ostrichMoving, $ostrichTakingTurn)
 		{
-
+//throw new feException("Getting board space type for saucer ($ostrichMoving).");
 				$boardValue = $this->getBoardSpaceTypeForOstrich($ostrichMoving); // get the type of space of the ostrich who just moved
 
 				$canUseZag = $this->doesOstrichHaveZag($ostrichMoving); // true if they have a zag
@@ -6069,6 +6141,8 @@ class CrashAndGrab extends Table
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
+				//throw new feException( "executeStartMove with saucer: $saucerWhoseTurnItIs");
+
 				// move the selected distance in the selected direction
 				$this->executeSaucerMove($saucerWhoseTurnItIs);
 		}
@@ -6123,7 +6197,8 @@ class CrashAndGrab extends Table
 		{
 				$color = $this->convertFriendlyColorToHex($colorAsFriendlyText);
 
-				// set this saucer to the one going next ostrich.ostrich_turns_taken or player.player_turns_taken_this_round
+				// set this saucer to the one going next ostrich_is_chosen
+				$this->setOstrichToChosen($color);
 
 				$this->gamestate->nextState( "locateCrashedSaucer" );
 		}
@@ -6415,6 +6490,7 @@ class CrashAndGrab extends Table
 
 		function executeSaucerMove($saucerMoving)
 		{
+//throw new feException( "executeSaucerMove saucer moving: $saucerMoving");
 				self::debug( "executeSaucerMove saucerMoving:$saucerMoving" );
 
 				// get list of move events in chronological order (saucers and where they end up, crewmembers picked up and by whom)
@@ -6993,25 +7069,61 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 				$turnValueToCompare = -1;
 
+				// go through all players
+				// count turns taken for all their saucers
+				// if any of a player's saucers have taken less turns than the other, return false
+				// if any player has taken less turns than another players, return false
+
 				$allPlayers = self::getObjectListFromDB( "SELECT player_id
 																											 FROM player" );
 				foreach( $allPlayers as $player )
-				{ // go through each player who needs to replace a garment
+				{ // go through each player
 						//echo "playerID is " + $player['player_id'];
 						$playerId = $player['player_id'];
 						$turnsForPlayer = $this->getPlayerTurnsTaken($playerId);
+						$thisPlayerFirstSaucerTurnsTaken = -1;
+
+						$saucersForPlayer = $this->getSaucersForPlayer($playerId);
+						foreach( $saucersForPlayer as $saucer )
+						{ // go through each saucer
+								$saucerColor = $saucer['ostrich_color'];
+								$turnsThisSaucerHasTaken = $saucer['ostrich_turns_taken'];
+
+								if($thisPlayerFirstSaucerTurnsTaken == -1)
+								{ // we are looking at the player's first saucer
+
+										// just save data
+										$thisPlayerFirstSaucerTurnsTaken = $turnsThisSaucerHasTaken;
+								}
+								else
+								{ // we are looking at this player's second saucer
+
+										if($thisPlayerFirstSaucerTurnsTaken != $turnsThisSaucerHasTaken)
+										{ // one of this player's saucers has taken more turns than the other
+
+												// all saucers have NOT yet taken their turn
+												return false;
+										}
+								}
+						}
+
 
 						if($turnValueToCompare == -1)
-						{
+						{ // this is the first player we have looked at
+
+								// just save turn data
 								$turnValueToCompare = $turnsForPlayer;
 						}
 						elseif($turnsForPlayer != $turnValueToCompare)
-						{ // this is a different value
-							//throw new feException( "turns for player $turnsForPlayer and turnValueToCompare $turnValueToCompare" );
+						{ // this is NOT the first player we're looking at and they have taken a different number of turns than the first player we looked at
+
+//throw new feException( "turns for player $turnsForPlayer and turnValueToCompare $turnValueToCompare" );
+								// one player has taken fewer turns than another
 								return false;
 						}
 				}
 
+				// we have found no mistmatches between player or saucer turn counts
 				return true;
 		}
 
@@ -7020,9 +7132,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 				$playerWhoseTurnItWas = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$nameOfPlayerWhoseTurnItWas = $this->getPlayerNameFromPlayerId($playerWhoseTurnItWas);
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
 //throw new feException( "incrementing stat for $playerWhoseTurnItWas" );
 
+				$this->incrementSaucerTurnsTaken($saucerWhoseTurnItIs);
 				self::incStat( 1, 'turns_number', $playerWhoseTurnItWas ); // increase end game player stat
 				self::incStat( 1, 'turns_number' ); // increase end game table stat
 
@@ -7054,15 +7168,17 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		// of their saucers will take a turn.
 		function playerTurnStart()
 		{
-				if($this->getNumberOfPlayers() > 2)
-				{ // players are only controlling a single saucer
+				$playerWhoseTurnItIs = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 
+				if($this->getSaucersPerPlayer() == 1)
+				{ // players are only controlling a single saucer
+//throw new feException( "1 saucer per player." );
 						$this->gamestate->nextState( "saucerTurnStart" ); // their saucer can just go
 				}
 				else
-				{ // players are controlling 2 saucers
+				{ // players are controlling 2 saucers each
 
-						if(false)
+						if($this->isThisFirstTurnInRoundForPlayer($playerWhoseTurnItIs))
 						{ // it is the player's first turn this round
 
 								// they choose which of their two saucers will take the first turn this round
