@@ -177,6 +177,8 @@
     width: 64px;
     height: 64px;
 
+    display: inline-block;
+
     background-image: url('img/direction_tokens.png');
     background-position: -64px 0px;
 }
@@ -1491,6 +1493,35 @@ content: '';
 
 }
 
+/***** BOOSTERS *****/
+#booster_pile {
+    width: 120px;
+    height: 64px;
+    background-color: green;
+
+    display: inline-block;
+    position: relative;
+
+    margin-left: 30px;
+}
+
+.booster_token {
+    width: 30px;
+    height: 30px;
+
+    background-image: url('img/booster.png');
+    background-position: -30px 0px;
+
+    position: relative;
+
+    z-index: 10;
+}
+
+.booster_acquired_area {
+    width: 30px;
+    height: 30px;
+}
+
 /***** ENERGY *****/
 #energy_pile {
     width: 120px;
@@ -1510,6 +1541,13 @@ content: '';
     position: relative;
 
     z-index: 10;
+}
+
+.energy_acquired_area {
+    width: 30px;
+    height: 30px;
+
+    margin-top: 50px;
 }
 
 

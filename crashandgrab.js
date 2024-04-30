@@ -3693,7 +3693,8 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             dojo.subscribe( 'updateTurnOrder', this, "notif_updateTurnOrder" );
 
             dojo.subscribe( 'animateMovement', this, "notif_animateMovement" );
-            dojo.subscribe( 'energyAquired', this, "notif_energyAquired");
+            dojo.subscribe( 'energyAcquired', this, "notif_energyAcquired");
+            dojo.subscribe( 'boosterAcquired', this, "notif_boosterAcquired");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -3918,9 +3919,9 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
         },
 
-        notif_energyAquired: function( notif )
+        notif_energyAcquired: function( notif )
         {
-            console.log("Entered notif_energyAquired.");
+            console.log("Entered notif_energyAcquired.");
 
             var player = notif.args.player_id;
             var energyPosition = notif.args.energyPosition;
@@ -3934,6 +3935,34 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
             var objectMovingId = 'energy_'+saucerColor+'_'+energyPosition;
             var destination = 'energy_acquired_'+saucerColor;
+
+            var animationId = this.slideToObject( objectMovingId, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
+            dojo.connect(animationId, 'onEnd', () => {
+
+                // put it in the saucer mat energy holder instead of the energy pile
+                this.attachToNewParent( objectMovingId, destination );
+
+                // if this is the active player, enable Move button?
+            });
+            animationId.play();
+        },
+
+        notif_boosterAcquired: function( notif )
+        {
+            console.log("Entered notif_boosterAcquired.");
+
+            var player = notif.args.player_id;
+            var boosterPosition = notif.args.boosterPosition;
+            var saucerColor = notif.args.saucerColor;
+
+            // show the zag token on the mat of the ostrich who claimed it
+            dojo.place( this.format_block( 'jstpl_booster', {
+                 location: saucerColor,
+                 position: boosterPosition
+            } ) , 'booster_pile');
+
+            var objectMovingId = 'booster_'+saucerColor+'_'+boosterPosition;
+            var destination = 'booster_acquired_'+saucerColor;
 
             var animationId = this.slideToObject( objectMovingId, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
             dojo.connect(animationId, 'onEnd', () => {

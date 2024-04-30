@@ -1062,6 +1062,7 @@
 
       <div id="outer_board_bottom_row">
         <div id="direction_meteor" class="direction_token"></div>
+        <div id="booster_pile"></div>
       </div>
     </div> <!--outer_board-->
   </div> <!--board_tile_column -->
@@ -1141,6 +1142,7 @@ var jstpl_saucer='<div class="saucer saucer_color_${color} saucer_float" id="sau
 var jstpl_zag='<div class="zag component_circle" id="zag_${color}"></div>';
 
 var jstpl_energy='<div class="energy_cube" id="energy_${location}_${position}"></div>';
+var jstpl_booster='<div class="booster_token" id="booster_${location}_${position}"></div>';
 
 var jstpl_garment='<div class="garment" id="garment_${garment_type}_${color}"></div>';
 
@@ -1171,6 +1173,7 @@ var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}">
                                           <div id="player_board_ostrich_holder_${color}" class="player_board_ostrich_holder"></div>\
                                         </div>\
                                         <div id="player_board_saucer_mat_holder_${color}" class="player_board_saucer_mat_holder">\
+                                          <div id="booster_acquired_${color}" class="booster_acquired_area"></div>\
                                           <div id="player_board_saucer_mat_pilot_${color}" class="player_board_saucer_mat_pilot"></div>\
                                           <div id="player_board_saucer_mat_engineer_${color}" class="player_board_saucer_mat_engineer"></div>\
                                           <div id="player_board_saucer_mat_doctor_${color}" class="player_board_saucer_mat_doctor"></div>\

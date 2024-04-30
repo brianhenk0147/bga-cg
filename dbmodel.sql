@@ -76,6 +76,8 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
   `ostrich_causing_cliff_fall` varchar(16) NOT NULL,
   `ostrich_steal_garment_order` smallint(5) unsigned NOT NULL DEFAULT '0',
   `crash_penalty_rendered` smallint(5) unsigned NOT NULL,
+  `energy_quantity` int(10) unsigned NOT NULL,
+  `booster_quantity` int(10) unsigned NOT NULL,
   PRIMARY KEY (`ostrich_color`)
 ) ENGINE=InnoDB;
 

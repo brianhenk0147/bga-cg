@@ -3101,20 +3101,25 @@ class CrashAndGrab extends Table
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 				$saucerCrashed = $this->isSaucerCrashed($saucer);
 				$saucerCrashDetails = $this->getSaucerCrashDetailsForSaucer($saucer);
-				if($saucerCrashed == true &&
-					 $saucerWhoseTurnItIs == $saucer &&
-					 $saucerCrashDetails['crash_penalty_rendered'] == false)
-				{ // this saucer crashed on their turn and they have not yet paid the penalty
 
-						if($this->doesSaucerHaveOffColoredCrewmember($saucer))
-						{ // saucer has an off-colored crewmember
+				foreach($saucerCrashDetails as $saucerDetail)
+				{ // should just be one but it's a list of records
 
-								return true;
-						}
-						else
-						{ // saucer does NOT have an off-colored crewmember
+						if($saucerCrashed == true &&
+							 $saucerWhoseTurnItIs == $saucer &&
+							 $saucerDetail['crash_penalty_rendered'] == false)
+						{ // this saucer crashed on their turn and they have not yet paid the penalty
 
-								return false;
+								if($this->doesSaucerHaveOffColoredCrewmember($saucer))
+								{ // saucer has an off-colored crewmember
+
+										return true;
+								}
+								else
+								{ // saucer does NOT have an off-colored crewmember
+
+										return false;
+								}
 						}
 				}
 
@@ -3197,7 +3202,7 @@ class CrashAndGrab extends Table
 
 		function getSaucerCrashDetailsForSaucer($saucer)
 		{
-				return self::getUniqueValueFromDb( "SELECT ostrich_color, ostrich_owner, ostrich_x, ostrich_y, ostrich_causing_cliff_fall, crash_penalty_rendered
+				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner, ostrich_x, ostrich_y, ostrich_causing_cliff_fall, crash_penalty_rendered
 																						FROM ostrich
 																						WHERE ostrich_color='$saucer' LIMIT 1" );
 		}
@@ -3212,7 +3217,7 @@ class CrashAndGrab extends Table
 		{
 				$ostriches = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner, ostrich_x, ostrich_y
 																								 FROM ostrich
-																								 WHERE ostrich_color='$ostrich'" );
+																								 WHERE ostrich_color='$ostrich' LIMIT 1" );
 
 				foreach( $ostriches as $ostrich )
 				{ // go through each ostrich (should only be 1)
@@ -5296,6 +5301,48 @@ class CrashAndGrab extends Table
 						self::DbQuery( $sql );
 		}
 
+		function incrementEnergyForSaucer($saucerColor)
+		{
+			// add one to energy total
+			$sql = "UPDATE ostrich SET energy_quantity=energy_quantity+1
+										WHERE ostrich_color='$saucerColor' ";
+						self::DbQuery( $sql );
+		}
+
+		function decrementEnergyForSaucer($saucerColor)
+		{
+			// add one to energy total
+			$sql = "UPDATE ostrich SET energy_quantity=energy_quantity-1
+										WHERE ostrich_color='$saucerColor' ";
+						self::DbQuery( $sql );
+		}
+
+		function getEnergyCountForSaucer($saucerColor)
+		{
+				return self::getUniqueValueFromDb("SELECT energy_quantity FROM ostrich WHERE ostrich_color='$saucerColor' ");
+		}
+
+		function incrementBoosterForSaucer($saucerColor)
+		{
+				// add one to booster total
+				$sql = "UPDATE ostrich SET booster_quantity=booster_quantity+1
+											WHERE ostrich_color='$saucerColor' " ;
+							self::DbQuery( $sql );
+		}
+
+		function decrementBoosterForSaucer($saucerColor)
+		{
+				// add one to booster total
+				$sql = "UPDATE ostrich SET booster_quantity=booster_quantity-1
+											WHERE ostrich_color='$saucerColor' " ;
+							self::DbQuery( $sql );
+		}
+
+		function getBoosterCountForSaucer($saucerColor)
+		{
+				return self::getUniqueValueFromDb("SELECT booster_quantity FROM ostrich WHERE ostrich_color='$saucerColor' ");
+		}
+
 		// Determine where the ostrich moving ends this movement and tell players where they ended.
 		function sendOstrichMoveToPlayers($ostrichMoving, $ostrichTakingTurn, $beingPushed)
 		{
@@ -5721,14 +5768,14 @@ class CrashAndGrab extends Table
 
 		function giveSaucerBooster($saucerColor)
 		{
-				$this->saveOstrichZag($saucerColor, 1); // give the saucer a token (set ostrich.ostrich_has_zag to true)
-				$energyPosition = "1"; // 1, 2, 3, 4, etc.
+				$this->incrementBoosterForSaucer($saucerColor); // give the saucer a token
+				$boosterPosition = $this->getBoosterCountForSaucer($saucerColor); // 1, 2, 3, 4, etc.
 				$player_id = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
 				$player_name = self::getCurrentPlayerName();
-				self::notifyAllPlayers( 'energyAquired', clienttranslate( '${player_name} gained an Energy.' ), array(
+				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${player_name} gained a Booster.' ), array(
 								'player_id' => $player_id,
-								'energyPosition' => $energyPosition,
+								'boosterPosition' => $boosterPosition,
 								'saucerColor' => $saucerColor,
 								'player_name' => $player_name
 				) );
@@ -5736,12 +5783,12 @@ class CrashAndGrab extends Table
 
 		function giveSaucerEnergy($saucerColor)
 		{
-				$this->saveOstrichZag($saucerColor, 1); // give the saucer a token (set ostrich.ostrich_has_zag to true)
-				$energyPosition = "1"; // 1, 2, 3, 4, etc.
+				$this->incrementEnergyForSaucer($saucerColor); // give the saucer a token
+				$energyPosition = $this->getEnergyCountForSaucer($saucerColor); // 1, 2, 3, 4, etc.
 				$player_id = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
 				$player_name = self::getCurrentPlayerName();
-				self::notifyAllPlayers( 'energyAquired', clienttranslate( '${player_name} gained an Energy.' ), array(
+				self::notifyAllPlayers( 'energyAcquired', clienttranslate( '${player_name} gained an Energy.' ), array(
 								'player_id' => $player_id,
 								'energyPosition' => $energyPosition,
 								'saucerColor' => $saucerColor,
