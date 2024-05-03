@@ -330,11 +330,12 @@ $machinestates = array(
 
     32 => array(
     		"name" => "chooseIfYouWillUseBooster",
-    		"description" => clienttranslate('${actplayer} is moving.'),
-    		"descriptionmyturn" => clienttranslate('${you} are moving.'),
+    		"description" => clienttranslate('${actplayer} is deciding if they will boost.'),
+    		"descriptionmyturn" => clienttranslate('Would you like to use a Booster?'),
     		"type" => "activeplayer",
-        "possibleactions" => array( "clickAcceleratorDirection", "askToUseBooster" ),
-    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35 )
+        'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
+        "possibleactions" => array( "clickUseBooster", "clickSkipBooster" ),
+    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50 )
     ),
 
     33 => array(

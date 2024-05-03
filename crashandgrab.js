@@ -1408,9 +1408,9 @@ this.unhighlightAllGarments();
                       }
 
                   break;
-
-                  case 'chooseXVal':
-                  console.log( "onUpdateActionButtons->chooseXVal" );
+/*
+                  case 'chooseDistanceDuringMoveReveal':
+                  console.log( "onUpdateActionButtons->chooseDistanceDuringMoveReveal" );
                   var buttonList = args.moveCardButtons;
                   // USE THIS FRAMEWORK BUT NEED TO UPDATE FOR X VALUES
                     const buttonKeys = Object.keys(buttonList);
@@ -1427,6 +1427,7 @@ this.unhighlightAllGarments();
                     }
 
                   break;
+*/
                   case 'claimZag':
                       console.log( "onUpdateActionButtons->claimZag" );
 
@@ -1590,8 +1591,8 @@ this.unhighlightAllGarments();
 
                   break;
 
-                  case 'chooseXValue':
-                      console.log( "onUpdateActionButtons for chooseXValue" );
+                  case 'chooseDistanceDuringMoveReveal':
+                      console.log( "onUpdateActionButtons for chooseDistanceDuringMoveReveal" );
 
                       if( this.isCurrentPlayerActive() )
                       { // this is the active player so we need to execute their move
@@ -1662,11 +1663,15 @@ this.unhighlightAllGarments();
                       }
                   break;
 
-                  case 'askUseZag':
-                      console.log( "onUpdateActionButtons for askUseZag" );
+                  case 'chooseIfYouWillUseBooster':
+                      console.log( "onUpdateActionButtons for chooseIfYouWillUseBooster" );
                       if( this.isCurrentPlayerActive() )
                       { // this is the active player so they need to discard
-                          this.showAskToUseZagButtons(); // show the buttons tha task if the player would like to use their zag
+
+                          this.showDirectionButtons();
+                          this.highlightPossibleAcceleratorOrBoostMoveSelections(args.playerSaucerAcceleratorMoves);
+                          this.showAskToUseBoosterButtons(); // show the buttons tha task if the player would like to use their zag
+                          this.showRestartTurnButton();
                       }
                   break;
 
@@ -2602,7 +2607,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             }
             else if(ostrichMoving == ostrichTakingTurn && ostrichMovingHasZag)
             { // it is the moving ostrich's turn and they have a zag
-                this.showAskToUseZagButtons();
+                this.showAskToUseBoosterButtons();
             }
             else {
               this.mustSkateboard = false;
@@ -2657,27 +2662,15 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
         },
 
-        showZagDirectionButtons: function()
-        {
-          this.removeActionButtons(); // remove any action buttons that are currently showing
-          //dojo.destroy('useZag_button'); // destroy use zag button
-          //dojo.destroy('noZag_button'); // destroy no zag button
-
-          this.addActionButton( 'zagBridge_button', _('BRIDGE'), 'onZagBridge' );
-          this.addActionButton( 'zagCactus_button', _('CACTUS'), 'onZagCactus' );
-          this.addActionButton( 'zagRiver_button', _('RIVER'), 'onZagRiver' );
-          this.addActionButton( 'zagMountain_button', _('MOUNTAIN'), 'onZagMountain' );
-        },
 
         showRestartTurnButton: function()
         {
           this.addActionButton( 'restartTurn_button', _('Restart Turn'), 'restartTurn', null, false, 'red' );
         },
 
-        showAskToUseZagButtons: function()
+        showAskToUseBoosterButtons: function()
         {
-          this.addActionButton( 'useZag_button', _('Use Zag'), 'useZag' );
-          this.addActionButton( 'noZag_button', _('No'), 'noZag', null, false, 'red' );
+            this.addActionButton( 'noBooster_button', _('Skip Booster'), 'skipBooster' );
         },
 
         showAskStealOrDrawButtons: function(countOfStealableGarments)
@@ -3471,27 +3464,53 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
           return;
         },
 
-        useZag: function()
+        useBooster: function()
         {
-          console.log( "DO use a Zag" );
+            console.log( "DO use a Booster" );
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickUseBooster' ) )
+            {   return; }
 
-          if(this.saucer2 == this.lastMovedOstrich)
-          {
-              this.saucer2HasZag = false; // take away the zag
-          }
-          else {
-              this.saucer1HasZag = false; // take away the zag
-          }
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/actUseBooster.html", {
+                                                                    lock: true
+                                                                 },
+                         this, function( result ) {
 
-          this.showZagDirectionButtons(); // show buttons for each direction they can zag
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
+
+
         },
 
-        noZag: function()
+        skipBooster: function()
         {
-            console.log( "do NOT use a Zag" );
+            console.log( "do NOT use a Booster" );
 
-            //this.resetSetTrapPhaseVariables(); // now that we're into the movement phase, we can reset the trap phase stuff for this player so they are ready for next round
-            this.sendEndTurn(); // tell the server this player's turn is over
+            // Check that this action is possible (see "possibleactions" in states.inc.php)
+            if( ! this.checkAction( 'clickSkipBooster' ) )
+            {   return; }
+
+            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/actSkipBooster.html", {
+                                                                    lock: true
+                                                                 },
+                         this, function( result ) {
+
+                            // What to do after the server call if it succeeded
+                            // (most of the time: nothing)
+
+                         }, function( is_error) {
+
+                            // What to do after the server call in anyway (success or failure)
+                            // (most of the time: nothing)
+
+                         } );
 
         },
 

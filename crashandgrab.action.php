@@ -90,7 +90,7 @@
 
       $direction = self::getArg( "direction", AT_alphanum, true ); // asteroids
 
-      $this->game->executeStartAcceleratorMove($direction);
+      $this->game->executeStartAcceleratorOrBoosterMove($direction);
 
       self::ajaxResponse( );
 
@@ -185,10 +185,10 @@
     }
 
     // The player is saying they will not use a Zag during Move phase.
-    public function actNoZag()
+    public function actSkipBooster()
     {
         self::setAjaxMode();
-        $this->game->executeNoZag();
+        $this->game->executeSkipBooster();
         self::ajaxResponse( );
     }
 
@@ -227,16 +227,6 @@
         $direction = self::getArg( "direction", AT_alphanum, true ); // BRIDGE, MOUNTAIN, etc.
 
         $this->game->executeMoveInNewDirection(  $ostrich_color, $ostrich_taking_turn, $direction );
-        self::ajaxResponse( );
-    }
-
-    // The player has chosen the direction they would like to zag.
-    public function actExecuteZagMove()
-    {
-        self::setAjaxMode();
-        $direction = self::getArg( "direction", AT_alphanum, true ); // BRIDGE, MOUNTAIN, etc.
-
-        $this->game->executeZagMove( $direction );
         self::ajaxResponse( );
     }
 
