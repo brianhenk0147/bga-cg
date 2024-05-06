@@ -183,6 +183,12 @@
     background-position: -64px 0px;
 }
 
+/***** SECTIONS *****/
+.section_rounding {
+    border: 1px solid #35231f;
+    border-radius: calc(15px*var(--ev-zoom-factor));
+    box-shadow: 0 calc(2px*var(--ev-zoom-factor)) calc(2px*var(--ev-zoom-factor)) rgba(0,0,0,.3)
+}
 
 /***** BOARD *****/
 .grid-container {

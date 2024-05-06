@@ -91,6 +91,7 @@ class CrashAndGrab extends Table
     {
 
 			//throw new feException( "setupNewGame" );
+			  /************ Required setup for game engine *****/
 
         // Set the colors of the players with HTML color code
         // The default below is red/green/blue/orange/brown
@@ -277,7 +278,7 @@ class CrashAndGrab extends Table
 
 				$result['garment'] = self::getObjectListFromDB( "SELECT garment_x,garment_y,garment_location,garment_color,garment_type FROM garment ORDER BY garment_location,garment_type");
 
-				$result['turnOrder'] = $this->getGameStateValue("TURN_ORDER");
+			$result['turnOrder'] = $this->getGameStateValue("TURN_ORDER");
 
         return $result;
     }
@@ -513,7 +514,7 @@ class CrashAndGrab extends Table
 				}
 				else
 				{ // all other player counts (1 Saucer per player)
-
+//throw new feException( "all other player counts");
 						// give Probe to the player going first
 						$playerGoingFirstSaucers = $this->getSaucersForPlayer($playerIdGoingFirst);
 						foreach( $playerGoingFirstSaucers as $saucer )
@@ -525,7 +526,7 @@ class CrashAndGrab extends Table
 
 								$this->gamestate->changeActivePlayer( $playerIdGoingFirst ); // make probe owner go first in turn order
 						}
-
+//throw new feException( "hamburger");
 						$playerGoingSecondSaucers = $this->getSaucersForPlayer($playerIdGoingSecond);
 						foreach( $playerGoingSecondSaucers as $saucer )
 						{ // go through each saucer
@@ -537,10 +538,11 @@ class CrashAndGrab extends Table
 								}
 								else
 								{
+									//throw new feException( "sausage");
 										$this->giveSaucerBooster($saucerColor); // give this Saucer a Booster
 								}
 						}
-
+//throw new feException( "hot dog");
 						$allSaucers = $this->getAllSaucers();
 						foreach( $allSaucers as $saucer )
 						{ // go through each saucer
@@ -569,7 +571,7 @@ class CrashAndGrab extends Table
 					//   4+ saucers: take a Booster
 					//   3 saucers: locate a Pilot
 					// all other saucers locate a Pilot
-
+//throw new feException( "end of initializeStartingBonuses");
 				}
 		}
 
@@ -5796,11 +5798,16 @@ class CrashAndGrab extends Table
 
 		function giveSaucerBooster($saucerColor)
 		{
+			//throw new feException( "giveSaucerBooster saucerColor:$saucerColor");
 				$this->incrementBoosterForSaucer($saucerColor); // give the saucer a token
+				//throw new feException( "incremented booster count saucerColor:$saucerColor");
 				$boosterPosition = $this->getBoosterCountForSaucer($saucerColor); // 1, 2, 3, 4, etc.
-				$player_id = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+//throw new feException( "got booster position saucerColor:$saucerColor");
 
-				$player_name = self::getCurrentPlayerName();
+				$player_id = $this->getOwnerIdOfOstrich($saucerColor);
+//throw new feException( "got player id saucerColor:$saucerColor");
+
+				$player_name = $this->getPlayerNameFromPlayerId($player_id);
 				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${player_name} gained a Booster.' ), array(
 								'player_id' => $player_id,
 								'boosterPosition' => $boosterPosition,
