@@ -49,6 +49,16 @@ CREATE TABLE IF NOT EXISTS `trapCards` (
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
+CREATE TABLE IF NOT EXISTS `upgradeCards` (
+  `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `card_type` varchar(16) NOT NULL,
+  `card_type_arg` int(11) NOT NULL,
+  `card_location` varchar(30) NOT NULL,
+  `card_location_arg` int(11) NOT NULL,
+  `card_is_played` smallint(5) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
 CREATE TABLE IF NOT EXISTS `board` (
   `board_x` smallint(5) unsigned NOT NULL,
   `board_y` smallint(5) unsigned NOT NULL,

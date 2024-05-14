@@ -117,7 +117,7 @@ $gameinfos = array(
     //  default: 740
     //  maximum possible value: 740 (ie: your game interface should fit with a 740px width (correspond to a 1024px screen)
     //  minimum possible value: 320 (the lowest value you specify, the better the display is on mobile)
-    'min' => 750,
+    'min' => 740,
 
     // Maximum width
     //  default: null (ie: no limit, the game interface is as big as the player's screen allows it).
@@ -131,8 +131,8 @@ $gameinfos = array(
 // Each paragraph must be wrapped with totranslate() for translation and should not contain html (plain text without formatting).
 // A good length for this text is between 100 and 150 words (about 6 to 9 lines on a standard display)
 'presentation' => array(
-    totranslate("This game is a zany scramble to clothe your ostrich, full of unexpected moments of hilarity."),
-    totranslate("Choose your movement ahead of time and hope it still works out as you planned as you bounce around the board collecting items and laying traps for others."),
+    totranslate("Race around the board grabbing Crewmembers, Energy, and Boosters while avoiding or crashing into other players. Buy Upgrades for your ship to build your strategy around them. The first player to get a Pilot, Engineer, Doctor, and Scientist first wins!"),
+    totranslate("Re-live your favorite old school action game in a battle royale where you'll race around the board trying to grab energy, boosters, upgrades and a full crew for your flying saucer before your opponents. You'll use some light programmed movement, tactical movement decisions, and you'll build your overall strategy based on the saucer upgrades you acquire. Be the first to get yourself off the planet before everyone else!"),
 ),
 
 // Games categories

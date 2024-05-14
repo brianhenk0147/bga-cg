@@ -68,12 +68,20 @@
 
 
 /***** GENERAL LAYOUT *****/
+body {
+    /* The following lines prevent the iPhone from overriding small font sizes. */
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 #board_area {
     margin-left: auto;
     margin-right: auto;
     margin-top: 10px;
     margin-bottom: 10px;
     /*width: 710px;*/
+    min-width: 768px;
     float: left;
 }
 
@@ -83,6 +91,11 @@
 
 #middle_board_row {
   display: block;
+  margin-top: -20px;
+}
+
+#outer_board {
+  margin-bottom: 10px;
 }
 
 #outer_board_left_column {
@@ -91,10 +104,17 @@
   width: 64px;
 }
 
+#outer_board_bottom_row
+{
+  margin-top: -20px;
+}
+
 #outer_board_right_column {
   display: inline-block;
   vertical-align: top;
   width: 64px;
+
+  margin-left: -20px;
 }
 
 #hand_and_mats_column {
@@ -184,11 +204,7 @@
 }
 
 /***** SECTIONS *****/
-.section_rounding {
-    border: 1px solid #35231f;
-    border-radius: calc(15px*var(--ev-zoom-factor));
-    box-shadow: 0 calc(2px*var(--ev-zoom-factor)) calc(2px*var(--ev-zoom-factor)) rgba(0,0,0,.3)
-}
+
 
 /***** BOARD *****/
 .grid-container {
@@ -840,6 +856,7 @@
 
 .board_tile_container
 {
+    margin-left: -20px;
     display: inline-block;
 }
 #board_tile_container_4
@@ -872,10 +889,6 @@ float: left;
     height: 107px;
 }
 
-.move_card_holder {
-
-}
-
 .move_card {
     width: 82px;
     height: 82px;
@@ -883,10 +896,14 @@ float: left;
 
     display: inline-block;
     position: relative; /* must be absolute or relative to use slideToObject */
+
+    z-index: 11; /* we want it to be on top of any played upgrades they have */
+
+
 }
 
 .move_card_hand {
-
+    margin-top: 5px;
 }
 
 .move_card_holder_in_hand {
@@ -1215,9 +1232,175 @@ content: '';
   height: 100px;
   display: inline-block;
 
-  margin-top: -110px;
-  margin-left: 20px;
+  position: relative;
+  left: 51px;
+  top: -11px;
+}
 
+
+
+/***** UPGRADES *****/
+.upgradeCardContent
+{
+    width: 230px;
+    height: 164px;
+    position: relative;
+
+    /* OPTION A: Works but is very small on iPhone.
+    width: 230px;
+    height: 164px;
+    position: relative;
+    */
+
+    /* OPTION B: Font looks huge on mobile.
+    width: 230px;
+    height: 164px;
+    position: relative;
+    */
+
+    /* OPTION C: Font looks big on mobile.
+    width: 230px;
+    height: 164px;
+    position: relative;
+
+    font-size: 12px;
+    */
+}
+
+.upgradeTitle
+{
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 10px;
+    font-weight: bolder;
+
+    text-align: center;
+    margin: 0 auto;
+    padding-top: 11px;
+
+    width: 170px;
+    height: 15px;
+    text-overflow: ellipsis;
+
+    /* OPTION A: Works but is very small on iPhone.
+    font-family: Roboto, Arial, sans-serif;
+    font-size: .8vw;
+    font-weight: bolder;
+
+    text-align: center;
+    margin: 0 auto;
+    padding-top: 12px;
+
+    width: 170px;
+    height: 15px;
+    text-overflow: ellipsis;
+    */
+
+    /* OPTION B: Font looks huge on mobile.
+    font-family: Roboto, Arial, sans-serif;
+    font-size: .8em;
+    font-weight: bolder;
+
+    text-align: center;
+    margin: 0 auto;
+    padding-top: 12px;
+
+    width: 170px;
+    height: 15px;
+    text-overflow: ellipsis;
+    */
+
+    /* OPTION C: Font looks big on mobile.
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 1em;
+    font-weight: bolder;
+
+    text-align: center;
+    margin: 0 auto;
+    padding-top: 12px;
+
+    width: 170px;
+    height: 15px;
+    text-overflow: ellipsis;
+    */
+
+    transform: rotateZ(-3deg);
+}
+
+.upgradeEffect
+{
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 8px;
+    color: white;
+
+    text-align: center;
+    margin: 0 auto;
+
+    left: 0px;
+    right: 0px;
+    bottom: 2px;
+    position: absolute;
+
+
+    text-overflow: ellipsis;
+    width: 170px;
+
+  /* OPTION A: Works but is very small on iPhone.
+    font-family: Roboto, Arial, sans-serif;
+    font-size:.63vw;
+    color: white;
+
+    text-align: center;
+    margin: 0 auto;
+
+    left: 0px;
+    right: 0px;
+    bottom: 2px;
+    position: absolute;
+
+
+    text-overflow: ellipsis;
+    width: 170px;
+*/
+
+/* OPTION B: Similar to C but different em value... forgot to save it.
+
+*/
+
+/* OPTION C: Font looks big on mobile.
+font-family: Roboto, Arial, sans-serif;
+font-size:.7em;
+color: white;
+
+text-align: center;
+margin: 0 auto;
+
+left: 0px;
+right: 0px;
+bottom: 2px;
+position: absolute;
+
+
+text-overflow: ellipsis;
+width: 170px;
+*/
+
+}
+
+@media only screen and (max-width: 740px)
+{
+    .upgradeTitle
+    {
+      font-size: 6.5px;
+    }
+    .upgradeEffect
+    {
+      font-size: 5px;
+      line-height: 10px;
+    }
+    .player_board_arrow
+    {
+      background-position-y: -62px;
+    }
 }
 
 
@@ -1336,15 +1519,16 @@ content: '';
 }
 
 .mat_and_stuff_row {
-    width: 500px;
+    width: 713px;
     display: inline-block;
+    margin-bottom: 10px;
 }
 
 .mat_row {
   display: inline-block;
     margin-left: 5px;
     margin-bottom: 2px;
-    width: 385px;
+    width: 713px;
 }
 
 .mat_inner_row {
@@ -1460,6 +1644,47 @@ content: '';
     position: relative; /* must be absolute or relative to use slideToObject */
 }
 
+#pilot_and_engineer_row
+{
+  margin-top: 5px;
+}
+
+.player_board_saucer_mat_pilot
+{
+  width: 50px;
+
+  position: absolute;
+  left: 48px;
+  top: 93px;
+}
+
+.player_board_saucer_mat_engineer
+{
+  width: 50px;
+
+  position: absolute;
+  left: 141px;
+  top: 93px;
+}
+
+.player_board_saucer_mat_doctor
+{
+  width: 50px;
+
+  position: absolute;
+  left: 60px;
+  top: 139px;
+}
+
+.player_board_saucer_mat_scientist
+{
+  width: 50px;
+
+  position: absolute;
+  left: 132px;
+  top: 139px;
+}
+
 
 /***** SAUCERS *****/
 .saucer {
@@ -1526,6 +1751,10 @@ content: '';
 .booster_acquired_area {
     width: 30px;
     height: 30px;
+
+    position: absolute;
+    left: 108px;
+    top:60px;
 }
 
 /***** ENERGY *****/
@@ -1553,7 +1782,25 @@ content: '';
     width: 30px;
     height: 30px;
 
-    margin-top: 50px;
+    position: absolute;
+    left: 112px;
+    top:130px;
+}
+
+.energy_1 {
+    margin-top: 0px;
+}
+
+.energy_2 {
+  margin-top: 2px;
+}
+
+.energy_3 {
+margin-top: 4px;
+}
+
+.energy_4 {
+margin-top: 6px;
 }
 
 
@@ -1561,10 +1808,10 @@ content: '';
 /***** GARMENTS *****/
 #garments_container
 {
-  width: 540px;
+  width: 713px;
     display: inline-block;
     vertical-align: top;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 
 
     background-color: gray; /* TODO: make this some sort of lost crewmembers mat image */
@@ -1587,10 +1834,12 @@ content: '';
   height: 51px;
 
   margin: 0px;
+  margin-top: 5px;
   padding: 0px;
 
   display: inline-block;
   position: relative;  /* must be absolute or relative to use slideToObject */
+
 }
 
 /*
@@ -1635,42 +1884,55 @@ content: '';
     cursor: pointer;
 }
 
+.played_pilot {
+  transform: rotate(90deg);
+}
+.played_engineer {
+  transform: rotate(-90deg);
+}
+.played_doctor {
+  transform: rotate(45deg);
+}
+.played_scientist {
+  transform: rotate(-45deg);
+}
+
 /* these are each individual garment */
 /* red garments */
-#garment_head_f6033b { background-position: -141px 0px;   }
-#garment_body_f6033b { background-position: -141px -47px;   }
-#garment_legs_f6033b { background-position: -141px -94px;   }
-#garment_feet_f6033b { background-position: -141px -141px;   }
+#garment_pilot_f6033b { background-position: -141px 0px;   }
+#garment_engineer_f6033b { background-position: -141px -47px;   }
+#garment_doctor_f6033b { background-position: -141px -94px;   }
+#garment_scientist_f6033b { background-position: -141px -141px;   }
 
 /* green garments */
-#garment_head_01b508 { background-position: 0px 0px;   }
-#garment_body_01b508 { background-position: 0px -47px;   }
-#garment_legs_01b508 { background-position: 0px -94px;   }
-#garment_feet_01b508 { background-position: 0px -141px;   }
+#garment_pilot_01b508 { background-position: 0px 0px;   }
+#garment_engineer_01b508 { background-position: 0px -47px;   }
+#garment_doctor_01b508 { background-position: 0px -94px;   }
+#garment_scientist_01b508 { background-position: 0px -141px;   }
 
 /* blue garments */
-#garment_head_0090ff { background-position: -47px 0px;   }
-#garment_body_0090ff { background-position: -47px -47px;   }
-#garment_legs_0090ff { background-position: -47px -94px;   }
-#garment_feet_0090ff { background-position: -47px -141px;   }
+#garment_pilot_0090ff { background-position: -47px 0px;   }
+#garment_engineer_0090ff { background-position: -47px -47px;   }
+#garment_doctor_0090ff { background-position: -47px -94px;   }
+#garment_scientist_0090ff { background-position: -47px -141px;   }
 
 /* yellow garments */
-#garment_head_fedf3d { background-position: -94px 0px;   }
-#garment_body_fedf3d { background-position: -94px -47px;   }
-#garment_legs_fedf3d { background-position: -94px -94px;   }
-#garment_feet_fedf3d { background-position: -94px -141px;   }
+#garment_pilot_fedf3d { background-position: -94px 0px;   }
+#garment_engineer_fedf3d { background-position: -94px -47px;   }
+#garment_doctor_fedf3d { background-position: -94px -94px;   }
+#garment_scientist_fedf3d { background-position: -94px -141px;   }
 
 /* purple garments */
-#garment_head_b92bba { background-position: -235px 0px;   }
-#garment_body_b92bba { background-position: -235px -47px;   }
-#garment_legs_b92bba { background-position: -235px -94px;   }
-#garment_feet_b92bba { background-position: -235px -141px;   }
+#garment_pilot_b92bba { background-position: -235px 0px;   }
+#garment_engineer_b92bba { background-position: -235px -47px;   }
+#garment_doctor_b92bba { background-position: -235px -94px;   }
+#garment_scientist_b92bba { background-position: -235px -141px;   }
 
 /* gray garments */
-#garment_head_c9d2db { background-position: -188px 0px;   }
-#garment_body_c9d2db { background-position: -188px -47px;   }
-#garment_legs_c9d2db { background-position: -188px -94px;   }
-#garment_feet_c9d2db { background-position: -188px -141px;   }
+#garment_pilot_c9d2db { background-position: -188px 0px;   }
+#garment_engineer_c9d2db { background-position: -188px -47px;   }
+#garment_doctor_c9d2db { background-position: -188px -94px;   }
+#garment_scientist_c9d2db { background-position: -188px -141px;   }
 
 
 
@@ -1681,25 +1943,24 @@ content: '';
 }
 
 .player_board_ostrich_and_crown_holder {
-    width: 50px;
-    height: 60px;
-    margin-left: 5px;
+    width: 45px;
+    height: 150px;
     display: inline-block;
     float: left;
 }
 
 #player_board_crown {
-    width: 25px;
-    height: 16px;
+    width: 35px;
+    height: 56px;
     margin-left: 3px;
-    background-image: url('img/crown_25_16.png');
+    background-image: url('img/probe_35w.png');
     position: relative;
 }
 
 .player_board_crown_holder {
     display: block;
-    width: 25px;
-    height: 16px;
+    width: 45px;
+    height: 65px;
 
 }
 
@@ -1711,16 +1972,17 @@ content: '';
 
 
 .player_board_direction_holder {
-  width: 50px;
+  width: 45px;
+  height: 62px;
   display: block;
   float: left;
 }
 
 .player_board_arrow {
-    width: 45px;
-    height: 80px;
+    width: 35px;
+    height: 62px;
     margin-left: 3px;
-    background-image: url('img/arrow_90.png');
+    background-image: url('img/arrow_35w.png');
     position: relative;
 }
 

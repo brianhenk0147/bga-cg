@@ -1067,27 +1067,20 @@
     </div> <!--outer_board-->
   </div> <!--board_tile_column -->
 
-  <div id="garments_container">
+  <div id="garments_container" class="component_rounding">
       <!-- BEGIN lost_crewmembers -->
           <div class="available_garment_group {LEFT_OR_RIGHT}">
-              <div id="garment_holder_head_{PLAYER_COLOR}" class="garment_holder"></div>
-              <div id="garment_holder_body_{PLAYER_COLOR}" class="garment_holder"></div>
-              <div id="garment_holder_legs_{PLAYER_COLOR}" class="garment_holder"></div>
-              <div id="garment_holder_feet_{PLAYER_COLOR}" class="garment_holder"></div>
+              <div id="garment_holder_pilot_{PLAYER_COLOR}" class="garment_holder"></div>
+              <div id="garment_holder_engineer_{PLAYER_COLOR}" class="garment_holder"></div>
+              <div id="garment_holder_doctor_{PLAYER_COLOR}" class="garment_holder"></div>
+              <div id="garment_holder_scientist_{PLAYER_COLOR}" class="garment_holder"></div>
           </div>
       <!-- END lost_crewmembers -->
   </div>
 
           <!-- BEGIN saucer -->
-              <div class="mat_and_stuff_row">
+              <div class="mat_and_stuff_row component_rounding" style="background-color:#{PLAYER_COLOR}">
                   <div class="mat_row">
-                      <div class="saucer_owner_{PLAYER_COLOR}" style="color:#{PLAYER_COLOR}">
-                        {PLAYER_NAME}
-                      </div>
-
-                      <div id="upgrade_hand_{PLAYER_COLOR}" style="color:#{PLAYER_COLOR}">
-
-                      </div>
 
                       <div id="move_card_hand_{PLAYER_COLOR}" class="move_card_hand" style="color:#{PLAYER_COLOR}">
                           <div id="move_card_holder_1_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
@@ -1095,32 +1088,10 @@
                           <div id="move_card_holder_0_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
                       </div>
 
-                      <div id="saucer_mat_{PLAYER_COLOR}" class="opponent_mat_holder ostrichMat">
-                          <div id="mat_head_row" class="mat_inner_row">
-                              <div id="mat_head_backpack_2_{PLAYER_COLOR}" class="mat_head_backpack_holder"></div>
-                              <div id="mat_head_backpack_3_{PLAYER_COLOR}" class="mat_head_backpack_holder"></div>
-                              <div id="mat_head_backpack_4_{PLAYER_COLOR}" class="mat_head_backpack_holder"></div>
-                              <div id="mat_head_wearing_1_{PLAYER_COLOR}" class="mat_head_wearing_holder"></div>
-                          </div>
-                          <div id="mat_body_row" class="mat_inner_row">
-                              <div id="mat_body_backpack_2_{PLAYER_COLOR}" class="mat_body_backpack_holder"></div>
-                              <div id="mat_body_backpack_3_{PLAYER_COLOR}" class="mat_body_backpack_holder"></div>
-                              <div id="mat_body_backpack_4_{PLAYER_COLOR}" class="mat_body_backpack_holder"></div>
-                              <div id="mat_body_wearing_1_{PLAYER_COLOR}" class="mat_body_wearing_holder"></div>
-                          </div>
-                          <div id="mat_legs_row" class="mat_inner_row">
-                              <div id="mat_legs_backpack_2_{PLAYER_COLOR}" class="mat_legs_backpack_holder"></div>
-                              <div id="mat_legs_backpack_3_{PLAYER_COLOR}" class="mat_legs_backpack_holder"></div>
-                              <div id="mat_legs_backpack_4_{PLAYER_COLOR}" class="mat_legs_backpack_holder"></div>
-                              <div id="mat_legs_wearing_1_{PLAYER_COLOR}" class="mat_legs_wearing_holder"></div>
-                          </div>
-                          <div id="mat_feet_row" class="mat_inner_row">
-                              <div id="mat_feet_backpack_2_{PLAYER_COLOR}" class="mat_feet_backpack_holder"></div>
-                              <div id="mat_feet_backpack_3_{PLAYER_COLOR}" class="mat_feet_backpack_holder"></div>
-                              <div id="mat_feet_backpack_4_{PLAYER_COLOR}" class="mat_feet_backpack_holder"></div>
-                              <div id="mat_feet_wearing_1_{PLAYER_COLOR}" class="mat_feet_wearing_holder"></div>
-                          </div>
+                      <div id="upgrade_hand_{PLAYER_COLOR}">
+
                       </div>
+
                   </div>
               </div>
 
@@ -1166,35 +1137,41 @@ var jstpl_myTrapInHand = '<div class="myTrapInHand component_rounding" id="myTra
 var jstpl_trapBack = '<div class="myTrap component_rounding" id="trapBack_${player_id}" style="background-position:-${x}px -${y}px">\
                     </div>';
 
+var jstpl_upgradeCardText = '<div class="upgradeCardContent">\
+                    <div class="upgradeTitle">${title}</div>\
+                    <div class="upgradeEffect">${effect}</div>\
+                    </div>'
+
 
 var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}">\
                                         <div id="player_board_ostrich_and_crown_holder_${color}" class="player_board_ostrich_and_crown_holder">\
                                           <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
-                                          <div id="player_board_ostrich_holder_${color}" class="player_board_ostrich_holder"></div>\
+                                          <div id="player_board_direction_holder_${owner}" class="player_board_direction_holder"></div>\
                                         </div>\
                                         <div id="player_board_saucer_mat_holder_${color}" class="player_board_saucer_mat_holder">\
                                           <div id="booster_acquired_${color}" class="booster_acquired_area"></div>\
-                                          <div id="player_board_saucer_mat_pilot_${color}" class="player_board_saucer_mat_pilot"></div>\
-                                          <div id="player_board_saucer_mat_engineer_${color}" class="player_board_saucer_mat_engineer"></div>\
-                                          <div id="player_board_saucer_mat_doctor_${color}" class="player_board_saucer_mat_doctor"></div>\
-                                          <div id="energy_acquired_${color}" class="energy_acquired_area"></div>\
-                                          <div id="player_board_saucer_mat_scientist_${color}" class="player_board_saucer_mat_scientist"></div>\
+                                          <div id="pilot_and_engineer_row">\
+                                            <div id="player_board_saucer_mat_pilot_${color}" class="player_board_saucer_mat_pilot"></div>\
+                                            <div id="player_board_saucer_mat_engineer_${color}" class="player_board_saucer_mat_engineer"></div>\
+                                          </div>\
+                                          <div id="doctor_and_energy_and_scientist_row">\
+                                            <div id="player_board_saucer_mat_doctor_${color}" class="player_board_saucer_mat_doctor"></div>\
+                                            <div id="energy_acquired_${color}" class="energy_acquired_area"></div>\
+                                            <div id="player_board_saucer_mat_scientist_${color}" class="player_board_saucer_mat_scientist"></div>\
+                                          </div>\
                                         </div>\
-                                        <div id="player_board_direction_holder_${owner}" class="player_board_direction_holder"></div>\
                                         <div id="player_board_trap_and_zag_holder_${color}" class="player_board_trap_and_zag_holder">\
                                           <div id="player_board_trap_holder_${color}" class="player_board_trap_holder"></div>\
                                           <div id="player_board_move_card_holder_${color}" class="move_card_holder"></div>\
                                           <div id="player_board_zag_holder_${color}" class="player_board_zag_holder"></div>\
                                         </div>\
-                                        <div id="player_board_ostrich_and_crown_holder_${color}" class="player_board_ostrich_and_crown_holder">\
-                                          <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
-                                          <div id="player_board_ostrich_holder_${color}" class="player_board_ostrich_holder"></div>\
+                                        <div id="player_board_played_upgrade_cards_${color}" class="player_board_played_upgrade_cards_holder">\
                                         </div>\
                                     </div>';
 
 
 var jstpl_crown = '<div id="player_board_crown" class="starting_color_${color}"></div>';
-var jstpl_arrow = '<div id="player_board_arrow_${id}" class="player_board_arrow" style="background-position:-${x}px -${y}px"></div>';
+var jstpl_arrow = '<div id="player_board_arrow_${id}" class="player_board_arrow" style="background-position-x:-${x}px"></div>';
 
 var jstpl_moveCard = '<div id="move_card_${distance}_${color}" class="move_card component_rounding" style="background-position:-${x}px -${y}px"></div>';
 

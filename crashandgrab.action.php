@@ -74,7 +74,15 @@
         self::ajaxResponse( );
     }
 
+    public function actClickUpgradeInHand()
+    {
+        self::setAjaxMode();
+        $databaseId = self::getArg( "upgradeDatabaseId", AT_posint, true ); // 1, 2, 3
+        $color = self::getArg( "saucerColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
 
+        $this->game->executeClickedUpgradeCardInHand( $databaseId, $color );
+        self::ajaxResponse( );
+    }
 
     public function actClickedStartMove()
     {
@@ -90,7 +98,8 @@
 
       $direction = self::getArg( "direction", AT_alphanum, true ); // asteroids
 
-      $this->game->executeStartAcceleratorOrBoosterMove($direction);
+      //$this->game->executeStartAcceleratorOrBoosterMove($direction);
+      $this->game->executeDirectionClick($direction);
 
       self::ajaxResponse( );
 

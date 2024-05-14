@@ -70,7 +70,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must choose a Move card.'),
     		"type" => "multipleactiveplayer",
         'args' => 'argGetAllPlayerSaucerMoves',
-    		"possibleactions" => array( "clickMoveDirection", "clickDistance", "undoChooseMoveCard", "confirmMove" ),
+    		"possibleactions" => array( "clickMoveDirection", "clickDistance", "undoChooseMoveCard", "confirmMove", "clickUpgradeCardInHand" ),
     		"transitions" => array( "zigChosen" => 2, "startOver" => 2, "allMovesChosen" => 25 )
     ),
 
@@ -335,7 +335,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster" ),
-    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50 )
+    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9 )
     ),
 
     33 => array(

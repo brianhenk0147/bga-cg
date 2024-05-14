@@ -126,15 +126,22 @@
                 }
         */
 
-        $players = $this->game->loadPlayersBasicInfos(); // get the player name, color, and ID
-        $saucers = $this->game->getSaucersInOrder();
+        // get the player name, color, and ID for everyone
+        $players = $this->game->loadPlayersBasicInfos();
+
 
         global $g_user;
         $current_player_id = $g_user->get_id();
 
+        // get all saucers
+        $allSaucers = $this->game->getAllSaucers();
+
+        // get the saucers this player owns
+        $thisPlayersSaucers = $this->game->getSaucersForPlayer($current_player_id);
+
         // SAUCER MAT AREAS
         $this->page->begin_block( "crashandgrab_crashandgrab", "saucer" );
-        foreach( $saucers as $saucer )
+        foreach( $thisPlayersSaucers as $saucer )
         {
                 $this->page->insert_block( "saucer", array(
                                                     "PLAYER_COLOR" => $saucer['color'],
@@ -148,7 +155,7 @@
         // GARMENTS
         $this->page->begin_block( "crashandgrab_crashandgrab", "lost_crewmembers" );
         $playerIndex = 0;
-        foreach( $saucers as $saucer )
+        foreach( $allSaucers as $saucer )
         {
             $leftOrRight = "garment_column_right";
             if($playerIndex % 2 == 0)
@@ -157,8 +164,8 @@
             }
 
                 $this->page->insert_block( "lost_crewmembers", array(
-                                                    "PLAYER_COLOR" => $saucer['color'],
-                                                    "PLAYER_ID" => $saucer['owner'],
+                                                    "PLAYER_COLOR" => $saucer['ostrich_color'],
+                                                    "PLAYER_ID" => $saucer['ostrich_owner'],
                                                     "LEFT_OR_RIGHT" => $leftOrRight
                                                      ) );
                 $playerIndex++;

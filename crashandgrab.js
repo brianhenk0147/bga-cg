@@ -55,10 +55,7 @@ function (dojo, declare) {
             this.CHOSEN_DIRECTION_SAUCER_2 = ''; // the direction chosen for Saucer 2 this round
 
             // saucers this player controls
-            this.saucer1 = "";
-            this.saucer2 = "";
             this.lastMovedOstrich = ""; // this is the color of the ostrich that was last moved
-
             this.playerSaucerMoves = null; // save the list of players/saucers/move cards/spaces so it can be used elsewhere
 
             this.ANIMATION_SPEED_MOVING_SAUCER = 300; // the speed of moving saucers (lower is faster)
@@ -70,8 +67,11 @@ function (dojo, declare) {
 
             // upgrade cards
             this.trapHand = null;
-            this.upgradecardwidth = 82;
-            this.upgradecardheight = 58;
+            //this.upgradecardwidth = 82;
+            //this.upgradecardheight = 58;
+
+            this.upgradecardwidth = 230;
+            this.upgradecardheight = 164;
 
             // saucer mat
             this.saucermatwidth = 154;
@@ -137,7 +137,40 @@ function (dojo, declare) {
             { // go through each saucer
                 var saucer = gamedatas.ostrich[i];
 console.log("owner:"+saucer.owner+" color:"+saucer.color);
+
+                // place the player board framework for this saucer
                 this.placePlayerBoardForSaucer(saucer.owner, saucer.color); // put everything for this saucer on the player's board
+
+                // place any boosters they have on their saucer mat
+                var boosterQuantity = saucer.booster_quantity;
+                if(boosterQuantity == 1)
+                { // they have a booster
+
+                    // place it on the mat
+                    var matBoosterLocationHtmlId = 'booster_acquired_'+saucer.color;
+                    dojo.place( this.format_block( 'jstpl_booster', {
+                         location: saucer.color,
+                         position: boosterQuantity
+                    } ) , matBoosterLocationHtmlId);
+                }
+                else if(boosterQuantity == 2)
+                { // they have a Cargo Hold with an additional booster
+
+                    // place it on the Cargo Hold card
+
+                }
+
+                // place any energy they have on their saucer mat
+                var energyQuantity = saucer.energy_quantity;
+                for (let i = 1; i <= energyQuantity; i++)
+                {
+                    var matEnergyLocationHtmlId = 'energy_acquired_'+saucer.color;
+                    dojo.place( this.format_block( 'jstpl_energy', {
+                         location: saucer.color,
+                         position: i
+                    } ) , matEnergyLocationHtmlId);
+                }
+
             }
 
 
@@ -206,47 +239,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 } ), 'zig_holder_'+ostrichGettingZig );
             }
 
-var color = 'f6033b';
-            this.trapHand = new ebg.stock(); // create the place we will store the trap cards the player has drawn
-            this.trapHand.create( this, $('upgrade_hand_'+color), this.upgradecardwidth, this.upgradecardheight );
-            this.trapHand.image_items_per_row = 4; // the number of card images per row in the sprite image
-            dojo.connect( this.trapHand, 'onChangeSelection', this, 'onTrapHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
+            this.initializeHandUpgrades();
+            this.initializePlayedUpgrades();
 
-            // Create one of each type of trap card so we can add them to the playerTrapHand stock as needed throughout
-            // the game and it will know what we're talking about when we do.
-            // ARGUMENTS:
-            // type id
-            // weight of the card (for sorting purpose)
-            // the URL of our CSS sprite
-            // the position of our card image in the CSS sprite
-            this.trapHand.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 0 );
-            this.trapHand.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 1 );
-            this.trapHand.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 2 );
-            this.trapHand.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 3 );
-            this.trapHand.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 4 );
-            this.trapHand.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 5 );
-            this.trapHand.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 6 );
-            this.trapHand.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 7 );
-            this.trapHand.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 8 );
-            this.trapHand.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 9 );
-            this.trapHand.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 10 );
-            this.trapHand.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_82_58.jpg', 11 );
 
-            // trap cards in player's hand
-            for( var i in this.gamedatas.trapHands )
-            {
-                var card = this.gamedatas.trapHands[i];
-                var owner = card.location_arg;
-
-                if(owner == this.player_id)
-                { // this is MY trap card
-                    this.drawTrap(card); // draw a trap card into your hand
-                }
-                else
-                { // this is someone else's trap card
-                    this.giveOtherPlayerTrapCard(owner); // put the card back out by their player mat
-                }
-            }
 
 
             for( var i in gamedatas.board )
@@ -290,47 +286,9 @@ var color = 'f6033b';
             // Third Param: the method that will be called when the event defined by the second parameter happen
             this.addEventToClass( "space", "onclick", "onClickSpace");
 
-            this.saucer1 = ""; // clear out the global variable for saucer1
-            this.saucer2 = ""; // clear out the global variable for saucer2
             for( var i in gamedatas.ostrich )
             { // go through each ostrich
                 var singleOstrich = gamedatas.ostrich[i];
-
-
-                if(singleOstrich.owner == this.player_id)
-                { // this is my ostrich
-
-                    if(this.saucer1 == "")
-                    { // we don't have our first ostrich yet
-                        this.saucer1 = singleOstrich.color;
-                        console.log("Our first ostrich will have color " + singleOstrich.color);
-                        this.hasMultipleOstriches = false; // set the global variable that we are using a single ostrich that will be used everywhere
-
-                        if(singleOstrich.has_zag == 1)
-                        {
-                            this.saucer1HasZag = true;
-                        }
-                        else {
-                            this.saucer1HasZag = false;
-                        }
-
-                    }
-                    else
-                    { // we already set our first ostrich so this must be our second ostrich
-                        this.saucer2 = singleOstrich.color;
-                        this.hasMultipleOstriches = true; // set the global variable that we are using multiple ostriches that will be used everywhere
-                        console.log("Our second ostrich will have color " + singleOstrich.color);
-
-                        if(singleOstrich.has_zag == 1)
-                        {
-                            this.saucer2HasZag = true;
-                        }
-                        else {
-                            this.saucer2HasZag = false;
-                        }
-
-                    }
-                }
 
                 if(singleOstrich.ostrich_has_crown == 1)
                 { // this ostrich has the crown
@@ -340,7 +298,7 @@ var color = 'f6033b';
                     var arrowX = 0;
                     if(singleOstrich.ostrich_last_turn_order == 1)
                     { // we're going counter-clockwise
-                      arrowX = 45;
+                      arrowX = 35;
                     }
 
                     for( var player_id in gamedatas.players )
@@ -350,7 +308,7 @@ var color = 'f6033b';
                         if(gamedatas.stateName == 'chooseZigPhase' || gamedatas.stateName == 'claimZag' || gamedatas.stateName == 'askTrapBasic' || gamedatas.stateName == 'setTrapPhase')
                         { // hide the turn direction
                             console.log("we need to hideTurnDirection");
-                            this.setTurnDirectionArrow(90, 0, player_id); // we don't want to show the turn direction arrow until it has been chosen for this round
+                            this.setTurnDirectionArrow(70, 0, player_id); // we don't want to show the turn direction arrow until it has been chosen for this round
                         }
                         else
                         {
@@ -358,6 +316,8 @@ var color = 'f6033b';
                         }
                     }
                 }
+
+
 
                 this.putSaucerOnTile( singleOstrich.x, singleOstrich.y, singleOstrich.owner, singleOstrich.color ); // add the ostrich to the board
 
@@ -371,13 +331,15 @@ var color = 'f6033b';
             for( var i in gamedatas.garment )
             {
                 var garment = gamedatas.garment[i];
-                var color = garment.garment_color;
-                var location = garment.garment_location;
+                var color = garment.garment_color; // the color of the crewmember
+                var location = garment.garment_location; // the color of the player who has this
                 var typeInt = garment.garment_type;
-                var typeString = this.convertGarmentTypeIntToString(typeInt);
+                var typeString = this.convertCrewmemberType(typeInt);
                 var x = garment.garment_x;
                 var y = garment.garment_y;
                 var wearingOrBackpack = "wearing";
+
+                console.log("garment color:"+color+" typeString:"+typeString+" location:"+location);
 
                 if(currentLocation == location && currentType == typeInt)
                 { // this garment is in the same location and same type as the last one
@@ -408,10 +370,12 @@ var color = 'f6033b';
                 }
                 else if(location == "pile")
                 { // this garment is in the garment pile
+                    var pileLocationHtmlId = 'garment_holder_'+typeString+'_'+color;
+                    console.log('pileLocationHtmlId:'+pileLocationHtmlId);
                     dojo.place( this.format_block( 'jstpl_garment', {
                           color: color,
                           garment_type: typeString
-                    } ) , 'garment_holder_'+typeString+'_'+color );
+                    } ) , pileLocationHtmlId );
                 }
                 else if(location == "chosen")
                 { // this garment is chosen to be replaced but not yet placed
@@ -421,16 +385,23 @@ var color = 'f6033b';
                     } ) , 'replacement_garment_chosen_holder' );
                 }
                 else
-                { // this garment has been claimed by a player
-                    var matLocationHtmlId = 'mat_'+typeString+"_"+wearingOrBackpack+"_"+currentTypeLocationCount+"_"+location;
+                { // this crewmember has been claimed by a player
+                    // var matLocationHtmlId = 'mat_'+typeString+"_"+wearingOrBackpack+"_"+currentTypeLocationCount+"_"+location;
+                    //location = '0090ff';
+                    var matLocationHtmlId = 'player_board_saucer_mat_'+typeString+'_'+location; // example: player_board_saucer_mat_pilot_01b508
+                    var crewmemberHtmlId = 'garment_'+typeString+'_'+color; // example: garment_pilot_01b508
 
                     dojo.place( this.format_block( 'jstpl_garment', {
                           color: color,
                           garment_type: typeString
                     } ) , matLocationHtmlId );
+
+
+                    dojo.addClass( crewmemberHtmlId, 'played_'+typeString);
                 }
 
             }
+
 
             this.updateTurnOrder(this.gamedatas.turnOrder);
 
@@ -471,6 +442,40 @@ var color = 'f6033b';
                     _ make a call to the game server
 
                 */
+
+                onUpgradeHandSelectionChanged: function( )
+                {
+                    console.log( "An upgrade card was selected." );
+/*
+                    if(this.isCurrentPlayerActive() && this.checkAction( 'discardTrapCard', true ))
+                    { // player is allowed to discard a trap card (nomessage parameter is true so that an error message is not displayed)
+
+                        var trapsSelected = this.trapHand.getSelectedItems(); // get the trap cards that were selected
+
+                        if( trapsSelected.length == 1 )
+                        { // one card is selected
+                              console.log( "A single trap card is selected." );
+
+                              for( var i in trapsSelected )
+                              {
+                                  this.sendDiscardTrap(trapsSelected[i].id); // put the card IDs in a semicolon-delimited list
+                              }
+                        }
+                    }
+                    else
+                    { // we are not in a state where we can select trap cards
+                        this.trapHand.unselectAll();
+                        var unselectedCards = this.trapHand.getUnselectedItems(); // get the cards that were selected
+                        for( var i in unselectedCards )
+                        {
+                            var htmlIdOfCard = 'trap_hand_'+this.player_id+'_item_'+unselectedCards[i].id;
+                            dojo.removeClass( htmlIdOfCard, 'cardSelected' ); // give this card a new CSS class
+                            dojo.addClass( htmlIdOfCard, 'cardUnselected' ); // give this card a new CSS class
+
+                        }
+                    }
+*/
+                },
 
                 onTrapHandSelectionChanged: function( )
                 {
@@ -597,7 +602,7 @@ var color = 'f6033b';
                     if(this.isCurrentPlayerActive() && this.checkAction( 'confirmMove', true ))
                     { // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
 
-                        var saucer1Color = this.saucer1; // 01b508
+                        var saucer1Color = this.gamedatas.saucer1; // 01b508
                         var saucer1Distance = this.CHOSEN_MOVE_CARD_SAUCER_1; // move_card_1_01b508
                         if(saucer1Distance != '')
                           saucer1Distance = saucer1Distance.split('_')[2]; // 0, 1, 2
@@ -606,7 +611,7 @@ var color = 'f6033b';
                         if(saucer1Direction != '')
                           saucer1Direction = saucer1Direction.split('_')[1]; // asteroids
 
-                        var saucer2Color = this.saucer2; // 01b508
+                        var saucer2Color = this.gamedatas.saucer2; // 01b508
                         var saucer2Distance = this.CHOSEN_MOVE_CARD_SAUCER_2;
                         if(saucer2Distance != '')
                           saucer2Distance = saucer2Distance.split('_')[2]; // 0, 1, 2
@@ -689,22 +694,22 @@ var color = 'f6033b';
                         return;
                     }
 
-                    if( (this.saucer1 == color && this.CHOSEN_MOVE_CARD_SAUCER_1 == htmlIdOfCard) ||
-                      (this.saucer2 == color && this.CHOSEN_MOVE_CARD_SAUCER_2 == htmlIdOfCard) )
+                    if( (this.gamedatas.saucer1 == color && this.CHOSEN_MOVE_CARD_SAUCER_1 == htmlIdOfCard) ||
+                      (this.gamedatas.saucer2 == color && this.CHOSEN_MOVE_CARD_SAUCER_2 == htmlIdOfCard) )
                     { // this move card is already set
                         console.log( "This move card is already set." );
                         return;
                     }
 
                     // if a different move card is chosen, bring that move card back to your hand
-                    if( (this.CHOSEN_MOVE_CARD_SAUCER_1 != '' && this.saucer1 == color && this.CHOSEN_MOVE_CARD_SAUCER_1 != htmlIdOfCard) )
+                    if( (this.CHOSEN_MOVE_CARD_SAUCER_1 != '' && this.gamedatas.saucer1 == color && this.CHOSEN_MOVE_CARD_SAUCER_1 != htmlIdOfCard) )
                     {
                         this.returnMoveCardToHandOfSaucer(color);
                         this.unselectAllDirections();
                         this.CHOSEN_MOVE_CARD_SAUCER_1 = '';
                     }
 
-                    if(this.CHOSEN_MOVE_CARD_SAUCER_2 != '' && this.saucer2 == color && this.CHOSEN_MOVE_CARD_SAUCER_2 != htmlIdOfCard)
+                    if(this.CHOSEN_MOVE_CARD_SAUCER_2 != '' && this.gamedatas.saucer2 == color && this.CHOSEN_MOVE_CARD_SAUCER_2 != htmlIdOfCard)
                     { // a different move card is currently set
                         this.returnMoveCardToHandOfSaucer(color);
                         this.unselectAllDirections();
@@ -756,8 +761,8 @@ var color = 'f6033b';
                     this.unhighlightAllSaucers(); // UNhighlight ALL saucers
                     this.selectSpecificSaucer(saucerColor); // select that saucer
 
-                    if((this.saucer1 == saucerColor && this.CHOSEN_MOVE_CARD_SAUCER_1 == '') ||
-                       (this.saucer2 == saucerColor && this.CHOSEN_MOVE_CARD_SAUCER_2 == ''))
+                    if((this.gamedatas.saucer1 == saucerColor && this.CHOSEN_MOVE_CARD_SAUCER_1 == '') ||
+                       (this.gamedatas.saucer2 == saucerColor && this.CHOSEN_MOVE_CARD_SAUCER_2 == ''))
                     { // we have not yet chosen a move card for this saucer
                         this.highlightAllMoveCardsForSaucer(saucerColor); // highlight the move cards now that it's time to choose one
                         this.removeClickableFromAllDirectionTokens(); // we don't want direction tokens to appear clickable until a move card is selected
@@ -882,7 +887,7 @@ var color = 'f6033b';
                 saveMoveCardSelection: function(color, htmlIdOfCard)
                 {
                     // set the move card for this saucer in case it is the final selection
-                    if(this.saucer1 == color)
+                    if(this.gamedatas.saucer1 == color)
                     {
                         this.CHOSEN_MOVE_CARD_SAUCER_1 = htmlIdOfCard;
                     }
@@ -895,7 +900,7 @@ var color = 'f6033b';
                 saveDirectionSelection: function(saucerColor, htmlIdOfToken)
                 {
                     // set the move card for this direction in case it is the final selection
-                    if(this.saucer1 == saucerColor)
+                    if(this.gamedatas.saucer1 == saucerColor)
                     {
                         this.CHOSEN_DIRECTION_SAUCER_1 = htmlIdOfToken;
                     }
@@ -1280,14 +1285,14 @@ this.unhighlightAllGarments();
                           if(this.SAUCER_SELECTED == '')
                           { // NO saucer is selected
 
-                              if(!this.hasSaucerChosenMoveAndDirection(this.saucer1))
+                              if(!this.hasSaucerChosenMoveAndDirection(this.gamedatas.saucer1))
                               { // this saucer still needs to choose move card or direction
-                                  this.highlightSpecificPlayerSaucer(this.saucer1); // highlight it
+                                  this.highlightSpecificPlayerSaucer(this.gamedatas.saucer1); // highlight it
                               }
 
-                              if(!this.hasSaucerChosenMoveAndDirection(this.saucer2))
+                              if(!this.hasSaucerChosenMoveAndDirection(this.gamedatas.saucer2))
                               { // this saucer still needs to choose move card or direction
-                                  this.highlightSpecificPlayerSaucer(this.saucer2); // highlight it
+                                  this.highlightSpecificPlayerSaucer(this.gamedatas.saucer2); // highlight it
                               }
                           }
                           else
@@ -1562,22 +1567,22 @@ this.unhighlightAllGarments();
                     if( this.isCurrentPlayerActive() )
                     { // this player is active (they have a trap card and they haven't yet said they aren't playing it)
 
-                      if(this.saucer1 != "f6033b" && this.saucer2 != "f6033b")
+                      if(this.gamedatas.saucer1 != "f6033b" && this.gamedatas.saucer2 != "f6033b")
                           this.addActionButton( 'trapRed_button', _('RED'), 'onTrapRed' );
 
-                      if(this.saucer1 != "fedf3d" && this.saucer2 != "fedf3d")
+                      if(this.gamedatas.saucer1 != "fedf3d" && this.gamedatas.saucer2 != "fedf3d")
                           this.addActionButton( 'trapYellow_button', _('YELLOW'), 'onTrapYellow' );
 
-                      if(this.saucer1 != "0090ff" && this.saucer2 != "0090ff")
+                      if(this.gamedatas.saucer1 != "0090ff" && this.gamedatas.saucer2 != "0090ff")
                           this.addActionButton( 'trapBlue_button', _('BLUE'), 'onTrapBlue' );
 
-                      if(this.saucer1 != "01b508" && this.saucer2 != "01b508")
+                      if(this.gamedatas.saucer1 != "01b508" && this.gamedatas.saucer2 != "01b508")
                           this.addActionButton( 'trapGreen_button', _('GREEN'), 'onTrapGreen' );
 
-                      if(this.saucer1 != "01b508" && this.saucer2 != "b92bba")
+                      if(this.gamedatas.saucer1 != "01b508" && this.gamedatas.saucer2 != "b92bba")
                           this.addActionButton( 'trapGreen_button', _('PURPLE'), 'onTrapGreen' );
 
-                      if(this.saucer1 != "01b508" && this.saucer2 != "c9d2db")
+                      if(this.gamedatas.saucer1 != "01b508" && this.gamedatas.saucer2 != "c9d2db")
                           this.addActionButton( 'trapGreen_button', _('GRAY'), 'onTrapGreen' );
 
                       this.addActionButton( 'noTrap_button', _('Do Not Trap'), 'noTrap', null, false, 'red' );
@@ -1752,10 +1757,10 @@ this.unhighlightAllGarments();
             console.log("CHOSEN_MOVE_CARD_SAUCER_1 " + this.CHOSEN_MOVE_CARD_SAUCER_1);
             console.log("CHOSEN_DIRECTION_SAUCER_1 " + this.CHOSEN_DIRECTION_SAUCER_1);
             console.log("saucerColor " + saucerColor);
-            console.log("this.saucer1 " + this.saucer1);
+            console.log("this.gamedatas.saucer1 " + this.gamedatas.saucer1);
             console.log("CHOSEN_MOVE_CARD_SAUCER_2 " + this.CHOSEN_MOVE_CARD_SAUCER_2);
             console.log("CHOSEN_DIRECTION_SAUCER_2 " + this.CHOSEN_DIRECTION_SAUCER_2);
-            console.log("this.saucer2 " + this.saucer2);
+            console.log("this.gamedatas.saucer2 " + this.gamedatas.saucer2);
 
 
             if(saucerColor == '')
@@ -1763,12 +1768,12 @@ this.unhighlightAllGarments();
               return true;
             }
 
-            if(saucerColor == this.saucer1 && this.CHOSEN_MOVE_CARD_SAUCER_1 != '' && this.CHOSEN_DIRECTION_SAUCER_1 != '')
+            if(saucerColor == this.gamedatas.saucer1 && this.CHOSEN_MOVE_CARD_SAUCER_1 != '' && this.CHOSEN_DIRECTION_SAUCER_1 != '')
             {
               return true;
             }
 
-            if(saucerColor == this.saucer2 && this.CHOSEN_MOVE_CARD_SAUCER_2 != '' && this.CHOSEN_DIRECTION_SAUCER_2 != '')
+            if(saucerColor == this.gamedatas.saucer2 && this.CHOSEN_MOVE_CARD_SAUCER_2 != '' && this.CHOSEN_DIRECTION_SAUCER_2 != '')
             {
               return true;
             }
@@ -1776,36 +1781,24 @@ console.log("return false");
             return false;
         },
 
-        convertGarmentTypeIntToString: function(typeAsInt)
-        {
-          console.log("converting type as int " + typeAsInt);
-            switch( typeAsInt )
-            {
-                  case "0":
-                      return "head";
-                  case "1":
-                      return "body";
-                  case "2":
-                      return "legs";
-                  case "3":
-                      return "feet";
-            }
-        },
-
         convertCrewmemberType: function(crewmemberType)
         {
           console.log("converting crewmemberType " + crewmemberType);
             switch( crewmemberType )
             {
+                case "0":
                 case "head":
                 case "pilot":
                     return "pilot";
+                case "1":
                 case "body":
                 case "engineer":
                     return "engineer";
+                case "2":
                 case "legs":
                 case "doctor":
                     return "doctor";
+                case "3":
                 case "feet":
                 case "scientist":
                     return "scientist";
@@ -1879,12 +1872,12 @@ console.log("return false");
 
         highlightAllPlayerSaucers: function(playerId)
         {
-            var htmlIdSaucer1 = "saucer_"+this.saucer1;
+            var htmlIdSaucer1 = "saucer_"+this.gamedatas.saucer1;
             dojo.removeClass( htmlIdSaucer1, 'saucerSelected' ); // unselect it
             dojo.addClass( htmlIdSaucer1, 'saucerHighlighted' ); // highlight it
             dojo.connect( $(htmlIdSaucer1), 'onclick', this, 'onClick_saucerDuringMoveCardSelection' ); // attached our saucer tokens to this onclick handler
 
-            var htmlIdSaucer2 = "saucer_"+this.saucer2;
+            var htmlIdSaucer2 = "saucer_"+this.gamedatas.saucer2;
             if(document.getElementById(htmlIdSaucer2))
             { // this component exists
                 dojo.removeClass( htmlIdSaucer2, 'saucerSelected' ); // unselect it
@@ -1896,14 +1889,14 @@ console.log("return false");
 
         highlightPlayerSaucersWhoHaveNotChosen: function(playerId)
         {
-            if(!this.hasSaucerChosenMoveAndDirection(this.saucer1))
+            if(!this.hasSaucerChosenMoveAndDirection(this.gamedatas.saucer1))
             { // saucer 1 has not chosen their move and direction
-                this.highlightSpecificPlayerSaucer(this.saucer1);
+                this.highlightSpecificPlayerSaucer(this.gamedatas.saucer1);
             }
 
-            if(!this.hasSaucerChosenMoveAndDirection(this.saucer2))
+            if(!this.hasSaucerChosenMoveAndDirection(this.gamedatas.saucer2))
             { // saucer 2 has not chosen their move and direction
-                this.highlightSpecificPlayerSaucer(this.saucer2);
+                this.highlightSpecificPlayerSaucer(this.gamedatas.saucer2);
             }
         },
 
@@ -1926,7 +1919,7 @@ console.log("return false");
         highlightDirectionsForSaucer: function(color)
         {
             this.unhighlightAllDirections();
-            if(this.saucer1 == color)
+            if(this.gamedatas.saucer1 == color)
             { // we are selecting for saucer 1
 
                 if(this.CHOSEN_DIRECTION_SAUCER_1 != '')
@@ -1985,7 +1978,7 @@ console.log("return false");
         highlightSpacesForSelectedSaucer: function(color)
         {
             this.unhighlightAllSpaces(); // unhighlight all board move spaces
-            if(this.saucer1 == color)
+            if(this.gamedatas.saucer1 == color)
             { // we are selecting for saucer 1
 
                 if(this.CHOSEN_MOVE_CARD_SAUCER_1 != '')
@@ -2011,7 +2004,7 @@ console.log("return false");
 console.log("selectSelectedDirection of color: "+color);
             this.unselectAllDirections(); // unselect all other directions so we can select a different one
 
-            if(this.saucer1 == color)
+            if(this.gamedatas.saucer1 == color)
             { // we are selecting a direction for saucer1
                 if(this.CHOSEN_DIRECTION_SAUCER_1 != '')
                 { // this saucer has a previously selected direction
@@ -2036,7 +2029,7 @@ console.log("selectSelectedDirection of color: "+color);
 console.log("selectSelectedMoveCard of color: "+color);
             this.unselectAllMoveCards(); // unselect all other move cards so we can select a different one
 
-            if(this.saucer1 == color)
+            if(this.gamedatas.saucer1 == color)
             { // we are selecting a move card in saucer 1's hand
                 if(this.CHOSEN_MOVE_CARD_SAUCER_1 != '')
                 { // this saucer has a previously selected move card
@@ -2070,12 +2063,12 @@ console.log("selectSelectedMoveCard of color: "+color);
             this.moveChosenMoveCardBackToHand(color, 1);
             this.moveChosenMoveCardBackToHand(color, 2);
 
-            if(color == this.saucer1)
+            if(color == this.gamedatas.saucer1)
             {
                 this.CHOSEN_DIRECTION_SAUCER_1 = '';
             }
 
-            if(color == this.saucer2)
+            if(color == this.gamedatas.saucer2)
             {
                 this.CHOSEN_DIRECTION_SAUCER_2 = '';
             }
@@ -2365,6 +2358,12 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     var convertedType = this.convertCrewmemberType(crewmemberType); // temp until i fix this weird issue switching these
                     destination = 'player_board_saucer_mat_'+convertedType+'_'+saucerColor; // player_board_saucer_mat_pilot_0090ff
 
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(source, destination);
+
+                    // give it a played class so it's rotated correctly
+                    dojo.addClass(source, 'played_'+crewmemberType);
+
                     animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
                 }
 
@@ -2372,6 +2371,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
                 var animationId = this.slideToObject( source, destination, animationSpeed );
                 dojo.connect(animationId, 'onEnd', () => {
+
                    this.animateEvents(eventStack); // recursively call for the next event
                 });
                 animationId.play();
@@ -2385,7 +2385,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
             if( turnOrder == 1)
             { // we are going clockwise
-                x=45;
+                x=35;
                 console.log("COUNTER-CLOCKWISE");
             }
             else if(turnOrder == 0) {
@@ -2394,7 +2394,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             }
             else
             {
-              x=90;
+              x=70;
               console.log("DO NOT SHOW");
             }
 
@@ -2471,6 +2471,359 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
         },
 
+        getSaucerIndexForSaucerColor: function(saucerColor)
+        {
+            var saucerIndex = 0;
+            for( var i in this.gamedatas.ostrich )
+            { // go through each saucer
+                saucerIndex++;
+                var saucer = this.gamedatas.ostrich[i];
+                var color = saucer.color;
+
+                if(color == saucerColor)
+                {
+                    return saucerIndex;
+                }
+            }
+        },
+
+        getUpgradesPlayedStockForSaucerColor: function(saucerColor)
+        {
+            var saucerIndex = this.getSaucerIndexForSaucerColor(saucerColor);
+
+            switch(saucerIndex)
+            {
+                case 1:
+                  return this.upgradesPlayed_1;
+                case 2:
+                  return this.upgradesPlayed_2;
+                case 3:
+                  return this.upgradesPlayed_3;
+                case 4:
+                  return this.upgradesPlayed_4;
+                case 5:
+                  return this.upgradesPlayed_5;
+                case 6:
+                  return this.upgradesPlayed_6;
+            }
+        },
+
+        getUpgradeHandStockForSaucerColor: function(saucerColor)
+        {
+            if(saucerColor == this.gamedatas.saucer2)
+            {
+                return this.upgradeHand_2;
+            }
+            else
+            {
+                return this.upgradeHand_1;
+            }
+        },
+
+        initializePlayedUpgrades: function()
+        {
+            // create a stock for each saucer in the game
+            var saucerIndex = 0;
+
+            for( var i in this.gamedatas.ostrich )
+            { // go through each saucer
+                saucerIndex++;
+                var saucer = this.gamedatas.ostrich[i];
+                var saucerColor = saucer.color;
+console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.color);
+
+                // create a place to put played upgrades for each saucer
+
+                if(saucerIndex == 1)
+                {
+                    this.upgradesPlayed_1 = new ebg.stock();
+                    this.upgradesPlayed_1.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_1.image_items_per_row = 4; // the number of card images per row in the sprite image
+                    this.upgradesPlayed_1.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
+                    //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
+
+                    this.upgradesPlayed_1.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
+                    this.upgradesPlayed_1.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
+                    this.upgradesPlayed_1.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
+                    this.upgradesPlayed_1.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
+                    this.upgradesPlayed_1.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
+                    this.upgradesPlayed_1.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
+                    this.upgradesPlayed_1.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
+                    this.upgradesPlayed_1.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
+                    this.upgradesPlayed_1.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
+                    this.upgradesPlayed_1.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
+                    this.upgradesPlayed_1.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
+                    this.upgradesPlayed_1.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
+                    this.upgradesPlayed_1.addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
+                    this.upgradesPlayed_1.addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
+                }
+                else if(saucerIndex == 2)
+                {
+                    this.upgradesPlayed_2 = new ebg.stock();
+                    this.upgradesPlayed_2.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_2.image_items_per_row = 4; // the number of card images per row in the sprite image
+                    this.upgradesPlayed_2.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
+                    //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
+
+                    this.upgradesPlayed_2.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
+                    this.upgradesPlayed_2.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
+                    this.upgradesPlayed_2.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
+                    this.upgradesPlayed_2.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
+                    this.upgradesPlayed_2.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
+                    this.upgradesPlayed_2.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
+                    this.upgradesPlayed_2.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
+                    this.upgradesPlayed_2.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
+                    this.upgradesPlayed_2.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
+                    this.upgradesPlayed_2.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
+                    this.upgradesPlayed_2.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
+                    this.upgradesPlayed_2.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
+                    this.upgradesPlayed_2.addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
+                    this.upgradesPlayed_2.addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
+                }
+                else if(saucerIndex == 3)
+                {
+                    this.upgradesPlayed_3 = new ebg.stock();
+                    this.upgradesPlayed_3.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_3.image_items_per_row = 4; // the number of card images per row in the sprite image
+                    this.upgradesPlayed_3.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
+                    //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
+
+                    this.upgradesPlayed_3.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
+                    this.upgradesPlayed_3.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
+                    this.upgradesPlayed_3.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
+                    this.upgradesPlayed_3.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
+                    this.upgradesPlayed_3.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
+                    this.upgradesPlayed_3.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
+                    this.upgradesPlayed_3.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
+                    this.upgradesPlayed_3.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
+                    this.upgradesPlayed_3.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
+                    this.upgradesPlayed_3.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
+                    this.upgradesPlayed_3.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
+                    this.upgradesPlayed_3.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
+                    this.upgradesPlayed_3.addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
+                    this.upgradesPlayed_3.addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
+
+                }
+                else if(saucerIndex == 4)
+                {
+                    this.upgradesPlayed_4 = new ebg.stock();
+                    this.upgradesPlayed_4.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_4.image_items_per_row = 4; // the number of card images per row in the sprite image
+                    this.upgradesPlayed_4.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
+                    //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
+
+                    this.upgradesPlayed_4.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
+                    this.upgradesPlayed_4.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
+                    this.upgradesPlayed_4.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
+                    this.upgradesPlayed_4.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
+                    this.upgradesPlayed_4.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
+                    this.upgradesPlayed_4.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
+                    this.upgradesPlayed_4.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
+                    this.upgradesPlayed_4.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
+                    this.upgradesPlayed_4.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
+                    this.upgradesPlayed_4.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
+                    this.upgradesPlayed_4.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
+                    this.upgradesPlayed_4.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
+                    this.upgradesPlayed_4.addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
+                    this.upgradesPlayed_4.addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
+
+                }
+                else if(saucerIndex == 5)
+                {
+                    this.upgradesPlayed_5 = new ebg.stock();
+                    this.upgradesPlayed_5.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_5.image_items_per_row = 4; // the number of card images per row in the sprite image
+                    this.upgradesPlayed_5.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
+                    //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
+
+                    this.upgradesPlayed_5.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
+                    this.upgradesPlayed_5.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
+                    this.upgradesPlayed_5.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
+                    this.upgradesPlayed_5.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
+                    this.upgradesPlayed_5.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
+                    this.upgradesPlayed_5.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
+                    this.upgradesPlayed_5.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
+                    this.upgradesPlayed_5.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
+                    this.upgradesPlayed_5.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
+                    this.upgradesPlayed_5.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
+                    this.upgradesPlayed_5.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
+                    this.upgradesPlayed_5.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
+                    this.upgradesPlayed_5.addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
+                    this.upgradesPlayed_5.addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
+
+                }
+                else if(saucerIndex == 6)
+                {
+                    this.upgradesPlayed_6 = new ebg.stock();
+                    this.upgradesPlayed_6.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_6.image_items_per_row = 4; // the number of card images per row in the sprite image
+                    this.upgradesPlayed_6.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
+                    //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
+
+                    this.upgradesPlayed_6.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
+                    this.upgradesPlayed_6.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
+                    this.upgradesPlayed_6.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
+                    this.upgradesPlayed_6.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
+                    this.upgradesPlayed_6.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
+                    this.upgradesPlayed_6.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
+                    this.upgradesPlayed_6.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
+                    this.upgradesPlayed_6.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
+                    this.upgradesPlayed_6.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
+                    this.upgradesPlayed_6.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
+                    this.upgradesPlayed_6.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
+                    this.upgradesPlayed_6.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
+                    this.upgradesPlayed_6.addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
+                    this.upgradesPlayed_6.addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
+
+                }
+            }
+
+
+
+        },
+
+        initializeHandUpgrades: function()
+        {
+
+
+                      this.upgradeHand_1 = new ebg.stock(); // create the place we will store the trap cards the player has drawn
+                      this.upgradeHand_1.create( this, $('upgrade_hand_'+this.gamedatas.saucer1), this.upgradecardwidth, this.upgradecardheight );
+                      this.upgradeHand_1.image_items_per_row = 4; // the number of card images per row in the sprite image
+                      this.upgradeHand_1.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
+                      dojo.connect( this.upgradeHand_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
+
+                      // Create one of each type of trap card so we can add them to the playerTrapHand stock as needed throughout
+                      // the game and it will know what we're talking about when we do.
+                      // ARGUMENTS:
+                      // type id
+                      // weight of the card (for sorting purpose)
+                      // the URL of our CSS sprite
+                      // the position of our card image in the CSS sprite
+                      this.upgradeHand_1.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
+                      this.upgradeHand_1.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
+                      this.upgradeHand_1.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
+                      this.upgradeHand_1.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
+                      this.upgradeHand_1.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
+                      this.upgradeHand_1.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
+                      this.upgradeHand_1.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
+                      this.upgradeHand_1.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
+                      this.upgradeHand_1.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
+                      this.upgradeHand_1.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
+                      this.upgradeHand_1.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
+                      this.upgradeHand_1.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
+                      this.upgradeHand_1.addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
+                      this.upgradeHand_1.addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
+
+                      if($('upgrade_hand_'+this.gamedatas.saucer2))
+                      {
+                          this.upgradeHand_2 = new ebg.stock(); // create the place we will store the trap cards the player has drawn
+                          this.upgradeHand_2.create( this, $('upgrade_hand_'+this.gamedatas.saucer2), this.upgradecardwidth, this.upgradecardheight );
+                          this.upgradeHand_2.image_items_per_row = 4; // the number of card images per row in the sprite image
+                          this.upgradeHand_2.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
+                          dojo.connect( this.upgradeHand_2, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
+
+                          // Create one of each type of trap card so we can add them to the playerTrapHand stock as needed throughout
+                          // the game and it will know what we're talking about when we do.
+                          // ARGUMENTS:
+                          // type id
+                          // weight of the card (for sorting purpose)
+                          // the URL of our CSS sprite
+                          // the position of our card image in the CSS sprite
+                          this.upgradeHand_2.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
+                          this.upgradeHand_2.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
+                          this.upgradeHand_2.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
+                          this.upgradeHand_2.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
+                          this.upgradeHand_2.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
+                          this.upgradeHand_2.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
+                          this.upgradeHand_2.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
+                          this.upgradeHand_2.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
+                          this.upgradeHand_2.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
+                          this.upgradeHand_2.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
+                          this.upgradeHand_2.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
+                          this.upgradeHand_2.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
+                          this.upgradeHand_2.addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
+                          this.upgradeHand_2.addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
+                      }
+
+                      // upgrade cards in player's hands
+                      for( var i in this.gamedatas.upgradeHands )
+                      {
+                          var card = this.gamedatas.upgradeHands[i];
+
+                          var cardName = card.type; // Twirlybird, Scrambler
+                          var cardID = card.type_arg; // unique id like 0, 1, 2, 3
+                          var color = card.location; // color like ff0000
+                          var owner = card.location_arg; // player ID
+
+                          console.log( "Adding an upgrade card with unique ID " + card.id + " and card ID " + cardID + " and name " + cardName + " and color " + color + " and owner " + owner + " to the player's hand." );
+
+                          if(color == this.gamedatas.saucer1)
+                          {
+                              this.upgradeHand_1.addToStockWithId( cardID, card.id );
+                          }
+                          else
+                          {
+                              this.upgradeHand_2.addToStockWithId( cardID, card.id );
+                          }
+                      }
+
+        },
+
+        setupNewCard: function( card_div, card_type_id, card_id )
+        {
+             var title = this.getUpgradeTitle(card_type_id);
+             var effect = this.getUpgradeEffect(card_type_id);
+             var whatHappensWhenYouClickOnIt = '';
+
+             // Add a special tooltip on the card (Maybe replace this with full image to show off the art)
+             this.addTooltip( card_div.id, title.toUpperCase() + ": " + effect, whatHappensWhenYouClickOnIt );
+
+             // Note that "card_type_id" contains the type of the item, so you can do special actions depending on the item type
+
+             // Add some custom HTML content INSIDE the Stock item:
+             dojo.place( this.format_block( 'jstpl_upgradeCardText', {
+                 title: title.toUpperCase(),
+                 effect: effect
+             } ), card_div.id );
+
+             dojo.connect( $(card_div.id), 'onclick', this, 'onClickUpgradeCardInHand' );
+        },
+
+        playUpgradeCard: function( saucerColor, collectorNumber )
+        {
+             var title = this.getUpgradeTitle(collectorNumber);
+             var effect = this.getUpgradeEffect(collectorNumber);
+             var whatHappensWhenYouClickOnIt = '';
+
+             var destination = 'player_board_played_upgrade_cards_'+saucerColor;
+
+console.log('playUpgradeCard to '+destination);
+
+             // Add a special tooltip on the card (Maybe replace this with full image to show off the art)
+             //this.addTooltip( card_div.id, title.toUpperCase() + ": " + effect, whatHappensWhenYouClickOnIt );
+
+/*
+             // Add some custom HTML content INSIDE the Stock item:
+             dojo.place( this.format_block( 'jstpl_upgradeCardText', {
+                 title: title.toUpperCase(),
+                 effect: effect
+             } ), destination );
+*/
+        },
+
+        getUpgradeTitle: function(collectorNumber)
+        {
+            // use gamedatas list of upgrades to pull the correct one based on the id
+            return this.gamedatas.upgradeCardContent[collectorNumber]['name'];
+        },
+
+        getUpgradeEffect: function(collectorNumber)
+        {
+            // use gamedatas list of upgrades to pull the correct one based on the id
+            return this.gamedatas.upgradeCardContent[11]['effect'];
+            return this.gamedatas.upgradeCardContent[collectorNumber]['effect'];
+        },
+
         placeBoard: function(numberOfPlayers)
         {
           console.log("numberOfPlayers:"+numberOfPlayers);
@@ -2487,8 +2840,8 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 // center the directions based on the number of players
                 dojo.style('direction_constellation', "marginTop", "224px"); // move the left direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "224px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_sun', "marginLeft", "292px");
-                dojo.style('direction_meteor', "marginLeft", "292px");
+                dojo.style('direction_sun', "marginLeft", "280px");
+                dojo.style('direction_meteor', "marginLeft", "280px");
 
                 dojo.style('board_tile_column', "width", "685px"); // set the width of the board based on saucer count
             }
@@ -2501,8 +2854,8 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 // center the directions based on the number of players
                 dojo.style('direction_constellation', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_sun', "marginLeft", "322px");
-                dojo.style('direction_meteor', "marginLeft", "322px");
+                dojo.style('direction_sun', "marginLeft", "305px");
+                dojo.style('direction_meteor', "marginLeft", "305px");
 
                 dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
             }
@@ -2515,8 +2868,8 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 // center the directions based on the number of players
                 dojo.style('direction_constellation', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_sun', "marginLeft", "348px");
-                dojo.style('direction_meteor', "marginLeft", "348px");
+                dojo.style('direction_sun', "marginLeft", "330px");
+                dojo.style('direction_meteor', "marginLeft", "330px");
 
                 dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
             }
@@ -2533,7 +2886,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             //this.placeOnObject( 'disc_'+color, 'square_'+x+'_'+y );
             this.slideToObject( saucerHtmlId, 'square_'+x+'_'+y ).play();
 
-            if(color == this.saucer1 || color == this.saucer2)
+            if(color == this.gamedatas.saucer1 || color == this.gamedatas.saucer2)
             { // this saucer is owned by this player
 
                   dojo.addClass( saucerHtmlId, 'clickable' );
@@ -2574,7 +2927,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
         setTurnDirectionArrow: function(x, y, player_id)
         {
-            dojo.style( 'player_board_arrow_'+player_id, 'backgroundPosition', '-'+x+'px -'+y+'px' );
+            dojo.style( 'player_board_arrow_'+player_id, 'backgroundPositionX', '-'+x+'px' );
             //dojo.style( 'my_element', 'display', 'none' );
 
             console.log('setting arrow background position x:'+x+' y:'+y+' player_id:'+player_id);
@@ -2745,6 +3098,48 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             console.log("sendDirectionClick sending direction " + chosenDirection);
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDirectionClick.html", { direction: chosenDirection, lock: true }, this, function( result ) {
             }, function( is_error) { } );
+        },
+
+        onClickUpgradeCardInHand: function( evt )
+        { // a player clicked on an Upgrade Card in the player's hand
+
+            dojo.stopEvent( evt ); // Preventing default browser reaction
+
+            var node = evt.currentTarget.id; // upgrade_hand_01b508_item_17
+            console.log("onClickUpgradeCardInHand:"+node);
+            var saucerColor = node.split('_')[2]; // 01b508
+            var databaseUniqueIdentifier = node.split('_')[4]; // 1, 2, 3 (not collector number)
+
+
+                // Check that this action is possible (see "possibleactions" in states.inc.php)
+                //if( !this.checkAction( 'clickMyIntegrityCard' ) )
+                if( !this.checkPossibleActions('clickUpgradeCardInHand'))
+                { // we can't click this card now
+console.log("failed... onClickUpgradeCardInHand");
+                }
+                else
+                { // we can click it
+console.log("success... onClickUpgradeCardInHand");
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickUpgradeInHand.html", {
+                                                                            lock: true,
+                                                                            saucerColor: saucerColor,
+                                                                            upgradeDatabaseId: databaseUniqueIdentifier
+                                                                         },
+                                 this, function( result ) {
+
+                                    // What to do after the server call if it succeeded
+                                    // (most of the time: nothing)
+                                    //this.highlightComponent(node);  // highlight the card
+
+                                 }, function( is_error) {
+
+                                    // What to do after the server call in anyway (success or failure)
+                                    // (most of the time: nothing)
+
+                                 }
+                    );
+                }
+
         },
 
         sendClaimZag: function(ostrich, cardsDiscarded)
@@ -2975,28 +3370,28 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
         {
           console.log( "onNewDirectionBridge" );
 
-          this.sendMoveInNewDirection(this.saucer1, "BRIDGE");
+          this.sendMoveInNewDirection(this.gamedatas.saucer1, "BRIDGE");
         },
 
         onNewDirectionCactus: function()
         {
           console.log( "onNewDirectionCactus" );
 
-          this.sendMoveInNewDirection(this.saucer1, "CACTUS");
+          this.sendMoveInNewDirection(this.gamedatas.saucer1, "CACTUS");
         },
 
         onNewDirectionRiver: function()
         {
           console.log( "onNewDirectionRiver" );
 
-          this.sendMoveInNewDirection(this.saucer1, "RIVER");
+          this.sendMoveInNewDirection(this.gamedatas.saucer1, "RIVER");
         },
 
         onNewDirectionMountain: function()
         {
           console.log( "onNewDirectionMountain" );
 
-          this.sendMoveInNewDirection(this.saucer1, "MOUNTAIN");
+          this.sendMoveInNewDirection(this.gamedatas.saucer1, "MOUNTAIN");
         },
 
         onClick_sunDirection: function()
@@ -3028,7 +3423,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
         {
           console.log( "onZagBridge" );
 
-          if(this.saucer2 == this.lastMovedOstrich)
+          if(this.gamedatas.saucer2 == this.lastMovedOstrich)
           {
               this.saucer2HasZag = false; // take away the zag
           }
@@ -3045,7 +3440,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
         {
           console.log( "onZagCactus" );
 
-          if(this.saucer2 == this.lastMovedOstrich)
+          if(this.gamedatas.saucer2 == this.lastMovedOstrich)
           {
               this.saucer2HasZag = false; // take away the zag
           }
@@ -3062,7 +3457,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
         {
           console.log( "onZagRiver" );
 
-          if(this.saucer2 == this.lastMovedOstrich)
+          if(this.gamedatas.saucer2 == this.lastMovedOstrich)
           {
               this.saucer2HasZag = false; // take away the zag
           }
@@ -3079,7 +3474,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
         {
           console.log( "onZagMountain" );
 
-          if(this.saucer2 == this.lastMovedOstrich)
+          if(this.gamedatas.saucer2 == this.lastMovedOstrich)
           {
               this.saucer2HasZag = false; // take away the zag
           }
@@ -3451,7 +3846,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 {
                     to_give += items[i].id+';';
                 }
-                this.ajaxcall( "/hearts/hearts/giveCards.html", { cards: to_give, lock: true }, this, function( result ) {
+                this.ajaxcall( "/crashandgrab/crashandgrab/giveCards.html", { cards: to_give, lock: true }, this, function( result ) {
                 }, function( is_error) { } );
             }
         },
@@ -3471,7 +3866,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             if( ! this.checkAction( 'clickUseBooster' ) )
             {   return; }
 
-            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/actUseBooster.html", {
+            this.ajaxcall( "/crashandgrab/crashandgrab/actUseBooster.html", {
                                                                     lock: true
                                                                  },
                          this, function( result ) {
@@ -3494,10 +3889,10 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             console.log( "do NOT use a Booster" );
 
             // Check that this action is possible (see "possibleactions" in states.inc.php)
-            if( ! this.checkAction( 'clickSkipBooster' ) )
+            if( !this.checkAction( 'clickSkipBooster' ) )
             {   return; }
 
-            this.ajaxcall( "/goodcopbadcop/goodcopbadcop/actSkipBooster.html", {
+            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipBooster.html", {
                                                                     lock: true
                                                                  },
                          this, function( result ) {
@@ -3714,6 +4109,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             dojo.subscribe( 'animateMovement', this, "notif_animateMovement" );
             dojo.subscribe( 'energyAcquired', this, "notif_energyAcquired");
             dojo.subscribe( 'boosterAcquired', this, "notif_boosterAcquired");
+            dojo.subscribe( 'upgradePlayed', this, "notif_upgradePlayed");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -3899,7 +4295,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             { // we are the player who claimed the zag
 
                 // this ostrich has a zag so we should give them the option to use it after they move on their turn
-                if(this.saucer2 == ostrich)
+                if(this.gamedatas.saucer2 == ostrich)
                 {
                     this.saucer2HasZag = true; // save that this ostrich has a zag
                 }
@@ -3946,20 +4342,28 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             var energyPosition = notif.args.energyPosition;
             var saucerColor = notif.args.saucerColor;
 
-            // show the zag token on the mat of the ostrich who claimed it
+            // show the energy token on the mat of the saucer who acquired it
             dojo.place( this.format_block( 'jstpl_energy', {
                  location: saucerColor,
                  position: energyPosition
             } ) , 'energy_pile');
 
+
             var objectMovingId = 'energy_'+saucerColor+'_'+energyPosition;
             var destination = 'energy_acquired_'+saucerColor;
+
+            var classToAdd = 'energy_'+energyPosition;
+            dojo.addClass( objectMovingId, classToAdd );
 
             var animationId = this.slideToObject( objectMovingId, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
             dojo.connect(animationId, 'onEnd', () => {
 
                 // put it in the saucer mat energy holder instead of the energy pile
                 this.attachToNewParent( objectMovingId, destination );
+
+                // remove any leftover top or left changes from the sliding
+                $(objectMovingId).style.removeProperty('top'); // remove
+                $(objectMovingId).style.removeProperty('left'); // remove
 
                 // if this is the active player, enable Move button?
             });
@@ -3974,7 +4378,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             var boosterPosition = notif.args.boosterPosition;
             var saucerColor = notif.args.saucerColor;
 
-            // show the zag token on the mat of the ostrich who claimed it
+            // show the booster token on the mat of the saucer who acquired it
             dojo.place( this.format_block( 'jstpl_booster', {
                  location: saucerColor,
                  position: boosterPosition
@@ -3989,9 +4393,44 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 // put it in the saucer mat energy holder instead of the energy pile
                 this.attachToNewParent( objectMovingId, destination );
 
+                // remove any leftover top or left changes from the sliding
+                $(objectMovingId).style.removeProperty('top'); // remove
+                $(objectMovingId).style.removeProperty('left'); // remove
+
                 // if this is the active player, enable Move button?
             });
             animationId.play();
+        },
+
+        notif_upgradePlayed: function( notif )
+        {
+            console.log("Entered notif_upgradePlayed.");
+
+            var saucerColorPlayingCard = notif.args.saucerColor;
+            var playerPlayingCard = notif.args.playerId;
+            var collectorNumber = notif.args.collectorNumber;
+
+            var cardInHandDatabaseId = notif.args.databaseId;
+            var cardInHandHtmlId = 'upgrade_hand_'+saucerColorPlayingCard+'_item_'+cardInHandDatabaseId; // example: upgrade_hand_0090ff_item_10
+
+            console.log('collectorNumber('+collectorNumber+') cardInHandHtmlId('+cardInHandHtmlId+').');
+
+            var upgradesPlayedStock = this.getUpgradesPlayedStockForSaucerColor(saucerColorPlayingCard);
+            var upgradeHandStock = this.getUpgradeHandStockForSaucerColor(saucerColorPlayingCard);
+
+            if(playerPlayingCard == this.player_id)
+            { // we are the player who played the upgrade
+
+                // move upgrade from hand to player board
+                upgradesPlayedStock.addToStock( collectorNumber, cardInHandHtmlId );
+                upgradeHandStock.removeFromStockById( cardInHandDatabaseId );
+            }
+            else
+            { // another player played the upgrade
+
+                // just add the upgrade to that player's played upgrade stock
+                upgradesPlayedStock.addToStock( collectorNumber );
+            }
         },
 
         notif_acquireGarment: function( notif )
@@ -4087,9 +4526,20 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
         notif_zagUsed: function( notif )
         {
             console.log("Entered notif_zagUsed.");
-            var ostrich = notif.args.ostrich;
+            var saucer = notif.args.ostrich;
+            var boosterQuantity = notif.args.boosterQuantity;
 
-            dojo.destroy('zag_'+ostrich); // destroy the zag token
+            var objectMovingId = 'booster_'+saucer+'_'+boosterQuantity;
+            var destination = 'booster_pile';
+
+            console.log('objectMovingId:'+objectMovingId);
+
+            if( $(objectMovingId ) )
+            { // it exists
+
+                this.slideToObjectAndDestroy( objectMovingId, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
+
+            }
         },
 
         notif_xSelected: function( notif )

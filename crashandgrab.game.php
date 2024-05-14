@@ -57,6 +57,11 @@ class CrashAndGrab extends Table
 				$this->trapCards->autoreshuffle_custom = array('trapCardDeck' => 'discard');
 				$this->trapCards->autoreshuffle = true; // automatically reshuffle when you run out of cards
 
+				$this->upgradeCards = self::getNew( "module.common.deck" );
+        $this->upgradeCards->init( "upgradeCards" );
+				$this->upgradeCards->autoreshuffle_custom = array('upgradeCardDeck' => 'discard');
+				$this->upgradeCards->autoreshuffle = true; // automatically reshuffle when you run out of cards
+
 				$this->UP_DIRECTION = 'sun';
 				$this->DOWN_DIRECTION = 'meteor';
 				$this->LEFT_DIRECTION = 'constellation';
@@ -147,6 +152,7 @@ class CrashAndGrab extends Table
 				$this->dealMoveCards();
 
 				 $this->initializeTrapCards();
+				 $this->initializeUpgradeCards();
 
 
 				 // for testing, draw some trap cards
@@ -210,28 +216,50 @@ class CrashAndGrab extends Table
 				$result['stateName'] = $this->getStateName(); // send the state name in case the client needs it
 
 				// put the cards that are in this player's hand into the array that is returned to the UI/javascript/client layer with the key "hand"
-				$saucers = $this->getAllSaucers();
+				$saucers = $this->getSaucersForPlayer($player_id);
+
+				$result['saucer1'] = '';
+				$result['saucer2'] = '';
+
 				$result['hand'] = null;
 				foreach( $saucers as $saucer )
-				{ // go through each saucer
+				{ // go through each saucer owned by the player
 						$saucerColor = $saucer['ostrich_color'];
 
-	    			self::warn("<b>Saucer Color:</b> $saucerColor"); // log to sql database
+self::warn("<b>Saucer Color:</b> $saucerColor"); // log to sql database
 
-						if(is_null($result['hand']))
-						{ // first saucer
-							self::warn("<b>HAND NULL</b>"); // log to sql database
+								if(is_null($result['hand']))
+								{ // first saucer
+self::warn("<b>HAND NULL</b>"); // log to sql database
 
-								$result['hand'] = $this->movementCards->getCardsInLocation( $saucerColor ); // get the cards for this saucer
-								//$result['hand'] = $this->movementCards->getCardsInLocation( 'hand' ); // get the cards for this saucer
-  					}
-						else
-						{ // they had a second saucer
-														self::warn("<b>HAND not NULL</b>"); // log to sql database
-								//array_merge($result['hand'], $this->movementCards->getCardsInLocation( 'hand_{$saucerColor}' ) ); // merge their other saucer with this saucer
-								$result['hand'] = array_merge($result['hand'], $this->movementCards->getCardsInLocation( $saucerColor ) ); // merge their other saucer with this saucer
-						}
+										// save the color representing saucer 1
+										$result['saucer1'] = $saucerColor;
+
+										$result['hand'] = $this->movementCards->getCardsInLocation( $saucerColor ); // get the cards for this saucer
+										//$result['hand'] = $this->movementCards->getCardsInLocation( 'hand' ); // get the cards for this saucer
+
+										// get the upgrades in this player's hand
+										$result['upgradeHands'] = $this->upgradeCards->getCardsInLocation( $saucerColor );
+		  					}
+								else
+								{ // they had a second saucer
+
+self::warn("<b>HAND not NULL</b>"); // log to sql database
+
+										// save the color representing saucer 2
+										$result['saucer2'] = $saucerColor;
+
+										// merge their other saucer movement cards with this saucer
+										$result['hand'] = array_merge($result['hand'], $this->movementCards->getCardsInLocation( $saucerColor ) ); // merge their other saucer with this saucer
+
+
+										// merge their other saucer upgrades
+										$result['upgradeHands'] = array_merge($result['upgradeHands'], $this->upgradeCards->getCardsInLocation( $saucerColor ) );
+								}
 				}
+
+
+				$result['upgradeCardContent'] = $this->getAllUpgradeCardContent();
 
 
 
@@ -249,6 +277,9 @@ class CrashAndGrab extends Table
 				// put the cards that have been discarded into the array that is returned to the UI/javascript/client layer with the key "played_playerid"
 				$result['discard'] = $this->movementCards->getCardsInLocation( 'discard', $player_id );
 
+
+
+
 				// get any cards that are in this player's hand
 				$traphands = $this->trapCards->getCardsInLocation( 'hand', $player_id );
 				foreach( $traphands as $card )
@@ -261,8 +292,11 @@ class CrashAndGrab extends Table
 					self::warn($msgHandCard);
 				}
 
-				// put the trap cards that are in all player hands
-				$result['trapHands'] = $this->trapCards->getCardsInLocation( 'hand' );
+				// get the upgrades in this player's hand
+				$result['trapHands'] = $this->trapCards->getCardsInLocation( 'hand', $player_id );
+
+
+
 
 				// get the board layout
         $result['board'] = self::getObjectListFromDB( "SELECT board_x x, board_y y, board_space_type space_type
@@ -270,7 +304,7 @@ class CrashAndGrab extends Table
                                                        WHERE board_space_type IS NOT NULL" );
 
   			// get the ostrich positions
-				$result['ostrich'] = self::getObjectListFromDB( "SELECT ostrich_x x,ostrich_y y, ostrich_color color, ostrich_owner owner, ostrich_last_direction last_direction, ostrich_has_zag has_zag, ostrich_has_crown
+				$result['ostrich'] = self::getObjectListFromDB( "SELECT ostrich_x x,ostrich_y y, ostrich_color color, ostrich_owner owner, ostrich_last_direction last_direction, ostrich_has_zag has_zag, ostrich_has_crown, booster_quantity, energy_quantity
 				                                               FROM ostrich
 				                                               WHERE 1" );
 
@@ -423,6 +457,45 @@ class CrashAndGrab extends Table
 				$this->trapCards->createCards( $trapCardsList, 'trapCardDeck' ); // create the deck
 
 				$this->trapCards->shuffle( 'trapCardDeck' ); // shuffle it
+		}
+
+		function initializeUpgradeCards()
+		{
+				// Create Movement Cards
+				// type: Deface Paint, Twirlybird
+				// type_arg: probably don't need... should mimic card id
+
+				$cardsList = array(
+//						array( 'type' => 'Blastorocket', 'type_arg' => 0, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Boulderdash', 'type_arg' => 1, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Deface Paint', 'type_arg' => 2, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Dizzerydoo', 'type_arg' => 3, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Gadget Gobbler', 'type_arg' => 4, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Kleptocopter', 'type_arg' => 5, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Krazy Crane', 'type_arg' => 6, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Overheater', 'type_arg' => 7, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Rooster Booster', 'type_arg' => 8, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Scrambler', 'type_arg' => 9, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Stinkbomb', 'type_arg' => 10, 'card_location' => 'deck','nbr' => 1),
+//						array( 'type' => 'Twirlybird', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 10),
+						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 10)
+				);
+
+
+				$this->upgradeCards->createCards( $cardsList, 'deck' ); // create the deck
+
+				// shuffle the deck
+				$this->upgradeCards->shuffle( 'deck' );
+
+				// deal 3 cards to each saucer
+				$allSaucers = $this->getAllSaucers();
+				foreach($allSaucers as $saucer)
+				{
+						$owner = $saucer['ostrich_owner'];
+						$color = $saucer['ostrich_color'];
+						$cards = $this->upgradeCards->pickCardsForLocation( 3, 'deck', $color, $owner );
+				}
 		}
 
 		function initializeCrewmembers()
@@ -757,13 +830,13 @@ class CrashAndGrab extends Table
 				switch($garmentAsInt)
 				{
 						case 0:
-							return "head";
+							return "pilot";
 						case 1:
-							return "body";
+							return "engineer";
 						case 2:
-							return "legs";
+							return "doctor";
 						case 3:
-							return "feet";
+							return "scientist";
 				}
 
 				return "";
@@ -773,12 +846,16 @@ class CrashAndGrab extends Table
 		{
 				switch($garmentAsString)
 				{
+						case "pilot":
 						case "head":
 							return 0;
+						case "engineer":
 						case "body":
 							return 1;
+						case "doctor":
 						case "legs":
 							return 2;
+						case "scientist":
 						case "feet":
 							return 3;
 				}
@@ -1398,6 +1475,59 @@ class CrashAndGrab extends Table
 
 
 				}
+
+				return $result;
+		}
+
+		function getUpgradeTitleFromCollectorNumber($collectorNumber)
+		{
+				switch($collectorNumber)
+				{
+						case 1:
+								return clienttranslate( 'Blast Off Thrusters');
+						case 11:
+								return clienttranslate( 'Distress Signaler');
+						case 12:
+								return clienttranslate( 'Time Machine');
+						case 13:
+								return clienttranslate( 'Regeneration Gateway');
+				}
+		}
+
+		function getUpgradeEffectFromCollectorNumber($collectorNumber)
+		{
+				switch($collectorNumber)
+				{
+						case 1:
+								return clienttranslate( 'At the start of your turn, move 1 space onto an empty space.');
+						case 11:
+								return clienttranslate( 'At the end of your turn, take a Crewmember of your color from any Saucer and give them one of the same type.');
+						case 12:
+								return clienttranslate( 'Choose your Move Card direction after you reveal it.');
+						case 13:
+								return clienttranslate( 'When your Saucer is located, you choose the Crash Site.');
+				}
+		}
+
+		function getAllUpgradeCardContent()
+		{
+				$result = array();
+
+				$result[1] = array();
+				$result[1]['name'] = $this->getUpgradeTitleFromCollectorNumber(1);
+				$result[1]['effect'] = $this->getUpgradeEffectFromCollectorNumber(1);
+
+				$result[11] = array();
+				$result[11]['name'] = $this->getUpgradeTitleFromCollectorNumber(11);
+				$result[11]['effect'] = $this->getUpgradeEffectFromCollectorNumber(11);
+
+				$result[12] = array();
+				$result[12]['name'] = $this->getUpgradeTitleFromCollectorNumber(12);
+				$result[12]['effect'] = $this->getUpgradeEffectFromCollectorNumber(12);
+
+				$result[13] = array();
+				$result[13]['name'] = $this->getUpgradeTitleFromCollectorNumber(13);
+				$result[13]['effect'] = $this->getUpgradeEffectFromCollectorNumber(13);
 
 				return $result;
 		}
@@ -2690,6 +2820,12 @@ class CrashAndGrab extends Table
 		function setTrapCardTarget($playerUsing, $ostrichTargeted)
 		{
 				$sql = "UPDATE trapCards SET card_location='$ostrichTargeted' WHERE card_location_arg=$playerUsing AND card_location='hand'";
+				self::DbQuery( $sql );
+		}
+
+		function setCardToPlayed($cardId)
+		{
+				$sql = "UPDATE upgradeCards SET card_is_played=1 WHERE card_id=$cardId";
 				self::DbQuery( $sql );
 		}
 
@@ -4140,9 +4276,14 @@ class CrashAndGrab extends Table
 
 		function getSaucersForPlayer($playerId)
 		{
-				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_turns_taken
+				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_turns_taken, ostrich_color color, ostrich_owner owner, 'name' ownerName
 																										 FROM ostrich
 																										 WHERE ostrich_owner=$playerId" );
+		}
+
+		function getCollectorNumberFromDatabaseId($databaseId)
+		{
+			return self::getUniqueValueFromDb("SELECT card_type_arg FROM upgradeCards WHERE card_id=$databaseId");
 		}
 
 		// Same as getSaucersForPlayer except in array form.
@@ -6032,6 +6173,7 @@ class CrashAndGrab extends Table
 		//   5. Ship Upgrade - if they have 2 Energy, ask if they wish to upgrade, and if so, ask which they want to play
 		function endSaucerTurnCleanUp()
 		{
+//throw new feException( "endSaucerTurnCleanUp");
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs(); // the saucer whose turn it is (empty string if we don't know)
 				$nextSaucerWithPendingCrashReward = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
 				$needToPlaceCrewmember = $this->doesCrewmemberNeedToBePlaced();
@@ -6554,15 +6696,6 @@ class CrashAndGrab extends Table
 				$this->setState_PreMovement(); // set the player's phase based on what that player has available to them
 		}
 
-		function executeStartAcceleratorOrBoosterMove($saucerDirection)
-		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-//throw new feException( "executing move in direction: $saucerDirection");
-				$this->saveSaucerMoveCardDirection($saucerWhoseTurnItIs, $saucerDirection); // save the direction
-
-				$this->executeSaucerMove($saucerWhoseTurnItIs);
-		}
-
 		function executeSaucerMove($saucerMoving)
 		{
 //throw new feException( "executeSaucerMove saucer moving: $saucerMoving");
@@ -6652,26 +6785,34 @@ class CrashAndGrab extends Table
 
 				$currentState = $this->getStateName();
 
+				$this->saveSaucerMoveCardDirection($saucerWhoseTurnItIs, $direction); // save the direction
+
 				if($currentState == "chooseIfYouWillUseBooster")
-				{ // they chose to boost
+				{ // they are boosting
 
 						$this->saveSaucerLastDirection($saucerWhoseTurnItIs, $direction); // update the database with its new last moved direction
 
-						$this->decrementBoosterForSaucer($saucerWhoseTurnItIs); // take the zag away from the ostrich
-
 						$this->notifyPlayersOfBoosterUsage($saucerWhoseTurnItIs);
+						$this->decrementBoosterForSaucer($saucerWhoseTurnItIs); // must come after notification
 
-						$this->executeStartAcceleratorOrBoosterMove($direction);
+						$this->executeSaucerMove($saucerWhoseTurnItIs);
+				}
+				elseif($currentState == "chooseAcceleratorDirection")
+				{ // they are accelerating
+
+					$this->executeSaucerMove($saucerWhoseTurnItIs);
+
 				}
 				else
 				{	// they chose their direction after starting turn crashed
 						//$this->saveSaucerLastDirection($saucerWhoseTurnItIs, $direction); // update the database with its new last moved direction
-						$this->saveSaucerMoveCardDirection($saucerWhoseTurnItIs, $direction); // save the new direction of their move card
+
 						//$distance = $this->getZigDistanceForOstrich($saucerWhoseTurnItIs); // get the distance on this saucer's move card
 						//$this->saveSaucerLastDistance($saucerWhoseTurnItIs, $distance); // if this saucer collided, its distance/direction was set to that of the collider so we also need to reset the distance
 
 						$this->gamestate->nextState( "saucerTurnStart" );
 				}
+
 		}
 
 		function executeRespawnOstrich()
@@ -6769,6 +6910,34 @@ class CrashAndGrab extends Table
     		self::incStat( 1, 'zags_claimed', $player_id ); // increase end game player stat
 		}
 
+		function executeClickedUpgradeCardInHand($databaseId, $color)
+		{
+				self::checkAction( 'clickUpgradeCardInHand' ); // make sure we can take this action from this state
+
+				$collectorNumber = $this->getCollectorNumberFromDatabaseId($databaseId);
+				$playerId = $this->getOwnerIdOfOstrich($color);
+				$playerName = $this->getPlayerNameFromPlayerId($playerId);
+
+				// mark it as played
+				$this->setCardToPlayed($databaseId);
+
+				// get some additional notification details
+				$nameOfUpgrade = $this->getUpgradeTitleFromCollectorNumber($collectorNumber);
+				$colorName = $this->convertColorToText($color);
+
+				// notify all players that is has been played
+				self::notifyAllPlayers( 'upgradePlayed', clienttranslate( '${player_name} played the upgrade ${name_of_upgrade} for the ${color_name} saucer.' ), array(
+						'saucerColor' => $color,
+						'collectorNumber' => $collectorNumber,
+						'databaseId' => $databaseId,
+						'playerId' => $playerId,
+						'player_name' => $playerName,
+						'name_of_upgrade' => $nameOfUpgrade,
+						'color_name' => $colorName
+				) );
+
+		}
+
 		function executeSelectXValue($xValue)
 		{
 				$ostrich = $this->getOstrichWhoseTurnItIs();
@@ -6788,12 +6957,15 @@ class CrashAndGrab extends Table
 					$this->gamestate->nextState( "endSaucerTurnCleanUp" ); // set the phase depending on whether there are any traps to discards or garments to replace
 		}
 
-		function notifyPlayersOfBoosterUsage($ostrichUsing)
+		function notifyPlayersOfBoosterUsage($saucerColor)
 		{
-			self::notifyAllPlayers( 'zagUsed', clienttranslate( '${player_name} is boosting.' ), array(
-					'ostrich' => $ostrichUsing,
-					'player_name' => self::getActivePlayerName()
-			) );
+				$boosterQuantity = $this->getBoosterCountForSaucer($saucerColor); // 1, 2
+
+				self::notifyAllPlayers( 'zagUsed', clienttranslate( '${player_name} is boosting.' ), array(
+						'ostrich' => $saucerColor,
+						'boosterQuantity' => $boosterQuantity,
+						'player_name' => self::getActivePlayerName()
+				) );
 		}
 
 		function notifyPlayersAboutTrapsSet()
@@ -7053,6 +7225,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		//          We need to figure out which state to put them in.
 		function executeSkipBooster()
 		{
+			//throw new feException( "executeSkipBooster" );
 				//$this->sendCliffFallsToPlayers(); // check if the ostrich moving fell off a cliff, and if so, tell players and update stats
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" ); // set the state now that moving is complete
 		}
