@@ -136,7 +136,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must choose the direction you will travel on the Accelerator.'),
         "type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
-        "possibleactions" => array( "clickAcceleratorDirection", "clickSpace" ),
+        "possibleactions" => array( "clickAcceleratorDirection", "clickMoveDirection" ),
     		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50 )
     ),
 
@@ -145,7 +145,7 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} must choose a Crewmember to place.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose a Crewmember to place.'),
     		"type" => "activeplayer",
-        'args' => 'argGetGarmentsValidForRespawn',
+        'args' => 'argGetLostCrewmembers',
     		"possibleactions" => array( "chooseLostCrewmember" ),
     		"transitions" => array( "replaceGarmentChooseGarment" => 13, "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurnCleanUp" => 50 )
     ),
@@ -174,7 +174,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('${you} must choose the space where the new garment will go.'),
     		"type" => "activeplayer",
         'args' => 'argGetValidGarmentSpawnSpaces',
-    		"possibleactions" => array( "spaceClick" ),
+    		"possibleactions" => array( "chooseCrewmemberPlacingSpace" ),
     		"transitions" => array( "nextMovementTurn" => 4, "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10 )
     ),
 
@@ -334,17 +334,8 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('Would you like to use a Booster?'),
     		"type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
-        "possibleactions" => array( "clickUseBooster", "clickSkipBooster" ),
+        "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
     		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9 )
-    ),
-
-    33 => array(
-    		"name" => "chooseBoosterDirection",
-    		"description" => clienttranslate('${actplayer} is moving.'),
-    		"descriptionmyturn" => clienttranslate('${you} are moving.'),
-    		"type" => "activeplayer",
-        "possibleactions" => array( "clickAcceleratorDirection", "askToUseBooster" ),
-    		"transitions" => array( "endTurn" => 8 )
     ),
 
     34 => array(

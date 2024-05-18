@@ -1115,7 +1115,7 @@ var jstpl_zag='<div class="zag component_circle" id="zag_${color}"></div>';
 var jstpl_energy='<div class="energy_cube" id="energy_${location}_${position}"></div>';
 var jstpl_booster='<div class="booster_token" id="booster_${location}_${position}"></div>';
 
-var jstpl_garment='<div class="garment" id="garment_${garment_type}_${color}"></div>';
+var jstpl_garment='<div class="crewmember crewmember_${garment_type}_${color}" id="crewmember_${garment_type}_${color}"></div>';
 
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->

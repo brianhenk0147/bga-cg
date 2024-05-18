@@ -827,6 +827,30 @@ body {
 
 }
 
+.spaceClick_sun
+{
+    cursor: pointer;
+    /* could put a semi-transparent image of this direction token here */
+}
+
+.spaceClick_meteor
+{
+    cursor: pointer;
+    /* could put a semi-transparent image of this direction token here */
+}
+
+.spaceClick_constellation
+{
+    cursor: pointer;
+    /* could put a semi-transparent image of this direction token here */
+}
+
+.spaceClick_asteroids
+{
+    cursor: pointer;
+    /* could put a semi-transparent image of this direction token here */
+}
+
 .space
 { /* a single space on a board tile */
 
@@ -1728,7 +1752,7 @@ width: 170px;
 #booster_pile {
     width: 120px;
     height: 64px;
-    background-color: green;
+    background-image: url('img/booster_pile.png');
 
     display: inline-block;
     position: relative;
@@ -1740,8 +1764,7 @@ width: 170px;
     width: 30px;
     height: 30px;
 
-    background-image: url('img/booster.png');
-    background-position: -30px 0px;
+    background-image: url('img/booster_30.png');
 
     position: relative;
 
@@ -1761,7 +1784,7 @@ width: 170px;
 #energy_pile {
     width: 120px;
     height: 64px;
-    background-color: #FFAE42;
+    background-image: url('img/energy_pile.png');
 
     display: inline-block;
     position: relative;
@@ -1866,7 +1889,7 @@ margin-top: 6px;
 
 
 /* this is the class for a single garment */
-.garment {
+.crewmember {
     width: 47px;
     height: 47px;
     padding: 0px;
@@ -1899,40 +1922,40 @@ margin-top: 6px;
 
 /* these are each individual garment */
 /* red garments */
-#garment_pilot_f6033b { background-position: -141px 0px;   }
-#garment_engineer_f6033b { background-position: -141px -47px;   }
-#garment_doctor_f6033b { background-position: -141px -94px;   }
-#garment_scientist_f6033b { background-position: -141px -141px;   }
+.crewmember_pilot_f6033b { background-position: -141px 0px;   }
+.crewmember_engineer_f6033b { background-position: -141px -47px;   }
+.crewmember_doctor_f6033b { background-position: -141px -94px;   }
+.crewmember_scientist_f6033b { background-position: -141px -141px;   }
 
 /* green garments */
-#garment_pilot_01b508 { background-position: 0px 0px;   }
-#garment_engineer_01b508 { background-position: 0px -47px;   }
-#garment_doctor_01b508 { background-position: 0px -94px;   }
-#garment_scientist_01b508 { background-position: 0px -141px;   }
+.crewmember_pilot_01b508 { background-position: 0px 0px;   }
+.crewmember_engineer_01b508 { background-position: 0px -47px;   }
+.crewmember_doctor_01b508 { background-position: 0px -94px;   }
+.crewmember_scientist_01b508 { background-position: 0px -141px;   }
 
 /* blue garments */
-#garment_pilot_0090ff { background-position: -47px 0px;   }
-#garment_engineer_0090ff { background-position: -47px -47px;   }
-#garment_doctor_0090ff { background-position: -47px -94px;   }
-#garment_scientist_0090ff { background-position: -47px -141px;   }
+.crewmember_pilot_0090ff { background-position: -47px 0px;   }
+.crewmember_engineer_0090ff { background-position: -47px -47px;   }
+.crewmember_doctor_0090ff { background-position: -47px -94px;   }
+.crewmember_scientist_0090ff { background-position: -47px -141px;   }
 
 /* yellow garments */
-#garment_pilot_fedf3d { background-position: -94px 0px;   }
-#garment_engineer_fedf3d { background-position: -94px -47px;   }
-#garment_doctor_fedf3d { background-position: -94px -94px;   }
-#garment_scientist_fedf3d { background-position: -94px -141px;   }
+.crewmember_pilot_fedf3d { background-position: -94px 0px;   }
+.crewmember_engineer_fedf3d { background-position: -94px -47px;   }
+.crewmember_doctor_fedf3d { background-position: -94px -94px;   }
+.crewmember_scientist_fedf3d { background-position: -94px -141px;   }
 
 /* purple garments */
-#garment_pilot_b92bba { background-position: -235px 0px;   }
-#garment_engineer_b92bba { background-position: -235px -47px;   }
-#garment_doctor_b92bba { background-position: -235px -94px;   }
-#garment_scientist_b92bba { background-position: -235px -141px;   }
+.crewmember_pilot_b92bba { background-position: -235px 0px;   }
+.crewmember_engineer_b92bba { background-position: -235px -47px;   }
+.crewmember_doctor_b92bba { background-position: -235px -94px;   }
+.crewmember_scientist_b92bba { background-position: -235px -141px;   }
 
-/* gray garments */
-#garment_pilot_c9d2db { background-position: -188px 0px;   }
-#garment_engineer_c9d2db { background-position: -188px -47px;   }
-#garment_doctor_c9d2db { background-position: -188px -94px;   }
-#garment_scientist_c9d2db { background-position: -188px -141px;   }
+/* orange garments */
+.crewmember_pilot_c9d2db { background-position: -188px 0px;   }
+.crewmember_engineer_c9d2db { background-position: -188px -47px;   }
+.crewmember_doctor_c9d2db { background-position: -188px -94px;   }
+.crewmember_scientist_c9d2db { background-position: -188px -141px;   }
 
 
 

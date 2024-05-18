@@ -227,18 +227,6 @@
         self::ajaxResponse( );
     }
 
-    // The player has chosen the direction they would like to skateboard or after being dizzy.
-    public function actExecuteMoveInNewDirection()
-    {
-        self::setAjaxMode();
-        $ostrich_color = self::getArg( "ostrich", AT_alphanum, true ); // ff0000, 0000ff, etc.
-        $ostrich_taking_turn = self::getArg( "ostrichTakingTurn", AT_alphanum, true ); // ff0000, 0000ff, etc.
-        $direction = self::getArg( "direction", AT_alphanum, true ); // BRIDGE, MOUNTAIN, etc.
-
-        $this->game->executeMoveInNewDirection(  $ostrich_color, $ostrich_taking_turn, $direction );
-        self::ajaxResponse( );
-    }
-
     public function actExecuteDirectionClick()
     {
         self::setAjaxMode();

@@ -783,6 +783,16 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
         return $result;
     }
 
+		// returns the given saucer color in text form in its color (example: "RED" where "RED" is in the color red)
+		function convertColorToHighlightedText($saucerColor)
+		{
+				$saucerColorText = $this->convertColorToText($saucerColor);
+				$saucerColorHex = $this->convertFriendlyColorToHex($saucerColorText);
+				$colorHighlightedText = '<span style="color:#'.$saucerColorHex.'">'.$saucerColorText.'</span>';
+
+				return $colorHighlightedText;
+		}
+
 		function convertColorToText($playerColor)
 		{
 				switch($playerColor)
@@ -4308,7 +4318,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		        $result = array();
 
 
-		        $ostriches = self::getObjectListFromDB( "SELECT ostrich_color color, ostrich_owner owner, 'name' ownerName
+		        $ostriches = self::getObjectListFromDB( "SELECT ostrich_color color, ostrich_owner owner, 'name' ownerName, ostrich_causing_cliff_fall
 						                                               FROM ostrich
 						                                               WHERE 1" );
 
@@ -5591,38 +5601,43 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				foreach($allOstriches as $ostrichObject)
 				{
 						$ostrichColor = $ostrichObject['color'];
+						$saucerMurderer = $ostrichObject['ostrich_causing_cliff_fall'];
 
 						$boardValue = $this->getBoardSpaceTypeForOstrich($ostrichColor); // get the type of space of the ostrich who just moved
 						$ownerOfOstrich = $this->getOwnerIdOfOstrich($ostrichColor); // get the player who controls the ostrich moving
 
 
 						if($boardValue == "D")
-						{ // the ostrich who just move went off a cliff
+						{ // this saucer is off a cliff
 
-								$this->setRespawnOrder($ostrichColor, $ostrichTakingTurn); // mark the order this ostrich will respawn based on any other ostriches that may have fallen off during the current movement
-								$this->setGarmentStealableForOstrich($ostrichColor); // mark that this ostrich has a stealable garment now
+								if($saucerMurderer == '')
+								{ // we have not yet set this saucer's murderer
 
-//self::debug( "sendCliffFallsToPlayers ostrich:$ostrichColor ostrichTakingTurn:$ostrichTakingTurn" );
-								if($ostrichColor == $ostrichTakingTurn)
-								{ // the ostrich ran off a cliff on their own turn
+										// set the saucer murderer
+										$this->setSaucerMurderer($ostrichColor, $ostrichTakingTurn);
 
-											self::notifyAllPlayers( "ostrichRanOffCliff", clienttranslate( '${player_name} ran the ${ostrichName} ostrich off a cliff.' ), array(
-													'player_name' => self::getActivePlayerName(),
-													'ostrichName' => $this->getOstrichName($ostrichColor)
-											) );
+		//self::debug( "sendCliffFallsToPlayers ostrich:$ostrichColor ostrichTakingTurn:$ostrichTakingTurn" );
+										if($ostrichColor == $ostrichTakingTurn)
+										{ // the ostrich ran off a cliff on their own turn
 
-											self::incStat( 1, 'ran_off_cliff', $ownerOfOstrich ); // add a that you ran off a cliff
-								}
-								else
-								{ // the ostrich was pushed off a cliff by the player taking their turn
+													self::notifyAllPlayers( "ostrichRanOffCliff", clienttranslate( '${player_name} ran the ${ostrichName} ostrich off a cliff.' ), array(
+															'player_name' => self::getActivePlayerName(),
+															'ostrichName' => $this->getOstrichName($ostrichColor)
+													) );
 
-										self::notifyAllPlayers( "ostrichWasPushedOffCliff", clienttranslate( '${player_name} pushed the ${ostrichName} ostrich off a cliff.' ), array(
-												'player_name' => self::getActivePlayerName(),
-												'ostrichName' => $this->getOstrichName($ostrichColor)
-										) );
+													self::incStat( 1, 'ran_off_cliff', $ownerOfOstrich ); // add a that you ran off a cliff
+										}
+										else
+										{ // the ostrich was pushed off a cliff by the player taking their turn
 
-										self::incStat( 1, 'pushed_ostrich_off_cliff', $ownerOfOstrichTakingTurn ); // add stat that the current player pushed an ostrich off a cliff
-										self::incStat( 1, 'was_pushed_off_cliff', $ownerOfOstrich ); // add a stat that the owner of the ostrich who fell off the cliff was pushed off a cliff
+												self::notifyAllPlayers( "ostrichWasPushedOffCliff", clienttranslate( '${player_name} pushed the ${ostrichName} ostrich off a cliff.' ), array(
+														'player_name' => self::getActivePlayerName(),
+														'ostrichName' => $this->getOstrichName($ostrichColor)
+												) );
+
+												self::incStat( 1, 'pushed_ostrich_off_cliff', $ownerOfOstrichTakingTurn ); // add stat that the current player pushed an ostrich off a cliff
+												self::incStat( 1, 'was_pushed_off_cliff', $ownerOfOstrich ); // add a stat that the owner of the ostrich who fell off the cliff was pushed off a cliff
+										}
 								}
 						}
 				}
@@ -5670,30 +5685,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 			self::DbQuery( $sqlUpdate );
 		}
 
-		function setRespawnOrder($ostrichMoving, $ostrichTakingTurn)
+		function setSaucerMurderer($saucerMurdered, $saucerMurderer)
 		{
-				$value = self::getUniqueValueFromDb("SELECT max(ostrich_cliff_respawn_order) FROM ostrich");
-				$value = $value + 1; // add one
-
 				$sqlUpdate = "UPDATE ostrich SET ";
-				$sqlUpdate .= "ostrich_cliff_respawn_order=$value,ostrich_causing_cliff_fall='$ostrichTakingTurn',ostrich_is_dizzy=1 WHERE ";
-				$sqlUpdate .= "ostrich_color='$ostrichMoving'";
+				$sqlUpdate .= "ostrich_causing_cliff_fall='$saucerMurderer' WHERE ";
+				$sqlUpdate .= "ostrich_color='$saucerMurdered'";
 
 				self::DbQuery( $sqlUpdate );
-		}
-
-		function setGarmentStealableForOstrich($ostrich)
-		{
-				if($this->doesSaucerHaveOffColoredCrewmember($ostrich))
-				{ // this ostrich has at least one off-colored garment
-						$this->setOstrichToStealFromOrder($ostrich); // add this ostrich to the queue of those that need to be stolen from
-				}
-				else
-				{ // this ostrich did not have any garments to steal
-						self::notifyAllPlayers( "noGarmentsToSteal", clienttranslate( '${ostrichName} did not have any off-colored garments to steal.' ), array(
-							'ostrichName' => $this->getOstrichName($ostrich)
-						) );
-				}
 		}
 
 		// Save details about the move a particular ostrich will make this round.
@@ -5948,12 +5946,16 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$player_id = $this->getOwnerIdOfOstrich($saucerColor);
 //throw new feException( "got player id saucerColor:$saucerColor");
 
+				// show the saucer color in its color
+				$colorHighlightedText = $this->convertColorToHighlightedText($saucerColor);
+
 				$player_name = $this->getPlayerNameFromPlayerId($player_id);
-				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${player_name} gained a Booster.' ), array(
+				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${player_name}\'s ${saucer_color_text} saucer gained a Booster for playing a 2.' ), array(
 								'player_id' => $player_id,
 								'boosterPosition' => $boosterPosition,
 								'saucerColor' => $saucerColor,
-								'player_name' => $player_name
+								'player_name' => $player_name,
+								'saucer_color_text' => $colorHighlightedText
 				) );
 		}
 
@@ -5963,12 +5965,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$energyPosition = $this->getEnergyCountForSaucer($saucerColor); // 1, 2, 3, 4, etc.
 				$player_id = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
+				// show the saucer color in its color
+				$colorHighlightedText = $this->convertColorToHighlightedText($saucerColor);
+
+
 				$player_name = self::getCurrentPlayerName();
-				self::notifyAllPlayers( 'energyAcquired', clienttranslate( '${player_name} gained an Energy.' ), array(
+				self::notifyAllPlayers( 'energyAcquired', clienttranslate( '${player_name}\'s ${saucer_color_text} saucer gained an Energy for playing a 3.' ), array(
 								'player_id' => $player_id,
 								'energyPosition' => $energyPosition,
 								'saucerColor' => $saucerColor,
-								'player_name' => $player_name
+								'player_name' => $player_name,
+								'saucer_color_text' => $colorHighlightedText
 				) );
 		}
 
@@ -6713,6 +6720,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 					'moveEventList' => $reversedMoveEventList
 				) );
 
+				// see if any saucers fell off cliffs and notify everyone if they did
+				$this->sendCliffFallsToPlayers();
+
 				// $this->updateGameLogForEvents($reversedMoveEventList); // tell the players what happened in the game log
 
 
@@ -6740,43 +6750,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 
 				return $allEvents;
-		}
-
-		/// Called when the animation completes for a saucer move.
-		function executeMoveComplete()
-		{
-
-				$this->gamestate->nextState( "playerTurnLocateCrewmembers" );
-		}
-
-		function executeMove( $ostrichMoving, $ostrichTakingTurn )
-		{
-				self::debug( "executeMove ostrichMoving:$ostrichMoving ostrichTakingTurn:$ostrichTakingTurn" );
-
-				if($ostrichMoving == "")
-				{
-						$ostrichMoving = $this->getOstrichWhoseTurnItIs();
-				}
-
-				if($ostrichTakingTurn == "")
-				{
-						$ostrichTakingTurn = $ostrichMoving;
-				}
-
-				$this->sendOstrichMoveToPlayers($ostrichMoving, $ostrichTakingTurn, false); // determine where the ostrich moving ends this movement and tell players where they ended
-
-				$this->sendCliffFallsToPlayers(); // tell players if the ostrich moving fell off a cliff and update stats
-
-				$this->setState_PostMovement($ostrichMoving, $ostrichTakingTurn);
-		}
-
-		function executeMoveInNewDirection( $ostrichMoving, $ostrichTakingTurn, $newDirection)
-		{
-				$this->saveSaucerLastDirection($ostrichMoving, $newDirection); // update the database with its new last moved direction
-				$zigDistance = $this->getZigDistanceForOstrich($ostrichMoving); // get the distance on this ostrich's zig card
-				$this->saveSaucerLastDistance($ostrichMoving, $zigDistance); // if this ostrich collided, its distance/direction was set to that of the collider so we also need to reset the distance
-
-				$this->executeMove($ostrichMoving, $ostrichTakingTurn);
 		}
 
 		function executeDirectionClick( $direction )
@@ -7076,7 +7049,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function executeReplaceGarmentChooseSpace($xLocation, $yLocation)
 		{
-				self::checkAction( 'spaceClick', false ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php) -- the false argument says don't check if we are the active player because we might be replacing a garment on another player's turn
+				self::checkAction( 'chooseCrewmemberPlacingSpace', false ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php) -- the false argument says don't check if we are the active player because we might be replacing a garment on another player's turn
 
 				$currentPlayerId = $this->getCurrentPlayerId(); // the player who clicked on a space during the choose garment replacement phase
 				$playerIdSpawningGarment = $this->getPlayerIdRespawningGarment(); // the player who gets to choose a new garment
@@ -7852,6 +7825,13 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				);
 		}
 
+		function argGetLostCrewmembers()
+		{
+				return array(
+						'lostCrewmembers' => self::getLostCrewmembers()
+				);
+		}
+
 		function argGetAllPlayerSaucerMoves()
 		{
 				return array(
@@ -7922,19 +7902,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						'playerIdRespawningGarment' => self::getPlayerIdRespawningGarment(),
 						'playerNameRespawningGarment' => self::getPlayerNameById(self::getPlayerIdRespawningGarment())
 				);
-		}
-
-		function argGetGarmentsValidForRespawn()
-		{
-				return array();
-
-			/*
-				return array(
-						'garmentsValidForRespawn' => self::getGarmentsValidForRespawn(),
-						'playerIdRespawningGarment' => self::getPlayerIdRespawningGarment(),
-						'playerNameRespawningGarment' => self::getPlayerNameById(self::getPlayerIdRespawningGarment())
-				);
-			*/
 		}
 
 		// Called during executeMove state so we know whether or not to show all the direction buttons.
