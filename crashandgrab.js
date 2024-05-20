@@ -1375,6 +1375,17 @@ this.unhighlightAllGarments();
                   break;
 
                   case 'crashPenaltyAskWhichToSteal':
+                      if ( this.isCurrentPlayerActive() )
+                      { // we are the active player
+
+                          // add a button for an ENERGY
+                          this.showEnergyButton(args.saucerWhoCrashed);
+
+                          // add a button for each offcolored crewmember they have
+                          this.showStealableCrewmemberButtons(args.stealableCrewmembers);
+                      }
+
+
 
                   break;
 
@@ -1387,7 +1398,6 @@ this.unhighlightAllGarments();
                   break;
 
                   case 'chooseWhichSaucerGoesFirst':
-                    console.log( "onUpdateActionButtons->chooseWhichSaucerGoesFirst" );
                     if( this.isCurrentPlayerActive() )
                     { // this player is active
                         var saucerButtonList = args.saucerButtons;
@@ -1407,8 +1417,18 @@ this.unhighlightAllGarments();
                     }
                   break;
 
+                  case 'chooseCrashSiteRegenerationGateway':
+                    if ( this.isCurrentPlayerActive() )
+                    { // we are the active player
+
+                        console.log('emptyCrashSites:');
+                        console.log(args.emptyCrashSites);
+                        this.showEmptyCrashSiteButtons(args.emptyCrashSites);
+                    }
+                  break;
+
                   case 'playerTurnExecuteMove':
-                      console.log( "onUpdateActionButtons->playerTurnExecuteMove" );
+
 
                       if( this.isCurrentPlayerActive() )
                       {
@@ -2790,7 +2810,6 @@ console.log('playUpgradeCard to '+destination);
         getUpgradeEffect: function(collectorNumber)
         {
             // use gamedatas list of upgrades to pull the correct one based on the id
-            return this.gamedatas.upgradeCardContent[11]['effect'];
             return this.gamedatas.upgradeCardContent[collectorNumber]['effect'];
         },
 
@@ -2956,6 +2975,11 @@ console.log('playUpgradeCard to '+destination);
             this.addActionButton( 'move_button', _('Move'), 'onMoveClick' );
         },
 
+        showEnergyButton: function(saucerWhoCrashed)
+        {
+            this.addActionButton( 'crashed_saucer_'+saucerWhoCrashed, '<div class="energy_cube"></div>', 'onClick_energyReward', null, null, 'gray');
+        },
+
         showXValueButtons: function()
         {
           this.addActionButton( '0_button', _('0'), 'onXValueSelection' );
@@ -2984,6 +3008,45 @@ console.log('playUpgradeCard to '+destination);
 
         },
 
+        showStealableCrewmemberButtons: function(stealableCrewmembers)
+        {
+
+            for (const crewmember of stealableCrewmembers)
+            { // go through each crewmember
+                var crewmemberColor = crewmember['crewmemberColor'];
+                var crewmemberTypeString = crewmember['crewmemberType'];
+
+                console.log("stealable crewmember color:"+crewmemberColor+" lost crewmember type:"+crewmemberTypeString);
+
+                //var htmlOfSpace = 'square_'+space; // square_6_5
+                //console.log("highlighting space: " + htmlOfSpace);
+                //this.highlightSpace(htmlOfSpace);
+
+                this.addActionButton( 'stealableCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickStealableCrewmember', null, null, 'gray');
+            }
+        },
+
+        showEmptyCrashSiteButtons: function(emptyCrashSites)
+        {
+            const emptyCrashSitesKeys = Object.keys(emptyCrashSites);
+//            console.log('keys:');
+//            console.log(emptyCrashSitesKeys);
+            for (const crashSiteIndex of emptyCrashSitesKeys)
+            { // go through each crash site
+
+                var crashSiteNumber = emptyCrashSites[crashSiteIndex];
+                console.log("crash site number:"+crashSiteNumber);
+
+                //var htmlOfSpace = 'square_'+space; // square_6_5
+                //console.log("highlighting space: " + htmlOfSpace);
+                //this.highlightSpace(htmlOfSpace);
+
+                // show an image button:
+                //this.addActionButton( 'crashSite_'+crashSiteNumber+'_button', '<div id="button_crash_site_'+crashSiteNumber+'" class="crashSite"></div>', 'onClickCrashSite', null, null, 'gray');
+                this.addActionButton( 'crashSite_'+crashSiteNumber+'_button', _(crashSiteNumber), 'onClickCrashSite' ); // show text button for now
+            }
+        },
+
         showLostCrewmemberButtons: function(lostCrewmembers)
         {
             //this.unhighlightAllLostCrewmembers();
@@ -2992,7 +3055,7 @@ console.log('playUpgradeCard to '+destination);
             //var countOfSpaces = count(validSpaces);
             //console.log("count spaces to highlight: " + countOfSpaces);
 
-            const lostCrewmembersKeys = Object.keys(lostCrewmembers);
+            //const lostCrewmembersKeys = Object.keys(lostCrewmembers);
 
 
             for (const crewmember of lostCrewmembers)
@@ -3093,6 +3156,27 @@ console.log('playUpgradeCard to '+destination);
         {
             console.log("sendDirectionClick sending direction " + chosenDirection);
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDirectionClick.html", { direction: chosenDirection, lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
+        onClickCrashSite: function( evt )
+        {
+            var node = evt.currentTarget.id; // "button_crash_site_4
+            console.log("onClickCrashSite node:"+node);
+            var crashSiteNumber = node.split('_')[1]; // 4
+
+            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteChooseCrashSite.html", { crashSiteNumber: crashSiteNumber, lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
+        onClickStealableCrewmember: function( evt )
+        {
+            var node = evt.currentTarget.id; // button_scientist_f6033b
+            console.log("onClickStealableCrewmember node:"+node);
+            var crewmemberType = node.split('_')[1]; // pilot
+            var crewmemberColor = node.split('_')[2]; // 01b508
+
+            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteStealCrewmember.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },
 
@@ -3371,6 +3455,17 @@ console.log("success... onClickUpgradeCardInHand");
         onDiscard3Cancel: function()
         {
             this.mustChooseZagDiscards = false;
+        },
+
+        onClick_energyReward: function( evt )
+        {
+            console.log( "onClick_energyReward" );
+            var node = evt.currentTarget.id;
+            console.log( "node:"+node );
+            var saucerWhoCrashed = node.split('_')[2];
+
+            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteEnergyRewardSelection.html", { saucerWhoCrashed: saucerWhoCrashed, lock: true }, this, function( result ) {
+            }, function( is_error) { } );
         },
 
         onClick_sunDirection: function()
@@ -4089,6 +4184,7 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'energyAcquired', this, "notif_energyAcquired");
             dojo.subscribe( 'boosterAcquired', this, "notif_boosterAcquired");
             dojo.subscribe( 'upgradePlayed', this, "notif_upgradePlayed");
+            dojo.subscribe( 'stealCrewmember', this, "notif_stealCrewmember");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -4433,6 +4529,36 @@ console.log("success... onClickUpgradeCardInHand");
             // move garment to player's mat
             this.placeOnObject( garmentHtmlId, garmentLocationHtmlId ); // place it where it already is (required to overcome a bug with sliding)
             this.slideToObject( garmentHtmlId, matLocationHtmlId).play(); // slide it to where it goes on their mat
+
+        },
+
+        notif_stealCrewmember: function( notif )
+        {
+            console.log("Entered notif_stealCrewmember.");
+
+            // get data you will need
+            var crewmemberType = notif.args.crewmemberType;
+            var crewmemberColor = notif.args.crewmemberColor;
+            var saucerColorStealing = notif.args.saucerColorStealing;
+
+            console.log("Initial variables crewmemberType:"+crewmemberType+" crewmemberColor:"+crewmemberColor+" saucerColorStealing:"+saucerColorStealing);
+
+            // determine source and destinations
+            var source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
+            var destination = 'player_board_saucer_mat_'+crewmemberType+'_'+saucerColorStealing; // player_board_saucer_mat_pilot_0090ff
+
+            // give it a new parent so it's no longer on the previous saucer mat
+            this.attachToNewParent(source, destination);
+
+            // set the speed it will move
+            animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
+
+            var animationId = this.slideToObject( source, destination, animationSpeed );
+            dojo.connect(animationId, 'onEnd', () => {
+                // anything we need to do after it slides
+
+            });
+            animationId.play();
 
         },
 

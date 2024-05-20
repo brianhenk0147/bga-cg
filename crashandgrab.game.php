@@ -1139,6 +1139,49 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return $result;
 		}
 
+		function getAllUnoccupiedCrashSites()
+		{
+				$result = array();
+
+				$allCrashSites = $this->getAllCrashSites();
+
+				$locX = 15;
+				$locY = 15;
+				$crashSiteIndex = -1;
+				foreach( $allCrashSites as $crashSite )
+				{ // go through each crash site
+						$crashSiteIndex++;
+						$locX = $crashSite['board_x'];
+						$locY = $crashSite['board_y'];
+
+						$saucerHere = $this->getOstrichAt($locX, $locY); // see if a saucer is here
+						$crewmemberHere = $this->getGarmentIdAt($locX, $locY); // see if a crewmember is here
+
+						//throw new feException( "At X=".$locX." and Y=".$locY." we have saucerHere=".$saucerHere." and crewmemberHere=".$crewmemberHere);
+
+						if($crewmemberHere != 0 || $saucerHere != "")
+						{ // there already a saucer or crewmember here
+								//throw new feException( "We are continuing because at X=".$locX." and Y=".$locY." we have saucerHere=".$saucerHere." and crewmemberHere=".$crewmemberHere);
+
+								// go to next crash site
+								continue;
+						}
+						else
+						{ // this crash site is unoccupied
+
+								$result[$crashSiteIndex] = $this->getBoardSpaceType($locX, $locY); // 1, 2, 3
+						}
+				}
+
+				//$count = count($result);
+				//throw new feException( "Count:".$count);
+
+				// sort the crash sites
+				sort($result);
+
+				return $result;
+		}
+
 		function getAllSpacesNotInCrewmemberRowColumn()
 		{
 				$result = array();
@@ -1626,6 +1669,32 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$sqlUpdate .= "ostrich_color='$ostrichWhoFell'";
 
 				self::DbQuery( $sqlUpdate );
+		}
+
+		function getStealableCrewmembersFromSaucer($crashedSaucer)
+		{
+				$result = array();
+				$stealerSaucer = $this->getOstrichWhoseTurnItIs(); // the only time you can steal garments is if it's your turn so it's always this ostrich who gets to steal
+				$stealerOwner = $this->getOwnerIdOfOstrich($stealerSaucer);
+
+				$allStealableCrewmembersFromCrashedSaucer = self::getObjectListFromDB( "SELECT garment_id, garment_color, garment_type
+																									FROM garment
+																									WHERE garment_location='$crashedSaucer' AND garment_color<>'$crashedSaucer'" );
+
+				$crewmemberIndex = 0;
+				foreach( $allStealableCrewmembersFromCrashedSaucer as $crewmember )
+				{ // go through all this saucer's off-colored crewmembers
+
+						$crewmemberColor = $crewmember['garment_color'];
+						$crewmemberType = $this->convertGarmentTypeIntToString($crewmember['garment_type']);
+
+						$result[$crewmemberIndex] = array();
+						$result[$crewmemberIndex]['crewmemberType'] = $crewmemberType;
+						$result[$crewmemberIndex]['crewmemberColor'] = $crewmemberColor;
+						$crewmemberIndex++;
+				}
+
+				return $result;
 		}
 
 		function getStealableGarments()
@@ -3362,6 +3431,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return ''; // no saucers meet the requirement
 		}
 
+		function markCrashPenaltyRendered($crashedSaucerColor)
+		{
+				$sql = "UPDATE ostrich SET crash_penalty_rendered=1 WHERE ";
+				$sql .= "ostrich_color='".$crashedSaucerColor."'";
+				self::DbQuery( $sql );
+		}
+
 		function getSaucerCrashDetailsForSaucer($saucer)
 		{
 				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner, ostrich_x, ostrich_y, ostrich_causing_cliff_fall, crash_penalty_rendered
@@ -3384,14 +3460,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				foreach( $ostriches as $ostrich )
 				{ // go through each ostrich (should only be 1)
 
-					$player = $ostrich['ostrich_owner'];
-					$x = $ostrich['ostrich_x'];
-					$y = $ostrich['ostrich_y'];
+						$player = $ostrich['ostrich_owner'];
+						$x = $ostrich['ostrich_x'];
+						$y = $ostrich['ostrich_y'];
 
-					if($this->getBoardSpaceType($x, $y) == "D")
-					{ // this ostrich is off a cliff
-							return true;
-					}
+						if($this->getBoardSpaceType($x, $y) == "D")
+						{ // this ostrich is off a cliff
+								return true;
+						}
 				}
 
 				return false;
@@ -5350,7 +5426,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		}
 
 		// Returns a random empty crash site number (1-12). If it cannot find one, it will return 0;
-		function getEmptyCrashSite()
+		function getRandomEmptyCrashSite()
 		{
 				$crashSiteNumber = rand(1,12);
 				$isCrashSiteEmpty = $this->isCrashSiteEmpty($crashSiteNumber);
@@ -5372,7 +5448,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		function locatePilot($saucerColor)
 		{
-				$crashSite = $this->getEmptyCrashSite();
+				$crashSite = $this->getRandomEmptyCrashSite();
 				$locX = $this->getXOfCrashSite($crashSite);
 				$locY = $this->getYOfCrashSite($crashSite);
 				$type = 0; // this is the Pilot
@@ -5602,6 +5678,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{
 						$ostrichColor = $ostrichObject['color'];
 						$saucerMurderer = $ostrichObject['ostrich_causing_cliff_fall'];
+						$ostrichColorText = $this->convertColorToText($ostrichColor);
+						$saucerMurdererText = $this->convertColorToText($saucerMurderer);
 
 						$boardValue = $this->getBoardSpaceTypeForOstrich($ostrichColor); // get the type of space of the ostrich who just moved
 						$ownerOfOstrich = $this->getOwnerIdOfOstrich($ostrichColor); // get the player who controls the ostrich moving
@@ -5620,9 +5698,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										if($ostrichColor == $ostrichTakingTurn)
 										{ // the ostrich ran off a cliff on their own turn
 
-													self::notifyAllPlayers( "ostrichRanOffCliff", clienttranslate( '${player_name} ran the ${ostrichName} ostrich off a cliff.' ), array(
+													self::notifyAllPlayers( "ostrichRanOffCliff", clienttranslate( 'The ${saucerWhoCrashedText} saucer crashed.' ), array(
 															'player_name' => self::getActivePlayerName(),
-															'ostrichName' => $this->getOstrichName($ostrichColor)
+															'ostrichName' => $this->getOstrichName($ostrichColor),
+															'saucerWhoCrashedText' => $ostrichColorText
 													) );
 
 													self::incStat( 1, 'ran_off_cliff', $ownerOfOstrich ); // add a that you ran off a cliff
@@ -5630,9 +5709,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										else
 										{ // the ostrich was pushed off a cliff by the player taking their turn
 
-												self::notifyAllPlayers( "ostrichWasPushedOffCliff", clienttranslate( '${player_name} pushed the ${ostrichName} ostrich off a cliff.' ), array(
+												self::notifyAllPlayers( "ostrichWasPushedOffCliff", clienttranslate( 'The ${saucerWhoIsStealingText} saucer is stealing a Crewmember from ${saucerWhoCrashedText}.' ), array(
 														'player_name' => self::getActivePlayerName(),
-														'ostrichName' => $this->getOstrichName($ostrichColor)
+														'ostrichName' => $this->getOstrichName($ostrichColor),
+														'saucerWhoCrashedText' => $ostrichColorText,
+														'saucerWhoIsStealingText' => $saucerMurdererText
 												) );
 
 												self::incStat( 1, 'pushed_ostrich_off_cliff', $ownerOfOstrichTakingTurn ); // add stat that the current player pushed an ostrich off a cliff
@@ -5950,7 +6031,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$colorHighlightedText = $this->convertColorToHighlightedText($saucerColor);
 
 				$player_name = $this->getPlayerNameFromPlayerId($player_id);
-				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${player_name}\'s ${saucer_color_text} saucer gained a Booster for playing a 2.' ), array(
+				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${player_name}\'s ${saucer_color_text} saucer gained a Booster.' ), array(
 								'player_id' => $player_id,
 								'boosterPosition' => $boosterPosition,
 								'saucerColor' => $saucerColor,
@@ -5970,7 +6051,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 
 				$player_name = self::getCurrentPlayerName();
-				self::notifyAllPlayers( 'energyAcquired', clienttranslate( '${player_name}\'s ${saucer_color_text} saucer gained an Energy for playing a 3.' ), array(
+				self::notifyAllPlayers( 'energyAcquired', clienttranslate( '${player_name}\'s ${saucer_color_text} saucer gained an Energy.' ), array(
 								'player_id' => $player_id,
 								'energyPosition' => $energyPosition,
 								'saucerColor' => $saucerColor,
@@ -6334,6 +6415,71 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function executeChooseDirection()
 		{
 				$this->saveSaucerLastDirection();
+
+		}
+
+		function executeEnergyRewardSelection($saucerCrashed)
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				// give the saucer an energy
+				$this->giveSaucerEnergy($saucerWhoseTurnItIs);
+
+//throw new feException( "executeEnergyRewardSelection with saucerCrashed: $saucerCrashed");
+
+				// mark that the reward for this crash has been acquired so we don't let them have multiple rewards
+				$this->markCrashPenaltyRendered($saucerCrashed);
+
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+		}
+
+		function executeChooseCrashSite( $crashSiteNumber )
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				$crashSiteX = $this->getXOfCrashSite($crashSiteNumber);
+				$crashSiteY = $this->getYOfCrashSite($crashSiteNumber);
+
+				$this->placeSaucerOnSpace($saucerWhoseTurnItIs, $crashSiteX, $crashSiteY);
+
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+		}
+
+		function executeStealCrewmember( $stolenTypeText, $stolenColor )
+		{
+				$saucerStealing = $this->getOstrichWhoseTurnItIs();
+				$saucerCrashed = $this->getSaucerThatCrashed();
+
+				$stolenTypeInt = $this->convertGarmentTypeStringToInt($stolenTypeText);
+
+				// change the owner of the crewmember in the database
+				$sql = "UPDATE garment SET garment_location='$saucerStealing' WHERE garment_color='$saucerCrashed' AND garment_type=$stolenTypeInt";
+				self::DbQuery( $sql );
+
+				// increment any stats related to thefts
+				//self::incStat( 1, 'i_used_trap', $playerUsing ); // add stat that says the player using played a trap
+				//self::incStat( 1, 'trap_used_on_me', $ownerOfOstrichTarget ); // add stat that the owner of the ostrich targeted was targeted by a trap
+
+				$stealingSaucerColorText = $this->convertColorToText($saucerStealing);
+				$stolenFromSaucerColorText = $this->convertColorToText($saucerCrashed);
+//throw new feException( "saucerStealing:$stealingSaucerColorText saucerCrashed: $stolenFromSaucerColorText");
+
+				// notify all players so the crewmember can move from one saucer to another
+				self::notifyAllPlayers( "stealCrewmember", clienttranslate( 'The ${stealingSaucerColorText} Saucer stole a CREWMEMBERIMAGE from the ${stolenFromSaucerColorText} Saucer.' ), array(
+            'player_id' => $player_id,
+						'stealingSaucerColorText' => $stealingSaucerColorText,
+						'stolenFromSaucerColorText' => $stolenFromSaucerColorText,
+            'crewmemberType' => $stolenTypeText,
+						'crewmemberColor' => $stolenColor,
+						'saucerColorStealing' => $saucerStealing
+        ) );
+
+
+
+				// mark that the reward for this crash has been acquired so we don't let them have multiple rewards
+				$this->markCrashPenaltyRendered($saucerCrashed);
+
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 
 		}
 
@@ -7419,6 +7565,25 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				}
 		}
 
+		function doesPlayerHaveUpgradeActive($saucerColor, $upgradeName)
+		{
+
+				$sql = "SELECT card_is_played FROM upgradeCards WHERE card_location='$saucerColor'";
+
+				switch($upgradeName)
+				{
+						case "Regeneration Gateway":
+						case 13:
+								$sql .= " AND card_type_arg=13";
+						break;
+				}
+
+				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
+				$sql .= " LIMIT 1";
+
+				return self::getUniqueValueFromDb($sql);
+		}
+
 		// this is the start of the turn for the SAUCER which comes after the player has chosen which of their
 		// saucers will take their first turn.
 		function saucerTurnStart()
@@ -7428,7 +7593,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				if($this->isSaucerCrashed($saucerWhoseTurnItIs))
 				{ // this saucer is crashed
 
-						if(false)
+						if($this->doesPlayerHaveUpgradeActive($saucerWhoseTurnItIs, "Regeneration Gateway"))
 						{ // Regeneration Gateway active for player
 
 								$this->gamestate->nextState( "chooseCrashSiteRegenerationGateway" );
@@ -7822,6 +7987,34 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				return array(
 						'saucerColor' => $saucerColorFriendly,
 						'validPlacements' => self::getAllSpacesNotInCrewmemberRowColumn()
+				);
+		}
+
+		function argGetAllUnoccupiedCrashSites()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+
+				// return both the location of all the
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
+						'emptyCrashSites' => self::getAllUnoccupiedCrashSites()
+				);
+		}
+
+		function argGetStealableCrewmembers()
+		{
+				$crashedSaucer = $this->getSaucerThatCrashed();
+				$saucerStealing = $this->getOstrichWhoseTurnItIs();
+				$crashedSaucerText = $this->convertColorToText($crashedSaucer);
+				$saucerStealingText = $this->convertColorToText($saucerStealing);
+
+				// return both the location of all the
+				return array(
+						'saucerWhoCrashed' => $crashedSaucer,
+						'saucerWhoCrashedText' => $crashedSaucerText,
+						'saucerWhoIsStealingText' => $saucerStealingText,
+						'stealableCrewmembers' => self::getStealableCrewmembersFromSaucer($crashedSaucer)
 				);
 		}
 

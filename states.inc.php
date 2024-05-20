@@ -400,8 +400,9 @@ $machinestates = array(
         "description" => clienttranslate('${actplayer} is using their Regeneration Gateway.'),
         "descriptionmyturn" => clienttranslate('${you} must choose where to place your Saucer with your Regeneration Gateway.'),
         "type" => "activeplayer",
+        'args' => 'argGetAllUnoccupiedCrashSites',
         "possibleactions" => array( "clickCrashSite" ),
-        "transitions" => array( "saucerTurnStart" => 27  )
+        "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50  )
     ),
 
     41 => array(
@@ -452,9 +453,10 @@ $machinestates = array(
 
     52 => array(
         "name" => "crashPenaltyAskWhichToSteal",
-        "description" => clienttranslate('${actplayer} is stealing a Crewmember.'),
-        "descriptionmyturn" => clienttranslate('${you} must gain an Energy or choose a Crewmember to steal from PLAYERNAME because you crashed them.'),
+        "description" => clienttranslate('${actplayer}\'s ${saucerWhoIsStealingText} saucer is stealing a Crewmember from ${saucerWhoCrashedText}.'),
+        "descriptionmyturn" => clienttranslate('${you} must gain an Energy or choose a Crewmember to steal from ${saucerWhoCrashedText} because you crashed them.'),
         "type" => "activeplayer",
+        'args' => 'argGetStealableCrewmembers',
         "possibleactions" => array( "clickCrewmember", "gainEnergy" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
     ),

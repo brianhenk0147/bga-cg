@@ -87,8 +87,35 @@
     public function actClickedStartMove()
     {
         self::setAjaxMode();
-
         $this->game->executeStartMove();
+        self::ajaxResponse( );
+    }
+
+    public function actExecuteChooseCrashSite()
+    {
+        self::setAjaxMode();
+        $crashSiteNumber = self::getArg( "crashSiteNumber", AT_posint, true ); // 1, 2, 3
+
+        $this->game->executeChooseCrashSite( $crashSiteNumber );
+        self::ajaxResponse( );
+    }
+
+    public function actExecuteStealCrewmember()
+    {
+        self::setAjaxMode();
+        $stolenType = self::getArg( "stolenType", AT_alphanum, true ); // scientist
+        $stolenColor = self::getArg( "stolenColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeStealCrewmember( $stolenType, $stolenColor );
+        self::ajaxResponse( );
+    }
+
+    public function actExecuteEnergyRewardSelection()
+    {
+        self::setAjaxMode();
+        $saucerWhoCrashed = self::getArg( "saucerWhoCrashed", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeEnergyRewardSelection($saucerWhoCrashed);
         self::ajaxResponse( );
     }
 
