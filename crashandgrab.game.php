@@ -274,6 +274,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 																											 JOIN ostrich ON movementCards.card_ostrich=ostrich.ostrich_color
                                                        WHERE card_location='zigChosen'" );
 
+				// get the move card this player has played for each saucer
+				$result['moveCardChosen'] = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_zig_direction, ostrich_zig_distance
+                                                       FROM ostrich
+                                                       WHERE ostrich_owner=$player_id" );
+
 				// put the cards that have been discarded into the array that is returned to the UI/javascript/client layer with the key "played_playerid"
 				$result['discard'] = $this->movementCards->getCardsInLocation( 'discard', $player_id );
 
@@ -3438,6 +3443,23 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				self::DbQuery( $sql );
 		}
 
+		// Activated means the player has chosen to use it this round.
+		function activateUpgrade($saucerColor, $upgradeName)
+		{
+				$collectorNumber = $this->convertUpgradeNameToCollectorNumber($upgradeName);
+				$sql = "UPDATE upgradeCards SET times_activated_this_round=times_activated_this_round+1 WHERE ";
+				$sql .= "card_location='".$saucerColor."' AND card_type_arg=$collectorNumber";
+				self::DbQuery( $sql );
+		}
+
+		// Activated means the player has chosen to use it this round.
+		function resetAllUpgradesActivatedThisRound()
+		{
+				$collectorNumber = $this->convertUpgradeNameToCollectorNumber($upgradeName);
+				$sql = "UPDATE upgradeCards SET times_activated_this_round=0";
+				self::DbQuery( $sql );
+		}
+
 		function getSaucerCrashDetailsForSaucer($saucer)
 		{
 				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner, ostrich_x, ostrich_y, ostrich_causing_cliff_fall, crash_penalty_rendered
@@ -5482,7 +5504,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 													WHERE ostrich_color='$ostrich' " ;
 						self::DbQuery( $sqlCrown );
 
-						self::notifyAllPlayers( "crownAcquired", clienttranslate( '${player_name} ${ostrichName} snagged the crown!' ), array(
+						self::notifyAllPlayers( "crownAcquired", clienttranslate( '${player_name} ${ostrichName} has the Probe!' ), array(
 								'color' => $ostrich,
 								'ostrichName' => $this->getOstrichName($ostrich),
 								'player_name' => $playerName
@@ -6922,6 +6944,28 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 					$this->executeSaucerMove($saucerWhoseTurnItIs);
 
 				}
+				elseif($currentState == "chooseTimeMachineDirection")
+				{ // they have chosen their time machine direction
+
+						// set their direction
+						$this->saveSaucerMoveCardDirection($saucerWhoseTurnItIs, $direction); // save the direction so we have it in case we are pushed before our turn comes up
+
+						// specify that we have already set the direction this round so we don't ask again
+						$this->activateUpgrade($saucerWhoseTurnItIs, "Time Machine");
+
+						// notify the player so they can rotate the card on the UI
+						$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+						$playerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+						$distanceType = $this->getSaucerDistanceType($saucerWhoseTurnItIs);
+						self::notifyPlayer( $playerWhoseTurnItIs, 'moveCardChange', '', array(
+								'saucerColor' => $saucerWhoseTurnItIs,
+								'newDirection' => $direction,
+								'newDistanceType' => $distanceType
+						) );
+
+						// see if we have any other reveal decisions to make
+						$this->gamestate->nextState( "checkForRevealDecisions" );
+				}
 				else
 				{	// they chose their direction after starting turn crashed
 						//$this->saveSaucerLastDirection($saucerWhoseTurnItIs, $direction); // update the database with its new last moved direction
@@ -7565,13 +7609,31 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				}
 		}
 
-		function doesPlayerHaveUpgradeActive($saucerColor, $upgradeName)
+		function convertUpgradeNameToCollectorNumber($upgradeName)
+		{
+				switch($upgradeName)
+				{
+						case "Time Machine":
+								return 12;
+						case "Regeneration Gateway":
+								return 13;
+						default:
+								return 0;
+				}
+		}
+
+		// Returns 1 if the saucer has this upgrade in play (but hasn't necessarily chosen to activate it this round).
+		function doesSaucerHaveUpgradePlayed($saucerColor, $upgradeName)
 		{
 
 				$sql = "SELECT card_is_played FROM upgradeCards WHERE card_location='$saucerColor'";
 
 				switch($upgradeName)
 				{
+						case "Time Machine":
+						case 12:
+								$sql .= " AND card_type_arg=12";
+						break;
 						case "Regeneration Gateway":
 						case 13:
 								$sql .= " AND card_type_arg=13";
@@ -7580,6 +7642,29 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
 				$sql .= " LIMIT 1";
+
+				return self::getUniqueValueFromDb($sql);
+		}
+
+		// Returns the number of times this saucer has actived this upgrade this round.
+		function getUpgradeTimesActivatedThisRound($saucerColor, $upgradeName)
+		{
+				$sql = "SELECT times_activated_this_round FROM upgradeCards WHERE card_location='$saucerColor'";
+
+				switch($upgradeName)
+				{
+						case "Time Machine":
+						case 12:
+								$sql .= " AND card_type_arg=12";
+						break;
+						case "Regeneration Gateway":
+						case 13:
+								$sql .= " AND card_type_arg=13";
+						break;
+				}
+
+				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
+				$sql .= "  ORDER BY times_activated_this_round DESC LIMIT 1";
 
 				return self::getUniqueValueFromDb($sql);
 		}
@@ -7593,7 +7678,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				if($this->isSaucerCrashed($saucerWhoseTurnItIs))
 				{ // this saucer is crashed
 
-						if($this->doesPlayerHaveUpgradeActive($saucerWhoseTurnItIs, "Regeneration Gateway"))
+						if($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Regeneration Gateway"))
 						{ // Regeneration Gateway active for player
 
 								$this->gamestate->nextState( "chooseCrashSiteRegenerationGateway" );
@@ -7763,7 +7848,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				else
 				{ // they did NOT play an X or has already chosen its value
 
-						if(false)
+						if($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Time Machine") &&
+						$this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Time Machine") < 1)
 						{ // saucer has Time Machine active and has not yet chosen its value
 
 									$this->gamestate->nextState( "chooseTimeMachineDirection" );
@@ -7847,9 +7933,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		//    2. Move the Probe.
 		function endRoundCleanup()
 		{
-
-
-
 				// starting with Probe player and going clockwise, check each Saucer to see if one crashed
 				$crashedSaucer = $this->getSaucerThatCrashed();
 				if($crashedSaucer != '')
@@ -7876,7 +7959,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				}
 
-				$this->resetXValueChoices(); // erase all choices players made for their X value
+				// erase all choices players made for their X value
+				$this->resetXValueChoices();
+
+				// mark all upgrades as not having been activated yet in the round
+				$this->resetAllUpgradesActivatedThisRound();
 
 /*
 				$this->gamestate->setAllPlayersMultiactive(); // set all players to active

@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS `upgradeCards` (
   `card_location` varchar(30) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
   `card_is_played` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `times_activated_this_round` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
