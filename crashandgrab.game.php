@@ -155,16 +155,6 @@ class CrashAndGrab extends Table
 				 $this->initializeUpgradeCards();
 
 
-				 // for testing, draw some trap cards
-				 foreach( $players as $player_id => $player )
-		     {
-					 	if($player_id % 2 == 0)
-						{ // have every other player draw a trap for testing
-		        		$this->drawTrap($player_id);
-						}
-		     }
-
-
         // TODO: setup the initial game situation here
 
 				$this->setGameStateValue("CURRENT_ROUND", 1); // start on round 1
@@ -471,20 +461,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// type_arg: probably don't need... should mimic card id
 
 				$cardsList = array(
-//						array( 'type' => 'Blastorocket', 'type_arg' => 0, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Boulderdash', 'type_arg' => 1, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Deface Paint', 'type_arg' => 2, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Dizzerydoo', 'type_arg' => 3, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Gadget Gobbler', 'type_arg' => 4, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Kleptocopter', 'type_arg' => 5, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Krazy Crane', 'type_arg' => 6, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Overheater', 'type_arg' => 7, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Rooster Booster', 'type_arg' => 8, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Scrambler', 'type_arg' => 9, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Stinkbomb', 'type_arg' => 10, 'card_location' => 'deck','nbr' => 1),
-//						array( 'type' => 'Twirlybird', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 10),
-						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 10)
+						array( 'type' => 'Hyperdrive', 'type_arg' => 9, 'card_location' => 'deck','nbr' => 7),
+						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 7),
+						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 7)
 				);
 
 
@@ -793,7 +772,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$saucerColorText = $this->convertColorToText($saucerColor);
 				$saucerColorHex = $this->convertFriendlyColorToHex($saucerColorText);
-				$colorHighlightedText = '<span style="color:#'.$saucerColorHex.'">'.$saucerColorText.'</span>';
+				$colorHighlightedText = '<span style="color:#'.$saucerColorHex.'" font-weight:"bold">'.$saucerColorText.'</span>';
 
 				return $colorHighlightedText;
 		}
@@ -1543,6 +1522,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{
 						case 1:
 								return clienttranslate( 'Blast Off Thrusters');
+						case 9:
+								return clienttranslate( 'Hyperdrive');
 						case 11:
 								return clienttranslate( 'Distress Signaler');
 						case 12:
@@ -1558,6 +1539,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{
 						case 1:
 								return clienttranslate( 'At the start of your turn, move 1 space onto an empty space.');
+						case 9:
+								return clienttranslate( 'Double your movement.');
 						case 11:
 								return clienttranslate( 'At the end of your turn, take a Crewmember of your color from any Saucer and give them one of the same type.');
 						case 12:
@@ -1571,18 +1554,27 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$result = array();
 
+				// Blast Off Thrusters
 				$result[1] = array();
 				$result[1]['name'] = $this->getUpgradeTitleFromCollectorNumber(1);
 				$result[1]['effect'] = $this->getUpgradeEffectFromCollectorNumber(1);
 
+				// Hyperdrive
+				$result[9] = array();
+				$result[9]['name'] = $this->getUpgradeTitleFromCollectorNumber(9);
+				$result[9]['effect'] = $this->getUpgradeEffectFromCollectorNumber(9);
+
+				// Distress Signaler
 				$result[11] = array();
 				$result[11]['name'] = $this->getUpgradeTitleFromCollectorNumber(11);
 				$result[11]['effect'] = $this->getUpgradeEffectFromCollectorNumber(11);
 
+				// Time Machine
 				$result[12] = array();
 				$result[12]['name'] = $this->getUpgradeTitleFromCollectorNumber(12);
 				$result[12]['effect'] = $this->getUpgradeEffectFromCollectorNumber(12);
 
+				// Regeneration Gateway
 				$result[13] = array();
 				$result[13]['name'] = $this->getUpgradeTitleFromCollectorNumber(13);
 				$result[13]['effect'] = $this->getUpgradeEffectFromCollectorNumber(13);
@@ -3455,7 +3447,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		// Activated means the player has chosen to use it this round.
 		function resetAllUpgradesActivatedThisRound()
 		{
-				$collectorNumber = $this->convertUpgradeNameToCollectorNumber($upgradeName);
 				$sql = "UPDATE upgradeCards SET times_activated_this_round=0";
 				self::DbQuery( $sql );
 		}
@@ -5234,7 +5225,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$trapsDrawnThisRound = $this->getTrapsDrawnThisRound($ownerOfOstrichMoving);
 										if($trapsDrawnThisRound == 0)
 										{
-												$this->drawTrap($ownerOfOstrichMoving);
+												//$this->drawTrap($ownerOfOstrichMoving);
 										}
 
 										$this->giveProbe($ostrichMoving);
@@ -5296,7 +5287,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 									$trapsDrawnThisRound = $this->getTrapsDrawnThisRound($ownerOfOstrichMoving);
 									if($trapsDrawnThisRound == 0)
 									{
-											$this->drawTrap($ownerOfOstrichMoving);
+											//$this->drawTrap($ownerOfOstrichMoving);
 									}
 
 										$this->giveProbe($ostrichMoving);
@@ -5485,10 +5476,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				$playerName = $this->getOwnerNameOfOstrich($ostrich);
 
+				// get the colored version and friendly name of the hex color
+				$saucerColorFriendly = $this->convertColorToHighlightedText($ostrich);
+
 				if($ostrich == $ostrichWithCrown)
 				{
-						self::notifyAllPlayers( "crownAcquired", clienttranslate( '${player_name} ${ostrichName} already has the crown.' ), array(
-								'ostrichName' => $this->getOstrichName($ostrich),
+						self::notifyAllPlayers( "crownAcquired", clienttranslate( '${ostrichName} already has the crown.' ), array(
+								'ostrichName' => $saucerColorFriendly,
 								'player_name' => $playerName,
 								'color' => $ostrich
 						) );
@@ -5504,9 +5498,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 													WHERE ostrich_color='$ostrich' " ;
 						self::DbQuery( $sqlCrown );
 
-						self::notifyAllPlayers( "crownAcquired", clienttranslate( '${player_name} ${ostrichName} has the Probe!' ), array(
+
+
+						self::notifyAllPlayers( "crownAcquired", clienttranslate( '${ostrichName} has the Probe and will go first this round!' ), array(
 								'color' => $ostrich,
-								'ostrichName' => $this->getOstrichName($ostrich),
+								'ostrichName' => $saucerColorFriendly,
 								'player_name' => $playerName
 						) );
 				}
@@ -5518,26 +5514,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 											WHERE ostrich_color='$ostrich' " ;
 				self::DbQuery( $sql );
 		}
-
-		 function drawTrap($player)
-		 {
-				 $cards = $this->trapCards->pickCards( 1, 'trapCardDeck', $player );
-
-				 $this->incrementTrapsDrawnThisRound($player);
-
-				 // notify player about their card (only they get to know which card they got)
-				 self::notifyPlayer( $player, 'iGetNewTrapCard', '', array(
-						 'cards' => $cards
-					) );
-
-				 // notify players that this trap card has been drawn (they don't get to know which card was drawn, just that it happened)
-				 self::notifyAllPlayers( "someoneDrewNewTrapCard", clienttranslate( '${player_name} drew a trap card. Watch out!' ), array(
-						 'acquiringPlayer' => $player,
-						 'player_name' => self::getPlayerNameById($player)
-				 ) );
-
-				 self::incStat( 1, 'traps_drawn', $player ); // increase end game player stat
-		 }
 
 		 function incrementTrapsDrawnThisRound($playerId)
 		 {
@@ -5700,8 +5676,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{
 						$ostrichColor = $ostrichObject['color'];
 						$saucerMurderer = $ostrichObject['ostrich_causing_cliff_fall'];
-						$ostrichColorText = $this->convertColorToText($ostrichColor);
-						$saucerMurdererText = $this->convertColorToText($saucerMurderer);
+						$ostrichColorText = $this->convertColorToHighlightedText($ostrichColor);
+						$saucerMurdererText = $this->convertColorToHighlightedText($saucerMurderer);
 
 						$boardValue = $this->getBoardSpaceTypeForOstrich($ostrichColor); // get the type of space of the ostrich who just moved
 						$ownerOfOstrich = $this->getOwnerIdOfOstrich($ostrichColor); // get the player who controls the ostrich moving
@@ -6053,7 +6029,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$colorHighlightedText = $this->convertColorToHighlightedText($saucerColor);
 
 				$player_name = $this->getPlayerNameFromPlayerId($player_id);
-				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${player_name}\'s ${saucer_color_text} saucer gained a Booster.' ), array(
+				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${saucer_color_text} gained a Booster.' ), array(
 								'player_id' => $player_id,
 								'boosterPosition' => $boosterPosition,
 								'saucerColor' => $saucerColor,
@@ -6073,7 +6049,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 
 				$player_name = self::getCurrentPlayerName();
-				self::notifyAllPlayers( 'energyAcquired', clienttranslate( '${player_name}\'s ${saucer_color_text} saucer gained an Energy.' ), array(
+				self::notifyAllPlayers( 'energyAcquired', clienttranslate( '${saucer_color_text} gained an Energy.' ), array(
 								'player_id' => $player_id,
 								'energyPosition' => $energyPosition,
 								'saucerColor' => $saucerColor,
@@ -6389,7 +6365,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				else
 				{ // movement is complete
 
-					$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+					$this->gamestate->nextState( "finalizeMove" );
 				}
 		}
 
@@ -6421,7 +6397,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 				else
 				{ // movement is complete
-					$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+					$this->gamestate->nextState( "finalizeMove" );
 				}
 		}
 
@@ -6482,12 +6458,12 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				//self::incStat( 1, 'i_used_trap', $playerUsing ); // add stat that says the player using played a trap
 				//self::incStat( 1, 'trap_used_on_me', $ownerOfOstrichTarget ); // add stat that the owner of the ostrich targeted was targeted by a trap
 
-				$stealingSaucerColorText = $this->convertColorToText($saucerStealing);
-				$stolenFromSaucerColorText = $this->convertColorToText($saucerCrashed);
+				$stealingSaucerColorText = $this->convertColorToHighlightedText($saucerStealing);
+				$stolenFromSaucerColorText = $this->convertColorToHighlightedText($saucerCrashed);
 //throw new feException( "saucerStealing:$stealingSaucerColorText saucerCrashed: $stolenFromSaucerColorText");
 
 				// notify all players so the crewmember can move from one saucer to another
-				self::notifyAllPlayers( "stealCrewmember", clienttranslate( 'The ${stealingSaucerColorText} Saucer stole a CREWMEMBERIMAGE from the ${stolenFromSaucerColorText} Saucer.' ), array(
+				self::notifyAllPlayers( "stealCrewmember", clienttranslate( '${stealingSaucerColorText} stole a CREWMEMBERIMAGE from ${stolenFromSaucerColorText}.' ), array(
             'player_id' => $player_id,
 						'stealingSaucerColorText' => $stealingSaucerColorText,
 						'stolenFromSaucerColorText' => $stolenFromSaucerColorText,
@@ -6527,16 +6503,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->setOstrichToChosen($ostrich);
 
 				$this->gamestate->nextState( "zigChosen" ); // stay in this phase
-		}
-
-		function executeStartMove()
-		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-
-				//throw new feException( "executeStartMove with saucer: $saucerWhoseTurnItIs");
-
-				// move the selected distance in the selected direction
-				$this->executeSaucerMove($saucerWhoseTurnItIs);
 		}
 
 		function executeClickedSaucerToPlace($colorAsFriendlyText)
@@ -6595,6 +6561,30 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->gamestate->nextState( "locateCrashedSaucer" );
 		}
 
+		function executeClickedBeginTurn()
+		{
+				$this->gamestate->nextState( "checkStartOfTurnUpgrades" );
+		}
+
+		// The player has just moved their saucer but decided to undo it.
+		function executeClickedUndoMove()
+		{
+				$this->checkAction('undoMove');
+
+				// reset the database to the restore point right before the player started moving
+        $this->undoRestorePoint();
+
+				// go back to the where the player was starting their move
+				$this->gamestate->nextState( "beginTurn" );
+		}
+
+		// The player has just moved their saucer and decided not to undo it.
+		function executeClickedFinalizeMove()
+		{
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+		}
+
+		// A move card has been selected.
 		function executeClickedConfirmMove( $saucer1Color, $saucer1Distance, $saucer1Direction, $saucer2Color, $saucer2Distance, $saucer2Direction )
     {
 				// Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
@@ -6884,7 +6874,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				// notify players by sending a list of move events so they can play the animations one after another
 				$reversedMoveEventList = array_reverse($moveEventList); // reverse it since it will act like a Stack on the javascript side
-				self::notifyAllPlayers( "animateMovement", clienttranslate( 'Saucers are moving.' ), array(
+				self::notifyAllPlayers( "animateMovement", '', array(
 					'moveEventList' => $reversedMoveEventList
 				) );
 
@@ -7086,10 +7076,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				// get some additional notification details
 				$nameOfUpgrade = $this->getUpgradeTitleFromCollectorNumber($collectorNumber);
-				$colorName = $this->convertColorToText($color);
+				$colorName = $this->convertColorToHighlightedText($color);
 
 				// notify all players that is has been played
-				self::notifyAllPlayers( 'upgradePlayed', clienttranslate( '${player_name} played the upgrade ${name_of_upgrade} for the ${color_name} saucer.' ), array(
+				self::notifyAllPlayers( 'upgradePlayed', clienttranslate( '${color_name} played the upgrade ${name_of_upgrade}.' ), array(
 						'saucerColor' => $color,
 						'collectorNumber' => $collectorNumber,
 						'databaseId' => $databaseId,
@@ -7124,10 +7114,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$boosterQuantity = $this->getBoosterCountForSaucer($saucerColor); // 1, 2
 
-				self::notifyAllPlayers( 'zagUsed', clienttranslate( '${player_name} is boosting.' ), array(
+				$colorFriendlyText = $this->convertColorToHighlightedText($saucerColor);
+
+				self::notifyAllPlayers( 'zagUsed', clienttranslate( '${saucer_friendly_color} is boosting.' ), array(
 						'ostrich' => $saucerColor,
 						'boosterQuantity' => $boosterQuantity,
-						'player_name' => self::getActivePlayerName()
+						'player_name' => self::getActivePlayerName(),
+						'saucer_friendly_color' => $colorFriendlyText
 				) );
 		}
 
@@ -7176,11 +7169,14 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 			//$player_name = self::getCurrentPlayerName();
 
+			$highlightedSaucerColor = $this->convertColorToHighlightedText($ostrichUsing);
 
-			self::notifyAllPlayers( 'xSelected', clienttranslate( '${player_name} set their X Zig for the ${ostrich} ostrich to ${xValue}.' ), array(
+
+			self::notifyAllPlayers( 'xSelected', clienttranslate( '${saucer_color_highlighted} set their distance to ${xValue}.' ), array(
 					'ostrich' => $ostrichUsing,
 					'xValue' => $xValue,
-					'player_name' => self::getActivePlayerName()
+					'player_name' => self::getActivePlayerName(),
+					'saucer_color_highlighted' => $highlightedSaucerColor
 			) );
 		}
 
@@ -7390,7 +7386,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 			//throw new feException( "executeSkipBooster" );
 				//$this->sendCliffFallsToPlayers(); // check if the ostrich moving fell off a cliff, and if so, tell players and update stats
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" ); // set the state now that moving is complete
+				$this->gamestate->nextState( "finalizeMove" ); // set the state now that moving is complete
 		}
 
 		// IN PHASE: Plan
@@ -7550,6 +7546,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$playerWhoseTurnItWas = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$nameOfPlayerWhoseTurnItWas = $this->getPlayerNameFromPlayerId($playerWhoseTurnItWas);
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$highlightedSaucerColor = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 //throw new feException( "incrementing stat for $playerWhoseTurnItWas" );
 
@@ -7557,8 +7554,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				self::incStat( 1, 'turns_number', $playerWhoseTurnItWas ); // increase end game player stat
 				self::incStat( 1, 'turns_number' ); // increase end game table stat
 
-				self::notifyAllPlayers( "endTurn", clienttranslate( '${player_name} has ended their turn.' ), array(
-								'player_name' => $nameOfPlayerWhoseTurnItWas
+				self::notifyAllPlayers( "endTurn", clienttranslate( '${saucer_color_highlighted} has ended their turn.' ), array(
+								'player_name' => $nameOfPlayerWhoseTurnItWas,
+								'saucer_color_highlighted' => $highlightedSaucerColor
 						) );
 
 				if($this->isTurnOrderClockwise())
@@ -7613,6 +7611,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 				switch($upgradeName)
 				{
+						case "Hyperdrive":
+								return 9;
 						case "Time Machine":
 								return 12;
 						case "Regeneration Gateway":
@@ -7630,14 +7630,18 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				switch($upgradeName)
 				{
+					 	case "Hyperdrive":
+						case 9:
+								$sql .= " AND card_type_arg=6";
+								break;
 						case "Time Machine":
 						case 12:
 								$sql .= " AND card_type_arg=12";
-						break;
+								break;
 						case "Regeneration Gateway":
 						case 13:
 								$sql .= " AND card_type_arg=13";
-						break;
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -7653,14 +7657,18 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				switch($upgradeName)
 				{
+						case "Hyperdrive":
+						case 9:
+								$sql .= " AND card_type_arg=6";
+								break;
 						case "Time Machine":
 						case 12:
 								$sql .= " AND card_type_arg=12";
-						break;
+								break;
 						case "Regeneration Gateway":
 						case 13:
 								$sql .= " AND card_type_arg=13";
-						break;
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -7692,7 +7700,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				}
 				else
 				{ // this saucer is NOT crashed
-						$this->gamestate->nextState( "checkStartOfTurnUpgrades" );
+						$this->gamestate->nextState( "beginTurn" );
 				}
 		}
 
@@ -7819,6 +7827,12 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				return false; // we could not find an unoccupied crash sites
 		}
 
+		function beginTurn()
+		{
+				// save the current state of the database before the move
+				$this->undoSavePoint();
+		}
+
 		function checkStartOfTurnUpgrades()
 		{
 				if(false)
@@ -7874,7 +7888,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 												$this->giveSaucerEnergy($saucerWhoseTurnItIs);
 									}
 
-									$this->gamestate->nextState( "playerTurnExecuteMove" );
+									//throw new feException( "executeStartMove with saucer: $saucerWhoseTurnItIs");
+
+									// move the selected distance in the selected direction
+									$this->executeSaucerMove($saucerWhoseTurnItIs);
 						}
 				}
 		}

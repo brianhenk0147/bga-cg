@@ -1367,6 +1367,7 @@ content: '';
 
     text-overflow: ellipsis;
     width: 170px;
+    height: 30px;
 
   /* OPTION A: Works but is very small on iPhone.
     font-family: Roboto, Arial, sans-serif;

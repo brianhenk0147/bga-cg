@@ -150,6 +150,30 @@
         self::ajaxResponse( );
     }
 
+    public function actClickedBeginTurn()
+    {
+        self::setAjaxMode();
+
+        $this->game->executeClickedBeginTurn();
+        self::ajaxResponse( );
+    }
+
+    public function actClickedUndoMove()
+    {
+        self::setAjaxMode();
+
+        $this->game->executeClickedUndoMove();
+        self::ajaxResponse( );
+    }
+
+    public function actClickedFinalizeMove()
+    {
+        self::setAjaxMode();
+
+        $this->game->executeClickedFinalizeMove();
+        self::ajaxResponse( );
+    }
+
     public function actClickedConfirmMove()
     {
         self::setAjaxMode();

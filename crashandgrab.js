@@ -532,33 +532,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     }
                 },
 
-                onClick_startMove: function( evt )
-                {
-                    console.log( "Clicked start move." );
-
-                    if(this.isCurrentPlayerActive() && this.checkAction( 'clickMove', true ))
-                    { // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
-
-                        this.ajaxcall( "/crashandgrab/crashandgrab/actClickedStartMove.html", {
-                                                                                    lock: true
-                                                                                 },
-                                         this, function( result ) {
-
-                                            // What to do after the server call if it succeeded
-                                            // (most of the time: nothing)
-
-
-
-                                         }, function( is_error) {
-
-                                            // What to do after the server call in anyway (success or failure)
-                                            // (most of the time: nothing)
-
-                        } );
-                    }
-
-                },
-
                 onClick_selectSaucerToPlace: function( evt )
                 {
                     var htmlIdOfButton = evt.currentTarget.id;
@@ -615,6 +588,72 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                         } );
                     }
+                },
+
+                onClick_beginTurn: function( evt )
+                {
+                    console.log( "Clicked start turn button." );
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickedBeginTurn.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+
+                },
+
+                onClick_undoMove: function( evt )
+                {
+                    console.log( "Clicked undo move button." );
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickedUndoMove.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+
+                },
+
+                onClick_finalizeMove: function( evt )
+                {
+                    console.log( "Clicked finalize move button." );
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickedFinalizeMove.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+
                 },
 
                 onClick_confirmMove: function( evt )
@@ -1361,9 +1400,45 @@ this.unhighlightAllGarments();
 
                   break;
 
+                  case 'beginTurn':
+                      if ( this.isCurrentPlayerActive() )
+                      { // we are the active player
+
+                          // add a button for starting turn (since this is the undo save point we can't just go straight into the turn)
+                          var undoButtonLabel = 'Start Turn';
+                          var undoIsDisabled = false;
+                          var undoHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                          var undoActionName = 'beginTurn'; // such as selectSaucerToGoFirst
+                          var undoMakeRed = false;
+                          this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
+                      }
+                  break;
+
+                  case 'finalizeMove':
+                  if ( this.isCurrentPlayerActive() )
+                  { // we are the active player
+
+                      // add a button for confirming the move
+                      var finalizeButtonLabel = 'Confirm';
+                      var finalizeIsDisabled = false;
+                      var finalizeHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                      var finalizeActionName = 'finalizeMove'; // such as selectSaucerToGoFirst
+                      var finalizeMakeRed = false;
+                      this.addButtonToActionBar(finalizeButtonLabel, finalizeIsDisabled, finalizeHoverOverText, finalizeActionName, finalizeMakeRed);
+
+                      // add a button for undo'ing the move
+                      var undoButtonLabel = 'Undo Move';
+                      var undoIsDisabled = false;
+                      var undoHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                      var undoActionName = 'undoMove'; // such as selectSaucerToGoFirst
+                      var undoMakeRed = true;
+                      this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
+                  }
+
+                  break;
+
                   case 'endRoundPlaceCrashedSaucer':
                   case 'askPreTurnToPlaceCrashedSaucer':
-                  console.log( "onUpdateActionButtons->placingSaucer" );
 
                   if( this.isCurrentPlayerActive() )
                   { // this player is active
@@ -1455,22 +1530,6 @@ this.unhighlightAllGarments();
 
                         this.showDirectionButtons();
                     }
-
-                  break;
-
-                  case 'playerTurnExecuteMove':
-
-
-                      if( this.isCurrentPlayerActive() )
-                      {
-                          var buttonLabel = 'Move';
-                          var isDisabled = false;
-                          var hoverOverText = ''; // hover over text or '' if we don't want a hover over
-                          var actionName = 'startMove'; // such as selectSaucerToGoFirst
-                          var makeRed = false;
-
-                          this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
-                      }
 
                   break;
 
@@ -1578,9 +1637,6 @@ this.unhighlightAllGarments();
 
                           // highlight all spaces available
                           this.highlightPossibleAcceleratorOrBoostMoveSelections(args.playerSaucerAcceleratorMoves);
-
-                          // show a button to allow them to restart their turn
-                          this.showRestartTurnButton();
                       }
                   break;
 
@@ -1597,9 +1653,6 @@ this.unhighlightAllGarments();
 
                           // show a button to skip using a booster
                           this.showAskToUseBoosterButtons();
-
-                          // show a button to allow them to restart their turn
-                          this.showRestartTurnButton();
                       }
                   break;
 
@@ -3113,11 +3166,6 @@ console.log('playUpgradeCard to '+destination);
             }
         },
 
-        showRestartTurnButton: function()
-        {
-          this.addActionButton( 'restartTurn_button', _('Restart Turn'), 'restartTurn', null, false, 'red' );
-        },
-
         showAskToUseBoosterButtons: function()
         {
             this.addActionButton( 'noBooster_button', _('Skip Booster'), 'skipBooster' );
@@ -3964,14 +4012,6 @@ console.log("success... onClickUpgradeCardInHand");
             }
         },
 
-        restartTurn: function()
-        {
-          console.log( "Restart turn" );
-
-          this.showMessage( _("Not implemented yet"), 'error' );
-          return;
-        },
-
         useBooster: function()
         {
             console.log( "DO use a Booster" );
@@ -4711,7 +4751,6 @@ console.log("success... onClickUpgradeCardInHand");
         {
             console.log("Entered notif_crownAcquired.");
             var ostrichColor = notif.args.color;
-            var ostrichName = notif.args.ostrichName;
 
             this.moveCrownToPlayerBoard(ostrichColor);
         },

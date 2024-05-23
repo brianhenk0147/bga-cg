@@ -137,7 +137,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickAcceleratorDirection", "clickMoveDirection" ),
-    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50 )
+    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49 )
     ),
 
     10 => array(
@@ -297,17 +297,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "saucerTurnStart",
         "updateGameProgression" => true,
-        "transitions" => array( "chooseCrashSiteRegenerationGateway" => 40, "askPreTurnToPlaceCrashedSaucer" => 43, "checkStartOfTurnUpgrades" => 24 )
-    ),
-
-    // PLAYER IS STARTING THEIR MOVE FOR THE TURN AND MUST JUST CLICK THE START MOVE BUTTON
-    28 => array(
-    		"name" => "playerTurnExecuteMove",
-    		"description" => clienttranslate('${actplayer} is starting their move.'),
-    		"descriptionmyturn" => clienttranslate('${you} must start your move.'),
-    		"type" => "activeplayer",
-        "possibleactions" => array( "clickMove" ),
-    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "endGame" => 99 )
+        "transitions" => array( "chooseCrashSiteRegenerationGateway" => 40, "askPreTurnToPlaceCrashedSaucer" => 43, "checkStartOfTurnUpgrades" => 24, "beginTurn" => 44 )
     ),
 
     29 => array(
@@ -335,7 +325,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
-    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9 )
+    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49 )
     ),
 
     34 => array(
@@ -382,7 +372,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "checkForRevealDecisions",
         "updateGameProgression" => false,
-        "transitions" => array( "playerTurnExecuteMove" => 28, "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41 )
+        "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32 )
     ),
 
     39 => array(
@@ -431,6 +421,25 @@ $machinestates = array(
         'args' => 'argGetSaucerToPlaceButton',
         "possibleactions" => array( "clickSaucer" ),
     		"transitions" => array(  "chooseDirectionAfterPlacement" => 31, "allCrashSitesOccupiedChooseSpacePreTurn" => 39 )
+    ),
+
+    44 => array(
+    		"name" => "beginTurn",
+    		"description" => clienttranslate('${actplayer} is beginning their turn.'),
+    		"descriptionmyturn" => clienttranslate('${you} must begin your turn.'),
+    		"type" => "activeplayer",
+        "action" => "beginTurn",
+        "possibleactions" => array( "clickBegin" ),
+    		"transitions" => array(  "checkStartOfTurnUpgrades" => 24 )
+    ),
+
+    49 => array(
+    		"name" => "finalizeMove",
+    		"description" => clienttranslate('${actplayer} is confirming their move.'),
+    		"descriptionmyturn" => clienttranslate('${you} must confirm or undo your move.'),
+    		"type" => "activeplayer",
+        "possibleactions" => array( "undoMove" ),
+    		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "beginTurn" => 44 )
     ),
 
     50 => array(
