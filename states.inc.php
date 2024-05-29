@@ -66,8 +66,8 @@ $machinestates = array(
 
     2 => array(
     		"name" => "chooseMoveCard",
-    		"description" => clienttranslate('Everyone is choosing their Move.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose a Move card.'),
+    		"description" => clienttranslate('Everyone is choosing their moves.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose your move distance and direction for this round.'),
     		"type" => "multipleactiveplayer",
         'args' => 'argGetAllPlayerSaucerMoves',
     		"possibleactions" => array( "clickMoveDirection", "clickDistance", "undoChooseMoveCard", "confirmMove", "clickUpgradeCardInHand" ),
@@ -164,6 +164,7 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is choosing their distance.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose the distance you want to travel.'),
     		"type" => "activeplayer",
+        'args' => 'argGetAllXMoves',
     		"possibleactions" => array( "selectXValue" ),
     		"transitions" => array( "checkForRevealDecisions" => 38 )
     ),
@@ -269,7 +270,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "checkStartOfTurnUpgrades",
         "updateGameProgression" => false,
-        "transitions" => array( "checkForRevealDecisions" => 38, "askToUseStartOfTurnUpgradeEffects" => 91 )
+        "transitions" => array( "checkForRevealDecisions" => 38, "askWhichStartOfTurnUpgradeToUse" => 42 )
     ),
 
     25 => array(
@@ -372,7 +373,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "checkForRevealDecisions",
         "updateGameProgression" => false,
-        "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32 )
+        "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32, "chooseWhetherToHyperdrive" => 45 )
     ),
 
     39 => array(
@@ -405,11 +406,11 @@ $machinestates = array(
     ),
 
     42 => array(
-        "name" => "askToUseStartOfTurnUpgradeEffects",
+        "name" => "askWhichStartOfTurnUpgradeToUse",
         "description" => clienttranslate('${actplayer} is deciding if they will use an Upgrade.'),
         "descriptionmyturn" => clienttranslate('${you} must decide if you will use an Upgrade.'),
         "type" => "activeplayer",
-        "possibleactions" => array( "clickUpgrade" ),
+        "possibleactions" => array( "skipActivateUpgrade" ),
         "transitions" => array( "checkForRevealDecisions" => 38, "usingStartPulseCannon" => 21, "usingStartBlastOffThrusters" => 21  )
     ),
 
@@ -433,6 +434,15 @@ $machinestates = array(
     		"transitions" => array(  "checkStartOfTurnUpgrades" => 24 )
     ),
 
+    45 => array(
+        "name" => "chooseWhetherToHyperdrive",
+        "description" => clienttranslate('${actplayer} deciding if they will use their Hyperdrive.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose whether you will use Hyperdrive to double your movement.'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "clickDirection" ),
+        "transitions" => array( "checkForRevealDecisions" => 38  )
+    ),
+
     49 => array(
     		"name" => "finalizeMove",
     		"description" => clienttranslate('${actplayer} is confirming their move.'),
@@ -448,7 +458,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "endSaucerTurnCleanUp",
         "updateGameProgression" => true,
-        "transitions" => array( "endSaucerTurnCleanUp" => 50, "crashPenaltyAskWhichToGiveAway" => 51, "crashPenaltyAskWhichToSteal" => 52, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurn" => 36 )
+        "transitions" => array( "endSaucerTurnCleanUp" => 50, "crashPenaltyAskWhichToGiveAway" => 51, "crashPenaltyAskWhichToSteal" => 52, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurn" => 36, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
     51 => array(
@@ -456,6 +466,7 @@ $machinestates = array(
     		"description" => clienttranslate('${actplayer} is giving away a Crewmember.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose which Crewmember you will give to PLAYERNAME because you crashed.'),
     		"type" => "activeplayer",
+        'args' => 'argGetGiveAwayCrewmembers',
         "possibleactions" => array( "clickCrewmember" ),
     		"transitions" => array(  "endSaucerTurnCleanUp" => 50 )
     ),
@@ -470,7 +481,35 @@ $machinestates = array(
         "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
     ),
 
+    53 => array(
+        "name" => "askWhichEndOfTurnUpgradeToUse",
+        "description" => clienttranslate('${actplayer} is deciding if they will activate an Upgrade.'),
+        "descriptionmyturn" => clienttranslate('${you} must decide if you will activate an Upgrade.'),
+        "type" => "activeplayer",
+        'args' => 'argGetEndOfTurnUpgradesToActivate',
+        "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55 )
+    ),
 
+    54 => array(
+        "name" => "chooseSaucerWormholeGenerator",
+        "description" => clienttranslate('${actplayer} is generating a wormhole.'),
+        "descriptionmyturn" => clienttranslate('${you} must choose a Saucer to swap places with.'),
+        "type" => "activeplayer",
+        'args' => 'argGetOtherUncrashedSaucers',
+        "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+    ),
+
+    55 => array(
+        "name" => "chooseCrashSiteSaucerTeleporter",
+        "description" => clienttranslate('${actplayer} is teleporting.'),
+        "descriptionmyturn" => clienttranslate('Choose a teleportation destination.'),
+        "type" => "activeplayer",
+        'args' => 'argGetAllUnoccupiedCrashSites',
+        "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+    ),
 
 
 

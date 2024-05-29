@@ -1117,6 +1117,8 @@ var jstpl_booster='<div class="booster_token" id="booster_${location}_${position
 
 var jstpl_garment='<div class="crewmember crewmember_${garment_type}_${color}" id="crewmember_${garment_type}_${color}"></div>';
 
+var jstpl_actionButtonHolder='<div id="saucer_${saucerNumber}_action_button_holder"></div>'
+
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->
 var jstpl_mymovementcard = '<div class="move_card component_rounding" id="mymovementcard_${player_id}" style="background-position:-${x}px -${y}px">\

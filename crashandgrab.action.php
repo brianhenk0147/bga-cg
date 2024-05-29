@@ -84,10 +84,53 @@
         self::ajaxResponse( );
     }
 
+    public function actSkipActivateStartOfTurnUpgrade()
+    {
+        self::setAjaxMode();
+
+        $this->game->executeSkipActivateStartOfTurnUpgrade();
+        self::ajaxResponse( );
+    }
+
+    public function actSkipActivateEndOfTurnUpgrade()
+    {
+      self::setAjaxMode();
+
+      $this->game->executeSkipActivateEndOfTurnUpgrade();
+      self::ajaxResponse( );
+    }
+
+    public function actSkipActivateSpecificEndOfTurnUpgrade()
+    {
+      self::setAjaxMode();
+      $collectorNumber = self::getArg( "collectorNumber", AT_posint, true ); // 1, 2, 3
+
+      $this->game->executeSkipActivateSpecificEndOfTurnUpgrade($collectorNumber);
+      self::ajaxResponse( );
+    }
+
+    public function actActivateUpgrade()
+    {
+        self::setAjaxMode();
+        $collectorNumber = self::getArg( "collectorNumber", AT_posint, true ); // 1, 2, 3
+
+        $this->game->executeActivateUpgrade( $collectorNumber );
+        self::ajaxResponse( );
+    }
+
     public function actClickedStartMove()
     {
         self::setAjaxMode();
         $this->game->executeStartMove();
+        self::ajaxResponse( );
+    }
+
+    public function actWormholeSelectSaucer()
+    {
+        self::setAjaxMode();
+        $saucerColor = self::getArg( "saucerColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeWormholeSelectSaucer( $saucerColor );
         self::ajaxResponse( );
     }
 
@@ -100,6 +143,20 @@
         self::ajaxResponse( );
     }
 
+    public function actActivateHyperdrive()
+    {
+        self::setAjaxMode();
+        $this->game->executeActivateHyperdrive();
+        self::ajaxResponse( );
+    }
+
+    public function actSkipHyperdrive()
+    {
+        self::setAjaxMode();
+        $this->game->executeSkipHyperdrive();
+        self::ajaxResponse( );
+    }
+
     public function actExecuteStealCrewmember()
     {
         self::setAjaxMode();
@@ -107,6 +164,17 @@
         $stolenColor = self::getArg( "stolenColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
 
         $this->game->executeStealCrewmember( $stolenType, $stolenColor );
+        self::ajaxResponse( );
+    }
+
+    public function actExecuteGiveAwayCrewmember()
+    {
+        self::setAjaxMode();
+        $stolenType = self::getArg( "stolenType", AT_alphanum, true ); // scientist
+        $stolenColor = self::getArg( "stolenColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+        $sauceToGiveToColor = self::getArg( "saucerColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeGiveAwayCrewmember( $stolenType, $stolenColor, $sauceToGiveToColor );
         self::ajaxResponse( );
     }
 

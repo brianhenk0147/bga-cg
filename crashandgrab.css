@@ -965,7 +965,7 @@ float: left;
 
 .cardSelected
 {
-    border: 2px solid yellow ! important;
+    outline: 2px solid yellow ! important;
 }
 
 .cardUnselected
@@ -990,18 +990,48 @@ float: left;
 
 .moveCardSelected
 {
-    border: 4px solid #00FFCB;
+    outline: 4px solid #00FFCB;
 }
 
 .directionSelected
 {
-    border: 4px solid #00FFCB;
+    outline: 4px solid #00FFCB;
 }
 
 .saucerSelected
 {
-    border: 4px solid #00FFCB;
+    outline: 4px solid #00FFCB;
     border-radius: 100%;
+}
+
+.crewmemberButtonSelected
+{
+    outline: 4px solid #00FFCB;
+}
+
+.saucerButtonSelected
+{
+    outline: 4px solid #00FFCB;
+}
+
+.saucer1DistanceButtonSelected
+{
+    outline: 4px solid #00FFCB;
+}
+
+.saucer2DistanceButtonSelected
+{
+    outline: 4px solid #00FFCB;
+}
+
+.saucer1DirectionButtonSelected
+{
+    outline: 4px solid #00FFCB;
+}
+
+.saucer2DirectionButtonSelected
+{
+    outline: 4px solid #00FFCB;
 }
 
 /*
@@ -1506,11 +1536,16 @@ width: 170px;
   background-image: url('img/ship_mats_154_154.png');
 }
 
+.saucer_button
+{
+
+}
+
 .saucer_color_01b508 { background-position: -49px 0px;   } /* green */
 .saucer_color_0090ff { background-position: -98px 0px;   } /* blue */
 .saucer_color_fedf3d { background-position: -147px 0px;   } /* yellow */
 .saucer_color_f6033b { background-position: 0px 0px;   } /* red */
-.saucer_color_c9d2db { background-position: -245px 0px;   } /* gray */
+.saucer_color_e77324 { background-position: -244px 0px;   } /* orange */
 .saucer_color_b92bba { background-position: -196px 0px;   } /* purple */
 
 /* green */
@@ -1533,8 +1568,8 @@ width: 170px;
     background-position: -462px 0px;
 }
 
-/* gray */
-#player_board_saucer_mat_holder_c9d2db {
+/* orange */
+#player_board_saucer_mat_holder_e77324 {
     background-position: -616px 0px;
 }
 
@@ -1725,7 +1760,7 @@ width: 170px;
 .saucer_color_0090ff { background-position: -98px 0px;   } /* blue */
 .saucer_color_fedf3d { background-position: -147px 0px;   } /* yellow */
 .saucer_color_f6033b { background-position: 0px 0px;   } /* red */
-.saucer_color_c9d2db { background-position: -245px 0px;   } /* gray */
+.saucer_color_e77324 { background-position: -244px 0px;   } /* orange */
 .saucer_color_b92bba { background-position: -196px 0px;   } /* purple */
 
 
@@ -1953,10 +1988,10 @@ margin-top: 6px;
 .crewmember_scientist_b92bba { background-position: -235px -141px;   }
 
 /* orange garments */
-.crewmember_pilot_c9d2db { background-position: -188px 0px;   }
-.crewmember_engineer_c9d2db { background-position: -188px -47px;   }
-.crewmember_doctor_c9d2db { background-position: -188px -94px;   }
-.crewmember_scientist_c9d2db { background-position: -188px -141px;   }
+.crewmember_pilot_e77324 { background-position: -188px 0px;   }
+.crewmember_engineer_e77324 { background-position: -188px -47px;   }
+.crewmember_doctor_e77324 { background-position: -188px -94px;   }
+.crewmember_scientist_e77324 { background-position: -188px -141px;   }
 
 
 
