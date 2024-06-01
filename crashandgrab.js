@@ -574,15 +574,15 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 onClick_selectSaucerToGoFirst: function( evt )
                 {
-                    var htmlIdOfButton = evt.currentTarget.id;
+                    var htmlIdOfButton = evt.currentTarget.id; // saucer_button_ffffff
                     console.log( "Clicked saucer to go first with node "+htmlIdOfButton+"." );
-                    var color = htmlIdOfButton.split('_')[1]; // BLUE, RED
+                    var colorHex = htmlIdOfButton.split('_')[2]; // BLUE, RED
 
                     if(this.isCurrentPlayerActive() && this.checkAction( 'clickSaucerToGoFirst', true ))
                     { // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
 
                         this.ajaxcall( "/crashandgrab/crashandgrab/actClickedSaucerToGoFirst.html", {
-                                                                                    colorAsFriendlyText: color,
+                                                                                    colorHex: colorHex,
                                                                                     lock: true
                                                                                  },
                                          this, function( result ) {
@@ -1832,14 +1832,19 @@ this.unhighlightAllGarments();
                         for (const buttonKey of saucerButtonKeys)
                         { // go through each button
 
+                            var color = saucerButtonList[buttonKey]['saucerColor'];
                             var buttonLabel = saucerButtonList[buttonKey]['buttonLabel'];
                             var isDisabled = saucerButtonList[buttonKey]['isDisabled'];
                             var hoverOverText = saucerButtonList[buttonKey]['hoverOverText']; // hover over text or '' if we don't want a hover over
                             var actionName = saucerButtonList[buttonKey]['actionName']; // selectSaucerToGoFirst
                             var makeRed = saucerButtonList[buttonKey]['makeRed'];
 
-                            this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+
+                            //this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                            this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_'+actionName, null, null, 'gray');
                         }
+
+
                     }
                   break;
 
@@ -3298,6 +3303,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                   upgradesPlayedStock.addToStock( collectorNumber );
               }
 
+              // make this no longer clickable because otherwise you get an error if you try to click it while it's moving or in the played area
+              this.disconnect( $(cardInHandHtmlId), 'onUpgradeHandSelectionChanged');
+
              // Add a special tooltip on the card (Maybe replace this with full image to show off the art)
              //this.addTooltip( card_div.id, title.toUpperCase() + ": " + effect, whatHappensWhenYouClickOnIt );
 
@@ -3554,10 +3562,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
         showMoveCardDirectionButtons: function(saucerNumber)
         {
             var saucerButtonHolder = 'saucer_'+saucerNumber+'_action_button_holder';
-            this.addActionButton( this.UP_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.UP_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.UP_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
-            this.addActionButton( this.RIGHT_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.RIGHT_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.RIGHT_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
-            this.addActionButton( this.DOWN_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.DOWN_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.DOWN_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
             this.addActionButton( this.LEFT_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.LEFT_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.LEFT_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
+            this.addActionButton( this.UP_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.UP_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.UP_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
+            this.addActionButton( this.DOWN_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.DOWN_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.DOWN_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
+            this.addActionButton( this.RIGHT_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.RIGHT_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.RIGHT_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
 
 
             //dojo.addClass('sun_button','bgaimagebutton'); // remove the button outline

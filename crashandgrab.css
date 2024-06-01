@@ -203,6 +203,50 @@ body {
     background-position: -64px 0px;
 }
 
+#constellation_1_button {
+  margin-left: 30px ! important;
+}
+
+#constellation_2_button {
+  margin-left: 30px ! important;
+}
+
+#sun_1_button {
+  margin-top: -40px ! important;
+}
+
+#sun_2_button {
+  margin-top: -40px ! important;
+}
+
+#meteor_1_button {
+  margin-top: 40px ! important;
+  margin-left: -51px ! important;
+}
+
+#meteor_2_button {
+  margin-top: 40px ! important;
+  margin-left: -51px ! important;
+}
+
+/*
+#asteroids_1_button {
+  margin-left: -60px ! important;
+}
+
+#asteroids_2_button {
+  margin-left: -60px ! important;
+}
+*/
+
+#saucer_1_action_button_holder {
+    margin-bottom: 15px;
+}
+
+#saucer_2_action_button_holder {
+    margin-bottom: 15px;
+}
+
 /***** SECTIONS *****/
 
 

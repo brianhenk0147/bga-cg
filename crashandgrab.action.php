@@ -212,9 +212,9 @@
     public function actClickedSaucerToGoFirst()
     {
         self::setAjaxMode();
-        $colorAsFriendlyText = self::getArg( "colorAsFriendlyText", AT_alphanum, true ); // BLUE, RED
+        $colorhex = self::getArg( "colorHex", AT_alphanum, true ); // BLUE, RED
 
-        $this->game->executeClickedSaucerToGoFirst( $colorAsFriendlyText );
+        $this->game->executeClickedSaucerToGoFirst( $colorhex );
         self::ajaxResponse( );
     }
 
