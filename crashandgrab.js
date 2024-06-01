@@ -547,7 +547,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 {
                     var htmlIdOfButton = evt.currentTarget.id;
                     console.log( "Clicked saucer to place with node "+htmlIdOfButton+"." );
-                    var color = htmlIdOfButton.split('_')[1]; // BLUE, RED
+                    var color = htmlIdOfButton.split('_')[2]; // BLUE, RED
 
 
 
@@ -555,7 +555,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     //{ // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
 
                         this.ajaxcall( "/crashandgrab/crashandgrab/actClickedSaucerToPlace.html", {
-                                                                                    colorAsFriendlyText: color,
+                                                                                    colorAsHex: color,
                                                                                     lock: true
                                                                                  },
                                          this, function( result ) {
@@ -1765,13 +1765,15 @@ this.unhighlightAllGarments();
                   { // this player is active
                       var saucerButton = args.saucerButton;
 
+                      var color = saucerButton['saucerColor'];
                       var buttonLabel = saucerButton['buttonLabel'];
                       var isDisabled = saucerButton['isDisabled'];
                       var hoverOverText = saucerButton['hoverOverText']; // hover over text or '' if we don't want a hover over
-                      var actionName = saucerButton['actionName']; // such as selectSaucerToGoFirst
+                      var actionName = saucerButton['actionName']; // such as selectSaucerToPlace
                       var makeRed = saucerButton['makeRed'];
 
-                      this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                      //this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                      this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_'+actionName, null, null, 'gray');
                   }
                   break;
 

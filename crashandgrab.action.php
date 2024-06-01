@@ -203,9 +203,9 @@
     public function actClickedSaucerToPlace()
     {
         self::setAjaxMode();
-        $colorAsFriendlyText = self::getArg( "colorAsFriendlyText", AT_alphanum, true ); // BLUE, RED
+        $colorAsHex = self::getArg( "colorAsHex", AT_alphanum, true ); // BLUE, RED
 
-        $this->game->executeClickedSaucerToPlace( $colorAsFriendlyText );
+        $this->game->executeClickedSaucerToPlace( $colorAsHex );
         self::ajaxResponse( );
     }
 

@@ -959,6 +959,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				$saucerColorFriendly = $this->convertColorToText($saucerToPlace);
 
+				$result['saucerColor'] = $saucerToPlace;
 				$result['buttonLabel'] = $saucerColorFriendly;
 				$result['hoverOverText'] = '';
 				$result['actionName'] = 'selectSaucerToPlace';
@@ -7028,14 +7029,12 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->gamestate->nextState( "zigChosen" ); // stay in this phase
 		}
 
-		function executeClickedSaucerToPlace($colorAsFriendlyText)
+		function executeClickedSaucerToPlace($colorAsHex)
 		{
-				$hexColor = $this->convertFriendlyColorToHex($colorAsFriendlyText);
-
 				$currentState = $this->getStateName();
 
 				// place it at a random location
-				$foundUnoccupiedCrashSite = $this->randomlyPlaceSaucer($hexColor);
+				$foundUnoccupiedCrashSite = $this->randomlyPlaceSaucer($colorAsHex);
 
 				if($foundUnoccupiedCrashSite)
 				{ // the saucer was successfully placed
