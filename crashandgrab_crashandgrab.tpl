@@ -1088,10 +1088,6 @@
                           <div id="move_card_holder_0_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
                       </div>
 
-                      <div id="upgrade_hand_{PLAYER_COLOR}">
-
-                      </div>
-
                   </div>
               </div>
 
@@ -1139,6 +1135,13 @@ var jstpl_myTrapInHand = '<div class="myTrapInHand component_rounding" id="myTra
 var jstpl_trapBack = '<div class="myTrap component_rounding" id="trapBack_${player_id}" style="background-position:-${x}px -${y}px">\
                     </div>';
 
+
+var jstpl_upgradeCardHolder = '<div id="upgradeCardHolder">\
+                                </div>';
+
+var jstpl_upgradeCard = '<div class="upgrade_card component_rounding" id="upgrade_card_${databaseId}" style="background-position:-${x}px -${y}px">\
+                                            </div>';
+
 var jstpl_upgradeCardText = '<div class="upgradeCardContent">\
                     <div class="upgradeTitle">${title}</div>\
                     <div class="upgradeEffect">${effect}</div>\
@@ -1151,15 +1154,15 @@ var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}">
                                           <div id="player_board_direction_holder_${owner}" class="player_board_direction_holder"></div>\
                                         </div>\
                                         <div id="player_board_saucer_mat_holder_${color}" class="player_board_saucer_mat_holder">\
-                                          <div id="booster_acquired_${color}" class="booster_acquired_area"></div>\
+                                          <div id="booster_acquired_${color}" class="booster_acquired_area_${firstOrSecond}"></div>\
                                           <div id="pilot_and_engineer_row">\
-                                            <div id="player_board_saucer_mat_pilot_${color}" class="player_board_saucer_mat_pilot"></div>\
-                                            <div id="player_board_saucer_mat_engineer_${color}" class="player_board_saucer_mat_engineer"></div>\
+                                            <div id="player_board_saucer_mat_pilot_${color}" class="player_board_saucer_mat_pilot_${firstOrSecond}"></div>\
+                                            <div id="player_board_saucer_mat_engineer_${color}" class="player_board_saucer_mat_engineer_${firstOrSecond}"></div>\
                                           </div>\
                                           <div id="doctor_and_energy_and_scientist_row">\
-                                            <div id="player_board_saucer_mat_doctor_${color}" class="player_board_saucer_mat_doctor"></div>\
-                                            <div id="energy_acquired_${color}" class="energy_acquired_area"></div>\
-                                            <div id="player_board_saucer_mat_scientist_${color}" class="player_board_saucer_mat_scientist"></div>\
+                                            <div id="player_board_saucer_mat_doctor_${color}" class="player_board_saucer_mat_doctor_${firstOrSecond}"></div>\
+                                            <div id="energy_acquired_${color}" class="energy_acquired_area_${firstOrSecond}"></div>\
+                                            <div id="player_board_saucer_mat_scientist_${color}" class="player_board_saucer_mat_scientist_${firstOrSecond}"></div>\
                                           </div>\
                                         </div>\
                                         <div id="player_board_trap_and_zag_holder_${color}" class="player_board_trap_and_zag_holder">\

@@ -90,6 +90,9 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
   `crash_penalty_rendered` smallint(5) unsigned NOT NULL,
   `energy_quantity` int(10) unsigned NOT NULL,
   `booster_quantity` int(10) unsigned NOT NULL,
+  `passed_by_other_saucer` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `skipped_passing` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `skipped_taking` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ostrich_color`)
 ) ENGINE=InnoDB;
 

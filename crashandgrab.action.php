@@ -78,7 +78,8 @@
     {
         self::setAjaxMode();
         $databaseId = self::getArg( "upgradeDatabaseId", AT_posint, true ); // 1, 2, 3
-        $color = self::getArg( "saucerColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $color = $this->game->getOstrichWhoseTurnItIs();
 
         $this->game->executeClickedUpgradeCardInHand( $databaseId, $color );
         self::ajaxResponse( );
@@ -157,13 +158,47 @@
         self::ajaxResponse( );
     }
 
+    public function actSkipPassCrewmember()
+    {
+        self::setAjaxMode();
+        $this->game->executeSkipPassCrewmember();
+        self::ajaxResponse( );
+    }
+
+    public function actSkipTakeCrewmember()
+    {
+        self::setAjaxMode();
+        $this->game->executeSkipTakeCrewmember();
+        self::ajaxResponse( );
+    }
+
     public function actExecuteStealCrewmember()
     {
         self::setAjaxMode();
         $stolenType = self::getArg( "stolenType", AT_alphanum, true ); // scientist
         $stolenColor = self::getArg( "stolenColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
 
-        $this->game->executeStealCrewmember( $stolenType, $stolenColor );
+        $this->game->executeStealCrewmember( $stolenType, $stolenColor, false, false );
+        self::ajaxResponse( );
+    }
+
+    public function actExecutePassCrewmember()
+    {
+        self::setAjaxMode();
+        $stolenType = self::getArg( "stolenType", AT_alphanum, true ); // scientist
+        $stolenColor = self::getArg( "stolenColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeStealCrewmember( $stolenType, $stolenColor, true, false );
+        self::ajaxResponse( );
+    }
+
+    public function actExecuteTakeCrewmember()
+    {
+        self::setAjaxMode();
+        $stolenType = self::getArg( "stolenType", AT_alphanum, true ); // scientist
+        $stolenColor = self::getArg( "stolenColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeStealCrewmember( $stolenType, $stolenColor, false, true );
         self::ajaxResponse( );
     }
 

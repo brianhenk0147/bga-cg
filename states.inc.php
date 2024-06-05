@@ -137,13 +137,13 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickAcceleratorDirection", "clickMoveDirection" ),
-    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49 )
+    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
     ),
 
     10 => array(
     		"name" => "placeCrewmemberChooseCrewmember",
-    		"description" => clienttranslate('${actplayer} must choose a Crewmember to place.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose a Crewmember to place.'),
+    		"description" => clienttranslate('${saucerHighlighted} must choose a Crewmember to place.'),
+    		"descriptionmyturn" => clienttranslate('You must choose a Crewmember to place.'),
     		"type" => "activeplayer",
         'args' => 'argGetLostCrewmembers',
     		"possibleactions" => array( "chooseLostCrewmember" ),
@@ -326,7 +326,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
-    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49 )
+    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
     ),
 
     34 => array(
@@ -426,10 +426,11 @@ $machinestates = array(
 
     44 => array(
     		"name" => "beginTurn",
-    		"description" => clienttranslate('${actplayer} is beginning their turn.'),
-    		"descriptionmyturn" => clienttranslate('${you} must begin your turn.'),
+    		"description" => clienttranslate('${saucerColor} is beginning their turn.'),
+    		"descriptionmyturn" => clienttranslate('You must begin your turn for ${saucerColor}.'),
     		"type" => "activeplayer",
         "action" => "beginTurn",
+        'args' => 'argGetSaucerColor',
         "possibleactions" => array( "clickBegin" ),
     		"transitions" => array(  "checkStartOfTurnUpgrades" => 24 )
     ),
@@ -445,9 +446,10 @@ $machinestates = array(
 
     49 => array(
     		"name" => "finalizeMove",
-    		"description" => clienttranslate('${actplayer} is confirming their move.'),
-    		"descriptionmyturn" => clienttranslate('${you} must confirm or undo your move.'),
+    		"description" => clienttranslate('${actplayer} is confirming their move for ${saucerColor}.'),
+    		"descriptionmyturn" => clienttranslate('You must confirm or undo your move for ${saucerColor}.'),
     		"type" => "activeplayer",
+        'args' => 'argGetSaucerColor',
         "possibleactions" => array( "undoMove" ),
     		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "beginTurn" => 44 )
     ),
@@ -458,7 +460,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "endSaucerTurnCleanUp",
         "updateGameProgression" => true,
-        "transitions" => array( "endSaucerTurnCleanUp" => 50, "crashPenaltyAskWhichToGiveAway" => 51, "crashPenaltyAskWhichToSteal" => 52, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurn" => 36, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array( "endSaucerTurnCleanUp" => 50, "crashPenaltyAskWhichToGiveAway" => 51, "crashPenaltyAskWhichToSteal" => 52, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurn" => 36, "askWhichEndOfTurnUpgradeToUse" => 53, "askWhichUpgradeToPlay" => 58 )
     ),
 
     51 => array(
@@ -473,8 +475,8 @@ $machinestates = array(
 
     52 => array(
         "name" => "crashPenaltyAskWhichToSteal",
-        "description" => clienttranslate('${actplayer}\'s ${saucerWhoIsStealingText} saucer is stealing a Crewmember from ${saucerWhoCrashedText}.'),
-        "descriptionmyturn" => clienttranslate('${you} must gain an Energy or choose a Crewmember to steal from ${saucerWhoCrashedText} because you crashed them.'),
+        "description" => clienttranslate('${saucerWhoIsStealingText} is stealing a Crewmember from ${saucerWhoCrashedText}.'),
+        "descriptionmyturn" => clienttranslate('You must gain an Energy or choose a Crewmember to steal from ${saucerWhoCrashedText} because you crashed them.'),
         "type" => "activeplayer",
         'args' => 'argGetStealableCrewmembers',
         "possibleactions" => array( "clickCrewmember", "gainEnergy" ),
@@ -503,11 +505,41 @@ $machinestates = array(
 
     55 => array(
         "name" => "chooseCrashSiteSaucerTeleporter",
-        "description" => clienttranslate('${actplayer} is teleporting.'),
-        "descriptionmyturn" => clienttranslate('Choose a teleportation destination.'),
+        "description" => clienttranslate('${saucerColor} is teleporting.'),
+        "descriptionmyturn" => clienttranslate('Choose a teleportation destination for ${saucerColor}.'),
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+    ),
+
+    56 => array(
+        "name" => "chooseCrewmembersToPass",
+        "description" => clienttranslate('${saucerColorGiving} is passing Crewmembers to ${saucerColorReceiving}.'),
+        "descriptionmyturn" => clienttranslate('Choose which Crewmembers ${saucerColorGiving} will pass to ${saucerColorReceiving}.'),
+        "type" => "activeplayer",
+        'args' => 'argGetPassableCrewmembers',
+        "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49 )
+    ),
+
+    57 => array(
+        "name" => "chooseCrewmembersToTake",
+        "description" => clienttranslate('${saucerColorGiving} is passing Crewmembers to ${saucerColorReceiving}.'),
+        "descriptionmyturn" => clienttranslate('Choose which Crewmembers ${saucerColorGiving} will pass to ${saucerColorReceiving}.'),
+        "type" => "activeplayer",
+        'args' => 'argGetTakeableCrewmembers',
+        "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49 )
+    ),
+
+    58 => array(
+        "name" => "askWhichUpgradeToPlay",
+        "description" => clienttranslate('${saucerColor} is choosing an Upgrade to play.'),
+        "descriptionmyturn" => clienttranslate('Choose an Upgrade to play.'),
+        "type" => "activeplayer",
+        'args' => 'argGetUpgradesToPlay',
+        "possibleactions" => array( "chooseUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
     ),
 

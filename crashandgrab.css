@@ -1373,6 +1373,7 @@ content: '';
 
     text-align: center;
     margin: 0 auto;
+    margin-top: 1px;
     padding-top: 11px;
 
     width: 170px;
@@ -1435,7 +1436,7 @@ content: '';
 
     left: 0px;
     right: 0px;
-    bottom: 2px;
+    bottom: 4px;
     position: absolute;
 
 
@@ -1623,16 +1624,17 @@ width: 170px;
 }
 
 .mat_and_stuff_row {
-    width: 713px;
+    width: 353px;
     display: inline-block;
     margin-bottom: 10px;
 }
 
 .mat_row {
   display: inline-block;
-    margin-left: 5px;
+    margin-left: 15px;
+    margin-top: 10px;
     margin-bottom: 2px;
-    width: 713px;
+    width: 320px;
 }
 
 .mat_inner_row {
@@ -1753,25 +1755,43 @@ width: 170px;
   margin-top: 5px;
 }
 
-.player_board_saucer_mat_pilot
+.player_board_saucer_mat_pilot_1
 {
   width: 50px;
 
   position: absolute;
   left: 48px;
-  top: 93px;
+  top: 95px;
 }
 
-.player_board_saucer_mat_engineer
+.player_board_saucer_mat_pilot_2
+{
+  width: 50px;
+
+  position: absolute;
+  left: 48px;
+  top: 438px;
+}
+
+.player_board_saucer_mat_engineer_1
 {
   width: 50px;
 
   position: absolute;
   left: 141px;
-  top: 93px;
+  top: 95px;
 }
 
-.player_board_saucer_mat_doctor
+.player_board_saucer_mat_engineer_2
+{
+  width: 50px;
+
+  position: absolute;
+  left: 141px;
+  top: 437px;
+}
+
+.player_board_saucer_mat_doctor_1
 {
   width: 50px;
 
@@ -1780,13 +1800,31 @@ width: 170px;
   top: 139px;
 }
 
-.player_board_saucer_mat_scientist
+.player_board_saucer_mat_doctor_2
 {
   width: 50px;
 
   position: absolute;
-  left: 132px;
+  left: 62px;
+  top: 482px;
+}
+
+.player_board_saucer_mat_scientist_1
+{
+  width: 50px;
+
+  position: absolute;
+  left: 134px;
   top: 139px;
+}
+
+.player_board_saucer_mat_scientist_2
+{
+  width: 50px;
+
+  position: absolute;
+  left: 134px;
+  top: 482px;
 }
 
 
@@ -1851,13 +1889,22 @@ width: 170px;
     z-index: 10;
 }
 
-.booster_acquired_area {
+.booster_acquired_area_1 {
     width: 30px;
     height: 30px;
 
     position: absolute;
     left: 108px;
     top:60px;
+}
+
+.booster_acquired_area_2 {
+    width: 30px;
+    height: 30px;
+
+    position: absolute;
+    left: 108px;
+    top:405px;
 }
 
 /***** ENERGY *****/
@@ -1881,13 +1928,22 @@ width: 170px;
     z-index: 10;
 }
 
-.energy_acquired_area {
+.energy_acquired_area_1 {
     width: 30px;
     height: 30px;
 
     position: absolute;
-    left: 112px;
+    left: 113px;
     top:130px;
+}
+
+.energy_acquired_area_2 {
+    width: 30px;
+    height: 30px;
+
+    position: absolute;
+    left: 113px;
+    top:473px;
 }
 
 .energy_1 {
@@ -1906,7 +1962,32 @@ margin-top: 4px;
 margin-top: 6px;
 }
 
+/***** UPGRADES *****/
+#upgrade_market_container
+{
+  width: 713px;
+    display: inline-block;
+    vertical-align: top;
+    margin-bottom: 10px;
 
+
+    background-color: gray;
+}
+
+.upgrade_card {
+    display: inline-block;
+    position: relative; /* needed for a thing that slides */
+    width: 230px;
+    height: 164px;
+    background-image: url('img/ship_upgrades_230_164.jpg');
+    cursor: pointer;
+}
+
+#upgradeCardHolder {
+    height: 164px;
+    font-weight: 400;
+    line-height: 10px;
+}
 
 /***** GARMENTS *****/
 #garments_container
