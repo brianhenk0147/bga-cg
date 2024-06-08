@@ -373,7 +373,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "checkForRevealDecisions",
         "updateGameProgression" => false,
-        "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32, "chooseWhetherToHyperdrive" => 45 )
+        "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32, "chooseWhetherToHyperdrive" => 45, "chooseCrewmembersToTake" => 57 )
     ),
 
     39 => array(
@@ -490,7 +490,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
         "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseUpgradeSpace" => 59 )
     ),
 
     54 => array(
@@ -543,6 +543,15 @@ $machinestates = array(
         "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
     ),
 
+    59 => array(
+        "name" => "chooseUpgradeSpace",
+        "description" => clienttranslate('${saucerColor} is choosing a space for ${upgradeName}.'),
+        "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
+        "type" => "activeplayer",
+        'args' => 'argGetLandingLegSpaces',
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9 )
+    ),
 
 
 

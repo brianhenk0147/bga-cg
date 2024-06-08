@@ -322,7 +322,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 if(singleOstrich.ostrich_has_crown == 1)
                 { // this ostrich has the crown
                     console.log("gets crown:" + singleOstrich.color);
-                    this.putCrownOnPlayerBoard(singleOstrich.color); // place it on their player board on the right
+                    this.putProbeOnPlayerBoard(singleOstrich.color); // place it on their player board on the right
 
                     var arrowX = 0;
                     if(singleOstrich.ostrich_last_turn_order == 1)
@@ -749,16 +749,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                                             // What to do after the server call if it succeeded
                                             // (most of the time: nothing)
 
-                                            this.unselectAllSaucers();
-                                            this.unhighlightAllSaucers();
 
-                                            this.unselectAllMoveCards();
-                                            this.unhighlightAllMoveCards();
-
-                                            this.unselectAllDirections();
-                                            this.unhighlightAllDirections();
-
-                                            this.unhighlightAllSpaces();
 
                                          }, function( is_error) {
 
@@ -1184,6 +1175,11 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                             }
 
                     }
+                    else if (this.checkPossibleActions( 'chooseUpgradeSpace' ))
+                    { // we are choosing a space when activating an upgrade
+                        this.ajaxcall( "/crashandgrab/crashandgrab/actChooseUpgradeSpace.html", {chosenX: chosenSpaceX, chosenY: chosenSpaceY, lock: true }, this, function( result ) {}, function( is_error ) {} );
+                        this.unhighlightAllSpaces();
+                    }
                     else if (this.checkPossibleActions( 'chooseSaucerSpace', true ))
                     { // we are choosing a space to place a Saucer
                         if(this.chosenSpaceX != 0 && this.chosenSpaceY != 0)
@@ -1295,7 +1291,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
         // To get args, use args.args (not args like in onUpdateActionButtons ).
         onEnteringState: function( stateName, args )
         {
-            //console.log( 'Entering state: '+stateName );
+            console.log( 'Entering state: '+stateName );
+
+
 
             switch( stateName )
             {
@@ -1331,6 +1329,21 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                       if(this.gamedatas.saucer2 != '')
                           this.returnMoveCardToHandOfSaucer(this.gamedatas.saucer2);
 
+
+                  break;
+
+                  case 'chooseAcceleratorDirection':
+                    if( this.isCurrentPlayerActive() )
+                    { // this is the active player
+
+                    }
+                  break;
+                  case 'chooseIfYouWillUseBooster':
+
+                    if( this.isCurrentPlayerActive() )
+                    { // this is the active player
+
+                    }
 
                   break;
 
@@ -1471,6 +1484,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                   }
 
                   break;
+
+                  default:
+//this.unhighlightAllDirections(); // UNhighlight ALL directions
+                  break;
             }
         },
 
@@ -1493,24 +1510,38 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 break;
            */
-             case 'claimZag':
-                 console.log( "onLeavingState->claimZag" );
+             case 'chooseMoveCard':
+               if( this.isCurrentPlayerActive() )
+               { // this is the active player
+                   this.unselectAllSaucers();
+                   this.unhighlightAllSaucers();
+
+                   this.unselectAllMoveCards();
+                   this.unhighlightAllMoveCards();
+
+                   this.unselectAllDirections();
+                   this.unhighlightAllDirections();
+
+                   this.unhighlightAllSpaces();
+               }
+
+             case 'chooseAcceleratorDirection':
+
+               if( this.isCurrentPlayerActive() )
+               { // this is the active player
+                  this.unhighlightAllDirections();
+               }
+
              break;
 
-            case 'chooseZigPhase':
-            console.log( "onLeavingState->chooseZigPhase" );
-            this.playedCardThisTurn = false; // true if I have chosen the Zig I will play this round
-            this.choseDirectionThisTurn = false; // true if I have chosen the DIRECTION of the Zig I will play this round
-            this.askedZag = false; // true if the player has declined to claim a Zag
-            break;
+             case 'chooseIfYouWillUseBooster':
 
-            case 'setTrapsPhase':
-            console.log( "onLeavingState->setTrapsPhase" );
+               if( this.isCurrentPlayerActive() )
+               { // this is the active player
+                  this.unhighlightAllDirections();
+               }
 
-            //this.finishedTrapping = false; // true if we have either set our trap or chosen not to set a trap or we don't have any traps
-
-            this.resetMovePhaseVariables(); // before we go into the move phase, reset the variables for it
-            break;
+             break;
 
             case 'executeMove':
             console.log( "onLeavingState->executeMove" );
@@ -1762,6 +1793,18 @@ this.unhighlightAllGarments();
                       }
                   break;
 
+                  case 'chooseUpgradeSpace':
+
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+                          var validSpaces = args.validSpaces;
+                          this.highlightAllTheseSpaces(validSpaces);
+
+                          this.addActionButton( 'skipButton_17', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
+                      }
+
+                  break;
+
                   case 'chooseSaucerWormholeGenerator':
 
                       if( this.isCurrentPlayerActive() )
@@ -1799,26 +1842,27 @@ this.unhighlightAllGarments();
                   case 'endRoundPlaceCrashedSaucer':
                   case 'askPreTurnToPlaceCrashedSaucer':
 
-                  if( this.isCurrentPlayerActive() )
-                  { // this player is active
-                      var saucerButton = args.saucerButton;
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+                          var saucerButton = args.saucerButton;
 
-                      var color = saucerButton['saucerColor'];
-                      var buttonLabel = saucerButton['buttonLabel'];
-                      var isDisabled = saucerButton['isDisabled'];
-                      var hoverOverText = saucerButton['hoverOverText']; // hover over text or '' if we don't want a hover over
-                      var actionName = saucerButton['actionName']; // such as selectSaucerToPlace
-                      var makeRed = saucerButton['makeRed'];
+                          var color = saucerButton['saucerColor'];
+                          var buttonLabel = saucerButton['buttonLabel'];
+                          var isDisabled = saucerButton['isDisabled'];
+                          var hoverOverText = saucerButton['hoverOverText']; // hover over text or '' if we don't want a hover over
+                          var actionName = saucerButton['actionName']; // such as selectSaucerToPlace
+                          var makeRed = saucerButton['makeRed'];
 
-                      //this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
-                      this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_'+actionName, null, null, 'gray');
-                  }
+                          //this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                          this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_'+actionName, null, null, 'gray');
+                      }
                   break;
 
                   case 'chooseDirectionAfterPlacement':
-
-                      this.showDirectionButtons();
-
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+                          this.showDirectionButtons();
+                      }
                   break;
 
                   case 'allCrashSitesOccupiedChooseSpaceEndRound':
@@ -1827,7 +1871,7 @@ this.unhighlightAllGarments();
                       if( this.isCurrentPlayerActive() )
                       { // this player is active
                           var validSpaces = args.validPlacements;
-                          this.highlightAllOccupiedSpaces(validSpaces);
+                          this.highlightAllTheseSpaces(validSpaces);
                       }
 
                   break;
@@ -1940,6 +1984,15 @@ this.unhighlightAllGarments();
                         this.addActionButton( 'skipButton_6', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
 
                     }
+                  break;
+
+                  case 'chooseUpgradeSpace':
+                    if ( this.isCurrentPlayerActive() )
+                    { // we are the active player
+
+                        this.showDirectionButtons();
+                    }
+
                   break;
 
                   case 'chooseTimeMachineDirection':
@@ -2085,6 +2138,8 @@ this.unhighlightAllGarments();
 
                           // highlight all spaces available
                           this.highlightPossibleAcceleratorOrBoostMoveSelections(args.playerSaucerAcceleratorMoves);
+
+                          this.highlightAllDirections();
                       }
                   break;
 
@@ -2101,6 +2156,8 @@ this.unhighlightAllGarments();
 
                           // show a button to skip using a booster
                           this.showAskToUseBoosterButtons();
+
+                          this.highlightAllDirections();
                       }
                   break;
 
@@ -2436,8 +2493,7 @@ console.log("return false");
                                 // What to do after the server call if it succeeded
                                 // (most of the time: nothing)
 
-                                this.unhighlightAllDirections(); // UNhighlight ALL directions
-                                this.unhighlightAllSpaces(); // unhighlight all board move spaces
+
 
                              }, function( is_error) {
 
@@ -2543,13 +2599,27 @@ console.log("return false");
 
         highlightAllDirections: function()
         {
-            this.unselectAllDirections();
+            console.log('highlightAllDirections');
+            //dojo.addClass( 'direction_sun', 'directionHighlighted' );
+            //dojo.addClass( 'direction_asteroids', 'directionHighlighted' );
+            //dojo.addClass( 'direction_meteor', 'directionHighlighted' );
+            //dojo.addClass( 'direction_constellation', 'directionHighlighted' );
+
             dojo.query( '.direction_token' ).addClass( 'directionHighlighted' );
+
+            this.unselectAllDirections();
         },
 
         unhighlightAllDirections: function()
         {
+            console.log('unhighlightAllDirections');
+
             dojo.query( '.direction_token' ).removeClass( 'directionHighlighted' );
+
+            //dojo.removeClass( 'direction_sun', 'directionHighlighted' );
+            //dojo.removeClass( 'direction_asteroids', 'directionHighlighted' );
+            //dojo.removeClass( 'direction_meteor', 'directionHighlighted' );
+            //dojo.removeClass( 'direction_constellation', 'directionHighlighted' );
         },
 
         highlightSpacesForSelectedSaucer: function(color)
@@ -2783,7 +2853,7 @@ console.log("selectSelectedMoveCard of color: "+color);
             dojo.addClass( htmlOfSpace, 'spaceClick_'+direction );
         },
 
-        highlightAllOccupiedSpaces: function(validSpaces)
+        highlightAllTheseSpaces: function(validSpaces)
         {
             this.unhighlightAllSpaces();
             //var countOfSpaces = count(validSpaces);
@@ -3648,7 +3718,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             }
         },
 
-        putCrownOnPlayerBoard: function( color )
+        putProbeOnPlayerBoard: function( color )
         {
           dojo.place( this.format_block( 'jstpl_crown', {
               color: color
@@ -3798,11 +3868,13 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         showDirectionButtons: function()
         {
-            this.addActionButton( this.UP_DIRECTION+'_button', '<div class="'+this.UP_DIRECTION+'"></div>', 'onClick_'+this.UP_DIRECTION+'Direction', null, null, 'gray');
-            this.addActionButton( this.RIGHT_DIRECTION+'_button', '<div class="'+this.RIGHT_DIRECTION+'"></div>', 'onClick_'+this.RIGHT_DIRECTION+'Direction', null, null, 'gray');
-            this.addActionButton( this.DOWN_DIRECTION+'_button', '<div class="'+this.DOWN_DIRECTION+'"></div>', 'onClick_'+this.DOWN_DIRECTION+'Direction', null, null, 'gray');
             this.addActionButton( this.LEFT_DIRECTION+'_button', '<div class="'+this.LEFT_DIRECTION+'"></div>', 'onClick_'+this.LEFT_DIRECTION+'Direction', null, null, 'gray');
 
+            this.addActionButton( this.UP_DIRECTION+'_button', '<div class="'+this.UP_DIRECTION+'"></div>', 'onClick_'+this.UP_DIRECTION+'Direction', null, null, 'gray');
+
+            this.addActionButton( this.DOWN_DIRECTION+'_button', '<div class="'+this.DOWN_DIRECTION+'"></div>', 'onClick_'+this.DOWN_DIRECTION+'Direction', null, null, 'gray');
+
+            this.addActionButton( this.RIGHT_DIRECTION+'_button', '<div class="'+this.RIGHT_DIRECTION+'"></div>', 'onClick_'+this.RIGHT_DIRECTION+'Direction', null, null, 'gray');
 
             //dojo.addClass('sun_button','bgaimagebutton'); // remove the button outline
 

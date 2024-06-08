@@ -426,6 +426,18 @@
       self::ajaxResponse( );
     }
 
+    public function actChooseUpgradeSpace()
+    {
+        self::setAjaxMode();
+        $destination_x = self::getArg( "chosenX", AT_posint, true );
+        $destination_y = self::getArg( "chosenY", AT_posint, true );
+
+        //echo "Replacing garment at ($destination_x, $destination_y). <br>";
+
+        $this->game->executeChooseUpgradeSpace( $destination_x, $destination_y );
+        self::ajaxResponse( );
+    }
+
     public function actChooseAnySpaceForSaucer()
     {
         self::setAjaxMode();

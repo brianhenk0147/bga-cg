@@ -31,7 +31,6 @@
       <div id="outer_board">
         <div id="outer_board_top_row">
           <div id="direction_sun" class="direction_token"></div>
-          <div id="energy_pile"></div>
           <div id="replacement_garment_chosen_holder"></div>
         </div>
         <div id="middle_board_row">
@@ -1062,37 +1061,39 @@
 
       <div id="outer_board_bottom_row">
         <div id="direction_meteor" class="direction_token"></div>
-        <div id="booster_pile"></div>
       </div>
     </div> <!--outer_board-->
   </div> <!--board_tile_column -->
+  <div id="lost_crewmembers_and_move_cards">
+      <div id="garments_container">
+          <!-- BEGIN lost_crewmembers -->
+              <div class="available_garment_group">
+                  <div id="garment_holder_pilot_{PLAYER_COLOR}" class="garment_holder"></div>
+                  <div id="garment_holder_engineer_{PLAYER_COLOR}" class="garment_holder"></div>
+                  <div id="garment_holder_doctor_{PLAYER_COLOR}" class="garment_holder"></div>
+                  <div id="garment_holder_scientist_{PLAYER_COLOR}" class="garment_holder"></div>
+              </div>
+          <!-- END lost_crewmembers -->
+      </div>
 
-  <div id="garments_container" class="component_rounding">
-      <!-- BEGIN lost_crewmembers -->
-          <div class="available_garment_group {LEFT_OR_RIGHT}">
-              <div id="garment_holder_pilot_{PLAYER_COLOR}" class="garment_holder"></div>
-              <div id="garment_holder_engineer_{PLAYER_COLOR}" class="garment_holder"></div>
-              <div id="garment_holder_doctor_{PLAYER_COLOR}" class="garment_holder"></div>
-              <div id="garment_holder_scientist_{PLAYER_COLOR}" class="garment_holder"></div>
-          </div>
-      <!-- END lost_crewmembers -->
-  </div>
+      <!-- BEGIN saucer -->
+      <div class="mat_and_stuff_row" style="background-color:#{PLAYER_COLOR}">
+          <div class="mat_row">
 
-          <!-- BEGIN saucer -->
-              <div class="mat_and_stuff_row component_rounding" style="background-color:#{PLAYER_COLOR}">
-                  <div class="mat_row">
-
-                      <div id="move_card_hand_{PLAYER_COLOR}" class="move_card_hand" style="color:#{PLAYER_COLOR}">
-                          <div id="move_card_holder_1_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
-                          <div id="move_card_holder_2_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
-                          <div id="move_card_holder_0_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
-                      </div>
-
-                  </div>
+              <div id="move_card_hand_{PLAYER_COLOR}" class="move_card_hand" style="color:#{PLAYER_COLOR}">
+                  <div id="move_card_holder_1_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
+                  <div id="move_card_holder_2_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
+                  <div id="move_card_holder_0_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
               </div>
 
-          <!-- END saucer -->
+          </div>
+      </div>
+      <!-- END saucer -->
 
+      <div id="booster_pile"></div>
+      <div id="energy_pile"></div>
+
+  </div>
 
 
 
@@ -1148,7 +1149,7 @@ var jstpl_upgradeCardText = '<div class="upgradeCardContent">\
                     </div>'
 
 
-var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}">\
+var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}" class="player_board_for_saucer">\
                                         <div id="player_board_ostrich_and_crown_holder_${color}" class="player_board_ostrich_and_crown_holder">\
                                           <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
                                           <div id="player_board_direction_holder_${owner}" class="player_board_direction_holder"></div>\

@@ -157,16 +157,10 @@
         $playerIndex = 0;
         foreach( $allSaucers as $saucer )
         {
-            $leftOrRight = "garment_column_right";
-            if($playerIndex % 2 == 0)
-            {
-                $leftOrRight = "garment_column_left";
-            }
 
                 $this->page->insert_block( "lost_crewmembers", array(
                                                     "PLAYER_COLOR" => $saucer['ostrich_color'],
-                                                    "PLAYER_ID" => $saucer['ostrich_owner'],
-                                                    "LEFT_OR_RIGHT" => $leftOrRight
+                                                    "PLAYER_ID" => $saucer['ostrich_owner']
                                                      ) );
                 $playerIndex++;
         }
