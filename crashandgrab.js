@@ -19,7 +19,8 @@ define([
     "dojo","dojo/_base/declare",
     "ebg/core/gamegui",
     "ebg/counter",
-    "ebg/stock"
+    "ebg/stock",
+    "ebg/counter"
 ],
 function (dojo, declare) {
     return declare("bgagame.crashandgrab", ebg.core.gamegui, {
@@ -110,6 +111,10 @@ function (dojo, declare) {
 
             // other
             this.hasMultipleOstriches = false; // will set to true if this player is controlling multiple ostriches
+
+            // counters for player boards
+            this.energy_counters={};
+            this.booster_counters={};
         },
 
         /*
@@ -168,6 +173,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     // place it on the Cargo Hold card
 
                 }
+                // update the player board with the value of how many boosters
+                this.booster_counters[saucer.color].setValue(boosterQuantity);
 
                 // place any energy they have on their saucer mat
                 var energyQuantity = saucer.energy_quantity;
@@ -180,6 +187,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     } ) , matEnergyLocationHtmlId);
                 }
 
+                // update the player board with the value of how many boosters
+                this.energy_counters[saucer.color].setValue(energyQuantity);
             }
 
 
@@ -394,7 +403,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 { // this garment is out on the board
                     dojo.place( this.format_block( 'jstpl_garment', {
                           color: color,
-                          garment_type: typeString
+                          garment_type: typeString,
+                          size: "crewmember",
+                          small: ""
                     } ) , 'square_'+x+'_'+y );
                 }
                 else if(location == "pile")
@@ -403,14 +414,18 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     console.log('pileLocationHtmlId:'+pileLocationHtmlId);
                     dojo.place( this.format_block( 'jstpl_garment', {
                           color: color,
-                          garment_type: typeString
+                          garment_type: typeString,
+                          size: "crewmember",
+                          small: ""
                     } ) , pileLocationHtmlId );
                 }
                 else if(location == "chosen")
                 { // this garment is chosen to be replaced but not yet placed
                     dojo.place( this.format_block( 'jstpl_garment', {
                           color: color,
-                          garment_type: typeString
+                          garment_type: typeString,
+                          size: "crewmember",
+                          small: ""
                     } ) , 'replacement_garment_chosen_holder' );
                 }
                 else
@@ -424,7 +439,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                     dojo.place( this.format_block( 'jstpl_garment', {
                           color: color,
-                          garment_type: typeString
+                          garment_type: typeString,
+                          size: "crewmember",
+                          small: ""
                     } ) , matLocationHtmlId );
 
 
@@ -432,6 +449,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 }
 
             }
+
 
 
             this.updateTurnOrder(this.gamedatas.turnOrder);
@@ -2248,6 +2266,8 @@ this.unhighlightAllGarments();
                     var tokenDiv = this.format_block('jstpl_garment', {
                         "garment_type" : crewmemberType,
                         "color" : crewmemberColor,
+                        "size" : "crewmember_small",
+                        "small" : "small_"
                     });
                     console.log('getTokenDiv CREWMEMBERIMAGE token_id:'+token_id+' tokenDiv:'+tokenDiv);
                     return tokenDiv;
@@ -2990,9 +3010,13 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
         animateEvents: function(eventStack)
         {
             var nextEvent = eventStack.pop();
+            var skipAnimation = false;
             console.log('nextEvent:'+nextEvent);
             if(nextEvent)
             {
+                // until we have a reason to skip the animation for this event, let's do it
+                skipAnimation = false;
+
                 // default source and destination to event type saucerMove
                 var eventType = nextEvent['event_type']; // saucerMove
 
@@ -3033,15 +3057,51 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
                     animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
                 }
+                else if(eventType == 'saucerCrashed')
+                { // the saucer crashed
+
+                    // do not animate this
+                    skipAnimation = true;
+                }
+                else if(eventType == 'movedOntoAccelerator')
+                { // the saucer moved onto an accelerator
+
+                    // TODO: add a sparkle or pulse or something when it goes over it
+
+                    // do not animate this
+                    skipAnimation = true;
+                }
+                else if(eventType == 'pushedOntoAccelerator')
+                { // the saucer
+
+                    // TODO: add a sparkle or pulse or something when it goes over it
+
+                    // do not animate this
+                    skipAnimation = true;
+                }
+                else if(eventType == 'saucerPush')
+                { // the saucer
+
+                    // do not animate this
+                    skipAnimation = true;
+                }
 
                 console.log("event eventType: " + eventType + " source: " + source + " destination: " + destination);
 
-                var animationId = this.slideToObject( source, destination, animationSpeed );
-                dojo.connect(animationId, 'onEnd', () => {
+                if(skipAnimation)
+                { // we do not need to animation this particular event
 
-                   this.animateEvents(eventStack); // recursively call for the next event
-                });
-                animationId.play();
+                    this.animateEvents(eventStack); // recursively call for the next event
+                }
+                else
+                { // we haven't decided to skip the animation for this event
+                    var animationId = this.slideToObject( source, destination, animationSpeed );
+                    dojo.connect(animationId, 'onEnd', () => {
+
+                       this.animateEvents(eventStack); // recursively call for the next event
+                    });
+                    animationId.play();
+                }
             }
         },
 
@@ -3298,6 +3358,15 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
                 owner: owner,
                 firstOrSecond: firstOrSecond
             } ) , playerBoardDiv );
+
+            // create an energy counter on the player board for this saucer
+            this.energy_counters[color]=new ebg.counter();
+            this.energy_counters[color].create('player_board_energy_count_value_'+color);
+
+
+            // create a booster counter on the player board for this saucer
+            this.booster_counters[color]=new ebg.counter();
+            this.booster_counters[color].create('player_board_booster_count_value_'+color);
 
         },
 
@@ -5355,6 +5424,8 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'upgradePlayed', this, "notif_upgradePlayed");
             dojo.subscribe( 'stealCrewmember', this, "notif_stealCrewmember");
             dojo.subscribe( 'moveCardChange', this, "notif_moveCardChange");
+            dojo.subscribe( 'counter', this, "notif_counter");
+
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -5587,6 +5658,9 @@ console.log("success... onClickUpgradeCardInHand");
             var energyPosition = notif.args.energyPosition;
             var saucerColor = notif.args.saucerColor;
 
+            // update the player board
+            this.energy_counters[saucerColor].setValue(energyPosition);
+
             // show the energy token on the mat of the saucer who acquired it
             dojo.place( this.format_block( 'jstpl_energy', {
                  location: saucerColor,
@@ -5622,6 +5696,9 @@ console.log("success... onClickUpgradeCardInHand");
             var player = notif.args.player_id;
             var boosterPosition = notif.args.boosterPosition;
             var saucerColor = notif.args.saucerColor;
+
+            // update the player board
+            this.booster_counters[saucerColor].setValue(boosterPosition);
 
             // show the booster token on the mat of the saucer who acquired it
             dojo.place( this.format_block( 'jstpl_booster', {
@@ -5665,8 +5742,12 @@ console.log("success... onClickUpgradeCardInHand");
             var saucerColorPlayingCard = notif.args.saucerColor;
             var playerPlayingCard = notif.args.playerId;
             var collectorNumber = notif.args.collectorNumber;
+            var energyQuantity = notif.args.energyQuantity;
 
             var cardInHandDatabaseId = notif.args.databaseId;
+
+            // update the player board with the value of how many boosters
+            this.energy_counters[saucerColorPlayingCard].setValue(energyQuantity);
 
             this.playUpgradeCard(saucerColorPlayingCard, playerPlayingCard, collectorNumber, cardInHandDatabaseId);
         },
@@ -5800,9 +5881,9 @@ console.log("success... onClickUpgradeCardInHand");
         {
             console.log("Entered notif_zagUsed.");
             var saucer = notif.args.ostrich;
-            var boosterQuantity = notif.args.boosterQuantity;
+            var boosterQuantityBeforeUsage = notif.args.boosterQuantity;
 
-            var objectMovingId = 'booster_'+saucer+'_'+boosterQuantity;
+            var objectMovingId = 'booster_'+saucer+'_'+boosterQuantityBeforeUsage;
             var destination = 'booster_pile';
 
             console.log('objectMovingId:'+objectMovingId);
@@ -5813,6 +5894,9 @@ console.log("success... onClickUpgradeCardInHand");
                 this.slideToObjectAndDestroy( objectMovingId, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
 
             }
+
+            // update the player board with the value of how many boosters (must subtract one because it was the before usage quantity)
+            this.booster_counters[saucer].setValue(boosterQuantityBeforeUsage - 1);
         },
 
         notif_xSelected: function( notif )
@@ -5995,6 +6079,10 @@ console.log("success... onClickUpgradeCardInHand");
 
 
             this.animateEvents(eventStack);
+        },
+
+        notif_counter: function(notif) {
+            this.updateCounters(notif.args.counters);
         }
 
    });

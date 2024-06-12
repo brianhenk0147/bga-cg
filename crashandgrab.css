@@ -1644,19 +1644,24 @@ width: 170px;
     background-position: -770px 0px;
 }
 
+.player_board_content {
+  /* center it */
+  position: relative;
+  .inner {
+      position: absolute;
+      margin: auto;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+  }
+}
+
 /* holds all player board content for a saucer */
 .player_board_for_saucer {
 
-    /* center it */
-    position: relative;
-    .inner {
-        position: absolute;
-        margin: auto;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-    }
+  width: 234px;
+
 
 }
 
@@ -1671,10 +1676,59 @@ width: 170px;
 
     float: right;
     vertical-align: middle;
-    margin-bottom: 10px;
+    margin: 5px;
+    margin-left: 10px;
 
     border-radius: 10px;
     border: 0px black solid;
+}
+
+.transparent_background_01b508
+{
+  background-color: rgba(1,181,8,0.5);
+
+  border-radius: 10px;
+  border: 5px #01b508 solid;
+}
+
+.transparent_background_b92bba
+{
+  background-color: rgba(185,43,186,0.5);
+
+  border-radius: 10px;
+  border: 5px #b92bba solid;
+}
+
+.transparent_background_e77324
+{
+  background-color: rgba(231,115,36,0.5);
+
+  border-radius: 10px;
+  border: 5px #e77324 solid;
+}
+
+.transparent_background_fedf3d
+{
+  background-color: rgba(254,223,61,0.5);
+
+  border-radius: 10px;
+  border: 5px #fedf3d solid;
+}
+
+.transparent_background_0090ff
+{
+  background-color: rgba(0,144,255,0.5);
+
+  border-radius: 10px;
+  border: 5px #0090ff solid;
+}
+
+.transparent_background_f6033b
+{
+  background-color: rgba(246,3,59,0.5);
+
+  border-radius: 10px;
+  border: 5px #f6033b solid;
 }
 
 .mat_row {
@@ -1923,12 +1977,13 @@ width: 170px;
     display: inline-block;
     position: relative;
 
-    margin-left: 40px;
+    margin-left: 45px;
+    margin-top: 5px;
 
     background-color: rgba(90,90,90,0.5);
 
     border-radius: 10px;
-    border: 0px black solid;
+    border: 5px #5A5A5A solid;
 }
 
 .booster_token {
@@ -1936,6 +1991,17 @@ width: 170px;
     height: 30px;
 
     background-image: url('img/booster_30.png');
+
+    position: relative;
+
+    z-index: 10;
+}
+
+.booster_token_small {
+    width: 20px;
+    height: 20px;
+
+    background-image: url('img/booster_20.png');
 
     position: relative;
 
@@ -1960,6 +2026,20 @@ width: 170px;
     top:405px;
 }
 
+.player_board_booster_count_holder {
+    width: 35px;
+    display: block;
+}
+
+.player_board_booster {
+    float: right;
+}
+
+.player_board_energy_and_booster_count_holder {
+    float: right;
+    margin-top: 10px;
+}
+
 /***** ENERGY *****/
 #energy_pile {
     width: 120px;
@@ -1974,7 +2054,7 @@ width: 170px;
     background-color: rgba(90,90,90,0.5);
 
     border-radius: 10px;
-    border: 0px black solid;
+    border: 5px #5A5A5A solid;
 }
 
 .energy_cube {
@@ -2020,6 +2100,15 @@ margin-top: 4px;
 margin-top: 6px;
 }
 
+.player_board_energy_count_holder {
+    width: 35px;
+    display: inline-block;
+}
+
+.player_board_energy {
+    float: right;
+}
+
 /***** UPGRADES *****/
 #upgrade_market_container
 {
@@ -2049,15 +2138,15 @@ margin-top: 6px;
 
 #lost_crewmembers_and_move_cards
 {
-    max-width: 720px;
+    max-width: 735px;
     float: left;
 }
 
 /***** CREWMEMBERS *****/
-#garments_container
+#lost_crewmember_container
 {
-    width: 356px;
-    height: 280px;
+    width: 346px;
+    height: 290px;
 
     /*center it*/
     display:flex;
@@ -2066,13 +2155,14 @@ margin-top: 6px;
 
     vertical-align: top;
     margin-bottom: 10px;
+    margin-top: 5px;
 
     float: left;
 
     background-color: rgba(255,255,255,0.5);
 
     border-radius: 10px;
-    border: 0px black solid;
+    border: 5px #ffffff solid;
 }
 
 .highlighted_garment_pile
@@ -2136,6 +2226,17 @@ margin-top: 6px;
     background-image: url('img/crewmembers.png');
     z-index: 10;
 }
+.crewmember_small {
+  width: 23px;
+  height: 23px;
+  padding: 0px;
+  margin-left: 1px;
+  margin-right: 1px;
+  position: relative;  /* must be absolute or relative to use slideToObject */
+  display: inline-block;
+  background-image: url('img/crewmembers_small.png');
+  z-index: 10;
+}
 
 .highlighted_garment
 {
@@ -2157,7 +2258,7 @@ margin-top: 6px;
   transform: rotate(-45deg);
 }
 
-/* these are each individual garment */
+/* CREWMEMBER IN PLAY */
 /* red garments */
 .crewmember_pilot_f6033b { background-position: -141px 0px;   }
 .crewmember_engineer_f6033b { background-position: -141px -47px;   }
@@ -2193,6 +2294,43 @@ margin-top: 6px;
 .crewmember_engineer_e77324 { background-position: -188px -47px;   }
 .crewmember_doctor_e77324 { background-position: -188px -94px;   }
 .crewmember_scientist_e77324 { background-position: -188px -141px;   }
+
+/* CREWMEMBER IN MESSAGE LOG */
+/* red garments */
+.crewmember_small_pilot_f6033b { background-position: -71px 0px;   }
+.crewmember_small_engineer_f6033b { background-position: -71px -23px;   }
+.crewmember_small_doctor_f6033b { background-position: -71px -46px;   }
+.crewmember_small_scientist_f6033b { background-position: -71px -71px;   }
+
+/* green garments */
+.crewmember_small_pilot_01b508 { background-position: 0px 0px;   }
+.crewmember_small_engineer_01b508 { background-position: 0px -23px;   }
+.crewmember_small_doctor_01b508 { background-position: 0px -46px;   }
+.crewmember_small_scientist_01b508 { background-position: 0px -71px;   }
+
+/* blue garments */
+.crewmember_small_pilot_0090ff { background-position: -23px 0px;   }
+.crewmember_small_engineer_0090ff { background-position: -23px -23px;   }
+.crewmember_small_doctor_0090ff { background-position: -23px -46px;   }
+.crewmember_small_scientist_0090ff { background-position: -23px -71px;   }
+
+/* yellow garments */
+.crewmember_small_pilot_fedf3d { background-position: -46px 0px;   }
+.crewmember_small_engineer_fedf3d { background-position: -46px -23px;   }
+.crewmember_small_doctor_fedf3d { background-position: -46px -46px;   }
+.crewmember_small_scientist_fedf3d { background-position: -46px -71px;   }
+
+/* purple garments */
+.crewmember_small_pilot_b92bba { background-position: -118px 0px;   }
+.crewmember_small_engineer_b92bba { background-position: -118px -23px;   }
+.crewmember_small_doctor_b92bba { background-position: -118px -46px;   }
+.crewmember_small_scientist_b92bba { background-position: -118px -71px;   }
+
+/* orange garments */
+.crewmember_small_pilot_e77324 { background-position: -94px 0px;   }
+.crewmember_small_engineer_e77324 { background-position: -94px -23px;   }
+.crewmember_small_doctor_e77324 { background-position: -94px -46px;   }
+.crewmember_small_scientist_e77324 { background-position: -94px -71px;   }
 
 
 

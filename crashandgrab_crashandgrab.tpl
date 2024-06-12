@@ -1065,7 +1065,7 @@
     </div> <!--outer_board-->
   </div> <!--board_tile_column -->
   <div id="lost_crewmembers_and_move_cards">
-      <div id="garments_container">
+      <div id="lost_crewmember_container">
           <!-- BEGIN lost_crewmembers -->
               <div class="available_garment_group">
                   <div id="garment_holder_pilot_{PLAYER_COLOR}" class="garment_holder"></div>
@@ -1077,7 +1077,7 @@
       </div>
 
       <!-- BEGIN saucer -->
-      <div class="mat_and_stuff_row" style="background-color:#{PLAYER_COLOR}">
+      <div class="mat_and_stuff_row transparent_background_{PLAYER_COLOR}">
           <div class="mat_row">
 
               <div id="move_card_hand_{PLAYER_COLOR}" class="move_card_hand" style="color:#{PLAYER_COLOR}">
@@ -1112,7 +1112,7 @@ var jstpl_zag='<div class="zag component_circle" id="zag_${color}"></div>';
 var jstpl_energy='<div class="energy_cube" id="energy_${location}_${position}"></div>';
 var jstpl_booster='<div class="booster_token" id="booster_${location}_${position}"></div>';
 
-var jstpl_garment='<div class="crewmember crewmember_${garment_type}_${color}" id="crewmember_${garment_type}_${color}"></div>';
+var jstpl_garment='<div class="${size} crewmember_${small}${garment_type}_${color}" id="crewmember_${garment_type}_${color}"></div>';
 
 var jstpl_actionButtonHolder='<div id="saucer_${saucerNumber}_action_button_holder"></div>'
 
@@ -1148,8 +1148,17 @@ var jstpl_upgradeCardText = '<div class="upgradeCardContent">\
                     <div class="upgradeEffect">${effect}</div>\
                     </div>'
 
-
 var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}" class="player_board_for_saucer">\
+                                         <div id="player_board_energy_and_booster_count_holder_${color}" class="player_board_energy_and_booster_count_holder">\
+                                            <div id="player_board_booster_count_holder_${color}" class="player_board_booster_count_holder">\
+                                                <span id="player_board_booster_count_value_${color}">0</span>\
+                                                <div class="player_board_booster booster_token_small"></div>\
+                                            </div>\
+                                            <div id="player_board_energy_count_holder_${color}" class="player_board_energy_count_holder">\
+                                                <span id="player_board_energy_count_value_${color}">0</span>\
+                                                <div class="player_board_energy energy_cube player_board_energy"></div>\
+                                            </div>\
+                                        </div>\
                                         <div id="player_board_ostrich_and_crown_holder_${color}" class="player_board_ostrich_and_crown_holder">\
                                           <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
                                           <div id="player_board_direction_holder_${owner}" class="player_board_direction_holder"></div>\

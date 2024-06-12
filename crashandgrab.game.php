@@ -304,13 +304,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
   			// get the ostrich positions
 				$result['ostrich'] = self::getObjectListFromDB( "SELECT ostrich_x x,ostrich_y y, ostrich_color color, ostrich_owner owner, ostrich_last_direction last_direction, ostrich_has_zag has_zag, ostrich_has_crown, booster_quantity, energy_quantity
 				                                               FROM ostrich
-				                                               WHERE 1" );
+				                                               WHERE 1 ORDER BY ostrich_owner, ostrich_color" );
 
 				$result['lastMovedOstrich'] = $this->LAST_MOVED_OSTRICH;
 
 				$result['garment'] = self::getObjectListFromDB( "SELECT garment_x,garment_y,garment_location,garment_color,garment_type FROM garment ORDER BY garment_location,garment_type");
 
-			$result['turnOrder'] = $this->getGameStateValue("TURN_ORDER");
+				$result['turnOrder'] = $this->getGameStateValue("TURN_ORDER");
 
         return $result;
     }
@@ -1532,7 +1532,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function getAllSaucers()
 		{
 				return self::getObjectListFromDB( "SELECT *
-																					 FROM ostrich ORDER BY ostrich_owner" );
+																					 FROM ostrich ORDER BY ostrich_owner, ostrich_color" );
 		}
 
 		function getAllPlayers()
@@ -5163,14 +5163,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_turns_taken, ostrich_color color, ostrich_owner owner, 'name' ownerName
 																										 FROM ostrich
-																										 WHERE ostrich_owner=$playerId" );
+																										 WHERE ostrich_owner=$playerId ORDER BY ostrich_color" );
 		}
 
 		function getFirstSaucerForPlayer($playerId)
 		{
 				return self::getUniqueValueFromDb( "SELECT ostrich_color
 																										 FROM ostrich
-																										 WHERE ostrich_owner=$playerId LIMIT 1" );
+																										 WHERE ostrich_owner=$playerId ORDER BY ostrich_color LIMIT 1" );
 		}
 
 		function getCollectorNumberFromDatabaseId($databaseId)
@@ -5202,7 +5202,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		        $ostriches = self::getObjectListFromDB( "SELECT ostrich_color color, ostrich_owner owner, 'name' ownerName, ostrich_causing_cliff_fall
 						                                               FROM ostrich
-						                                               WHERE 1" );
+						                                               WHERE 1 ORDER BY ostrich_owner, ostrich_color" );
 
 						global $g_user;
 		  			$current_player_id = $g_user->get_id();
@@ -5704,11 +5704,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 										if($wasPushed)
 										{ // the saucer moving was pushed onto this accelerator
+
+												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance));
+
 												$pushedOntoAcceleratorEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerMoving, $wasPushed);
 												return array_merge($moveEventList, $pushedOntoAcceleratorEventList); // add the pushed event to the original and return so we don't go any further
 										}
 										else
 										{ // the saucer moving moved onto the accelerator on their turn
+
+												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving));
+
 												return $moveEventList; // don't go any further
 										}
 								}
@@ -5716,6 +5722,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								{	// went off a cliff
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
+										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving));
+
 										return $moveEventList; // don't go any further
 								}
 								else
@@ -5726,6 +5735,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$saucerWeCollideWith = $this->getSaucerAt($thisX, $currentY, $saucerMoving); // get any ostriches that might be at this location
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
+
+
+										array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 
 										$pushedEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerWeCollideWith, true);
 										return array_merge($moveEventList, $pushedEventList); // add the pushed event to the original and return so we don't go any further
@@ -5789,11 +5801,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 										if($wasPushed)
 										{ // the saucer moving was pushed onto this accelerator
+
+												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance));
+
 												$pushedOntoAcceleratorEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerMoving, $wasPushed);
 												return array_merge($moveEventList, $pushedOntoAcceleratorEventList); // add the pushed event to the original and return so we don't go any further
 										}
 										else
 										{ // the saucer moving moved onto the accelerator on their turn
+
+												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving));
+
 												return $moveEventList; // don't go any further
 										}
 								}
@@ -5801,6 +5819,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								{	// went off a cliff
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
+										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving));
+
 										return $moveEventList; // return so we don't go any further
 								}
 								else
@@ -5813,7 +5834,15 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
 
+									//array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
+//throw new feException("saucerPush added. now adding X, Y ($thisX, $currentY) and distance, direction ($distance, $direction), and saucerWeCollideWith ($saucerWeCollideWith)");
+
 									$pushedEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerWeCollideWith, true);
+
+//$countEventList = count($moveEventList);
+//$countPushedEventList = count($pushedEventList);
+//throw new feException("countEventList ($countEventList) and countPushedEventList ($countPushedEventList)");
+
 									return array_merge($moveEventList, $pushedEventList); // add the pushed event to the original and return so we don't go any further
 								}
 						}
@@ -5867,11 +5896,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 										if($wasPushed)
 										{ // the saucer moving was pushed onto this accelerator
+
+												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance));
+
 												$pushedOntoAcceleratorEventList = $this->getEventsWhileExecutingMove($currentX, $thisY, $distance, $direction, $saucerMoving, $wasPushed);
 												return array_merge($moveEventList, $pushedOntoAcceleratorEventList); // add the pushed event to the original and return so we don't go any further
 										}
 										else
 										{ // the saucer moving moved onto the accelerator on their turn
+
+												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving));
+
 												return $moveEventList; // don't go any further
 										}
 								}
@@ -5879,6 +5914,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								{	// went off a cliff
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
+										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving));
+
 										return $moveEventList;
 								}
 								else
@@ -5889,6 +5927,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$saucerWeCollideWith = $this->getSaucerAt($currentX, $thisY, $saucerMoving); // get any ostriches that might be at this location
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
+
+										array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 
 										$pushedEventList = $this->getEventsWhileExecutingMove($currentX, $thisY, $distance, $direction, $saucerWeCollideWith, true);
 										return array_merge($moveEventList, $pushedEventList); // add the pushed event to the original and return so we don't go any further
@@ -5947,11 +5987,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 										if($wasPushed)
 										{ // the saucer moving was pushed onto this accelerator
+
+												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance));
+
 												$pushedOntoAcceleratorEventList = $this->getEventsWhileExecutingMove($currentX, $thisY, $distance, $direction, $saucerMoving, $wasPushed);
 												return array_merge($moveEventList, $pushedOntoAcceleratorEventList); // add the pushed event to the original and return so we don't go any further
 										}
 										else
 										{ // the saucer moving moved onto the accelerator on their turn
+
+												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving));
+
 												return $moveEventList; // don't go any further
 										}
 								}
@@ -5959,6 +6005,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								{	// went off a cliff
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
+										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving));
+
 										return $moveEventList;
 								}
 								else
@@ -5969,6 +6018,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$saucerWeCollideWith = $this->getSaucerAt($currentX, $thisY, $saucerMoving); // get any ostriches that might be at this location
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
+
+									array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 
 									$pushedEventList = $this->getEventsWhileExecutingMove($currentX, $thisY, $distance, $direction, $saucerWeCollideWith, true);
 									return array_merge($moveEventList, $pushedEventList); // add the pushed event to the original and return so we don't go any further
@@ -7502,10 +7553,12 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 					'moveEventList' => $reversedMoveEventList
 				) );
 
+
+				// tell the players what happened in the game log
+				$this->updateGameLogForEvents($saucerMoving, $moveEventList);
+
 				// see if any saucers fell off cliffs and notify everyone if they did
 				$this->sendCliffFallsToPlayers();
-
-				$this->updateGameLogForEvents($moveEventList); // tell the players what happened in the game log
 
 
 				// decide the state to go to after the move
@@ -7513,8 +7566,23 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		}
 
-		function updateGameLogForEvents($eventList)
+		function updateGameLogForEvents($saucerMoving, $eventList)
 		{
+				$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerMoving);
+
+				$spaces = "spaces";
+				$saucerMoveDistance = $this->getSaucerDistance($saucerMoving);
+				if($saucerMoveDistance == 1)
+				{ // we are only moving 1 spaces
+						$spaces = "space";
+				}
+
+				self::notifyAllPlayers( "saucerMove", clienttranslate( '${saucerMovingHighlightedText} is moving ${distance} ${spaces}.' ), array(
+					'saucerMovingHighlightedText' => $saucerMovingHighlightedText,
+					'distance' => $saucerMoveDistance,
+					'spaces' => $spaces
+				) );
+
 				foreach($eventList as $event)
 				{
 						$eventType = $event['event_type']; // saucerMove
@@ -7526,6 +7594,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						if($eventType == 'saucerMove')
 						{
+/* REPLACED SPECIFYING EVERY SPACE MOVED WITH JUST SAYING HOW FAR THEY ARE MOVING
 								$destinationX = $event['destination_X'];
 								$destinationY = $event['destination_Y'];
 
@@ -7534,6 +7603,48 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 									'xDestination' => $destinationX,
 									'yDestination' => $destinationY
 								) );
+*/
+						}
+						elseif($eventType == 'saucerCrashed')
+						{ // the saucer moving went off the board
+
+								self::notifyAllPlayers( "saucerCrashed", clienttranslate( '${saucerMovingHighlightedText} has crashed.' ), array(
+									'saucerMovingHighlightedText' => $saucerMovingHighlightedText
+								) );
+
+						}
+						elseif($eventType == 'movedOntoAccelerator')
+						{ // the saucer moving walked onto an accelerator on their turn
+
+								self::notifyAllPlayers( "movedOntoAccelerator", clienttranslate( '${saucerMovingHighlightedText} is taking an Accelerator.' ), array(
+									'saucerMovingHighlightedText' => $saucerMovingHighlightedText
+								) );
+
+						}
+						elseif($eventType == 'pushedOntoAccelerator')
+						{ // the saucer moving was pushed onto an accelerator
+
+								$spacesPushed = $event['spaces_pushed'];
+
+								self::notifyAllPlayers( "pushedOntoAccelerator", clienttranslate( '${saucerMovingHighlightedText} was pushed onto an Accelerator and will go ${spacesPushed} spaces.' ), array(
+									'saucerMovingHighlightedText' => $saucerMovingHighlightedText,
+									'spacesPushed' => $spacesPushed
+								) );
+
+						}
+						elseif($eventType == 'saucerPush')
+						{ // the saucer moving pushed another saucer
+
+								$saucerPushed = $event['saucer_pushed'];
+								$saucerPushedHighlightedText = $this->convertColorToHighlightedText($saucerPushed);
+								$spacesPushed = $event['spaces_pushed'];
+
+								self::notifyAllPlayers( "saucerPushed", clienttranslate( '${saucerMovingHighlightedText} has pushed ${saucerPushedHighlightedText} ${spacesPushed} spaces.' ), array(
+									'saucerMovingHighlightedText' => $saucerMovingHighlightedText,
+									'saucerPushedHighlightedText' => $saucerPushedHighlightedText,
+									'spacesPushed' => $spacesPushed
+								) );
+
 						}
 						elseif($eventType == 'crewmemberPickup')
 						{ // they picked up a crewmember
@@ -7816,6 +7927,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->decrementEnergyForSaucer($color);
 				$this->decrementEnergyForSaucer($color);
 
+				$energyQuantity = $this->getEnergyCountForSaucer($color);
+
 				// get some additional notification details
 				$nameOfUpgrade = $this->getUpgradeTitleFromCollectorNumber($collectorNumber);
 				$colorName = $this->convertColorToHighlightedText($color);
@@ -7828,7 +7941,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						'playerId' => $playerId,
 						'player_name' => $playerName,
 						'name_of_upgrade' => $nameOfUpgrade,
-						'color_name' => $colorName
+						'color_name' => $colorName,
+						'energyQuantity' => $energyQuantity
 				) );
 
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
