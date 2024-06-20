@@ -1116,21 +1116,27 @@ var jstpl_garment='<div class="${size} crewmember_${small}${garment_type}_${colo
 
 var jstpl_actionButtonHolder='<div id="saucer_${saucerNumber}_action_button_holder"></div>'
 
+
+
+<!--OBSOLETE-->
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->
 var jstpl_mymovementcard = '<div class="move_card component_rounding" id="mymovementcard_${player_id}" style="background-position:-${x}px -${y}px">\
                         </div>';
 
+<!--OBSOLETE-->
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->
 var jstpl_zigback = '<div class="zigBack component_rounding" id="zigback_${player_id}" style="background-position:-${x}px -${y}px">\
                                                 </div>';
 
+<!--OBSOLETE-->
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->
 var jstpl_myTrapInHand = '<div class="myTrapInHand component_rounding" id="myTrapInHand_${player_id}" style="background-position:-${x}px -${y}px">\
                             </div>';
 
+<!--OBSOLETE-->
 <!-- match the class to the css class for the image location -->
 <!-- match the id to the js file when you dojo.place it -->
 var jstpl_trapBack = '<div class="myTrap component_rounding" id="trapBack_${player_id}" style="background-position:-${x}px -${y}px">\
@@ -1189,6 +1195,7 @@ var jstpl_crown = '<div id="player_board_crown" class="starting_color_${color}">
 var jstpl_arrow = '<div id="player_board_arrow_${id}" class="player_board_arrow" style="background-position-x:-${x}px"></div>';
 
 var jstpl_moveCard = '<div id="move_card_${distance}_${color}" class="move_card component_rounding" style="background-position:-${x}px -${y}px"></div>';
+var jstpl_moveCardBack = '<div id="move_card_back_${color}" class="move_card_back component_rounding" style="background-position:-${x}px -${y}px"></div>';
 
 
 </script>

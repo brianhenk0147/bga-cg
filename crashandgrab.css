@@ -941,7 +941,7 @@ body {
 }
 
 
-/***** ZIGS *****/
+/***** MOVE CARDS *****/
 #myhand_wrap {
   margin-bottom: 10px;
 }
@@ -966,8 +966,17 @@ float: left;
     position: relative; /* must be absolute or relative to use slideToObject */
 
     z-index: 11; /* we want it to be on top of any played upgrades they have */
+}
 
+.move_card_back {
+    width: 82px;
+    height: 82px;
+    background-image: url('img/movement_cards_back_sprite.jpg');
 
+    display: inline-block;
+    position: relative; /* must be absolute or relative to use slideToObject */
+
+    z-index: 11; /* we want it to be on top of any played upgrades they have */
 }
 
 .move_card_hand {
@@ -982,14 +991,6 @@ float: left;
 
     /* needed to keep move cards vertically centered no matter whether one is chosen (rotated) or not. */
     vertical-align: middle;
-}
-
-.zigBack {
-    width: 82px;
-    height: 82px;
-    background-image: url('img/zig_back.jpg');
-
-    margin-left: 5px;
 }
 
 .stockitem {
@@ -1863,7 +1864,7 @@ width: 170px;
 
   position: absolute;
   left: 48px;
-  top: 95px;
+  top: 76px;
 }
 
 .player_board_saucer_mat_pilot_2
@@ -1872,7 +1873,7 @@ width: 170px;
 
   position: absolute;
   left: 48px;
-  top: 438px;
+  top: 419px;
 }
 
 .player_board_saucer_mat_engineer_1
@@ -1881,7 +1882,7 @@ width: 170px;
 
   position: absolute;
   left: 141px;
-  top: 95px;
+  top: 75px;
 }
 
 .player_board_saucer_mat_engineer_2
@@ -1890,7 +1891,7 @@ width: 170px;
 
   position: absolute;
   left: 141px;
-  top: 437px;
+  top: 419px;
 }
 
 .player_board_saucer_mat_doctor_1
@@ -1899,7 +1900,7 @@ width: 170px;
 
   position: absolute;
   left: 60px;
-  top: 139px;
+  top: 119px;
 }
 
 .player_board_saucer_mat_doctor_2
@@ -1908,7 +1909,7 @@ width: 170px;
 
   position: absolute;
   left: 62px;
-  top: 482px;
+  top: 501px;
 }
 
 .player_board_saucer_mat_scientist_1
@@ -1917,7 +1918,7 @@ width: 170px;
 
   position: absolute;
   left: 134px;
-  top: 139px;
+  top: 118px;
 }
 
 .player_board_saucer_mat_scientist_2
@@ -2298,38 +2299,38 @@ margin-top: 6px;
 /* CREWMEMBER IN MESSAGE LOG */
 /* red garments */
 .crewmember_small_pilot_f6033b { background-position: -71px 0px;   }
-.crewmember_small_engineer_f6033b { background-position: -71px -23px;   }
-.crewmember_small_doctor_f6033b { background-position: -71px -46px;   }
+.crewmember_small_engineer_f6033b { background-position: -71px -24px;   }
+.crewmember_small_doctor_f6033b { background-position: -71px -47px;   }
 .crewmember_small_scientist_f6033b { background-position: -71px -71px;   }
 
 /* green garments */
 .crewmember_small_pilot_01b508 { background-position: 0px 0px;   }
-.crewmember_small_engineer_01b508 { background-position: 0px -23px;   }
-.crewmember_small_doctor_01b508 { background-position: 0px -46px;   }
+.crewmember_small_engineer_01b508 { background-position: 0px -24px;   }
+.crewmember_small_doctor_01b508 { background-position: 0px -47px;   }
 .crewmember_small_scientist_01b508 { background-position: 0px -71px;   }
 
 /* blue garments */
 .crewmember_small_pilot_0090ff { background-position: -23px 0px;   }
-.crewmember_small_engineer_0090ff { background-position: -23px -23px;   }
-.crewmember_small_doctor_0090ff { background-position: -23px -46px;   }
+.crewmember_small_engineer_0090ff { background-position: -23px -24px;   }
+.crewmember_small_doctor_0090ff { background-position: -23px -47px;   }
 .crewmember_small_scientist_0090ff { background-position: -23px -71px;   }
 
 /* yellow garments */
-.crewmember_small_pilot_fedf3d { background-position: -46px 0px;   }
-.crewmember_small_engineer_fedf3d { background-position: -46px -23px;   }
-.crewmember_small_doctor_fedf3d { background-position: -46px -46px;   }
-.crewmember_small_scientist_fedf3d { background-position: -46px -71px;   }
+.crewmember_small_pilot_fedf3d { background-position: -47px 0px;   }
+.crewmember_small_engineer_fedf3d { background-position: -47px -24px;   }
+.crewmember_small_doctor_fedf3d { background-position: -47px -47px;   }
+.crewmember_small_scientist_fedf3d { background-position: -47px -71px;   }
 
 /* purple garments */
 .crewmember_small_pilot_b92bba { background-position: -118px 0px;   }
-.crewmember_small_engineer_b92bba { background-position: -118px -23px;   }
-.crewmember_small_doctor_b92bba { background-position: -118px -46px;   }
+.crewmember_small_engineer_b92bba { background-position: -118px -24px;   }
+.crewmember_small_doctor_b92bba { background-position: -118px -47px;   }
 .crewmember_small_scientist_b92bba { background-position: -118px -71px;   }
 
 /* orange garments */
 .crewmember_small_pilot_e77324 { background-position: -94px 0px;   }
-.crewmember_small_engineer_e77324 { background-position: -94px -23px;   }
-.crewmember_small_doctor_e77324 { background-position: -94px -46px;   }
+.crewmember_small_engineer_e77324 { background-position: -94px -24px;   }
+.crewmember_small_doctor_e77324 { background-position: -94px -47px;   }
 .crewmember_small_scientist_e77324 { background-position: -94px -71px;   }
 
 

@@ -195,89 +195,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
             this.placeBoard(numberOfPlayers);
 
-
-
-            // move cards in hand (just 3 for each player)
-            console.log( "getting HAND move cards " );
-            for( var i in this.gamedatas.hand )
-            {
-                console.log( "card in hand: " + i );
-                var card = this.gamedatas.hand[i];
-                var color = card.location; // saucer color like f6033b
-                var distance = card.type_arg; // 0, 1, 2
-                var used = card.type; // unused or used
-                var usedInt = this.convertUsedStringToInt(used); // 0 or 1
-
-                console.log( "with color " + color + " and distance " + distance + " used " + used );
-
-
-                this.putMoveCardInPlayerHand(used,distance,color);
-            }
-
-            // get the move card this player chose this round for each saucer
-            for( var saucer in this.gamedatas.moveCardChosen )
-            { // there will be one for each saucer the player owns
-                console.log( "move card: " + card );
-                var card = this.gamedatas.moveCardChosen[saucer];
-                var saucerColor = card.ostrich_color;
-                var direction = card.ostrich_zig_direction;
-                var distance = card.ostrich_zig_distance; // 0, 1, 2
-
-                if(distance != 20)
-                { // we've chosen our card already
-
-                    this.placeMoveCard(saucerColor, distance, direction);
-                }
-
-                console.log("saucerColor:"+saucerColor+" direction:"+direction+" distance:"+distance);
-            }
-
-
-
-            // First Param: css class to target
-            // Second Param: type of events
-            // Third Param: the method that will be called when the event defined by the second parameter happen
-            this.addEventToClass('move_card', 'onclick', 'onClick_moveCard'); // add the click handler to all move cards
-
-            // zig cards played on table with both zig and direction chosen
-            for( i in this.gamedatas.played )
-            {
-                var card = this.gamedatas.played[i];
-                var cardId = card.id; // card ID
-                var turnOrder = card.turn; // clockwise or counterclockwise
-                var distance = card.distance; // 0, 1, 2, 3
-                var player_id = card.player; // player number like 2342823
-                var color = card.color; // ostrich color like f6033b
-                var degreesRotated = this.getDegreesRotated(card.ostrich_last_direction); // the number of degrees rotated based on direction
-
-                console.log( "Loading a played card with turn order " + turnOrder + " distance " + distance + " player " + player_id + " and color " + color + " and degrees rotated " + degreesRotated + "." );
-                this.playRotatedZigOnMat( player_id, cardId, distance, turnOrder, color, degreesRotated );
-            }
-
-
-            // zig cards played on table with ONLY the zig chosen
-            console.log( "getting PLAYED move cards " );
-            for( i in this.gamedatas.zigChosen )
-            {
-                var card = this.gamedatas.zigChosen[i];
-                var ostrichGettingZig = card.color; // ostrich color like f6033b
-                var card_id = card.id; // card ID
-                var player_id = card.player; // player number like 2342823
-                var clockwise = card.turn; // clockwise or counterclockwise
-                var distance = card.distance; // 0, 1, 2, 3
-
-                var clockwiseAsInt = this.getClockwiseInteger(clockwise);
-
-                console.log( "Loading a zigChosen card with clockwise " + clockwise + " distance " + distance + " player " + player_id + " and color " + ostrichGettingZig + "." );
-
-                // create the movement card on the ostrich mat at the final destination
-                dojo.place(
-                        this.format_block( 'jstpl_mymovementcard', {
-                            x: this.movementcardwidth*(distance),
-                            y: this.movementcardheight*(clockwiseAsInt),
-                            player_id: player_id
-                } ), 'zig_holder_'+ostrichGettingZig );
-            }
+            this.initializeMoveCards();
 
             this.initializePlayedUpgrades();
 
@@ -446,6 +364,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
 
                     dojo.addClass( crewmemberHtmlId, 'played_'+typeString);
+
+                    // in 2-player games, we must adjust the location of crewmembers because
+                    // they get pushed down by the number of upgrades their teammat has
+                    this.adjustCrewmemberLocationBasedOnUpgrades(location, typeString);
                 }
 
             }
@@ -457,7 +379,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             // First Param: css class to target
             // Second Param: type of events
             // Third Param: the method that will be called when the event defined by the second parameter happen
-            this.addEventToClass( "garment", "onclick", "onClickGarment");
             this.addEventToClass('direction_token', 'onclick', 'onClick_direction'); // add the click handler to all direction tokens
 
 
@@ -896,7 +817,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                         { // we have everything we need for the move card
 
                             // slide the card to the saucer mat
-                            this.placeMoveCard(this.gamedatas.saucer1, distanceType, directionOnly);
+                            this.placeMoveCard(this.gamedatas.saucer1, distanceType, directionOnly, true);
                         }
                     }
                     else
@@ -911,7 +832,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                         { // we heve everything we need for the move card
 
                             // slide the card to the saucer mat
-                            this.placeMoveCard(this.gamedatas.saucer2, distanceType, directionOnly);
+                            this.placeMoveCard(this.gamedatas.saucer2, distanceType, directionOnly, true);
                         }
                     }
                 },
@@ -1058,6 +979,62 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 },
 
+                getMoveCardBackgroundX: function(saucerColor)
+                {
+                    switch(saucerColor)
+                    {
+
+                        case "f6033b":
+                            return 0;
+
+                        case "fedf3d":
+                            return 2*this.movementcardwidth;
+
+                        case "0090ff":
+                            return this.movementcardwidth;
+
+                        case "01b508":
+                            return 0;
+
+                        case "b92bba":
+                            return 2*this.movementcardwidth;
+
+                        case "e77324":
+                            return this.movementcardwidth;
+
+                        default:
+                            return 0;
+                    }
+                },
+
+                getMoveCardBackgroundY: function(saucerColor)
+                {
+                    switch(saucerColor)
+                    {
+
+                        case "f6033b":
+                            return this.movementcardheight;
+
+                        case "fedf3d":
+                            return 0;
+
+                        case "0090ff":
+                            return 0;
+
+                        case "01b508":
+                            return 0;
+
+                        case "b92bba":
+                            return this.movementcardheight;
+
+                        case "e77324":
+                            return this.movementcardheight;
+
+                        default:
+                            return 0;
+                    }
+                },
+
                 saveMoveCardSelection: function(color, htmlIdOfCard)
                 {
                     // set the move card for this saucer in case it is the final selection
@@ -1095,75 +1072,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                       }
                   }
                 },
-
-                onClickGarment: function( evt )
-                { // a player clicked on a garment
-                    console.log('GARMENT CLICK check iscurrentplayeractive() ' + this.isCurrentPlayerActive());
-
-
-                    if (this.checkPossibleActions( 'chooseLostCrewmember', true ))
-                    { // player clicks on a garment (it must be checkPossibleActions because they could be replacing the garment on another player's turn so we don't want it to check for active player)
-
-                            var node = evt.currentTarget.id;
-                            this.chosenGarmentType = node.split('_')[1]; // garment type
-                            this.chosenGarmentColor = node.split('_')[2]; // garment color
-                            console.log("clicked on garment " + this.chosenGarmentType + " " + this.chosenGarmentColor);
-
-                            // tell the server that the user selected this crewmember
-                            this.sendLostCrewmemberSelection(this.chosenGarmentType, this.chosenGarmentColor);
-                    }
-                    else if (this.checkAction( 'stealGarmentClick', true ))
-                    { // player clicks on a garment
-
-                        if ( this.isCurrentPlayerActive() )
-                        { // the active player is clicking
-
-                            var node = evt.currentTarget.id; // get the node like garment_head_f6033b
-                            var garmentType = node.split('_')[1]; // the type of garment like head, legs, etc.
-                            var garmentColor = node.split('_')[2]; // the color of the owning ostrich
-                            console.log("clicked on garment " + garmentType + " " + garmentColor);
-
-                            this.ajaxcall( "/crashandgrab/crashandgrab/actStealGarment.html", { garmentType: garmentType, garmentColor: garmentColor, lock: true }, this, function( result ) {}, function( is_error ) {} );
-                        }
-
-                    }
-                    else if (this.checkAction( 'discardGarmentClick', true ))
-                    { // player clicks on a garment
-
-                        if ( this.isCurrentPlayerActive() )
-                        { // the active player is clicking
-
-                            var node = evt.currentTarget.id; // get the node like garment_head_f6033b
-                            var garmentType = node.split('_')[1]; // the type of garment like head, legs, etc.
-                            var garmentColor = node.split('_')[2]; // the color of the owning ostrich
-                            console.log("clicked on garment " + garmentType + " " + garmentColor);
-
-                            this.ajaxcall( "/crashandgrab/crashandgrab/actDiscardGarment.html", { garmentType: garmentType, garmentColor: garmentColor, lock: true }, this, function( result ) {}, function( is_error ) {} );
-                        }
-
-                    }
-
-
-                    return; // we cannot perform a garment-clicking action at this time so ignore the click
-
-
-
-                    /* VERSION WHERE WE CHECK FOR SPECIFIC ACTIONS
-                    if(this.checkAction( 'spawnGarment', true ))
-                    { // player wants to move a garment from Pile to Board (nomessage parameter is true so that an error message is not displayed)
-
-                    }
-                    else if (this.checkAction( 'rearrangeGarment', true ))
-                    { // player wants to change which garment they are wearing (nomessage parameter is true so that an error message is not displayed)
-
-                    }
-                    else
-                    { // we cannot perform a garment-clicking action at this time
-                        return; // ignore the click
-                    }
-                    */
-                },
-
 
                 onClickSpace: function( evt )
                 { // a player clicked on a space
@@ -1343,9 +1251,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                       this.GIVE_AWAY_SAUCER = '';
 
                       // make sure all move cards are not in player hands
-                      this.returnMoveCardToHandOfSaucer(this.gamedatas.saucer1);
-                      if(this.gamedatas.saucer2 != '')
-                          this.returnMoveCardToHandOfSaucer(this.gamedatas.saucer2);
+                      //this.returnMoveCardToHandOfSaucer(this.gamedatas.saucer1);
+                      //if(this.gamedatas.saucer2 != '')
+                      //    this.returnMoveCardToHandOfSaucer(this.gamedatas.saucer2);
 
 
                   break;
@@ -1534,7 +1442,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                    this.unselectAllSaucers();
                    this.unhighlightAllSaucers();
 
-                   this.unselectAllMoveCards();
+                   //this.unselectAllMoveCards();
                    this.unhighlightAllMoveCards();
 
                    this.unselectAllDirections();
@@ -1737,6 +1645,21 @@ this.unhighlightAllGarments();
                       if ( this.isCurrentPlayerActive() )
                       { // we are the active player
 
+                          var startOfTurnUpgradeList = args.startOfTurnUpgradesToActivate;
+
+                          const startOfTurnUpgradeListKeys = Object.keys(startOfTurnUpgradeList);
+                          for (const upgradeKey of startOfTurnUpgradeListKeys)
+                          { // go through each upgrade we could activate
+                              var buttonLabel = startOfTurnUpgradeList[upgradeKey]['buttonLabel'];
+                              var buttonId = startOfTurnUpgradeList[upgradeKey]['buttonId'];
+                              var isDisabled = startOfTurnUpgradeList[upgradeKey]['isDisabled'];
+                              var hoverOverText = startOfTurnUpgradeList[upgradeKey]['hoverOverText']; // hover over text or '' if we don't want a hover over
+                              var actionName = startOfTurnUpgradeList[upgradeKey]['actionName']; // such as onClick_activateUpgrade
+                              var makeRed = startOfTurnUpgradeList[upgradeKey]['makeRed'];
+
+                              this.addActionButton( buttonId, _(buttonLabel), 'onClick_'+actionName );
+                          }
+
                           // add a skip button in case they do not want to activate an available upgrade
                           var skipActivateUpgradeButtonLabel = 'Skip';
                           var skipActivateUpgradeIsDisabled = false;
@@ -1811,7 +1734,31 @@ this.unhighlightAllGarments();
                       }
                   break;
 
-                  case 'chooseUpgradeSpace':
+                  case 'chooseBlastOffThrusterSpace':
+
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+                            var validSpaces = args.validSpaces;
+                            this.highlightAllTheseSpaces(validSpaces);
+
+                            this.addActionButton( 'skipButton_1', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
+                      }
+
+                  break;
+
+                  case 'chooseAfterburnerSpace':
+
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+                            var validSpaces = args.validSpaces;
+                            this.highlightAllTheseSpaces(validSpaces);
+
+                            this.addActionButton( 'skipButton_3', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
+                      }
+
+                  break;
+
+                  case 'chooseLandingLegsSpace':
 
                       if( this.isCurrentPlayerActive() )
                       { // this player is active
@@ -1903,6 +1850,9 @@ this.unhighlightAllGarments();
 
                           // add a button for each offcolored crewmember they have
                           this.showStealableCrewmemberButtons(args.stealableCrewmembers);
+
+                          // add a skip button in case they do not want to for some reason
+                          this.addActionButton( 'skipButton', _('Skip'), 'onClick_skipStealCrewmember', null, false, 'red' );
                       }
 
                   break;
@@ -1912,6 +1862,9 @@ this.unhighlightAllGarments();
                       { // this is the active player so they need to discard
 
                           this.showGiveAwayCrewmemberButtons(args.giveAwayCrewmembers, args.otherSaucers);
+
+                          // add a skip button in case they do not want to for some reason
+                          this.addActionButton( 'skipButton', _('Skip'), 'onClick_skipGiveAwayCrewmember', null, false, 'red' );
                       }
                   break;
 
@@ -2336,6 +2289,48 @@ console.log("return false");
             return false;
         },
 
+        adjustCrewmemberLocationBasedOnUpgrades: function(matColor, crewmemberTypeString)
+        {
+            var matLocationHtmlId = 'player_board_saucer_mat_'+crewmemberTypeString+'_'+matColor; // example: player_board_saucer_mat_pilot_01b508
+            console.log("ADJUSTING");
+            if(this.gamedatas.saucer2 != '')
+            { // each player controls two saucers
+
+                // get the index of the saucer (1, 2, 3, 4, etc.)
+                var saucerIndex = this.getSaucerIndexForSaucerColor(matColor);
+
+
+                // determine if this is the first or second saucer for a particular player so we know how much to offset the position of their crew
+                if(saucerIndex == 2 || saucerIndex == 4)
+                { // this is the second saucer of the two
+
+                    var teammateColor = this.getSaucerColorForIndex(saucerIndex - 1);
+
+                    console.log("returning color "+teammateColor+" for index "+saucerIndex);
+
+                    var numberOfUpgradesOfSaucer1 = Object.keys(this.gamedatas.playedUpgrades[teammateColor]).length;
+                    if(numberOfUpgradesOfSaucer1 == 0)
+                    {
+                        // there is always a spot for at least 1 upgrade
+                        numberOfUpgradesOfSaucer1 = 1;
+                    }
+
+                    var topOffset = 419;
+
+                    if(crewmemberTypeString == "doctor" || crewmemberTypeString == "scientist")
+                    { // second level
+                          topOffset = 461;
+                    }
+
+                    var styleTop = topOffset+((numberOfUpgradesOfSaucer1 - 1)*(this.upgradecardheight + 4));
+
+                    console.log("mat color ("+matColor+") has teammateColor("+teammateColor+") who has ("+numberOfUpgradesOfSaucer1+") upgrades so we are setting styleTop ("+styleTop+") going on matLocationHtmlId ("+matLocationHtmlId+")");
+
+                    dojo.style(matLocationHtmlId, "top", styleTop+"px");
+                }
+            }
+        },
+
         convertCrewmemberType: function(crewmemberType)
         {
           console.log("converting crewmemberType " + crewmemberType);
@@ -2592,7 +2587,7 @@ console.log("return false");
           // move the selected move card to its spot on the ship mat if it's not already there
           if( $(this.MOVE_CARD_SELECTED) )
           { // this card exists
-              this.placeMoveCard(this.SAUCER_SELECTED, moveCardSelectedDistance, direction);
+              this.placeMoveCard(this.SAUCER_SELECTED, moveCardSelectedDistance, direction, true);
           }
         },
 
@@ -2726,9 +2721,43 @@ console.log("selectSelectedMoveCard of color: "+color);
 
         returnMoveCardToHandOfSaucer: function(color)
         {
-            this.moveChosenMoveCardBackToHand(color, 0);
-            this.moveChosenMoveCardBackToHand(color, 1);
-            this.moveChosenMoveCardBackToHand(color, 2);
+            if(color == this.gamedatas.saucer1 || color == this.gamedatas.saucer2)
+            { // this is my saucer
+                this.moveChosenMoveCardBackToHand(color, 0);
+                this.moveChosenMoveCardBackToHand(color, 1);
+                this.moveChosenMoveCardBackToHand(color, 2);
+
+            }
+            else
+            { // this is an opponent saucer
+
+                // destroy 2 card if it exists
+                var twoId = 'move_card_1_'+color;
+                console.log('considering destroying '+twoId);
+                if(document.getElementById(twoId))
+                {
+                    console.log('destroying '+twoId);
+                    dojo.destroy(twoId);
+                }
+
+                // destroy 3 card if it exists
+                var threeId = 'move_card_2_'+color;
+                console.log('considering destroying '+threeId);
+                if(document.getElementById(threeId))
+                {
+                    console.log('destroying '+threeId);
+                    dojo.destroy(threeId);
+                }
+
+                // destroy X if it exists
+                var xId = 'move_card_0_'+color;
+                console.log('considering destroying '+xId);
+                if(document.getElementById(xId))
+                {
+                    console.log('destroying '+xId);
+                    dojo.destroy(xId);
+                }
+            }
 
 /*
             if(color == this.gamedatas.saucer1)
@@ -3020,8 +3049,10 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 // default source and destination to event type saucerMove
                 var eventType = nextEvent['event_type']; // saucerMove
 
+                var saucerColor = 'unknown';
                 var source = 'unknown';
                 var destination = 'unknown';
+                var crewmemberType = 'unknown';
                 var animationSpeed = this.ANIMATION_SPEED_MOVING_SAUCER;
 
                 console.log("eventType: " + eventType);
@@ -3040,10 +3071,10 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 }
                 else if(eventType == 'crewmemberPickup')
                 { // the saucer picked up a crewmember
-                    var saucerColor = nextEvent['saucer_moving']; // ff0000
+                    saucerColor = nextEvent['saucer_moving']; // ff0000
                     var crewmemberColor = nextEvent['crewmember_color']; // ff0000
 
-                    var crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
+                    crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
                     source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
                     var convertedType = this.convertCrewmemberType(crewmemberType); // temp until i fix this weird issue switching these
@@ -3098,10 +3129,25 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     var animationId = this.slideToObject( source, destination, animationSpeed );
                     dojo.connect(animationId, 'onEnd', () => {
 
-                       this.animateEvents(eventStack); // recursively call for the next event
+                        console.log('animating '+eventType);
+
+                        this.animateEvents(eventStack); // recursively call for the next event
+
+                        // we have to adjust the location of the crewmember based on the number of upgrades a saucer above them has
+                        if(eventType == 'crewmemberPickup')
+                        {
+
+                            // in 2-player games, we must adjust the location of crewmembers because
+                            // they get pushed down by the number of upgrades their teammat has
+                            this.adjustCrewmemberLocationBasedOnUpgrades(saucerColor, crewmemberType);
+                        }
+
+
                     });
                     animationId.play();
                 }
+
+
             }
         },
 
@@ -3386,6 +3432,12 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
             }
         },
 
+        getSaucerColorForIndex: function(index)
+        {
+              var saucer = this.gamedatas.ostrich[index-1];
+              return saucer.color;
+        },
+
         getUpgradesPlayedStockForSaucerColor: function(saucerColor)
         {
             var saucerIndex = this.getSaucerIndexForSaucerColor(saucerColor);
@@ -3417,6 +3469,90 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
             {
                 return this.upgradeHand_1;
             }
+        },
+
+        initializeMoveCards: function()
+        {
+
+            // move cards in hand (just 3 for each player)
+            console.log( "getting HAND move cards " );
+            for( var i in this.gamedatas.hand )
+            {
+                console.log( "card in hand: " + i );
+                var card = this.gamedatas.hand[i];
+                var color = card.location; // saucer color like f6033b
+                var distance = card.type_arg; // 0, 1, 2
+                var used = card.type; // unused or used
+                var usedInt = this.convertUsedStringToInt(used); // 0 or 1
+
+                console.log( "with color " + color + " and distance " + distance + " used " + used );
+
+
+                this.putMoveCardInPlayerHand(used,distance,color);
+            }
+
+            // get the move card this player chose this round for each saucer
+            for( var saucer in this.gamedatas.chosenMoveCards )
+            { // there will be one for each saucer the player owns
+                console.log( "move card: " + card );
+                var card = this.gamedatas.chosenMoveCards[saucer];
+                var saucerColor = card.ostrich_color;
+                var direction = card.ostrich_zig_direction;
+                var distance = card.ostrich_zig_distance; // 0, 1, 2
+                var revealed = card.card_chosen_state;
+
+
+                this.placeMoveCard(saucerColor, distance, direction, revealed);
+
+
+                console.log("chosenMoveCards saucerColor:"+saucerColor+" direction:"+direction+" distance:"+distance);
+            }
+
+            // First Param: css class to target
+            // Second Param: type of events
+            // Third Param: the method that will be called when the event defined by the second parameter happen
+            this.addEventToClass('move_card', 'onclick', 'onClick_moveCard'); // add the click handler to all move cards
+/*
+            // zig cards played on table with both zig and direction chosen
+            for( i in this.gamedatas.played )
+            {
+                var card = this.gamedatas.played[i];
+                var cardId = card.id; // card ID
+                var turnOrder = card.turn; // clockwise or counterclockwise
+                var distance = card.distance; // 0, 1, 2, 3
+                var player_id = card.player; // player number like 2342823
+                var color = card.color; // ostrich color like f6033b
+                var degreesRotated = this.getDegreesRotated(card.ostrich_last_direction); // the number of degrees rotated based on direction
+
+                console.log( "Loading a played card with turn order " + turnOrder + " distance " + distance + " player " + player_id + " and color " + color + " and degrees rotated " + degreesRotated + "." );
+                this.playRotatedZigOnMat( player_id, cardId, distance, turnOrder, color, degreesRotated );
+            }
+
+
+            // zig cards played on table with ONLY the zig chosen
+            console.log( "getting PLAYED move cards " );
+            for( i in this.gamedatas.zigChosen )
+            {
+                var card = this.gamedatas.zigChosen[i];
+                var ostrichGettingZig = card.color; // ostrich color like f6033b
+                var card_id = card.id; // card ID
+                var player_id = card.player; // player number like 2342823
+                var clockwise = card.turn; // clockwise or counterclockwise
+                var distance = card.distance; // 0, 1, 2, 3
+
+                var clockwiseAsInt = this.getClockwiseInteger(clockwise);
+
+                console.log( "Loading a zigChosen card with clockwise " + clockwise + " distance " + distance + " player " + player_id + " and color " + ostrichGettingZig + "." );
+
+                // create the movement card on the ostrich mat at the final destination
+                dojo.place(
+                        this.format_block( 'jstpl_mymovementcard', {
+                            x: this.movementcardwidth*(distance),
+                            y: this.movementcardheight*(clockwiseAsInt),
+                            player_id: player_id
+                } ), 'zig_holder_'+ostrichGettingZig );
+            }
+*/
         },
 
         initializePlayedUpgrades: function()
@@ -3841,38 +3977,88 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             this.slideToObject( 'player_board_crown', 'player_board_crown_holder_'+color ).play();
         },
 
-        placeMoveCard: function(saucerColor, distance, direction)
+        placeMoveCard: function(saucerColor, distance, direction, revealed)
         {
             var sourceHtmlId = 'move_card_'+distance+'_'+saucerColor;
             console.log('placeMoveCard sourceHtmlId:'+sourceHtmlId);
 
-            // put the selected border around the card
-            this.selectSpecificMoveCard(sourceHtmlId);
+            // if it is unchosen, do nothing -- we shouldn't be calling this so skip this check
+            // if chosen:
+            //   if it is our card or it is revealed, show the distance and direction
+            //   if it is an opponent card in chosen state, show the card back
 
-            // save the selected card
-            if(this.gamedatas.saucer1 == saucerColor)
-              this.CHOSEN_MOVE_CARD_SAUCER_1 = sourceHtmlId;
-            else
-              this.CHOSEN_MOVE_CARD_SAUCER_2 = sourceHtmlId;
+            if(saucerColor == this.gamedatas.saucer1 || saucerColor == this.gamedatas.saucer2)
+            { // this is MY card
+                // put the selected border around the card
+                this.selectSpecificMoveCard(sourceHtmlId);
 
-            if( $(sourceHtmlId) )
-            { // this card exists
-                console.log('Move card FROM ' + sourceHtmlId + ' to player_board_move_card_holder_' + saucerColor + '.');
-                //this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id ); // teleport card FROM, TO
+                // save the selected card
+                if(this.gamedatas.saucer1 == saucerColor)
+                  this.CHOSEN_MOVE_CARD_SAUCER_1 = sourceHtmlId;
+                else
+                  this.CHOSEN_MOVE_CARD_SAUCER_2 = sourceHtmlId;
 
-                var destinationHtmlId = 'player_board_move_card_holder_'+saucerColor;
-                this.attachToNewParent( sourceHtmlId, destinationHtmlId ); // needed so it doesn't slide under the player board
-                this.rotateTo( sourceHtmlId, this.getDegreesRotated(direction) );
-                var animationId = this.slideToObject( sourceHtmlId, destinationHtmlId, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
-                dojo.connect(animationId, 'onEnd', () => {
 
-                    // after sliding, the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
-                    $(sourceHtmlId).style.removeProperty('left'); // remove left property
-                    $(sourceHtmlId).style.removeProperty('top'); // remove top property
 
-                });
-                animationId.play();
+                if(distance != 20)
+                { // we've chosen our card already
+
+                }
+
+                if( $(sourceHtmlId) )
+                { // this card exists
+                    this.slideMoveCard(sourceHtmlId, saucerColor, direction);
+                }
             }
+            else
+            { // this is an opponent card
+
+                if(revealed == 'revealed')
+                { // the card is revealed
+
+                    // place the front
+                    dojo.place( this.format_block( 'jstpl_moveCard', {
+                        x: distanceType * this.movementcardwidth,
+                        y: 0,
+                        color: saucerColor,
+                        distance: distance
+                    } ) , destinationHtmlId );
+                }
+                else
+                { // it is still hidden
+
+                    // place the back
+                    dojo.place(
+                            this.format_block( 'jstpl_moveCardBack', {
+                                x: this.getMoveCardBackgroundX(saucerColor),
+                                y: this.getMoveCardBackgroundY(saucerColor),
+                                color: saucerColor
+                    } ), 'player_board_move_card_holder_'+saucerColor );
+
+                    this.rotateTo( 'move_card_back_'+saucerColor, 45 );
+                }
+            }
+        },
+
+        slideMoveCard: function(sourceHtmlId, saucerColor, direction)
+        {
+
+            console.log('Move card FROM ' + sourceHtmlId + ' to player_board_move_card_holder_' + saucerColor + '.');
+            //this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id ); // teleport card FROM, TO
+
+            var destinationHtmlId = 'player_board_move_card_holder_'+saucerColor;
+            this.attachToNewParent( sourceHtmlId, destinationHtmlId ); // needed so it doesn't slide under the player board
+            this.rotateTo( sourceHtmlId, this.getDegreesRotated(direction) );
+            var animationId = this.slideToObject( sourceHtmlId, destinationHtmlId, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
+            dojo.connect(animationId, 'onEnd', () => {
+
+                // after sliding, the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
+                $(sourceHtmlId).style.removeProperty('left'); // remove left property
+                $(sourceHtmlId).style.removeProperty('top'); // remove top property
+
+            });
+            animationId.play();
+
         },
 
         moveOstrichOnBoard: function( ostrichMoving, ostrichTakingTurn, xDestination, yDestination, spaceType, ostrichMovingHasZag )
@@ -4688,6 +4874,18 @@ console.log("success... onClickUpgradeCardInHand");
             this.sendDirectionClick(this.LEFT_DIRECTION);
         },
 
+        onClick_skipGiveAwayCrewmember: function()
+        {
+            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipGiveAwayCrewmember.html", { lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
+        onClick_skipStealCrewmember: function()
+        {
+            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipStealCrewmember.html", { lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
         onClick_skipPassCrewmember: function()
         {
             this.ajaxcall( "/crashandgrab/crashandgrab/actSkipPassCrewmember.html", { lock: true }, this, function( result ) {
@@ -5425,7 +5623,9 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'stealCrewmember', this, "notif_stealCrewmember");
             dojo.subscribe( 'moveCardChange', this, "notif_moveCardChange");
             dojo.subscribe( 'counter', this, "notif_counter");
-
+            dojo.subscribe( 'cardChosen', this, "notif_cardChosen");
+            dojo.subscribe( 'cardRevealed', this, "notif_cardRevealed");
+            dojo.subscribe( 'confirmedMovement', this, "notif_confirmedMovement");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -5731,8 +5931,9 @@ console.log("success... onClickUpgradeCardInHand");
             var saucerColor = notif.args.saucerColor;
             var newDirection = notif.args.newDirection;
             var newDistanceType = notif.args.newDistanceType; // 0, 1, 2
+            var revealed = notif.args.revealed;
 
-            this.placeMoveCard(saucerColor, newDistanceType, newDirection);
+            this.placeMoveCard(saucerColor, newDistanceType, newDirection, revealed);
         },
 
         notif_upgradePlayed: function( notif )
@@ -5773,7 +5974,6 @@ console.log("success... onClickUpgradeCardInHand");
             // move garment to player's mat
             this.placeOnObject( garmentHtmlId, garmentLocationHtmlId ); // place it where it already is (required to overcome a bug with sliding)
             this.slideToObject( garmentHtmlId, matLocationHtmlId).play(); // slide it to where it goes on their mat
-
         },
 
         notif_stealCrewmember: function( notif )
@@ -5805,6 +6005,10 @@ console.log("success... onClickUpgradeCardInHand");
             var animationId = this.slideToObject( source, destination, animationSpeed );
             dojo.connect(animationId, 'onEnd', () => {
                 // anything we need to do after it slides
+
+                // in 2-player games, we must adjust the location of crewmembers because
+                // they get pushed down by the number of upgrades their teammat has
+                this.adjustCrewmemberLocationBasedOnUpgrades(saucerColorStealing, crewmemberType);
 
             });
             animationId.play();
@@ -5846,6 +6050,9 @@ console.log("success... onClickUpgradeCardInHand");
             var destination = 'square_'+xDestination+'_'+yDestination;
 
             console.log("moving crewmember to board with source: " + source + " destination: " + destination);
+
+            // give it a new parent so it's no longer in the lost crewmembers
+            this.attachToNewParent(source, destination);
 
             var animationId = this.slideToObject( source, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
             dojo.connect(animationId, 'onEnd', () => {
@@ -6071,6 +6278,95 @@ console.log("success... onClickUpgradeCardInHand");
             var turnOrder = notif.args.turnOrder;
 
             this.updateTurnOrder(turnOrder);
+        },
+
+        notif_cardChosen: function(notif)
+        {
+            console.log("Entered notif_cardChosen.");
+
+            var saucerChoosing = notif.args.saucer_choosing;
+
+            dojo.place(
+                    this.format_block( 'jstpl_moveCardBack', {
+                        x: this.getMoveCardBackgroundX(saucerChoosing),
+                        y: this.getMoveCardBackgroundY(saucerChoosing),
+                        color: saucerChoosing
+            } ), 'player_board_move_card_holder_'+saucerChoosing );
+
+            // Move card from player panel
+            //this.placeOnObject( 'cardontable_'+player_id, 'overall_player_board_'+player_id );
+console.log("notif_cardChosen ()"+'move_card_back_'+saucerChoosing+') is being rotated 45 degrees');
+            this.rotateTo( 'move_card_back_'+saucerChoosing, 45 );
+        },
+
+        notif_cardRevealed: function(notif)
+        {
+            console.log("Entered notif_cardRevealed.");
+
+            var saucerColor = notif.args.saucer_color;
+            var distanceType = notif.args.distance_type;
+            var direction = notif.args.direction;
+
+
+
+
+            var moveCardBackHtmlId = 'move_card_back_'+saucerColor;
+            if(document.getElementById(moveCardBackHtmlId))
+            { // the move card back is there right now
+
+                // destroy it
+                dojo.destroy(moveCardBackHtmlId);
+            }
+
+            var destinationHtmlId = 'player_board_move_card_holder_'+saucerColor;
+            var moveCardFrontHtmlId = 'move_card_'+distanceType+'_'+saucerColor;
+            console.log("placing move card in:"+destinationHtmlId);
+
+            if(saucerColor == this.gamedatas.saucer1 || saucerColor == this.gamedatas.saucer2)
+            { // this is my saucer
+
+                // should already be there
+
+                // move the card
+                //if( $(moveCardFrontHtmlId) )
+                //{ // this card exists
+                //    this.slideMoveCard(moveCardFrontHtmlId, saucerColor, direction);
+                //}
+
+            }
+            else
+            { // this is an opponent saucer
+
+                // place the card
+
+                dojo.place( this.format_block( 'jstpl_moveCard', {
+                    x: distanceType * this.movementcardwidth,
+                    y: 0,
+                    color: saucerColor,
+                    distance: distanceType
+                } ) , destinationHtmlId );
+
+                // Move card from player panel
+                //this.placeOnObject( 'cardontable_'+player_id, 'overall_player_board_'+player_id );
+
+
+
+            }
+
+            // rotate it
+            var degreesToRotate = this.getDegreesRotated(direction);
+            console.log('cardRevealed:'+moveCardFrontHtmlId+' and direction:'+direction+' degrees:'+degreesToRotate);
+            this.rotateTo( moveCardFrontHtmlId, this.getDegreesRotated(direction) );
+        },
+
+        notif_confirmedMovement: function(notif)
+        {
+          console.log("Entered notif_confirmedMovement.");
+            var saucerColor = notif.args.saucer_color;
+            console.log("notif_confirmedMovement saucerColor:"+saucerColor);
+
+            // return cards to hand (mine) or destroy them (opponents)
+            this.returnMoveCardToHandOfSaucer(saucerColor);
         },
 
         notif_animateMovement: function(notif)

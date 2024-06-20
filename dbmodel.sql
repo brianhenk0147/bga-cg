@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS `movementCards` (
   `card_location` varchar(30) NOT NULL,
   `card_location_arg` int(11) NOT NULL,
   `card_ostrich` varchar(16) NOT NULL,
+  `card_chosen_state` varchar(16) NOT NULL DEFAULT 'unchosen',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -58,6 +59,8 @@ CREATE TABLE IF NOT EXISTS `upgradeCards` (
   `card_is_played` smallint(5) unsigned NOT NULL DEFAULT '0',
   `times_activated_this_round` smallint(5) unsigned NOT NULL DEFAULT '0',
   `asked_to_activate_this_round` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `value_1` varchar(30) NOT NULL DEFAULT '0',
+  `value_2` varchar(30) NOT NULL DEFAULT '0',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -93,6 +96,9 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
   `passed_by_other_saucer` smallint(5) unsigned NOT NULL DEFAULT '0',
   `skipped_passing` smallint(5) unsigned NOT NULL DEFAULT '0',
   `skipped_taking` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `skipped_boosting` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `skipped_stealing` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `skipped_giving_away` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ostrich_color`)
 ) ENGINE=InnoDB;
 

@@ -67,7 +67,7 @@ $machinestates = array(
     2 => array(
     		"name" => "chooseMoveCard",
     		"description" => clienttranslate('Everyone is choosing their moves.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose your move distance and direction for this round.'),
+    		"descriptionmyturn" => clienttranslate('${you} must choose your move DISTANCE and DIRECTION for this round.'),
     		"type" => "multipleactiveplayer",
         'args' => 'argGetAllPlayerSaucerMoves',
     		"possibleactions" => array( "clickMoveDirection", "clickDistance", "undoChooseMoveCard", "confirmMove", "clickUpgradeCardInHand" ),
@@ -289,7 +289,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerGoFirstButtons',
         "possibleactions" => array( "clickSaucerToGoFirst" ),
-    		"transitions" => array( "locateCrashedSaucer" => 27 )
+    		"transitions" => array( "locateCrashedSaucer" => 27, "checkStartOfTurnUpgrades" => 24 )
     ),
 
     27 => array(
@@ -326,7 +326,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
-    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
+    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32 )
     ),
 
     34 => array(
@@ -410,8 +410,9 @@ $machinestates = array(
         "description" => clienttranslate('${actplayer} is deciding if they will use an Upgrade.'),
         "descriptionmyturn" => clienttranslate('${you} must decide if you will use an Upgrade.'),
         "type" => "activeplayer",
-        "possibleactions" => array( "skipActivateUpgrade" ),
-        "transitions" => array( "checkForRevealDecisions" => 38, "usingStartPulseCannon" => 21, "usingStartBlastOffThrusters" => 21  )
+        'args' => 'argGetStartOfTurnUpgradesToActivate',
+        "possibleactions" => array( "skipActivateUpgrade", "activateUpgrade" ),
+        "transitions" => array( "checkForRevealDecisions" => 38, "chooseBlastOffThrusterSpace" => 60  )
     ),
 
     43 => array(
@@ -490,7 +491,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
         "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseUpgradeSpace" => 59 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61 )
     ),
 
     54 => array(
@@ -544,13 +545,33 @@ $machinestates = array(
     ),
 
     59 => array(
-        "name" => "chooseUpgradeSpace",
+        "name" => "chooseLandingLegsSpace",
         "description" => clienttranslate('${saucerColor} is choosing a space for ${upgradeName}.'),
         "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
         "type" => "activeplayer",
         'args' => 'argGetLandingLegSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9 )
+    ),
+
+    60 => array(
+        "name" => "chooseBlastOffThrusterSpace",
+        "description" => clienttranslate('${saucerColor} is choosing a space for ${upgradeName}.'),
+        "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
+        "type" => "activeplayer",
+        'args' => 'argGetBlastOffThrustersSpaces',
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
+    ),
+
+    61 => array(
+        "name" => "chooseAfterburnerSpace",
+        "description" => clienttranslate('${saucerColor} is choosing a space for ${upgradeName}.'),
+        "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
+        "type" => "activeplayer",
+        'args' => 'argGetAfterburnerSpaces',
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
     ),
 
 

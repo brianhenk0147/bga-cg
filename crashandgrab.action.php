@@ -158,6 +158,20 @@
         self::ajaxResponse( );
     }
 
+    public function actSkipGiveAwayCrewmember()
+    {
+        self::setAjaxMode();
+        $this->game->executeSkipGiveAwayCrewmember();
+        self::ajaxResponse( );
+    }
+
+    public function actSkipStealCrewmember()
+    {
+        self::setAjaxMode();
+        $this->game->executeSkipStealCrewmember();
+        self::ajaxResponse( );
+    }
+
     public function actSkipPassCrewmember()
     {
         self::setAjaxMode();
