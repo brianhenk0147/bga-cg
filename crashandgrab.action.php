@@ -186,6 +186,16 @@
         self::ajaxResponse( );
     }
 
+    public function actExecuteTractorBeamCrewmember()
+    {
+        self::setAjaxMode();
+        $crewmemberType = self::getArg( "crewmemberType", AT_alphanum, true ); // scientist
+        $crewmemberColor = self::getArg( "crewmemberColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeTractorBeamCrewmember( $crewmemberType, $crewmemberColor);
+        self::ajaxResponse( );
+    }
+
     public function actExecuteStealCrewmember()
     {
         self::setAjaxMode();

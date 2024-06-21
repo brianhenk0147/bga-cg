@@ -1758,6 +1758,23 @@ this.unhighlightAllGarments();
 
                   break;
 
+                  case 'chooseTractorBeamCrewmember':
+
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+
+                            // add a button for each offcolored crewmember they have
+                            this.showTractorBeamCrewmemberButtons(args.validCrewmembers);
+
+                            console.log('valid crew:');
+                            console.log(args.validCrewmembers);
+
+                            // add a skip button in case they do not want to for some reason
+                            this.addActionButton( 'skipButton', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
+                      }
+
+                  break;
+
                   case 'chooseLandingLegsSpace':
 
                       if( this.isCurrentPlayerActive() )
@@ -3067,6 +3084,9 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     source = 'saucer_'+saucerMoving;
                     destination = 'square_'+destinationX+'_'+destinationY;
 
+                    // give it a new parent so it's no longer on the previous space
+                    this.attachToNewParent(source, destination);
+
                     animationSpeed = this.ANIMATION_SPEED_MOVING_SAUCER;
                 }
                 else if(eventType == 'crewmemberPickup')
@@ -4249,6 +4269,25 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             }
         },
 
+        showTractorBeamCrewmemberButtons: function(crewmembers)
+        {
+
+            for (const crewmember of crewmembers)
+            { // go through each crewmember
+                var crewmemberColor = crewmember['garment_color'];
+                var crewmemberTypeInt = crewmember['garment_type'];
+                var crewmemberTypeString = this.convertCrewmemberType(crewmemberTypeInt);
+
+                console.log("tractor beam crewmember color:"+crewmemberColor+" lost crewmember type:"+crewmemberTypeString);
+
+                //var htmlOfSpace = 'square_'+space; // square_6_5
+                //console.log("highlighting space: " + htmlOfSpace);
+                //this.highlightSpace(htmlOfSpace);
+
+                this.addActionButton( 'tractorBeamCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickTractorBeamCrewmember', null, null, 'gray');
+            }
+        },
+
         showGiveAwayCrewmemberButtons: function(giveAwayCrewmembers, otherSaucers)
         {
 
@@ -4456,6 +4495,17 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberColor = node.split('_')[1]; // 01b508
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteStealCrewmember.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
+        onClickTractorBeamCrewmember: function( evt )
+        {
+            var node = evt.currentTarget.id; // tractorBeamCrewmember_01b508_pilot_button
+            console.log("onClickTractorBeamCrewmember node:"+node);
+            var crewmemberType = node.split('_')[2]; // pilot
+            var crewmemberColor = node.split('_')[1]; // 01b508
+
+            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteTractorBeamCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },
 
@@ -5626,6 +5676,7 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'cardChosen', this, "notif_cardChosen");
             dojo.subscribe( 'cardRevealed', this, "notif_cardRevealed");
             dojo.subscribe( 'confirmedMovement', this, "notif_confirmedMovement");
+            dojo.subscribe( 'crewmemberPickup', this, "notif_crewmemberPickup");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -6009,6 +6060,48 @@ console.log("success... onClickUpgradeCardInHand");
                 // in 2-player games, we must adjust the location of crewmembers because
                 // they get pushed down by the number of upgrades their teammat has
                 this.adjustCrewmemberLocationBasedOnUpgrades(saucerColorStealing, crewmemberType);
+
+            });
+            animationId.play();
+
+        },
+
+        notif_crewmemberPickup: function( notif )
+        {
+            console.log("Entered notif_crewmemberPickup.");
+
+            // get data you will need
+            var crewmemberType = notif.args.crewmemberType;
+            var crewmemberColor = notif.args.crewmemberColor;
+            var saucerColor = notif.args.saucerColor;
+
+            console.log("Initial variables crewmemberType:"+crewmemberType+" crewmemberColor:"+crewmemberColor+" saucerColorStealing:"+saucerColor);
+
+            // determine source and destinations
+            var source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
+
+            console.log('crewmemberType:'+crewmemberType);
+            console.log('saucerColor:'+saucerColor);
+            var destination = 'player_board_saucer_mat_'+crewmemberType+'_'+saucerColor; // player_board_saucer_mat_pilot_0090ff
+
+            console.log("source:"+source+" destination:"+destination);
+
+            // give it a new parent so it's no longer on the previous saucer mat
+            this.attachToNewParent(source, destination);
+
+            // give it a played class so it's rotated correctly
+            dojo.addClass(source, 'played_'+crewmemberType);
+
+            // set the speed it will move
+            var animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
+
+            var animationId = this.slideToObject( source, destination, animationSpeed );
+            dojo.connect(animationId, 'onEnd', () => {
+                // anything we need to do after it slides
+
+                // in 2-player games, we must adjust the location of crewmembers because
+                // they get pushed down by the number of upgrades their teammat has
+                this.adjustCrewmemberLocationBasedOnUpgrades(saucerColor, crewmemberType);
 
             });
             animationId.play();

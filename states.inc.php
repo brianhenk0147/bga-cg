@@ -491,7 +491,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
         "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseTractorBeamCrewmember" => 62 )
     ),
 
     54 => array(
@@ -570,6 +570,16 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
         "type" => "activeplayer",
         'args' => 'argGetAfterburnerSpaces',
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
+    ),
+
+    62 => array(
+        "name" => "chooseTractorBeamCrewmember",
+        "description" => clienttranslate('${saucerColor} is using their ${upgradeName}.'),
+        "descriptionmyturn" => clienttranslate('Choose a Crewmember to pick up.'),
+        "type" => "activeplayer",
+        'args' => 'argGetTractorBeamCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
     ),

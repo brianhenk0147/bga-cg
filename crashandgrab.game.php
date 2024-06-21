@@ -426,10 +426,12 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$cardsList = array(
 						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 11),
+						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
+						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 10),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Hyperdrive', 'type_arg' => 9, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Scavenger Bot', 'type_arg' => 10, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
@@ -1698,6 +1700,15 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array_push($result, $upgradeArray);
 				}
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Tractor Beam'))
+				{
+						$upgradeArray = array();
+						$upgradeArray['collectorNumber'] = 5;
+						$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(5);
+
+						array_push($result, $upgradeArray);
+				}
+
 				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Saucer Teleporter'))
 				{
 						$upgradeArray = array();
@@ -1749,6 +1760,19 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						if(!$this->isSaucerCrashed($saucerColor))
 						{ // they are not crashed
+
+								return true;
+						}
+				}
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Tractor Beam') &&
+				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Tractor Beam') < 1 &&
+					 $this->getAskedToActivateUpgrade($saucerColor, 'Tractor Beam') == false)
+				{ // they have played this upgrade, they have not yet activated it, and they have not yet indicated whether they want to activate it
+
+						$crewmembersWithin2 = $this->getCrewmembersWithin2($saucerColor);
+						if(count($crewmembersWithin2) > 0)
+						{ // there is a crewmember within 2 of saucer
 
 								return true;
 						}
@@ -1806,6 +1830,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						case 3:
 								return clienttranslate( 'Afterburner');
 
+						case 5:
+								return clienttranslate( 'Tractor Beam');
+
 						case 6:
 								return clienttranslate( 'Saucer Teleporter');
 
@@ -1814,6 +1841,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						case 9:
 								return clienttranslate( 'Hyperdrive');
+
+						case 10:
+								return clienttranslate( 'Scavenger Bot');
 
 						case 11:
 								return clienttranslate( 'Distress Signaler');
@@ -1836,36 +1866,55 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				switch($collectorNumber)
 				{
+						// Blast Off Thrusters
 						case 1:
 								return clienttranslate( 'At the start of your turn, move 1 space onto an empty space.');
 
+						// Wormhole Generator
 						case 2:
 								return clienttranslate( 'At the end of your turn, swap locations with any Saucer.');
 
+						// Afterburner
 						case 3:
 								return clienttranslate( 'At the end of your turn, move onto any empty space in your row or column.');
 
+						// Tractor Beam
+						case 5:
+								return clienttranslate( 'At the end of your turn, pick up a Crewmember up to 2 spaces away from you.');
+
+						// Saucer Teleporter
 						case 6:
 								return clienttranslate( 'At the end of your turn, move to any empty Crash Site.');
 
+						// Cloaking Device
 						case 7:
 								return clienttranslate( 'At the end of your turn, remove your Saucer from the board and place it at the end of the round.');
 
+						// Hyperdrive
 						case 9:
 								return clienttranslate( 'Double your movement.');
 
+						// Scavenger Bot
+						case 10:
+								return clienttranslate( 'When your Saucer is located, take your Booster and an Energy.');
+
+						// Distress Signaler
 						case 11:
 								return clienttranslate( 'At the end of your turn, take a Crewmember of your color from any Saucer and give them one of the same type.');
 
+						// Time Machine
 						case 12:
 								return clienttranslate( 'Choose your Move Card direction after you reveal it.');
 
+						// Regeneration Gateway
 						case 13:
 								return clienttranslate( 'When your Saucer is located, you choose the Crash Site.');
 
+						// Cargo Hold
 						case 15:
 								return clienttranslate( 'Take a Booster. You may hold an additional Booster.');
 
+						// Landing Legs
 						case 17:
 								return clienttranslate( 'At the end of your turn, move one space in any direction.');
 				}
@@ -1895,6 +1944,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result[3]['name'] = $this->getUpgradeTitleFromCollectorNumber(3);
 				$result[3]['effect'] = $this->getUpgradeEffectFromCollectorNumber(3);
 
+				// Tractor Beam
+				$result[5] = array();
+				$result[5]['name'] = $this->getUpgradeTitleFromCollectorNumber(5);
+				$result[5]['effect'] = $this->getUpgradeEffectFromCollectorNumber(5);
+
 				// Saucer Teleporter
 				$result[6] = array();
 				$result[6]['name'] = $this->getUpgradeTitleFromCollectorNumber(6);
@@ -1909,6 +1963,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result[9] = array();
 				$result[9]['name'] = $this->getUpgradeTitleFromCollectorNumber(9);
 				$result[9]['effect'] = $this->getUpgradeEffectFromCollectorNumber(9);
+
+				// Scavenger Bot
+				$result[10] = array();
+				$result[10]['name'] = $this->getUpgradeTitleFromCollectorNumber(10);
+				$result[10]['effect'] = $this->getUpgradeEffectFromCollectorNumber(10);
 
 				// Distress Signaler
 				$result[11] = array();
@@ -2024,6 +2083,34 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				self::DbQuery( $sqlUpdate );
 		}
 
+		function getCrewmembersWithin2($saucerColor)
+		{
+				$crewmembersWithin2 = array();
+
+				$xLocation = $this->getSaucerXLocation($saucerColor);
+				$yLocation = $this->getSaucerYLocation($saucerColor);
+
+				$crewmembersOnBoard = $this->getCrewmembersOnBoard();
+				foreach($crewmembersOnBoard as $crewmember)
+				{ // go through each crewmember on the board
+
+						// get the crewmember coords
+						$crewmemberX = $crewmember['garment_x'];
+						$crewmemberY = $crewmember['garment_y'];
+
+						// calculate how far they are away from the saucer in each direction
+						$distanceAwayX = abs($xLocation - $crewmemberX);
+						$distanceAwayY = abs($yLocation - $crewmemberY);
+
+						if($distanceAwayX + $distanceAwayY <= 2)
+						{ // it is within 2
+								array_push($crewmembersWithin2, $crewmember);
+						}
+				}
+
+				return $crewmembersWithin2;
+		}
+
 		function getCrewmembersSaucerCanGiveAway($saucerGivingAway)
 		{
 				$result = array();
@@ -2110,6 +2197,25 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$result[$index] = array();
 								$result[$index]['buttonId'] = 'upgradeButton_3';
 								$result[$index]['buttonLabel'] = $this->getUpgradeTitleFromCollectorNumber(3);
+								$result[$index]['hoverOverText'] = '';
+								$result[$index]['actionName'] = 'activateUpgrade';
+								$result[$index]['isDisabled'] = false;
+								$result[$index]['makeRed'] = false;
+
+								$index++;
+						}
+				}
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Tractor Beam') &&
+						$this->getUpgradeTimesActivatedThisRound($saucerColor, 'Tractor Beam') < 1)
+				{ // they have played Tractor Beam but they have not yet activated it this round
+
+						if(!$this->isSaucerCrashed($saucerColor))
+						{ // they are not crashed
+
+								$result[$index] = array();
+								$result[$index]['buttonId'] = 'upgradeButton_5';
+								$result[$index]['buttonLabel'] = $this->getUpgradeTitleFromCollectorNumber(5);
 								$result[$index]['hoverOverText'] = '';
 								$result[$index]['actionName'] = 'activateUpgrade';
 								$result[$index]['isDisabled'] = false;
@@ -7456,6 +7562,35 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
+		function executeTractorBeamCrewmember($crewmemberType, $crewmemberColor)
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+
+				$crewmemberId = $this->getGarmentIdFromType($crewmemberType, $crewmemberColor);
+				//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
+
+				$this->giveCrewmemberToSaucer($crewmemberId, $saucerWhoseTurnItIs); // give the garment to the ostrich (set garment_location to the color)
+				//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
+				//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
+				$this->updatePlayerScores(); // update the player boards with current scores
+
+				$crewmemberColor = $this->getCrewmemberColorFromId($crewmemberId);
+				$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($crewmemberId);
+				$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
+
+				// notify
+				self::notifyAllPlayers( "crewmemberPickup", clienttranslate( '${saucerMovingHighlightedText} picks up ${CREWMEMBERIMAGE} with their Tractor Beam.' ), array(
+					'saucerMovingHighlightedText' => $saucerMovingHighlightedText,
+					'CREWMEMBERIMAGE' => 'CREWMEMBERIMAGE_'.$crewmemberType.'_'.$crewmemberColor,
+					'crewmemberType' => $crewmemberType,
+					'crewmemberColor' => $crewmemberColor,
+					'saucerColor' => $saucerWhoseTurnItIs
+				) );
+
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+		}
+
 		function executeStealCrewmember( $stolenTypeText, $stolenColor, $areWePassing, $areWeTaking )
 		{
 				$saucerReceiving = $this->getOstrichWhoseTurnItIs();
@@ -7587,6 +7722,19 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// place it at a random location
 				$foundUnoccupiedCrashSite = $this->randomlyPlaceSaucer($colorAsHex);
 
+				if($this->doesSaucerHaveUpgradePlayed($colorAsHex, 'Scavenger Bot'))
+				{ // this saucer has Scavenger Bot
+
+						// give a Booster
+						if($this->hasAvailableBoosterSlot($colorAsHex))
+						{ // has an available booster slot
+								$this->giveSaucerBooster($colorAsHex);
+						}
+
+						// give an Energy
+						$this->giveSaucerEnergy($colorAsHex);
+				}
+
 				if($foundUnoccupiedCrashSite)
 				{ // the saucer was successfully placed
 
@@ -7618,8 +7766,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							// let the player choose a space to be placed
 							$this->gamestate->nextState( "allCrashSitesOccupiedChooseSpacePreTurn" );
 						}
-
-
 				}
 		}
 
@@ -8125,7 +8271,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							$crewmemberColor = $event['crewmember_color'];
 							$crewmemberType = $event['crewmember_type'];
 
-							self::notifyAllPlayers( "saucerMove", clienttranslate( '${saucerMovingHighlightedText} picks up ${CREWMEMBERIMAGE}.' ), array(
+							self::notifyAllPlayers( "crewmemberPickupAnimated", clienttranslate( '${saucerMovingHighlightedText} picks up ${CREWMEMBERIMAGE}.' ), array(
 								'saucerMovingHighlightedText' => $saucerMovingHighlightedText,
 								'CREWMEMBERIMAGE' => 'CREWMEMBERIMAGE_'.$crewmemberType.'_'.$crewmemberColor
 							) );
@@ -8386,6 +8532,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{ // Afterburner
 
 						$this->gamestate->nextState( "chooseAfterburnerSpace" );
+				}
+				elseif($collectorNumber == 5)
+				{ // Tractor Beam
+
+						$this->gamestate->nextState( "chooseTractorBeamCrewmember" );
 				}
 				elseif($collectorNumber == 6)
 				{ // Saucer Teleporter
@@ -9098,6 +9249,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Afterburner":
 								return 3;
 
+						case "Tractor Beam":
+								return 5;
+
 						case "Saucer Teleporter":
 								return 6;
 
@@ -9106,6 +9260,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 						case "Hyperdrive":
 								return 9;
+
+						case "Scavenger Bot":
+								return 10;
 
 						case "Time Machine":
 								return 12;
@@ -9147,6 +9304,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=3";
 								break;
 
+						case "Tractor Beam":
+						case 5:
+								$sql .= " AND card_type_arg=5";
+								break;
+
 						case "Saucer Teleporter":
 						case 6:
 								$sql .= " AND card_type_arg=6";
@@ -9160,6 +9322,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					 	case "Hyperdrive":
 						case 9:
 								$sql .= " AND card_type_arg=9";
+								break;
+
+						case "Scavenger Bot":
+						case 10:
+								$sql .= " AND card_type_arg=10";
 								break;
 
 						case "Time Machine":
@@ -9221,6 +9388,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=3";
 								break;
 
+						case "Tractor Beam":
+						case 5:
+								$sql .= " AND card_type_arg=5";
+								break;
+
 						case "Saucer Teleporter":
 						case 6:
 								$sql .= " AND card_type_arg=6";
@@ -9234,6 +9406,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Hyperdrive":
 						case 9:
 								$sql .= " AND card_type_arg=9";
+								break;
+
+						case "Scavenger Bot":
+						case 10:
+								$sql .= " AND card_type_arg=10";
 								break;
 
 						case "Time Machine":
@@ -9294,6 +9471,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=3";
 								break;
 
+						case "Tractor Beam":
+						case 5:
+								$sql .= " AND card_type_arg=5";
+								break;
+
 						case "Saucer Teleporter":
 						case 6:
 								$sql .= " AND card_type_arg=6";
@@ -9307,6 +9489,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Hyperdrive":
 						case 9:
 								$sql .= " AND card_type_arg=9";
+								break;
+
+						case "Scavenger Bot":
+						case 10:
+								$sql .= " AND card_type_arg=10";
 								break;
 
 						case "Time Machine":
@@ -9357,6 +9544,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=3";
 								break;
 
+						case "Tractor Beam":
+						case 5:
+								$sql .= " AND card_type_arg=5";
+								break;
+
 						case "Saucer Teleporter":
 						case 6:
 								$sql .= " AND card_type_arg=6";
@@ -9370,6 +9562,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Hyperdrive":
 						case 9:
 								$sql .= " AND card_type_arg=9";
+								break;
+
+						case "Scavenger Bot":
+						case 10:
+								$sql .= " AND card_type_arg=10";
 								break;
 
 						case "Time Machine":
@@ -10051,6 +10248,22 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				return array(
 						'startOfTurnUpgradesToActivate' => self::getStartOfTurnUpgradesToActivateForSaucer($saucerWhoseTurnItIs)
+				);
+		}
+
+		function argGetTractorBeamCrewmembers()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(5);
+
+				$validCrewmembers = $this->getCrewmembersWithin2($saucerWhoseTurnItIs);
+
+				// return both the location of all the
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
+						'upgradeName' => $upgradeName,
+						'validCrewmembers' => $validCrewmembers
 				);
 		}
 
