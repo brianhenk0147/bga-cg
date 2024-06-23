@@ -1770,7 +1770,24 @@ this.unhighlightAllGarments();
                             console.log(args.validCrewmembers);
 
                             // add a skip button in case they do not want to for some reason
-                            this.addActionButton( 'skipButton', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
+                            this.addActionButton( 'skipButton_5', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
+                      }
+
+                  break;
+
+                  case 'chooseCrewmemberToAirlock':
+
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+
+                            // add a button for each offcolored crewmember they have
+                            this.showAirlockCrewmemberButtons(args.validCrewmembers);
+
+                            console.log('valid crew:');
+                            console.log(args.validCrewmembers);
+
+                            // add a skip button in case they do not want to for some reason
+                            this.addActionButton( 'skipButton_20', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
                       }
 
                   break;
@@ -3084,9 +3101,6 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     source = 'saucer_'+saucerMoving;
                     destination = 'square_'+destinationX+'_'+destinationY;
 
-                    // give it a new parent so it's no longer on the previous space
-                    this.attachToNewParent(source, destination);
-
                     animationSpeed = this.ANIMATION_SPEED_MOVING_SAUCER;
                 }
                 else if(eventType == 'crewmemberPickup')
@@ -3160,6 +3174,12 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                             // in 2-player games, we must adjust the location of crewmembers because
                             // they get pushed down by the number of upgrades their teammat has
                             this.adjustCrewmemberLocationBasedOnUpgrades(saucerColor, crewmemberType);
+                        }
+                        else if(eventType == 'crewmemberPickup')
+                        { // the saucer picked up a crewmember
+
+                            // give it a new parent so it's no longer on the previous space
+                            this.attachToNewParent(source, destination);
                         }
 
 
@@ -4288,6 +4308,25 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             }
         },
 
+        showAirlockCrewmemberButtons: function(crewmembers)
+        {
+
+            for (const crewmember of crewmembers)
+            { // go through each crewmember
+                var crewmemberColor = crewmember['garment_color'];
+                var crewmemberTypeInt = crewmember['garment_type'];
+                var crewmemberTypeString = this.convertCrewmemberType(crewmemberTypeInt);
+
+                console.log("airlock crewmember color:"+crewmemberColor+" lost crewmember type:"+crewmemberTypeString);
+
+                //var htmlOfSpace = 'square_'+space; // square_6_5
+                //console.log("highlighting space: " + htmlOfSpace);
+                //this.highlightSpace(htmlOfSpace);
+
+                this.addActionButton( 'airlockCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickAirlockCrewmember', null, null, 'gray');
+            }
+        },
+
         showGiveAwayCrewmemberButtons: function(giveAwayCrewmembers, otherSaucers)
         {
 
@@ -4506,6 +4545,17 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberColor = node.split('_')[1]; // 01b508
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteTractorBeamCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
+        onClickAirlockCrewmember: function( evt )
+        {
+            var node = evt.currentTarget.id; // tractorBeamCrewmember_01b508_pilot_button
+            console.log("onClickAirlockCrewmember node:"+node);
+            var crewmemberType = node.split('_')[2]; // pilot
+            var crewmemberColor = node.split('_')[1]; // 01b508
+
+            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteAirlockCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },
 
@@ -4956,9 +5006,13 @@ console.log("success... onClickUpgradeCardInHand");
         },
 
         // SKIP A SPECIFIC START OF TURN UPGRADE AFTER YOU CLICKED TO USE IT
-        onClick_skipActivateSpecificStartOfTurnUpgrade: function()
+        onClick_skipActivateSpecificStartOfTurnUpgrade: function(evt)
         {
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipActivateSpecificStartOfTurnUpgrade.html", { lock: true }, this, function( result ) {
+            var node = evt.currentTarget.id; // skipButton_2
+            console.log( "node:"+node );
+            var collectorNumber = node.split('_')[1];
+
+            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipActivateSpecificStartOfTurnUpgrade.html", { collectorNumber: collectorNumber, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },
 

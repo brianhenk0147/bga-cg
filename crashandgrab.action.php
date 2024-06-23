@@ -110,6 +110,15 @@
       self::ajaxResponse( );
     }
 
+    public function actSkipActivateSpecificStartOfTurnUpgrade()
+    {
+      self::setAjaxMode();
+      $collectorNumber = self::getArg( "collectorNumber", AT_posint, true ); // 1, 2, 3
+
+      $this->game->executeSkipActivateSpecificStartOfTurnUpgrade($collectorNumber);
+      self::ajaxResponse( );
+    }
+
     public function actActivateUpgrade()
     {
         self::setAjaxMode();
@@ -193,6 +202,16 @@
         $crewmemberColor = self::getArg( "crewmemberColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
 
         $this->game->executeTractorBeamCrewmember( $crewmemberType, $crewmemberColor);
+        self::ajaxResponse( );
+    }
+
+    public function actExecuteAirlockCrewmember()
+    {
+        self::setAjaxMode();
+        $crewmemberType = self::getArg( "crewmemberType", AT_alphanum, true ); // scientist
+        $crewmemberColor = self::getArg( "crewmemberColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeAirlockCrewmember( $crewmemberType, $crewmemberColor);
         self::ajaxResponse( );
     }
 

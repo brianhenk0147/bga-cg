@@ -119,6 +119,7 @@ CREATE TABLE IF NOT EXISTS `garment` (
   `garment_location` varchar(30) NOT NULL,
   `garment_color` varchar(16) NOT NULL,
   `garment_type` smallint(5) unsigned NOT NULL,
+  `airlock_exchangeable` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`garment_id`)
 ) ENGINE=InnoDB;
 

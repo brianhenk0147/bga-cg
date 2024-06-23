@@ -427,7 +427,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 10),
+						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Hyperdrive', 'type_arg' => 9, 'card_location' => 'deck','nbr' => 1),
@@ -435,7 +435,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1)
+						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 10)
 				);
 
 
@@ -1859,6 +1860,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						case 17:
 								return clienttranslate( 'Landing Legs');
+
+						case 20:
+							return clienttranslate( 'Airlock');
 				}
 		}
 
@@ -1917,6 +1921,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						// Landing Legs
 						case 17:
 								return clienttranslate( 'At the end of your turn, move one space in any direction.');
+
+						// Airlock
+						case 20:
+								return clienttranslate( 'When you pick up a Crewmember, you may exchange it with any other Crewmember on the board.');
 				}
 		}
 
@@ -1993,6 +2001,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result[17] = array();
 				$result[17]['name'] = $this->getUpgradeTitleFromCollectorNumber(17);
 				$result[17]['effect'] = $this->getUpgradeEffectFromCollectorNumber(17);
+
+				// Airlock
+				$result[20] = array();
+				$result[20]['name'] = $this->getUpgradeTitleFromCollectorNumber(20);
+				$result[20]['effect'] = $this->getUpgradeEffectFromCollectorNumber(20);
 
 				return $result;
 		}
@@ -4112,6 +4125,22 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return $result;
 		}
 
+		function getHighestAirlockExchangeableId()
+		{
+				$highestValue = $this->getHighestAirlockExchangeableMax();
+				return self::getUniqueValueFromDb("SELECT garment_id FROM garment WHERE airlock_exchangeable=$highestValue");
+		}
+
+		function getHighestAirlockExchangeableMax()
+		{
+				return self::getUniqueValueFromDb("SELECT MAX(airlock_exchangeable) AS max FROM garment");
+		}
+
+		function getAirlockExchangeableCrewmembersForSaucer($saucerColor)
+		{
+				return self::getObjectListFromDB( "SELECT * FROM `garment` WHERE airlock_exchangeable>0 AND garment_location='$saucerColor'" );
+		}
+
 		function getLostCrewmembers()
 		{
 				$lostCrewmembers = array();
@@ -5373,6 +5402,12 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 			self::DbQuery( $sql );
 		}
 
+		function resetCrewmembers()
+		{
+				$sql = "UPDATE garment SET airlock_exchangeable=0" ;
+				self::DbQuery( $sql );
+		}
+
 		function resetDiscardedZigs()
 		{
 				$sql = "UPDATE movementCards SET card_location_arg=0,card_ostrich='' WHERE card_location='discard'" ;
@@ -6145,6 +6180,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
 
+										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
+										{ // they have Airlock
+
+												//throw new feException( "Airlock");
+												// mark that this crewmember could be exchanged
+												$this->incrementAirlockExchangeable($garmentId);
+										}
+
 										$crewmemberColor = $this->getCrewmemberColorFromId($garmentId);
 										$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($garmentId);
 										$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
@@ -6241,6 +6284,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
 
+										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
+										{ // they have Airlock
+
+												//throw new feException( "Airlock");
+												// mark that this crewmember could be exchanged
+												$this->incrementAirlockExchangeable($garmentId);
+										}
+
 										$crewmemberColor = $this->getCrewmemberColorFromId($garmentId);
 										$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($garmentId);
 										$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
@@ -6336,6 +6387,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
 
+										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
+										{ // they have Airlock
+
+												//throw new feException( "Airlock");
+												// mark that this crewmember could be exchanged
+												$this->incrementAirlockExchangeable($garmentId);
+										}
+
 										$crewmemberColor = $this->getCrewmemberColorFromId($garmentId);
 										$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($garmentId);
 										$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
@@ -6426,6 +6485,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 										$this->updatePlayerScores(); // update the player boards with current scores
+
+										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
+										{ // they have Airlock
+
+												//throw new feException( "Airlock");
+												// mark that this crewmember could be exchanged
+												$this->incrementAirlockExchangeable($garmentId);
+										}
 
 										$crewmemberColor = $this->getCrewmemberColorFromId($garmentId);
 										$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($garmentId);
@@ -6627,6 +6694,23 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								'player_name' => $playerName
 						) );
 				}
+		}
+
+		function incrementAirlockExchangeable($crewmemberId)
+		{
+				// get the highest exchangeable value
+				$highestAmount = $this->getHighestAirlockExchangeableMax();
+
+				$sql = "UPDATE garment SET airlock_exchangeable=$highestAmount+1
+								WHERE garment_id=$crewmemberId" ;
+				self::DbQuery( $sql );
+		}
+
+		function removeAirlockExchangeable($crewmemberId)
+		{
+				$sql = "UPDATE garment SET airlock_exchangeable=0
+								WHERE garment_id=$crewmemberId" ;
+				self::DbQuery( $sql );
 		}
 
 		function setOstrichToChosen($ostrich)
@@ -7389,6 +7473,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 			//throw new feException("Getting board space type after move events for saucer ($saucerMoving).");
 				$boardValue = $this->getBoardSpaceTypeForOstrich($saucerMoving); // get the type of space of the ostrich who just moved
 
+				// count crewmembers they can exchange with Airlock if they have it
+				$airlockExchangeableCrewmembers = array();
+				if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
+				{ // they have Airlock
+
+						$airlockExchangeableCrewmembers = $this->getAirlockExchangeableCrewmembersForSaucer($saucerMoving);
+				}
+
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
 						$this->gamestate->nextState( "endGame" );
@@ -7400,6 +7492,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				else if($this->canSaucerBoost($saucerMoving) && $this->getSkippedBoosting($saucerMoving) == 0 && $moveType == 'regular')
 				{ // the player has a boost they can use and they have not crashed
 						$this->gamestate->nextState( "chooseIfYouWillUseBooster" ); // need to ask the player if they want to use a zag, and if so, which direction they want to travel
+				}
+				elseif(count($airlockExchangeableCrewmembers) > 0)
+				{ // this saucer has at least one crewmember they can exchange
+						$this->gamestate->nextState( "chooseCrewmemberToAirlock" );
 				}
 				else if($this->canSaucerPassCrewmembers($saucerMoving))
 				{ // they passed by their own Saucer and can pass them a Crewmember
@@ -7587,6 +7683,46 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 					'crewmemberColor' => $crewmemberColor,
 					'saucerColor' => $saucerWhoseTurnItIs
 				) );
+
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+		}
+
+		function executeAirlockCrewmember($crewmemberType, $crewmemberColor)
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+
+				$crewmemberId = $this->getGarmentIdFromType($crewmemberType, $crewmemberColor);
+				//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
+
+				$this->giveCrewmemberToSaucer($crewmemberId, $saucerWhoseTurnItIs); // give the garment to the ostrich (set garment_location to the color)
+				//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
+				//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
+				$this->updatePlayerScores(); // update the player boards with current scores
+
+				$crewmemberColor = $this->getCrewmemberColorFromId($crewmemberId);
+				$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($crewmemberId);
+				$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
+
+				// notify
+				self::notifyAllPlayers( "crewmemberPickup", clienttranslate( '${saucerMovingHighlightedText} used Airlock to exchange the Crewmember they picked up to get ${CREWMEMBERIMAGE} instead.' ), array(
+					'saucerMovingHighlightedText' => $saucerMovingHighlightedText,
+					'CREWMEMBERIMAGE' => 'CREWMEMBERIMAGE_'.$crewmemberType.'_'.$crewmemberColor,
+					'crewmemberType' => $crewmemberType,
+					'crewmemberColor' => $crewmemberColor,
+					'saucerColor' => $saucerWhoseTurnItIs
+				) );
+
+				// get the ID of the highest crewmember available for exchange (in case they picked up 2 on the same turn)
+				$crewmemberIdTaken = $this->getHighestAirlockExchangeableId();
+
+				//throw new feException( "executeAirlockCrewmember crewmemberIdTaken: $crewmemberIdTaken");
+
+				// mark this crewmember as taken so we don't offer another exchange with it
+				$this->removeAirlockExchangeable($crewmemberIdTaken);
+
+				// place the Crewmember they originally took
+				$this->randomlyPlaceCrewmember($crewmemberIdTaken);
 
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
@@ -8128,7 +8264,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 					'moveEventList' => $reversedMoveEventList
 				) );
 
-
 				// tell the players what happened in the game log
 				$this->updateGameLogForEvents($saucerMoving, $moveEventList);
 
@@ -8139,7 +8274,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$moveType = $this->getMoveTypeWeAreExecuting();
 
 				if($moveType == 'Blast Off Thrusters')
-				{
+				{ // the moved because they had Blast Off Thrusters
 						$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
 						// decide the state to go to after the move
@@ -8502,6 +8637,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		// skip a single end of turn upgrade after you chose to activate it
 		function executeSkipActivateSpecificEndOfTurnUpgrade($collectorNumber)
+		{
+				self::checkAction( 'skipActivateUpgrade' ); // make sure we can take this action from this state
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				$this->setAskedToActivateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, $collectorNumber);
+
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+		}
+
+		// skip a single start of turn upgrade after you chose to activate it
+		function executeSkipActivateSpecificStartOfTurnUpgrade($collectorNumber)
 		{
 				self::checkAction( 'skipActivateUpgrade' ); // make sure we can take this action from this state
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -9276,6 +9422,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Landing Legs":
 								return 17;
 
+						case "Airlock":
+								return 20;
+
 						default:
 								return 0;
 				}
@@ -9347,6 +9496,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Landing Legs":
 						case 17:
 								$sql .= " AND card_type_arg=17";
+								break;
+
+						case "Airlock":
+						case 20:
+								$sql .= " AND card_type_arg=20";
 								break;
 				}
 
@@ -9432,6 +9586,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 17:
 								$sql .= " AND card_type_arg=17";
 								break;
+
+						case "Airlock":
+						case 20:
+								$sql .= " AND card_type_arg=20";
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -9515,6 +9674,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 17:
 								$sql .= " AND card_type_arg=17";
 								break;
+
+						case "Airlock":
+						case 20:
+								$sql .= " AND card_type_arg=20";
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -9587,6 +9751,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Landing Legs":
 						case 17:
 								$sql .= " AND card_type_arg=17";
+								break;
+
+						case "Airlock":
+						case 20:
+								$sql .= " AND card_type_arg=20";
 								break;
 				}
 
@@ -9929,6 +10098,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				// mark all crash penalties to 0
 				$this->resetCrashPenalties();
 
+				// reset crewmember properties
+				$this->resetCrewmembers();
+
 				// make all passing crewmembers values to 0
 				$this->resetPassingValues();
 
@@ -10264,6 +10436,32 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
 						'upgradeName' => $upgradeName,
 						'validCrewmembers' => $validCrewmembers
+				);
+		}
+
+		function argGetAirlockCrewmembers()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(20);
+
+				$validCrewmembers = $this->getCrewmembersOnBoard();
+
+				// get the ID of the highest crewmember available for exchange (in case they picked up 2 on the same turn)
+				$crewmemberId = $this->getHighestAirlockExchangeableId();
+
+				$crewmemberTakenColorHex = $this->getCrewmemberColorFromId($crewmemberId);
+				$crewmemberTakenColorString = $this->convertColorToText($crewmemberTakenColorHex);
+				$crewmemberTakenTypeId = $this->getCrewmemberTypeIdFromId($crewmemberId);
+				$crewmemberTakenTypeString = $this->convertGarmentTypeIntToString($crewmemberTakenTypeId);
+
+				// return both the location of all the
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
+						'upgradeName' => $upgradeName,
+						'validCrewmembers' => $validCrewmembers,
+						'crewmemberTakenColor' => $crewmemberTakenColorString,
+						'crewmemberTakenTypeString' => $crewmemberTakenTypeString
 				);
 		}
 

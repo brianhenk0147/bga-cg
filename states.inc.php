@@ -373,7 +373,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "checkForRevealDecisions",
         "updateGameProgression" => false,
-        "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32, "chooseWhetherToHyperdrive" => 45, "chooseCrewmembersToTake" => 57 )
+        "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32, "chooseWhetherToHyperdrive" => 45, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63 )
     ),
 
     39 => array(
@@ -580,6 +580,16 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Choose a Crewmember to pick up.'),
         "type" => "activeplayer",
         'args' => 'argGetTractorBeamCrewmembers',
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
+    ),
+
+    63 => array(
+        "name" => "chooseCrewmemberToAirlock",
+        "description" => clienttranslate('${saucerColor} is using their ${upgradeName}.'),
+        "descriptionmyturn" => clienttranslate('Airlock: You may exchange the ${crewmemberTakenColor} ${crewmemberTakenTypeString} you just picked up for one of these if you wish.'),
+        "type" => "activeplayer",
+        'args' => 'argGetAirlockCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
     ),
