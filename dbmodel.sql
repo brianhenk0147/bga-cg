@@ -59,8 +59,8 @@ CREATE TABLE IF NOT EXISTS `upgradeCards` (
   `card_is_played` smallint(5) unsigned NOT NULL DEFAULT '0',
   `times_activated_this_round` smallint(5) unsigned NOT NULL DEFAULT '0',
   `asked_to_activate_this_round` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `value_1` varchar(30) NOT NULL DEFAULT '0',
-  `value_2` varchar(30) NOT NULL DEFAULT '0',
+  `value_1` varchar(60) NOT NULL DEFAULT '0',
+  `value_2` varchar(60) NOT NULL DEFAULT '0',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -99,6 +99,7 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
   `skipped_boosting` smallint(5) unsigned NOT NULL DEFAULT '0',
   `skipped_stealing` smallint(5) unsigned NOT NULL DEFAULT '0',
   `skipped_giving_away` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `given_with_distress` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ostrich_color`)
 ) ENGINE=InnoDB;
 
@@ -120,6 +121,7 @@ CREATE TABLE IF NOT EXISTS `garment` (
   `garment_color` varchar(16) NOT NULL,
   `garment_type` smallint(5) unsigned NOT NULL,
   `airlock_exchangeable` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `taken_with_distress` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`garment_id`)
 ) ENGINE=InnoDB;
 

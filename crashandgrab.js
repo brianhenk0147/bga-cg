@@ -1775,6 +1775,38 @@ this.unhighlightAllGarments();
 
                   break;
 
+                  case 'chooseDistressSignalerTakeCrewmember':
+
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+
+                            // add a button for each offcolored crewmember they have
+                            this.showDistressSignalerTakeCrewmemberButtons(args.validCrewmembers);
+
+                            console.log('valid crew:');
+                            console.log(args.validCrewmembers);
+
+                            // add a skip button in case they do not want to for some reason
+                            this.addActionButton( 'skipButton_11', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
+                      }
+
+                  break;
+
+                  case 'chooseDistressSignalerGiveCrewmember':
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+
+                            // add a button for each offcolored crewmember they have
+                            this.showDistressSignalerGiveCrewmemberButtons(args.validCrewmembers);
+
+                            console.log('valid crew:');
+                            console.log(args.validCrewmembers);
+
+                            // add a skip button in case they do not want to for some reason
+                            this.addActionButton( 'skipButton_11', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
+                      }
+                  break;
+
                   case 'chooseCrewmemberToAirlock':
 
                       if( this.isCurrentPlayerActive() )
@@ -3101,6 +3133,9 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     source = 'saucer_'+saucerMoving;
                     destination = 'square_'+destinationX+'_'+destinationY;
 
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(source, destination);
+
                     animationSpeed = this.ANIMATION_SPEED_MOVING_SAUCER;
                 }
                 else if(eventType == 'crewmemberPickup')
@@ -3170,6 +3205,10 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                         // we have to adjust the location of the crewmember based on the number of upgrades a saucer above them has
                         if(eventType == 'crewmemberPickup')
                         {
+                            console.log('removing top and left from '+source);
+                            // after sliding, the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
+                            $(source).style.removeProperty('left'); // remove left property
+                            $(source).style.removeProperty('top'); // remove top property
 
                             // in 2-player games, we must adjust the location of crewmembers because
                             // they get pushed down by the number of upgrades their teammat has
@@ -4109,7 +4148,12 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 color: color
             } ) , 'discs' );
           */
-            this.slideToObject( 'saucer_'+ostrichMoving, 'square_'+xDestination+'_'+yDestination ).play(); // should be ostrich_COLOR
+            var source = 'saucer_'+ostrichMoving;
+            var destination = 'square_'+xDestination+'_'+yDestination;
+
+            this.attachToNewParent( source, destination ); // move the saucer to the correct space in the DOM to avoid weird graphical issues
+
+            this.slideToObject( source, destination ).play(); // should be ostrich_COLOR
 
             if(spaceType == "D")
             { // this ostrich fell off a cliff
@@ -4305,6 +4349,44 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 //this.highlightSpace(htmlOfSpace);
 
                 this.addActionButton( 'tractorBeamCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickTractorBeamCrewmember', null, null, 'gray');
+            }
+        },
+
+        showDistressSignalerTakeCrewmemberButtons: function(crewmembers)
+        {
+
+            for (const crewmember of crewmembers)
+            { // go through each crewmember
+                var crewmemberColor = crewmember['garment_color'];
+                var crewmemberTypeInt = crewmember['garment_type'];
+                var crewmemberTypeString = this.convertCrewmemberType(crewmemberTypeInt);
+
+                console.log("tractor beam crewmember color:"+crewmemberColor+" lost crewmember type:"+crewmemberTypeString);
+
+                //var htmlOfSpace = 'square_'+space; // square_6_5
+                //console.log("highlighting space: " + htmlOfSpace);
+                //this.highlightSpace(htmlOfSpace);
+
+                this.addActionButton( 'distressSignalerTakeCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickDistressSignalerTakeCrewmember', null, null, 'gray');
+            }
+        },
+
+        showDistressSignalerGiveCrewmemberButtons: function(crewmembers)
+        {
+
+            for (const crewmember of crewmembers)
+            { // go through each crewmember
+                var crewmemberColor = crewmember['garment_color'];
+                var crewmemberTypeInt = crewmember['garment_type'];
+                var crewmemberTypeString = this.convertCrewmemberType(crewmemberTypeInt);
+
+                console.log("tractor beam crewmember color:"+crewmemberColor+" lost crewmember type:"+crewmemberTypeString);
+
+                //var htmlOfSpace = 'square_'+space; // square_6_5
+                //console.log("highlighting space: " + htmlOfSpace);
+                //this.highlightSpace(htmlOfSpace);
+
+                this.addActionButton( 'distressSignalerGiveCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickDistressSignalerGiveCrewmember', null, null, 'gray');
             }
         },
 
@@ -4545,6 +4627,28 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberColor = node.split('_')[1]; // 01b508
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteTractorBeamCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
+        onClickDistressSignalerTakeCrewmember: function( evt )
+        {
+            var node = evt.currentTarget.id; // tractorBeamCrewmember_01b508_pilot_button
+            console.log("onClickDistressSignalerCrewmember node:"+node);
+            var crewmemberType = node.split('_')[2]; // pilot
+            var crewmemberColor = node.split('_')[1]; // 01b508
+
+            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDistressSignalerTakeCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
+        onClickDistressSignalerGiveCrewmember: function( evt )
+        {
+            var node = evt.currentTarget.id; // tractorBeamCrewmember_01b508_pilot_button
+            console.log("onClickDistressSignalerCrewmember node:"+node);
+            var crewmemberType = node.split('_')[2]; // pilot
+            var crewmemberColor = node.split('_')[1]; // 01b508
+
+            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDistressSignalerGiveCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },
 
@@ -6152,6 +6256,12 @@ console.log("success... onClickUpgradeCardInHand");
             var animationId = this.slideToObject( source, destination, animationSpeed );
             dojo.connect(animationId, 'onEnd', () => {
                 // anything we need to do after it slides
+
+                console.log('removing top and left from '+source);
+                // after sliding, the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
+                $(source).style.removeProperty('left'); // remove left property
+                $(source).style.removeProperty('top'); // remove top property
+
 
                 // in 2-player games, we must adjust the location of crewmembers because
                 // they get pushed down by the number of upgrades their teammat has

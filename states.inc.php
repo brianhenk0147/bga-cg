@@ -326,7 +326,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
-    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32 )
+    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63 )
     ),
 
     34 => array(
@@ -491,7 +491,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
         "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseTractorBeamCrewmember" => 62 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64 )
     ),
 
     54 => array(
@@ -590,6 +590,26 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Airlock: You may exchange the ${crewmemberTakenColor} ${crewmemberTakenTypeString} you just picked up for one of these if you wish.'),
         "type" => "activeplayer",
         'args' => 'argGetAirlockCrewmembers',
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
+    ),
+
+    64 => array(
+        "name" => "chooseDistressSignalerTakeCrewmember",
+        "description" => clienttranslate('${saucerColor} is using their ${upgradeName}.'),
+        "descriptionmyturn" => clienttranslate('Distress Signaler: You may take one of these Crewmembers in exchange for one of yours of the same type.'),
+        "type" => "activeplayer",
+        'args' => 'argGetDistressSignalerTakeCrewmembers',
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseDistressSignalerGiveCrewmember" => 65 )
+    ),
+
+    65 => array(
+        "name" => "chooseDistressSignalerGiveCrewmember",
+        "description" => clienttranslate('${saucerColor} is using their ${upgradeName}.'),
+        "descriptionmyturn" => clienttranslate('Distress Signaler: You may exchange the ${crewmemberTakenColor} ${crewmemberTakenTypeString} you just picked up for one of these if you wish.'),
+        "type" => "activeplayer",
+        'args' => 'argGetDistressSignalerGiveCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
     ),
