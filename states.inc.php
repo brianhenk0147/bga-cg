@@ -85,18 +85,6 @@ $machinestates = array(
     		"transitions" => array( "setTrap" => 3, "notTrap" => 3, "allTrappersDone" => 7 )
     ),
 
-    // MOVE PHASE (individual)
-
-    4 => array(
-    		"name" => "executeMove",
-    		"description" => clienttranslate('${actplayer} is moving.'),
-    		"descriptionmyturn" => clienttranslate('${you} must execute your movement.'),
-    		"type" => "activeplayer",
-        'args' => 'argExecuteMove',
-    		"possibleactions" => array( "askToUseZig", "useSkateboard", "placeCrewmemberChooseCrewmember" ),
-    		"transitions" => array( "askUseZag" => 14, "askUseSkateboard" => 9, "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "askWhichGarmentToDiscard" => 18, "allTrappersDone" => 7, "endGame" => 99 )
-    ),
-
     // END ROUND PHASE (game)
 
     5 => array(
@@ -613,6 +601,18 @@ $machinestates = array(
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
     ),
+
+    70 => array(
+        "name" => "executingMove",
+        "description" => clienttranslate('executingMove state.'),
+        "descriptionmyturn" => clienttranslate('executingMove state'),
+        "type" => "activeplayer",
+        'args' => 'argExecutingMove',
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+    ),
+
+
 
 
 

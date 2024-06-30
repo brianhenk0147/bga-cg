@@ -11101,21 +11101,43 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				);
 		}
 
-		// Called during executeMove state so we know whether or not to show all the direction buttons.
-		function argExecuteMove()
+		// new version where we do each space move individually
+		function argExecutingMove()
 		{
+				// determine the saucer that is executing a move
+				$saucerMoving = $this->getPushedSaucerMoving();
+				if($saucerMoving == '')
+				{ // we didn't find a saucer that was pushed and still needs to move
+							$saucerMoving = $this->getOstrichWhoseTurnItIs();
+				}
 
-			$ostrich = $this->getOstrichWhoseTurnItIs();
+				$this->executeSaucerMove($saucerMoving);
 
-			$sql = "
-        	SELECT ostrich_is_dizzy FROM ostrich WHERE ostrich_color='$ostrich'
-    	";
-    	$dizzy = self::getNonEmptyObjectFromDB( $sql );
+//throw new feException( "saucerMoving:$saucerMoving");
 
-			return array(
-          //  'isDizzy' => $this->isOstrichDizzy( $this->getOstrichWhoseTurnItIs() )
-					'isDizzy' => $dizzy['ostrich_is_dizzy']
-        );
+				// move spaces until we get to 0 movement or hit an event
+						// get next spaces
+
+						// send notify for moves to client
+
+						// reasons to stop early:
+						// crash site unused waste accelerator: ask if they want to use it
+
+
+						// saucer:
+						 		// phase shift: ask if they wish to use
+								// proximity mines: ask if they wish to use
+								// collide:
+										// set distance_remaining of collidee to distance gone for collider
+										// set distance_remaining to 0 for collider
+										// set pushed_on_saucer_turn of collidee to collider
+										// set state to executingMove
+
+				// when distance_remaining gets to 0 for both saucer and any saucers with pushed_on_saucer_turn set
+						// set pushed_on_saucer to '' if any are set
+						// see if anyone fell off
+						// go to the next state
+//throw new feException( "end argExecutingMove");
 		}
 
 		function argReplaceGarmentChooseSpace()
