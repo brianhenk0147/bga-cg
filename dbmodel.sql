@@ -100,6 +100,8 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
   `skipped_stealing` smallint(5) unsigned NOT NULL DEFAULT '0',
   `skipped_giving_away` smallint(5) unsigned NOT NULL DEFAULT '0',
   `given_with_distress` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `pushed_on_saucer_turn` varchar(16) NOT NULL DEFAULT '0',
+  `distance_remaining` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ostrich_color`)
 ) ENGINE=InnoDB;
 

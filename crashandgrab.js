@@ -3134,7 +3134,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     destination = 'square_'+destinationX+'_'+destinationY;
 
                     // give it a new parent so it's no longer on the space
-                    this.attachToNewParent(source, destination);
+                    //this.attachToNewParent(source, destination); // ADDING THIS HERE BREAKS PUSHING ANIMATION
 
                     animationSpeed = this.ANIMATION_SPEED_MOVING_SAUCER;
                 }
@@ -3214,11 +3214,11 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                             // they get pushed down by the number of upgrades their teammat has
                             this.adjustCrewmemberLocationBasedOnUpgrades(saucerColor, crewmemberType);
                         }
-                        else if(eventType == 'crewmemberPickup')
+                        else if(eventType == 'saucerMove')
                         { // the saucer picked up a crewmember
 
                             // give it a new parent so it's no longer on the previous space
-                            this.attachToNewParent(source, destination);
+                            // this.attachToNewParent(source, destination); // THIS MAKES THINGS BREAK
                         }
 
 
@@ -3228,6 +3228,10 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
 
             }
+
+            //TODO: ask for x and y location of all saucers and attach them to the correct space...
+            //it doesn't work during the movement during saucer pushes and possibly crewmember pickups
+            //we might want to remove the attachment from the crewmember pickups too
         },
 
         updateTurnOrder: function(turnOrder)

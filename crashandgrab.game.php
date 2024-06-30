@@ -6434,11 +6434,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
 
-
+//throw new feException("colliding with:$saucerWeCollideWith");
 										array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 
 										$pushedEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerWeCollideWith, true);
-										return array_merge($moveEventList, $pushedEventList); // add the pushed event to the original and return so we don't go any further
+										//$pushedEventCount = count($pushedEventList);
+										//$moveEventCount = count($moveEventList);
+										//throw new feException("pushedEventCount:$pushedEventCount moveEventCount:$moveEventCount");
+										$combinedList = array_merge($moveEventList, $pushedEventList); // add the pushed event to the original
+										//$combinedCount = count($combinedList);
+										//throw new feException("combinedCount:$combinedCount");
+										return $combinedList; // return so we don't go any further
 								}
 
 								//return $moveEventList;
@@ -10676,13 +10682,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 									}
 							}
 				}
-		}
-
-		/// This is called when the saucer movement animation is occuring.
-		function executingMove()
-		{
-				// We just need to wait for the animation to complete before we continue.
-				// The UI will move us to the next state once the animation completes.
 		}
 
 
