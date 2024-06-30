@@ -8826,7 +8826,8 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						$this->notifyPlayersOfBoosterUsage($saucerWhoseTurnItIs);
 						$this->decrementBoosterForSaucer($saucerWhoseTurnItIs); // must come after notification
 
-						$this->executeSaucerMove($saucerWhoseTurnItIs);
+						$this->gamestate->nextState( "executingMove" );
+						//$this->executeSaucerMove($saucerWhoseTurnItIs);
 				}
 				elseif($currentState == "chooseAcceleratorDirection")
 				{ // they are accelerating
@@ -8835,7 +8836,8 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						$cardId = $this->getMoveCardIdFromSaucerDistanceType($saucerWhoseTurnItIs, $distanceType);
 						$cardState = $this->getCardChosenState($cardId);
 
-						$this->executeSaucerMove($saucerWhoseTurnItIs);
+						$this->gamestate->nextState( "executingMove" );
+						//$this->executeSaucerMove($saucerWhoseTurnItIs);
 				}
 				elseif($currentState == "chooseTimeMachineDirection")
 				{ // they have chosen their time machine direction
@@ -9318,7 +9320,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						$this->setUpgradeValue1($cardId, 1);
 						$this->setUpgradeValue2($cardId, $direction);
 
-						$this->executeSaucerMove($saucerColor);
+						$this->gamestate->nextState( "executingMove" );
+						//$this->executeSaucerMove($saucerColor);
 				}
 				elseif($currentState == "chooseAfterburnerSpace")
 				{
@@ -9337,7 +9340,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						$this->setUpgradeValue1($cardId, 1);
 						$this->setUpgradeValue2($cardId, $direction);
 
-						$this->executeSaucerMove($saucerColor);
+						$this->gamestate->nextState( "executingMove" );
+						//$this->executeSaucerMove($saucerColor);
 				}
 
 				// notify the player so they can rotate the card on the UI
@@ -10419,7 +10423,12 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 									//throw new feException( "executeStartMove with saucer: $saucerWhoseTurnItIs");
 
 									// move the selected distance in the selected direction
-									$this->executeSaucerMove($saucerWhoseTurnItIs);
+									//$ownerOfSaucerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+
+									//$nextPlayer = $this->getPlayerWhoseTurnIsNext(); // figure out which player goes next
+									//$this->gamestate->changeActivePlayer( $nextPlayer ); // set the active player (this cannot be done in an activeplayer game state)
+									$this->gamestate->nextState( "executingMove" );
+									//$this->executeSaucerMove($saucerWhoseTurnItIs);
 						}
 				}
 		}
@@ -11101,8 +11110,23 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				);
 		}
 
+		function getPushedSaucerMoving()
+		{
+				$saucerPushed = self::getObjectListFromDB( "SELECT ostrich_color
+																									FROM ostrich
+																									WHERE pushed_on_saucer_turn<>'0' AND pushed_on_saucer_turn<>'' LIMIT 1" );
+				if(count($saucerPushed) < 1)
+				{ // we did not find any saucers that are pushed and still need to move
+						return '';
+				}
+				else
+				{
+						return $saucerPushed;
+				}
+		}
+
 		// new version where we do each space move individually
-		function argExecutingMove()
+		function executeMove()
 		{
 				// determine the saucer that is executing a move
 				$saucerMoving = $this->getPushedSaucerMoving();

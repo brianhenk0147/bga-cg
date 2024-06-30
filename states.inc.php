@@ -125,7 +125,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickAcceleratorDirection", "clickMoveDirection" ),
-    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
+    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "executingMove" => 70 )
     ),
 
     10 => array(
@@ -314,7 +314,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
-    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63 )
+    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70 )
     ),
 
     34 => array(
@@ -361,7 +361,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "checkForRevealDecisions",
         "updateGameProgression" => false,
-        "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32, "chooseWhetherToHyperdrive" => 45, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63 )
+        "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32, "chooseWhetherToHyperdrive" => 45, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70 )
     ),
 
     39 => array(
@@ -606,10 +606,10 @@ $machinestates = array(
         "name" => "executingMove",
         "description" => clienttranslate('executingMove state.'),
         "descriptionmyturn" => clienttranslate('executingMove state'),
-        "type" => "activeplayer",
-        'args' => 'argExecutingMove',
+        "type" => "game",
+        "action" => "executeMove",
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49 )
     ),
 
 

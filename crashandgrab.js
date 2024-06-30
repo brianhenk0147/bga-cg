@@ -1519,7 +1519,12 @@ this.unhighlightAllGarments();
                     this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
                     this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
                     break;
-*/                case 'chooseMoveCard':
+*/                case 'executingMove':
+                      console.log( "onUpdateActionButtons->executingMove" );
+
+                  break;
+
+                  case 'chooseMoveCard':
                       console.log( "onUpdateActionButtons->chooseMoveCard" );
 
                       if( this.isCurrentPlayerActive() )
@@ -2184,6 +2189,9 @@ this.unhighlightAllGarments();
                       console.log( "onUpdateActionButtons for chooseIfYouWillUseBooster" );
                       if( this.isCurrentPlayerActive() )
                       { // this is the active player so they need to discard
+
+                        console.log("args.playerSaucerAcceleratorMoves:");
+                        console.log(args.playerSaucerAcceleratorMoves);
 
                           // show a button in the bar for each direction
                           this.showDirectionButtons();
