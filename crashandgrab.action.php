@@ -153,6 +153,20 @@
         self::ajaxResponse( );
     }
 
+    public function actActivatePhaseShifter()
+    {
+        self::setAjaxMode();
+        $this->game->executeActivatePhaseShifter();
+        self::ajaxResponse( );
+    }
+
+    public function actSkipPhaseShifter()
+    {
+        self::setAjaxMode();
+        $this->game->executeSkipPhaseShifter();
+        self::ajaxResponse( );
+    }
+
     public function actActivateHyperdrive()
     {
         self::setAjaxMode();
@@ -177,7 +191,8 @@
     public function actSkipStealCrewmember()
     {
         self::setAjaxMode();
-        $this->game->executeSkipStealCrewmember();
+        $saucerWhoCrashed = self::getArg( "saucerWhoCrashed", AT_alphanum, true ); // ff0000, 0000ff, etc.
+        $this->game->executeSkipStealCrewmember($saucerWhoCrashed);
         self::ajaxResponse( );
     }
 

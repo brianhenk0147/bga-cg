@@ -102,6 +102,9 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
   `given_with_distress` smallint(5) unsigned NOT NULL DEFAULT '0',
   `pushed_on_saucer_turn` varchar(16) NOT NULL DEFAULT '0',
   `distance_remaining` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `spaces_moved` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `pushed_direction` varchar(16) NOT NULL DEFAULT '0',
+  `pushed_distance` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ostrich_color`)
 ) ENGINE=InnoDB;
 

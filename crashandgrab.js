@@ -561,6 +561,49 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 },
 
+                onClick_activatePhaseShifter: function (evt )
+                {
+                    console.log( "Clicked activate phase shifter button." );
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actActivatePhaseShifter.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+
+                },
+
+                onClick_skipPhaseShifter: function (evt )
+                {
+                    console.log( "Clicked skip phase shifter button." );
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actSkipPhaseShifter.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+                },
+
                 onClick_activateHyperdrive: function (evt )
                 {
                     console.log( "Clicked activate hyperdrive button." );
@@ -1519,13 +1562,32 @@ this.unhighlightAllGarments();
                     this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
                     this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
                     break;
-*/                case 'executingMove':
-                      console.log( "onUpdateActionButtons->executingMove" );
+*/
+                  case 'askToPhaseShift':
+
+                      if ( this.isCurrentPlayerActive() )
+                      { // we are the active player
+                          // add a button for confirming the move
+                          var finalizeButtonLabel = _('Move Through Them');
+                          var finalizeIsDisabled = false;
+                          var finalizeHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                          var finalizeActionName = 'activatePhaseShifter'; // such as selectSaucerToGoFirst
+                          var finalizeMakeRed = false;
+                          this.addButtonToActionBar(finalizeButtonLabel, finalizeIsDisabled, finalizeHoverOverText, finalizeActionName, finalizeMakeRed);
+
+                          // add a button for undo'ing the move
+                          var undoButtonLabel = _('Collide With Them');
+                          var undoIsDisabled = false;
+                          var undoHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                          var undoActionName = 'skipPhaseShifter'; // such as selectSaucerToGoFirst
+                          var undoMakeRed = false;
+                          this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
+
+                      }
 
                   break;
 
                   case 'chooseMoveCard':
-                      console.log( "onUpdateActionButtons->chooseMoveCard" );
 
                       if( this.isCurrentPlayerActive() )
                       { // this player is active
@@ -1923,7 +1985,7 @@ this.unhighlightAllGarments();
                           this.showStealableCrewmemberButtons(args.stealableCrewmembers);
 
                           // add a skip button in case they do not want to for some reason
-                          this.addActionButton( 'skipButton', _('Skip'), 'onClick_skipStealCrewmember', null, false, 'red' );
+                          this.addActionButton( 'skipButton_'+args.saucerWhoCrashed, _('Skip'), 'onClick_skipStealCrewmember', null, false, 'red' );
                       }
 
                   break;
@@ -5096,9 +5158,11 @@ console.log("success... onClickUpgradeCardInHand");
             }, function( is_error) { } );
         },
 
-        onClick_skipStealCrewmember: function()
+        onClick_skipStealCrewmember: function(evt)
         {
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipStealCrewmember.html", { lock: true }, this, function( result ) {
+            var node = evt.currentTarget.id;
+            var saucerWhoCrashed = node.split('_')[1];
+            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipStealCrewmember.html", { lock: true, saucerWhoCrashed: saucerWhoCrashed }, this, function( result ) {
             }, function( is_error) { } );
         },
 

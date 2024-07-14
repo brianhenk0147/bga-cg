@@ -469,7 +469,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetStealableCrewmembers',
         "possibleactions" => array( "clickCrewmember", "gainEnergy" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49 )
     ),
 
     53 => array(
@@ -529,7 +529,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetUpgradesToPlay',
         "possibleactions" => array( "chooseUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "checkStartOfTurnUpgrades" => 24 )
     ),
 
     59 => array(
@@ -602,6 +602,15 @@ $machinestates = array(
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
     ),
 
+    66 => array(
+        "name" => "askToPhaseShift",
+        "description" => clienttranslate('${saucerColor} is deciding whether they will Phase Shift.'),
+        "descriptionmyturn" => clienttranslate('Phase Shifter: Would you like to move through this Saucer?'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "choosePhaseShift" ),
+        "transitions" => array(  "executingMove" => 70 )
+    ),
+
     70 => array(
         "name" => "executingMove",
         "description" => clienttranslate('executingMove state.'),
@@ -609,7 +618,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeMove",
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49 )
+        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66 )
     ),
 
 

@@ -4570,24 +4570,27 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function nextPendingCrashReward($saucerWhoseTurnItIs)
 		{
 				$allSaucersCrashDetails = $this->getSaucerCrashDetailsForAllSaucers();
+				$ownerOfSaucerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
 
 				//echo "looking through saucers in nextPendingCrashReward()<br>";
 
 				foreach($allSaucersCrashDetails as $saucerCrashDetails)
-				{
+				{ // go through all saucers
 						$saucerColor = $saucerCrashDetails['ostrich_color'];
 						$saucerIsCrashed = $this->isSaucerCrashed($saucerColor);
 						$saucerWasCrashedBy = $saucerCrashDetails['ostrich_causing_cliff_fall'];
 						$crashRewardAcquired = $saucerCrashDetails['crash_penalty_rendered'];
+						$ownerOfSaucerColor = $this->getOwnerIdOfOstrich($saucerColor);
 
 						//echo "saucerColor:$saucerColor <br> saucerIsCrashed:$saucerIsCrashed <br> saucerWasCrashedBy:$saucerWasCrashedBy <br> crashRewardAcquired:$crashRewardAcquired <br>";
 
 						if($saucerColor != $saucerWhoseTurnItIs &&
 						   $saucerIsCrashed &&
 						   $saucerWasCrashedBy == $saucerWhoseTurnItIs &&
-							 $crashRewardAcquired == false)
-						{ // this saucer was crashed by the saucer whose turn it is and they have not rendered their penalty
-
+							 $ownerOfSaucerColor != $ownerOfSaucerWhoseTurnItIs &&
+							 $crashRewardAcquired < 1)
+						{ // this saucer was crashed by the saucer whose turn it is and they have not rendered their penalty (and the two saucers are not owned by the same player)
+//echo "saucerColor:$saucerColor <br> saucerIsCrashed:$saucerIsCrashed <br> saucerWasCrashedBy:$saucerWasCrashedBy <br> crashRewardAcquired:$crashRewardAcquired <br>";
 								return $saucerColor; // just return the first one we find like this
 						}
 				}
@@ -4618,18 +4621,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function getSkippedGivingAway($saucerColor)
 		{
 				return self::getUniqueValueFromDb("SELECT skipped_giving_away FROM ostrich WHERE ostrich_color='$saucerColor'");
-		}
-
-		function setSkippedStealing($saucerColor, $value)
-		{
-				$sql = "UPDATE ostrich SET skipped_stealing=$value WHERE ";
-				$sql .= "ostrich_color='".$saucerColor."'";
-				self::DbQuery( $sql );
-		}
-
-		function getSkippedStealing($saucerColor)
-		{
-				return self::getUniqueValueFromDb("SELECT skipped_stealing FROM ostrich WHERE ostrich_color='$saucerColor'");
 		}
 
 		function setSkippedPassing($saucerColor, $value)
@@ -5587,10 +5578,16 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 			self::DbQuery( $sql );
 		}
 
-		function resetPassingValues()
+		function resetSpacesMovedAllSaucers()
+		{
+				$sql = "UPDATE ostrich SET spaces_moved=0" ;
+				self::DbQuery( $sql );
+		}
+
+		function resetSaucers()
 		{
 
-			$sql = "UPDATE ostrich SET skipped_passing=0, skipped_taking=0, passed_by_other_saucer=0, skipped_boosting=0, given_with_distress=0" ;
+			$sql = "UPDATE ostrich SET skipped_passing=0, skipped_taking=0, passed_by_other_saucer=0, skipped_boosting=0, given_with_distress=0, spaces_moved=0, distance_remaining=0, pushed_on_saucer_turn='0'" ;
 			self::DbQuery( $sql );
 		}
 
@@ -6362,6 +6359,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 								$this->setSaucerXValue($saucerMoving, $thisX); // set X value for Saucer
 
+								// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
+								$this->incrementSpacesMoved($saucerMoving);
+
+								$saucerWeCollideWith = $this->getSaucerAt($thisX, $currentY, $saucerMoving); // get any ostriches that might be at this location
 								$garmentId = $this->getGarmentIdAt($thisX,$currentY); // get a garment here if there is one
 								//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
 								if($garmentId != 0)
@@ -6427,12 +6428,33 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								}
 								else
 								{ // empty space
+
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
+										if($saucerWeCollideWith != "")
+										{	// there is a saucer here
+
+												// the saucer we collide with will start their movement over
+												$this->setSpacesMoved($saucerWeCollideWith, 0);
+
+												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter"))
+												{ // this saucer has phase shifter played
+
+														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collide with it
+														// we'll clear these out if they choose not to phase shift
+														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
+														$this->setPushedDistance($saucerWeCollideWith, $distance);
+														$this->setPushedDirection($saucerWeCollideWith, $direction);
+
+														// do not move any further because
+														return $moveEventList;
+												}
+										}
 								}
 
-								$saucerWeCollideWith = $this->getSaucerAt($thisX, $currentY, $saucerMoving); // get any ostriches that might be at this location
+
 								if($saucerWeCollideWith != "")
-								{	// there is an ostrich here
+								{	// there is a saucer here
 
 //throw new feException("colliding with:$saucerWeCollideWith");
 										array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
@@ -6473,6 +6495,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 								$this->setSaucerXValue($saucerMoving, $thisX); // set X value for Saucer
 
+								// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
+								$this->incrementSpacesMoved($saucerMoving);
+
+								$saucerWeCollideWith = $this->getSaucerAt($thisX, $currentY, $saucerMoving); // get any ostriches that might be at this location
 								$garmentId = $this->getGarmentIdAt($thisX,$currentY); // get a garment here if there is one
 								//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
 								if($garmentId != 0)
@@ -6508,12 +6534,12 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								}
 								else if($boardValue == "S")
 								{ // we hit an accelerator
-
+//throw new feException( "end on S");
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 										if($wasPushed)
 										{ // the saucer moving was pushed onto this accelerator
-
+//throw new feException( "waspushed");
 												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance));
 
 												$pushedOntoAcceleratorEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerMoving, $wasPushed);
@@ -6538,11 +6564,31 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								}
 								else
 								{ // empty space
+
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
+										if($saucerWeCollideWith != "")
+										{	// there is a saucer here
+
+												// the saucer we collide with will start their movement over
+												$this->setSpacesMoved($saucerWeCollideWith, 0);
+
+												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter"))
+												{ // this saucer has phase shifter played
+
+														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
+														// we'll clear these out if they choose not to phase shift
+														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
+														$this->setPushedDistance($saucerWeCollideWith, $distance);
+														$this->setPushedDirection($saucerWeCollideWith, $direction);
+
+														// do not move any further because
+														return $moveEventList;
+												}
+										}
 								}
 
 
-								$saucerWeCollideWith = $this->getSaucerAt($thisX, $currentY, $saucerMoving); // get any ostriches that might be at this location
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
 
@@ -6576,6 +6622,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 								$this->setSaucerYValue($saucerMoving, $thisY); // set Y value for Saucer
 
+								// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
+								$this->incrementSpacesMoved($saucerMoving);
+
+								$saucerWeCollideWith = $this->getSaucerAt($currentX, $thisY, $saucerMoving); // get any ostriches that might be at this location
 								$garmentId = $this->getGarmentIdAt($currentX, $thisY); // get a garment here if there is one
 								//echo "The garment at ($currentX, $thisY) is: $garmentId <br>";
 								if($garmentId != 0)
@@ -6641,10 +6691,30 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								}
 								else
 								{ // empty space
+
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
+										if($saucerWeCollideWith != "")
+										{	// there is a saucer here
+
+												// the saucer we collide with will start their movement over
+												$this->setSpacesMoved($saucerWeCollideWith, 0);
+
+												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter"))
+												{ // this saucer has phase shifter played
+
+														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
+														// we'll clear these out if they choose not to phase shift
+														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
+														$this->setPushedDistance($saucerWeCollideWith, $distance);
+														$this->setPushedDirection($saucerWeCollideWith, $direction);
+
+														// do not move any further because
+														return $moveEventList;
+												}
+										}
 								}
 
-								$saucerWeCollideWith = $this->getSaucerAt($currentX, $thisY, $saucerMoving); // get any ostriches that might be at this location
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
 
@@ -6675,6 +6745,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 							  $this->setSaucerYValue($saucerMoving, $thisY); // set Y value for Saucer
 
+								// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
+								$this->incrementSpacesMoved($saucerMoving);
+
+								$saucerWeCollideWith = $this->getSaucerAt($currentX, $thisY, $saucerMoving); // get any ostriches that might be at this location
 								$garmentId = $this->getGarmentIdAt($currentX, $thisY); // get a garment here if there is one
 								//echo "The garment at ($currentX, $thisY) is: $garmentId <br>";
 								if($garmentId != 0)
@@ -6740,10 +6814,30 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								}
 								else
 								{ // empty space
+
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
+										if($saucerWeCollideWith != "")
+										{	// there is a saucer here
+
+												// the saucer we collide with will start their movement over
+												$this->setSpacesMoved($saucerWeCollideWith, 0);
+
+												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter"))
+												{ // this saucer has phase shifter played
+
+														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
+														// we'll clear these out if they choose not to phase shift
+														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
+														$this->setPushedDistance($saucerWeCollideWith, $distance);
+														$this->setPushedDirection($saucerWeCollideWith, $direction);
+
+														// do not move any further because
+														return $moveEventList;
+												}
+										}
 								}
 
-								$saucerWeCollideWith = $this->getSaucerAt($currentX, $thisY, $saucerMoving); // get any ostriches that might be at this location
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
 
@@ -6971,10 +7065,20 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		function decrementBoosterForSaucer($saucerColor)
 		{
-				// add one to booster total
-				$sql = "UPDATE ostrich SET booster_quantity=booster_quantity-1
-											WHERE ostrich_color='$saucerColor' " ;
-							self::DbQuery( $sql );
+				$currentBoosterQuantity = $this->getBoosterCountForSaucer($saucerColor);
+
+				if($currentBoosterQuantity > 0)
+				{
+						// add one to booster total
+						$sql = "UPDATE ostrich SET booster_quantity=booster_quantity-1
+													WHERE ostrich_color='$saucerColor' " ;
+									self::DbQuery( $sql );
+				}
+				else
+				{
+						self::debug( "decrementBoosterForSaucer tried to set a negative value for booster_quantity." );
+				}
+
 		}
 
 		function getBoosterCountForSaucer($saucerColor)
@@ -7034,28 +7138,31 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$ostrichColorText = $this->convertColorToHighlightedText($ostrichColor);
 										$saucerMurdererText = $this->convertColorToHighlightedText($ostrichTakingTurn);
 
-		//self::debug( "sendCliffFallsToPlayers ostrich:$ostrichColor ostrichTakingTurn:$ostrichTakingTurn" );
-										if($ostrichColor == $ostrichTakingTurn)
-										{ // the ostrich ran off a cliff on their own turn
 
+		//self::debug( "sendCliffFallsToPlayers ostrich:$ostrichColor ostrichTakingTurn:$ostrichTakingTurn" );
+										if($ownerOfOstrich == $ownerOfOstrichTakingTurn)
+										{ // the ostrich ran off a cliff on their own turn (or in a 2-player game they crashed a saucer of their own color)
+
+/* Removing because we don't need to do this because we will do it in the updateGameLogForEvents method.
 													self::notifyAllPlayers( "ostrichRanOffCliff", clienttranslate( '${saucerWhoCrashedText} crashed.' ), array(
 															'player_name' => self::getActivePlayerName(),
 															'ostrichName' => $this->getOstrichName($ostrichColor),
 															'saucerWhoCrashedText' => $ostrichColorText
 													) );
-
+*/
 													self::incStat( 1, 'ran_off_cliff', $ownerOfOstrich ); // add a that you ran off a cliff
 										}
 										else
 										{ // the ostrich was pushed off a cliff by the player taking their turn
 
+/* Removing because we don't need to do this because we will do it in the updateGameLogForEvents method.
 												self::notifyAllPlayers( "ostrichWasPushedOffCliff", clienttranslate( '${saucerWhoIsStealingText} is stealing a Crewmember from ${saucerWhoCrashedText}.' ), array(
 														'player_name' => self::getActivePlayerName(),
 														'ostrichName' => $this->getOstrichName($ostrichColor),
 														'saucerWhoCrashedText' => $ostrichColorText,
 														'saucerWhoIsStealingText' => $saucerMurdererText
 												) );
-
+*/
 												self::incStat( 1, 'pushed_ostrich_off_cliff', $ownerOfOstrichTakingTurn ); // add stat that the current player pushed an ostrich off a cliff
 												self::incStat( 1, 'was_pushed_off_cliff', $ownerOfOstrich ); // add a stat that the owner of the ostrich who fell off the cliff was pushed off a cliff
 										}
@@ -7586,6 +7693,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		//   5. Ship Upgrade - if they have 2 Energy, ask if they wish to upgrade, and if so, ask which they want to play
 		function endSaucerTurnCleanUp()
 		{
+
+				// in case a saucer was pushed and then goes later in the round, we want to make sure all saucers get spaces moved set back to 0
+				$this->resetSpacesMovedAllSaucers();
+
 //throw new feException( "endSaucerTurnCleanUp");
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs(); // the saucer whose turn it is (empty string if we don't know)
 				$nextSaucerWithPendingCrashReward = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
@@ -7596,9 +7707,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{ // player whose turn it is crashed and hasn't yet been penalized for crashing on their own turn
 						$this->gamestate->nextState( "crashPenaltyAskWhichToGiveAway" );
 				}
-				elseif($nextSaucerWithPendingCrashReward != '' && $this->getSkippedStealing($saucerWhoseTurnItIs) != 1)
+				elseif($nextSaucerWithPendingCrashReward != '')
 				{ // the saucer whose turn it is crashed another saucer and can either steal from them or take an energy and they haven't gotten their reward yet
-
+//throw new feException( "nextSaucerWithPendingCrashReward: $nextSaucerWithPendingCrashReward");
 						$this->gamestate->nextState( "crashPenaltyAskWhichToSteal" );
 				}
 				elseif($needToPlaceCrewmember)
@@ -7671,17 +7782,24 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 		}
 
-		function setState_AfterMovementEvents($saucerMoving, $moveType)
+		function setState_AfterMovementEvents($saucerMoving, $moveType, $wasPushed=false)
 		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				$currentState = $this->getStateName();
+
+				// reset pushed setting so we don't think a saucer was pushed when we do our next move
+				$this->resetPushedForAllSaucers();
+
 			//throw new feException("Getting board space type after move events for saucer ($saucerMoving).");
-				$boardValue = $this->getBoardSpaceTypeForOstrich($saucerMoving); // get the type of space of the ostrich who just moved
+				$boardValue = $this->getBoardSpaceTypeForOstrich($saucerWhoseTurnItIs); // get the type of space of the ostrich who just moved
 
 				// count crewmembers they can exchange with Airlock if they have it
 				$airlockExchangeableCrewmembers = array();
 				if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
 				{ // they have Airlock
 
-						$airlockExchangeableCrewmembers = $this->getAirlockExchangeableCrewmembersForSaucer($saucerMoving);
+						$airlockExchangeableCrewmembers = $this->getAirlockExchangeableCrewmembersForSaucer($saucerWhoseTurnItIs);
 				}
 
 				if($this->isEndGameConditionMet())
@@ -7692,21 +7810,31 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{ // the saucer onto an accelerator on their turn
 						$this->gamestate->nextState( "chooseAcceleratorDirection" ); // need to ask the player which direction they want to go on the skateboard
 				}
-				else if($this->canSaucerBoost($saucerMoving) && $this->getSkippedBoosting($saucerMoving) == 0 && $moveType == 'regular')
+				else if($this->canSaucerBoost($saucerWhoseTurnItIs) && $this->getSkippedBoosting($saucerWhoseTurnItIs) == 0 && $moveType == 'regular')
 				{ // the player has a boost they can use and they have not crashed
 						$this->gamestate->nextState( "chooseIfYouWillUseBooster" ); // need to ask the player if they want to use a zag, and if so, which direction they want to travel
 				}
 				elseif(count($airlockExchangeableCrewmembers) > 0)
 				{ // this saucer has at least one crewmember they can exchange
+
+						if($saucerMoving != $saucerWhoseTurnItIs)
+						{ // the moving saucer was pushed into picking up a crewmember
+								$ownerOfSaucerMoving = $this->getOwnerIdOfOstrich($saucerMoving);
+								$this->changeActivePlayer($ownerOfSaucerMoving);
+						}
 						$this->gamestate->nextState( "chooseCrewmemberToAirlock" );
 				}
-				else if($this->canSaucerPassCrewmembers($saucerMoving))
+				else if($this->canSaucerPassCrewmembers($saucerWhoseTurnItIs))
 				{ // they passed by their own Saucer and can pass them a Crewmember
 						$this->gamestate->nextState( "chooseCrewmembersToPass" ); // need to ask the player if they want to use a zag, and if so, which direction they want to travel
 				}
-				else if($this->canSaucerTakeCrewmembers($saucerMoving))
+				else if($this->canSaucerTakeCrewmembers($saucerWhoseTurnItIs))
 				{ // they passed by their other Saucer and can take from them
 						$this->gamestate->nextState( "chooseCrewmembersToTake" ); // need to ask the player if they want to use a zag, and if so, which direction they want to travel
+				}
+				else if($currentState == "crashPenaltyAskWhichToSteal")
+				{ // they were just asked which penalty they wanted for crashing someone
+						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
 				else
 				{ // movement is complete
@@ -7775,6 +7903,35 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
+		function executeActivatePhaseShifter()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				$this->activateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
+
+				// set asked_to_activate_this_round to 1 so we don't ask again
+				//$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
+
+				// reset pushed setting so we don't think a saucer was pushed when we do our next move
+				$this->resetPushedForAllSaucers();
+
+				//throw new feException( "executeSkipPhaseShifter");
+
+				// finish any movement that still remains
+				$this->gamestate->nextState( "executingMove" );
+		}
+
+		function executeSkipPhaseShifter()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				// set asked_to_activate_this_round to 1 so we don't ask again
+				//$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
+
+				// finish any movement that still remains
+				$this->gamestate->nextState( "executingMove" );
+		}
+
 		function executeActivateHyperdrive()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -7797,34 +7954,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->gamestate->nextState( "checkForRevealDecisions" );
 		}
 
-		function executeActivatePhaseShifter()
-		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-
-				$this->activateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
-
-				// set asked_to_activate_this_round to 1 so we don't ask again
-				//$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
-
-				// get the last state we were in
-				$lastState = $this->getUpgradeValue1($saucerWhoseTurnItIs, "Phase Shifter");
-
-				$this->gamestate->nextState( $lastState );
-		}
-
-		function executeSkipPhaseShifter()
-		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-
-				// set asked_to_activate_this_round to 1 so we don't ask again
-				//$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
-
-				// get the last state we were in
-				$lastState = $this->getUpgradeValue1($saucerWhoseTurnItIs, "Phase Shifter");
-
-				$this->gamestate->nextState( $lastState );
-		}
-
 		function executeSkipGiveAwayCrewmember()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -7838,12 +7967,15 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->setState_AfterMovementEvents($saucerWhoseTurnItIs, $moveType); // set to true because we're already passed the boosting if we're giving away so that is safest
 		}
 
-		function executeSkipStealCrewmember()
+		function executeSkipStealCrewmember($saucerWhoCrashed)
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
 				// mark that the player chose not to pass this round
-				$this->setSkippedStealing($saucerWhoseTurnItIs, 1);
+				//$this->setSkippedStealing($saucerWhoseTurnItIs, 1);
+
+				// mark this as the penalty for this saucer being satisfied (it's possible there were multiple saucers they crashed)
+				$this->markCrashPenaltyRendered($saucerWhoCrashed);
 
 				// figure out which type of move this is
 				$moveType = $this->getMoveTypeWeAreExecuting();
@@ -8612,7 +8744,7 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 		function executeSaucerMove($saucerMoving)
 		{
 //throw new feException( "executeSaucerMove saucer moving: $saucerMoving");
-				self::debug( "executeSaucerMove saucerMoving:$saucerMoving" );
+				//self::debug( "executeSaucerMove saucerMoving:$saucerMoving" );
 
 				// get list of move events in chronological order (saucers and where they end up, crewmembers picked up and by whom)
 				$moveEventList = $this->getMovingEvents($saucerMoving);
@@ -8632,10 +8764,23 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				// see if any saucers fell off cliffs and notify everyone if they did
 				$this->sendCliffFallsToPlayers();
 
+				// calculate spaces left for use with Phase Shifter
+				$distance = $this->getSaucerDistance($saucerMoving);
+				$spacesMoved = $this->getSpacesMoved($saucerMoving);
+				$spacesLeft = $distance - $spacesMoved;
+
 				// figure out which type of move this is
 				$moveType = $this->getMoveTypeWeAreExecuting();
+				$saucerX = $this->getSaucerXLocation($saucerMoving);
+				$saucerY = $this->getSaucerYLocation($saucerMoving);
+//throw new feException( "saucerX:$saucerX saucerY:$saucerY saucerMoving:$saucerMoving");
+				$saucerWeCollideWith = $this->getSaucerAt($saucerX, $saucerY, $saucerMoving);
+				if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") && $saucerWeCollideWith != "" && $spacesLeft > 0)
+				{ // this saucer has phase shifter played and we are colliding with another saucer and we have at least 1 space left after colliding
 
-				if($moveType == 'Blast Off Thrusters')
+						$this->gamestate->nextState( "askToPhaseShift" );
+				}
+				elseif($moveType == 'Blast Off Thrusters')
 				{ // the moved because they had Blast Off Thrusters
 						$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
@@ -8782,12 +8927,25 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 		function getMovingEvents( $saucerMoving )
 		{
 				$allEvents = array();
-				self::debug( "getMovingEvents saucerMoving:$saucerMoving" );
+				//self::debug( "getMovingEvents saucerMoving:$saucerMoving" );
 
+				$originalDistance = $this->getSaucerDistance($saucerMoving); //2, 3, 5, etc
+				$spacesMoved = $this->getSpacesMoved($saucerMoving);
 
-
-				$distance = $this->getSaucerDistance($saucerMoving); //2, 3, 5, etc
 				$direction = $this->getSaucerDirection($saucerMoving); // meteor
+
+				$wasPushed = $this->wasThisSaucerPushed($saucerMoving);
+				if($wasPushed)
+				{ // this saucer was pushed
+						$pushedDistance = $this->getPushedDistance($saucerMoving);
+						$originalDistance = $pushedDistance;
+
+						$pushedDirection = $this->getPushedDirection($saucerMoving);
+						$direction = $pushedDirection;
+				}
+
+				$distance = $originalDistance - $spacesMoved;
+
 				$currentX = $this->getSaucerXLocation($saucerMoving); // 7
 				$currentY = $this->getSaucerYLocation($saucerMoving); // 5
 
@@ -8798,14 +8956,25 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						$direction = $this->getUpgradeValue2($saucerMoving, $moveType);
 				}
 
-//throw new feException( "moveType: $moveType distance: $distance direction: $direction");
-				self::debug( "getMovingEvents distance:$distance direction: $direction currentX: $currentX currentY: $currentY" );
+				if($distance == 0)
+				{ // this saucer has exhausted all of its movement already so we don't need to check for more
 
-				$allEvents = $this->getEventsWhileExecutingMove($currentX, $currentY, $distance, $direction, $saucerMoving, false); // move a space at a time picking up crewmembers, colliding, etc.
+						// reset pushed setting so we don't think a saucer was pushed when we do our next move
+						$this->resetPushedForAllSaucers();
+
+//throw new feException( "distance == 0");
+						// return no events
+						return $allEvents;
+				}
+
+//throw new feException( "moveType: $moveType distance: $distance direction: $direction");
+				self::debug( "getMovingEvents distance:$distance direction: $direction currentX: $currentX currentY: $currentY spacesMoved: $spacesMoved" );
+
+				// get all events until we run into something that stops us
+				$allEvents = $this->getEventsWhileExecutingMove($currentX, $currentY, $distance, $direction, $saucerMoving, $wasPushed); // move a space at a time picking up crewmembers, colliding, etc.
 
 				//$eventCount = count($allEvents);
 				//throw new feException( "event count: $eventCount");
-
 
 				return $allEvents;
 		}
@@ -8823,6 +8992,10 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 
 						$this->saveSaucerLastDirection($saucerWhoseTurnItIs, $direction); // update the database with its new last moved direction
 
+						// set the number of spaces moved back to 0 since we're starting a new movement
+						$this->setSpacesMoved($saucerWhoseTurnItIs, 0);
+						//throw new feException( "booster saucerWhoseTurnItIs: $saucerWhoseTurnItIs");
+
 						$this->notifyPlayersOfBoosterUsage($saucerWhoseTurnItIs);
 						$this->decrementBoosterForSaucer($saucerWhoseTurnItIs); // must come after notification
 
@@ -8831,6 +9004,9 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				}
 				elseif($currentState == "chooseAcceleratorDirection")
 				{ // they are accelerating
+
+						// set the number of spaces moved back to 0 since we're starting a new movement
+						$this->setSpacesMoved($saucerWhoseTurnItIs, 0);
 
 						$distanceType = $this->getSaucerDistanceType($saucerWhoseTurnItIs);
 						$cardId = $this->getMoveCardIdFromSaucerDistanceType($saucerWhoseTurnItIs, $distanceType);
@@ -10523,8 +10699,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				// reset crewmember properties
 				$this->resetCrewmembers();
 
-				// make all passing crewmembers values to 0
-				$this->resetPassingValues();
+				// make all turn-related saucer values 0
+				$this->resetSaucers();
 
 				// set all card to the unchosen state
 				$this->resetAllCardChosenState();
@@ -10929,8 +11105,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetStealableCrewmembers()
 		{
-				$crashedSaucer = $this->getSaucerThatCrashed();
 				$saucerStealing = $this->getOstrichWhoseTurnItIs();
+				$crashedSaucer = $this->nextPendingCrashReward($saucerStealing);
 				$crashedSaucerText = $this->convertColorToHighlightedText($crashedSaucer);
 				$saucerStealingText = $this->convertColorToHighlightedText($saucerStealing);
 				// return both the location of all the
@@ -11110,6 +11286,75 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				);
 		}
 
+		function incrementSpacesMoved($saucerColor)
+		{
+				$sql = "UPDATE ostrich SET spaces_moved=spaces_moved+1 WHERE ";
+				$sql .= "ostrich_color='$saucerColor'";
+				self::DbQuery( $sql );
+		}
+
+		function setSpacesMoved($saucerColor, $newValue)
+		{
+				$sql = "UPDATE ostrich SET spaces_moved=$newValue WHERE ";
+				$sql .= "ostrich_color='$saucerColor'";
+				self::DbQuery( $sql );
+		}
+
+		function getSpacesMoved($saucerColor)
+		{
+				return self::getUniqueValueFromDb("SELECT spaces_moved FROM ostrich WHERE ostrich_color='$saucerColor'");
+		}
+
+		function resetPushedForAllSaucers()
+		{
+				$sql = "UPDATE ostrich SET pushed_on_saucer_turn='',pushed_distance=0,pushed_direction='0'";
+				self::DbQuery( $sql );
+		}
+
+		function setPushedOnSaucerTurn($saucerColor, $newValue)
+		{
+				$sql = "UPDATE ostrich SET pushed_on_saucer_turn='$newValue' WHERE ";
+				$sql .= "ostrich_color='$saucerColor'";
+				self::DbQuery( $sql );
+		}
+
+		function wasThisSaucerPushed($saucerColor)
+		{
+				$pushedOnTurn = self::getUniqueValueFromDb( "SELECT pushed_on_saucer_turn
+																								FROM ostrich
+																								WHERE ostrich_color='$saucerColor' LIMIT 1" );
+				if($pushedOnTurn != '' && $pushedOnTurn != 0 && $pushedOnTurn != '0')
+				{
+						return true;
+				}
+
+				return false;
+		}
+
+		function getPushedDirection($saucerColor)
+		{
+				return self::getUniqueValueFromDb("SELECT pushed_direction FROM ostrich WHERE ostrich_color='$saucerColor'");
+		}
+
+		function setPushedDirection($saucerColor, $newValue)
+		{
+				$sql = "UPDATE ostrich SET pushed_direction='$newValue' WHERE ";
+				$sql .= "ostrich_color='$saucerColor'";
+				self::DbQuery( $sql );
+		}
+
+		function getPushedDistance($saucerColor)
+		{
+				return self::getUniqueValueFromDb("SELECT pushed_distance FROM ostrich WHERE ostrich_color='$saucerColor'");
+		}
+
+		function setPushedDistance($saucerColor, $newValue)
+		{
+				$sql = "UPDATE ostrich SET pushed_distance='$newValue' WHERE ";
+				$sql .= "ostrich_color='$saucerColor'";
+				self::DbQuery( $sql );
+		}
+
 		function getPushedSaucerMoving()
 		{
 				$saucerPushed = self::getObjectListFromDB( "SELECT ostrich_color
@@ -11121,7 +11366,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				}
 				else
 				{
-						return $saucerPushed;
+						foreach($saucerPushed as $saucer)
+						{
+								return $saucer['ostrich_color'];
+						}
+
 				}
 		}
 
@@ -11130,6 +11379,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 				// determine the saucer that is executing a move
 				$saucerMoving = $this->getPushedSaucerMoving();
+//throw new feException( "saucerMoving: $saucerMoving");
 				if($saucerMoving == '')
 				{ // we didn't find a saucer that was pushed and still needs to move
 							$saucerMoving = $this->getOstrichWhoseTurnItIs();
