@@ -435,11 +435,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Distress Signaler', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 10),
+						array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)
 				);
+
+				if($this->getNumberOfPlayers() > 2)
+				{
+						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 12));
+				}
 
 
 				$this->upgradeCards->createCards( $cardsList, 'deck' ); // create the deck
@@ -1623,6 +1629,30 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return $result;
 		}
 
+		// Returns all saucers of other players other than the one in the argument as text like ff0000.
+		function getAllOtherPlayerSaucersHex($saucerToSkip)
+		{
+				$result = array();
+
+				$allOstriches = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner
+																					 FROM ostrich ORDER BY ostrich_owner" );
+
+			  $ownerOfSaucerToSkip = $this->getOwnerIdOfOstrich($saucerToSkip);
+				foreach( $allOstriches as $ostrich )
+				{
+						$colorAsHex = $ostrich['ostrich_color']; // ffffff
+						$ownerOfThisSaucer = $this->getOwnerIdOfOstrich($colorAsHex);
+
+						if($ownerOfSaucerToSkip != $ownerOfThisSaucer)
+						{ // this saucer has a different owning player than the saucer to skip
+
+								array_push($result, $colorAsHex);
+						}
+				}
+
+				return $result;
+		}
+
 		function getOtherUncrashedSaucers()
 		{
 				$result = array();
@@ -1903,8 +1933,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						case 15:
 								return clienttranslate( 'Cargo Hold');
 
+						case 16:
+								return clienttranslate( 'Proximity Mines');
+
 						case 17:
 								return clienttranslate( 'Landing Legs');
+
+						case 19:
+								return clienttranslate( 'Rotational Stabilizer');
 
 						case 20:
 							return clienttranslate( 'Airlock');
@@ -1967,9 +2003,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						case 15:
 								return clienttranslate( 'Take a Booster. You may hold an additional Booster.');
 
+						// Proximity Mines
+						case 16:
+								return clienttranslate( 'Crash any Saucer you collide with instead of pushing it.');
+
 						// Landing Legs
 						case 17:
 								return clienttranslate( 'At the end of your turn, move one space in any direction.');
+
+						// Rotational Stabilizer
+						case 19:
+								return clienttranslate( 'At the start of the round, you choose whether the turn order is clockwise or counter-clockwise.');
 
 						// Airlock
 						case 20:
@@ -2051,10 +2095,20 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result[15]['name'] = $this->getUpgradeTitleFromCollectorNumber(15);
 				$result[15]['effect'] = $this->getUpgradeEffectFromCollectorNumber(15);
 
+				// Proximity Mines
+				$result[16] = array();
+				$result[16]['name'] = $this->getUpgradeTitleFromCollectorNumber(16);
+				$result[16]['effect'] = $this->getUpgradeEffectFromCollectorNumber(16);
+
 				// Landing Legs
 				$result[17] = array();
 				$result[17]['name'] = $this->getUpgradeTitleFromCollectorNumber(17);
 				$result[17]['effect'] = $this->getUpgradeEffectFromCollectorNumber(17);
+
+				// Rotational Stabilizer
+				$result[19] = array();
+				$result[19]['name'] = $this->getUpgradeTitleFromCollectorNumber(19);
+				$result[19]['effect'] = $this->getUpgradeEffectFromCollectorNumber(19);
 
 				// Airlock
 				$result[20] = array();
@@ -4974,7 +5028,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$locationDescription = clienttranslate("was placed on Crash Site");
 				if($crashSiteNumber == "D")
 				{ // it was placed off the board
-						$locationDescription = clienttranslate("used their Cloaking Device to disappear");
+						$locationDescription = clienttranslate("move off the board");
 						$crashSiteNumber = "";
 				}
 
@@ -6437,8 +6491,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 												// the saucer we collide with will start their movement over
 												$this->setSpacesMoved($saucerWeCollideWith, 0);
 
-												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter"))
-												{ // this saucer has phase shifter played
+												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") ||
+												   $this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines"))
+												{ // this saucer has phase shifter or proximity mines played
 
 														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collide with it
 														// we'll clear these out if they choose not to phase shift
@@ -6573,8 +6628,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 												// the saucer we collide with will start their movement over
 												$this->setSpacesMoved($saucerWeCollideWith, 0);
 
-												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter"))
-												{ // this saucer has phase shifter played
+												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") ||
+												   $this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines"))
+												{ // this saucer has phase shifter or proximity mines played
 
 														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
 														// we'll clear these out if they choose not to phase shift
@@ -6700,8 +6756,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 												// the saucer we collide with will start their movement over
 												$this->setSpacesMoved($saucerWeCollideWith, 0);
 
-												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter"))
-												{ // this saucer has phase shifter played
+												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") ||
+	  	  									 $this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines"))
+												{ // this saucer has phase shifter or proximity mines played
 
 														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
 														// we'll clear these out if they choose not to phase shift
@@ -6823,8 +6880,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 												// the saucer we collide with will start their movement over
 												$this->setSpacesMoved($saucerWeCollideWith, 0);
 
-												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter"))
-												{ // this saucer has phase shifter played
+												if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") ||
+												   $this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines"))
+												{ // this saucer has phase shifter or proximity mines played
 
 														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
 														// we'll clear these out if they choose not to phase shift
@@ -7132,7 +7190,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								if($saucerMurderer == '')
 								{ // we have not yet set this saucer's murderer
 
-										// set the saucer murderer
+										// set the saucer murderer so we know to give them a reward and put in the message log
 										$this->setSaucerMurderer($ostrichColor, $ostrichTakingTurn);
 
 										$ostrichColorText = $this->convertColorToHighlightedText($ostrichColor);
@@ -7932,6 +7990,38 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->gamestate->nextState( "executingMove" );
 		}
 
+		function executeActivateProximityMines($saucerCrashed)
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				$this->activateUpgrade($saucerWhoseTurnItIs, "Proximity Mines");
+
+				// set the saucer murderer so we know to give them a reward and put in the message log
+				$this->setSaucerMurderer($saucerCrashed, $saucerWhoseTurnItIs);
+
+				// move them off the board and notify players
+				$this->placeSaucerOnSpace($saucerCrashed, 0, 0);
+
+				// say they're already been penalized for "crashing" so no one gets a reward for it
+				//$this->markCrashPenaltyRendered($saucerCrashed);
+
+				// reset pushed setting so we don't think a saucer was pushed when we do our next move
+				$this->resetPushedForAllSaucers();
+
+				//throw new feException( "executeSkipPhaseShifter");
+
+				// finish any movement that still remains
+				$this->gamestate->nextState( "executingMove" );
+		}
+
+		function executeSkipProximityMines()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				// finish any movement that still remains
+				$this->gamestate->nextState( "executingMove" );
+		}
+
 		function executeActivateHyperdrive()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -8225,7 +8315,7 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 		{
 				$saucerReceiving = $this->getOstrichWhoseTurnItIs();
 				$saucerGiving = $this->getSaucerThatCrashed();
-
+//throw new feException( "saucerReceiving:$saucerReceiving");
 				if($areWePassing)
 				{ // we are passing a crewmember from one of our saucers to the other one
 						$saucerGiving = $this->getOstrichWhoseTurnItIs();
@@ -8285,10 +8375,10 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				}
 		}
 
-		function executeGiveAwayCrewmember($crewmemberTypeText, $crewmemberColor, $saucerToGiveToColorText)
+		function executeGiveAwayCrewmember($crewmemberTypeText, $crewmemberColor, $saucerToGiveToColorHex)
 		{
 				$saucerGiving = $this->getOstrichWhoseTurnItIs();
-				$saucerToGiveToColorHex = $this->convertFriendlyColorToHex($saucerToGiveToColorText);
+				$givingSaucerColorText = $this->convertColorToText($saucerToGiveToColorHex);
 
 				$crewmemberTypeInt = $this->convertGarmentTypeStringToInt($crewmemberTypeText);
 
@@ -8779,6 +8869,11 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				{ // this saucer has phase shifter played and we are colliding with another saucer and we have at least 1 space left after colliding
 
 						$this->gamestate->nextState( "askToPhaseShift" );
+				}
+				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") && $saucerWeCollideWith != "")
+				{ // this saucer has proximity mines played and we are colliding with another saucer
+
+						$this->gamestate->nextState( "askToProximityMine" );
 				}
 				elseif($moveType == 'Blast Off Thrusters')
 				{ // the moved because they had Blast Off Thrusters
@@ -9697,6 +9792,17 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				) );
 		}
 
+		// 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+		function getRotationalStabilizerValue()
+		{
+				// see if rotational stabalizer has been played
+
+				// if it has, return the value, if not, return 2
+
+				
+				return 2;
+		}
+
 		// This happens just before each player starts moving.
 		function rollRotationDie()
 		{
@@ -9705,18 +9811,32 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				if($this->getNumberOfPlayers() > 2)
 				{ // we don't care about turn order in a 2-player game
 
-						// roll the rotation die
-						$turnOrderInt = rand(0,1);
-						self::setGameStateValue( 'TURN_ORDER', $turnOrderInt ); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+						// get the chosen turn order if someone has played rotational stabilizer
+						$rotationalStabilizerValue = $this->getRotationalStabilizerValue();
+						if($rotationalStabilizerValue != 2)
+						{ // someone has Rotational Stabalizer and they have chosen the rotational stabilizer value
 
-						$turnOrderFriendly = $this->convertTurnOrderIntToText($turnOrderInt);
+								// set it to that order
+								self::setGameStateValue( 'TURN_ORDER', $rotationalStabilizerValue ); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 
-						// notify players of the direction (send clockwise/counter)
-						self::notifyAllPlayers( 'updateTurnOrder', clienttranslate( 'The turn direction this round is ${turnOrderFriendly}.' ), array(
-										'i18n' => array('turnOrderFriendly'),
-										'turnOrderFriendly' => $turnOrderFriendly,
-										'turnOrder' => $turnOrderInt
-						) );
+						}
+						else
+						{ // usual case
+
+								// roll the rotation die
+								$turnOrderInt = rand(0,1);
+								self::setGameStateValue( 'TURN_ORDER', $turnOrderInt ); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+
+								$turnOrderFriendly = $this->convertTurnOrderIntToText($turnOrderInt);
+
+								// notify players of the direction (send clockwise/counter)
+								self::notifyAllPlayers( 'updateTurnOrder', clienttranslate( 'The turn direction this round is ${turnOrderFriendly}.' ), array(
+												'i18n' => array('turnOrderFriendly'),
+												'turnOrderFriendly' => $turnOrderFriendly,
+												'turnOrder' => $turnOrderInt
+								) );
+
+						}
 
 				}
 
@@ -9972,8 +10092,14 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Cargo Hold":
 								return 15;
 
+						case "Proximity Mines":
+								return 16;
+
 						case "Landing Legs":
 								return 17;
+
+						case "Rotational Stabilizer":
+								return 19;
 
 						case "Airlock":
 								return 20;
@@ -10056,9 +10182,19 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=15";
 								break;
 
+						case "Proximity Mines":
+						case 16:
+								$sql .= " AND card_type_arg=16";
+								break;
+
 						case "Landing Legs":
 						case 17:
 								$sql .= " AND card_type_arg=17";
+								break;
+
+						case "Rotational Stabilizer":
+						case 19:
+								$sql .= " AND card_type_arg=19";
 								break;
 
 						case "Airlock":
@@ -10155,9 +10291,19 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=15";
 								break;
 
+						case "Proximity Mines":
+						case 16:
+								$sql .= " AND card_type_arg=16";
+								break;
+
 						case "Landing Legs":
 						case 17:
 								$sql .= " AND card_type_arg=17";
+								break;
+
+						case "Rotational Stabilizer":
+						case 19:
+								$sql .= " AND card_type_arg=19";
 								break;
 
 						case "Airlock":
@@ -10253,9 +10399,19 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=15";
 								break;
 
+						case "Proximity Mines":
+						case 16:
+								$sql .= " AND card_type_arg=16";
+								break;
+
 						case "Landing Legs":
 						case 17:
 								$sql .= " AND card_type_arg=17";
+								break;
+
+						case "Rotational Stabilizer":
+						case 19:
+								$sql .= " AND card_type_arg=19";
 								break;
 
 						case "Airlock":
@@ -10341,9 +10497,19 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=15";
 								break;
 
+						case "Proximity Mines":
+						case 16:
+								$sql .= " AND card_type_arg=16";
+								break;
+
 						case "Landing Legs":
 						case 17:
 								$sql .= " AND card_type_arg=17";
+								break;
+
+						case "Rotational Stabilizer":
+						case 19:
+								$sql .= " AND card_type_arg=19";
 								break;
 
 						case "Airlock":
@@ -11077,6 +11243,24 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				);
 		}
 
+		function argAskToProximityMine()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
+
+				$saucerX = $this->getSaucerXLocation($saucerWhoseTurnItIs);
+				$saucerY = $this->getSaucerYLocation($saucerWhoseTurnItIs);
+
+				$saucerToCrash = $this->getSaucerAt($saucerX, $saucerY, $saucerWhoseTurnItIs);
+
+//throw new feException( "saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerToCrash: $saucerToCrash" );
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
+						'saucerToCrash' => $saucerToCrash
+				);
+		}
+
 		function argGetAirlockCrewmembers()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -11171,8 +11355,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$saucerGivingAway = $this->getOstrichWhoseTurnItIs();
 				$saucerGivingAwayText = $this->convertColorToText($saucerGivingAway);
 
-				// get a list of all the saucers other than the one who is giving away (RED, BLUE, etc.)
-				$otherSaucers = $this->getAllOtherSaucers($saucerGivingAway);
+				// get a list of all the saucers other than the one who is giving away
+				$otherSaucers = $this->getAllOtherPlayerSaucersHex($saucerGivingAway);
 
 				// return both the location of all the
 				return array(

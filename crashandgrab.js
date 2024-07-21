@@ -604,6 +604,54 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     } );
                 },
 
+                onClick_activateProximityMines: function (evt )
+                {
+                    console.log( "Clicked activate proximity mines button." );
+
+                    var htmlIdOfButton = evt.currentTarget.id;
+                    console.log( "Clicked saucer to go first with node "+htmlIdOfButton+"." );
+                    var saucerWhoCrashed = htmlIdOfButton.split('_')[1]; // ff00ff
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actActivateProximityMines.html", {
+                                                                                lock: true,
+                                                                                saucerWhoCrashed: saucerWhoCrashed
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+
+                },
+
+                onClick_skipProximityMines: function (evt )
+                {
+                    console.log( "Clicked skip proximity mines button." );
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actSkipProximityMines.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+                },
+
                 onClick_activateHyperdrive: function (evt )
                 {
                     console.log( "Clicked activate hyperdrive button." );
@@ -1580,6 +1628,35 @@ this.unhighlightAllGarments();
                           var undoIsDisabled = false;
                           var undoHoverOverText = ''; // hover over text or '' if we don't want a hover over
                           var undoActionName = 'skipPhaseShifter'; // such as selectSaucerToGoFirst
+                          var undoMakeRed = false;
+                          this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
+
+                      }
+
+                  break;
+
+                  case 'askToProximityMine':
+
+
+                      if ( this.isCurrentPlayerActive() )
+                      { // we are the active player
+
+                          var saucerToCrash = args.saucerToCrash;
+
+                          // add a button for confirming the move
+                          var finalizeButtonLabel = _('Crash Them');
+                          var finalizeIsDisabled = false;
+                          var finalizeHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                          var finalizeActionName = 'activateProximityMines'; // such as selectSaucerToGoFirst
+                          var finalizeMakeRed = false;
+                          //this.addButtonToActionBar(finalizeButtonLabel, finalizeIsDisabled, finalizeHoverOverText, finalizeActionName, finalizeMakeRed);
+                          this.addActionButton( 'button_'+saucerToCrash, _(finalizeButtonLabel), 'onClick_activateProximityMines' );
+
+                          // add a button for undo'ing the move
+                          var undoButtonLabel = _('Collide With Them');
+                          var undoIsDisabled = false;
+                          var undoHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                          var undoActionName = 'skipProximityMines'; // such as selectSaucerToGoFirst
                           var undoMakeRed = false;
                           this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
 
@@ -4505,12 +4582,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
                 console.log("give away saucer color:"+color);
 
-                this.addActionButton( 'giveawaySaucer_'+color+'_button', _(color+' Saucer'), 'onClickGiveAwayToSaucer', null, null, 'gray' );
-                //this.addActionButton( 'giveawaySaucer_'+color+'_button', '<div id="button_saucerColor_'+color+'" style="background-color:'+color+';">'+color+'</div>', 'onClickGiveAwayToSaucer', null, null, 'gray');
-
-                var buttonNode = $('giveawaySaucer_'+color+'_button');
-                //dojo.addClass( buttonNode, 'crewmemberButtonSelected' );
-                buttonNode.style.backgroundColor=color;
+                this.addActionButton( 'giveawaySaucer_'+color+'_button', '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClickGiveAwayToSaucer', null, null, 'gray');
             }
 
         },

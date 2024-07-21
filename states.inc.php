@@ -539,7 +539,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetLandingLegSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "executingMove" => 70  )
     ),
 
     60 => array(
@@ -605,8 +605,18 @@ $machinestates = array(
     66 => array(
         "name" => "askToPhaseShift",
         "description" => clienttranslate('${saucerColor} is deciding whether they will Phase Shift.'),
-        "descriptionmyturn" => clienttranslate('Phase Shifter: Would you like to move through this Saucer?'),
+        "descriptionmyturn" => clienttranslate('Phase Shifter: Would you like to move through this Saucer or collide with it?'),
         "type" => "activeplayer",
+        "possibleactions" => array( "chooseToProximityMine" ),
+        "transitions" => array(  "executingMove" => 70 )
+    ),
+
+    67 => array(
+        "name" => "askToProximityMine",
+        "description" => clienttranslate('${saucerColor} is deciding whether they will use their Proximity Mines.'),
+        "descriptionmyturn" => clienttranslate('Proximity Mines: Would you like to crash this Saucer or collide with them?'),
+        "type" => "activeplayer",
+        'args' => 'argAskToProximityMine',
         "possibleactions" => array( "choosePhaseShift" ),
         "transitions" => array(  "executingMove" => 70 )
     ),
@@ -618,7 +628,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeMove",
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66 )
+        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66, "askToProximityMine" => 67, "endGame" => 99 )
     ),
 
 

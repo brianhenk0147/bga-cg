@@ -19,7 +19,7 @@ $gameinfos = array(
 'designer' => 'Brian Henk and Clayton Skancke',
 
 // Game artist (or game artists, separated by commas)
-'artist' => 'Loic Billiau',
+'artist' => 'Loïc Billiau',
 
 // Year of FIRST publication of this game. Can be negative.
 'year' => 2024,
@@ -90,16 +90,16 @@ $gameinfos = array(
 'language_dependency' => false,
 
 // Complexity of the game, from 0 (extremely simple) to 5 (extremely complex)
-'complexity' => 2,
+'complexity' => 3,
 
 // Luck of the game, from 0 (absolutely no luck in this game) to 5 (totally luck driven)
-'luck' => 4,
+'luck' => 3,
 
 // Strategy of the game, from 0 (no strategy can be setup) to 5 (totally based on strategy)
 'strategy' => 3,
 
 // Diplomacy of the game, from 0 (no interaction in this game) to 5 (totally based on interaction and discussion between players)
-'diplomacy' => 4,
+'diplomacy' => 2,
 
 // Colors attributed to players
 'player_colors' => array( "f6033b", "01b508", "0090ff", "fedf3d", "b92bba", "e77324" ),

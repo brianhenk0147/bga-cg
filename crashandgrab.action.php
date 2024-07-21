@@ -153,6 +153,21 @@
         self::ajaxResponse( );
     }
 
+    public function actActivateProximityMines()
+    {
+        self::setAjaxMode();
+        $saucerWhoCrashed = self::getArg( "saucerWhoCrashed", AT_alphanum, true ); // ff0000, 0000ff, etc.
+        $this->game->executeActivateProximityMines($saucerWhoCrashed);
+        self::ajaxResponse( );
+    }
+
+    public function actSkipProximityMines()
+    {
+        self::setAjaxMode();
+        $this->game->executeSkipProximityMines();
+        self::ajaxResponse( );
+    }
+
     public function actActivatePhaseShifter()
     {
         self::setAjaxMode();
