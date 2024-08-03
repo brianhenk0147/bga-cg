@@ -267,7 +267,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "rollRotationDie",
         "updateGameProgression" => true,
-        "transitions" => array( "playerTurnStart" => 29 )
+        "transitions" => array( "playerTurnStart" => 29, "askToRotationalStabilizer" => 67 )
     ),
 
     26 => array(
@@ -619,6 +619,16 @@ $machinestates = array(
         'args' => 'argAskToProximityMine',
         "possibleactions" => array( "choosePhaseShift" ),
         "transitions" => array(  "executingMove" => 70 )
+    ),
+
+    67 => array(
+        "name" => "askToRotationalStabilizer",
+        "description" => clienttranslate('${saucerColor} is choosing the turn direction.'),
+        "descriptionmyturn" => clienttranslate('Rotational Stabilizer: Which order should the turn direction go?'),
+        "type" => "activeplayer",
+        'args' => 'argAskToRotationalStabilizer',
+        "possibleactions" => array( "chooseTurnDirection" ),
+        "transitions" => array(  "playerTurnStart" => 29 )
     ),
 
     70 => array(

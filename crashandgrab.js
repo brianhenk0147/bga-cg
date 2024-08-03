@@ -652,6 +652,48 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     } );
                 },
 
+                onClick_clockwise: function (evt )
+                {
+                    console.log( "Clicked clockwise button." );
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actClockwise.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+                },
+
+                onClick_counter: function (evt )
+                {
+                    console.log( "Clicked counter button." );
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actCounter.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+                },
+
                 onClick_activateHyperdrive: function (evt )
                 {
                     console.log( "Clicked activate hyperdrive button." );
@@ -1659,6 +1701,20 @@ this.unhighlightAllGarments();
                           var undoActionName = 'skipProximityMines'; // such as selectSaucerToGoFirst
                           var undoMakeRed = false;
                           this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
+
+                      }
+
+                  break;
+
+                  case 'askToRotationalStabilizer':
+
+
+                      if ( this.isCurrentPlayerActive() )
+                      { // we are the active player
+
+                          this.addActionButton( 'clockwise_button', '<div class="player_board_arrow" style="background-position-x:0px"></div>', 'onClick_clockwise', null, null, 'gray');
+
+                          this.addActionButton( 'counter_button', '<div class="player_board_arrow" style="background-position-x:-35px"></div>', 'onClick_counter', null, null, 'gray');
 
                       }
 

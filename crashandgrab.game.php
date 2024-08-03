@@ -444,7 +444,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				if($this->getNumberOfPlayers() > 2)
 				{
-						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 12));
+						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 8));
 				}
 
 
@@ -7425,7 +7425,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				self::DbQuery( $sqlUpdate );
 		}
-
+/* OBSOLETE
 		function updateTurnOrder($show)
 		{
 				$playerIdList = self::getObjectListFromDB( "SELECT player_id FROM player" );
@@ -7442,7 +7442,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								'turnOrder' => $turnOrder
 				) );
 		}
-
+*/
 		function getXOfCrashSite($crashSiteNumber)
 		{
 				return self::getUniqueValueFromDb("SELECT board_x FROM board WHERE board_space_type=$crashSiteNumber");
@@ -8822,7 +8822,7 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 		function startMovePhase()
 		{
 				$this->notifyPlayersAboutTrapsSet(); // now that traps are set, notify all players about them
-				$this->updateTurnOrder(true); // send notification to update the turn order arrow
+				//$this->updateTurnOrder(true); // send notification to update the turn order arrow
 
 				$startPlayer = $this->getStartPlayer(); // get the player who owns the ostrich with the crown
 				$this->gamestate->changeActivePlayer( $startPlayer ); // set the active player (this cannot be done in an activeplayer game state)
@@ -9792,15 +9792,25 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				) );
 		}
 
-		// 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
-		function getRotationalStabilizerValue()
+
+		function getRotationalStabilizerOwner()
 		{
 				// see if rotational stabalizer has been played
+				$allSaucers = $this->getAllSaucers();
+				foreach($allSaucers as $saucer)
+				{
+						$saucerColor = $saucer['ostrich_color'];
+						$saucerOwner = $saucer['ostrich_owner'];
 
-				// if it has, return the value, if not, return 2
+						if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Rotational Stabilizer'))
+						{
+								// get the value
+								return $saucerOwner;
+						}
+				}
 
-				
-				return 2;
+				// we didn't find a rotational stabilizer in play
+				return '';
 		}
 
 		// This happens just before each player starts moving.
@@ -9812,12 +9822,19 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				{ // we don't care about turn order in a 2-player game
 
 						// get the chosen turn order if someone has played rotational stabilizer
-						$rotationalStabilizerValue = $this->getRotationalStabilizerValue();
-						if($rotationalStabilizerValue != 2)
-						{ // someone has Rotational Stabalizer and they have chosen the rotational stabilizer value
+						$rotationalStabilizerOwner = $this->getRotationalStabilizerOwner();
+						if($rotationalStabilizerOwner != '')
+						{ // someone has Rotational Stabalizer
 
+								// set the player who has rotational stabilizer to the active player
+								$this->gamestate->changeActivePlayer( $rotationalStabilizerOwner ); // set the active player (this cannot be done in an activeplayer game state)
+
+								// let that player choose the direction
+								$this->gamestate->nextState( "askToRotationalStabilizer" );
+
+								// TODO: MOVE TO CLICK EVENT WHEN SOMEONE CHOOSES
 								// set it to that order
-								self::setGameStateValue( 'TURN_ORDER', $rotationalStabilizerValue ); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+								//self::setGameStateValue( 'TURN_ORDER', $rotationalStabilizerValue ); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 
 						}
 						else
@@ -9825,26 +9842,31 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 								// roll the rotation die
 								$turnOrderInt = rand(0,1);
-								self::setGameStateValue( 'TURN_ORDER', $turnOrderInt ); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 
-								$turnOrderFriendly = $this->convertTurnOrderIntToText($turnOrderInt);
-
-								// notify players of the direction (send clockwise/counter)
-								self::notifyAllPlayers( 'updateTurnOrder', clienttranslate( 'The turn direction this round is ${turnOrderFriendly}.' ), array(
-												'i18n' => array('turnOrderFriendly'),
-												'turnOrderFriendly' => $turnOrderFriendly,
-												'turnOrder' => $turnOrderInt
-								) );
-
+								// set the turn order
+								$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 						}
 
 				}
 
-				$this->gamestate->nextState( "playerTurnStart" ); // start the PLAYER turn (not the SAUCER turn)
-
-
 				// tell all players a new round has started where they will send a random move card back of their opponents on to their mat
 
+		}
+
+		function updateTurnOrder($turnOrderInt)
+		{
+				self::setGameStateValue( 'TURN_ORDER', $turnOrderInt ); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+
+				$turnOrderFriendly = $this->convertTurnOrderIntToText($turnOrderInt);
+
+				// notify players of the direction (send clockwise/counter)
+				self::notifyAllPlayers( 'updateTurnOrder', clienttranslate( 'The turn direction this round is ${turnOrderFriendly}.' ), array(
+								'i18n' => array('turnOrderFriendly'),
+								'turnOrderFriendly' => $turnOrderFriendly,
+								'turnOrder' => $turnOrderInt
+				) );
+
+				$this->gamestate->nextState( "playerTurnStart" ); // start the PLAYER turn (not the SAUCER turn)
 		}
 
 		// Convert a player ID into a player NAME.
@@ -11258,6 +11280,18 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				return array(
 						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
 						'saucerToCrash' => $saucerToCrash
+				);
+		}
+
+		function argAskToRotationalStabilizer()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
+
+//throw new feException( "saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerToCrash: $saucerToCrash" );
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly
 				);
 		}
 
