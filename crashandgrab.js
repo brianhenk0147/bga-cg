@@ -413,74 +413,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 */
 
-                onUpgradeHandSelectionChanged: function( evt )
-                {
-                    console.log( "An upgrade card was selected." );
-
-                    if(this.isCurrentPlayerActive() && this.checkAction( 'chooseUpgrade', true ))
-                    { // player is allowed to choose an upgrade (nomessage parameter is true so that an error message is not displayed)
-
-                        var cardsSelected = this.upgradesAvailable.getSelectedItems(); // get the trap cards that were selected
-
-                        if( cardsSelected.length == 1 )
-                        { // one card is selected
-                              console.log( "A single card is selected." );
-
-                              for( var i in cardsSelected )
-                              {
-                                actClickUpgradeInHand
-                                  this.sendDiscardTrap(cardsSelected[i].id); // put the card IDs in a semicolon-delimited list
-                              }
-                        }
-                    }
-                    else
-                    { // we are not in a state where we can select trap cards
-                        this.trapHand.unselectAll();
-                        var unselectedCards = this.upgradesAvailable.getUnselectedItems(); // get the cards that were selected
-                        for( var i in unselectedCards )
-                        {
-                        //    var htmlIdOfCard = 'trap_hand_'+this.player_id+'_item_'+unselectedCards[i].id;
-                        //    dojo.removeClass( htmlIdOfCard, 'cardSelected' ); // give this card a new CSS class
-                        //    dojo.addClass( htmlIdOfCard, 'cardUnselected' ); // give this card a new CSS class
-
-                        }
-                    }
-
-                },
-
-                onTrapHandSelectionChanged: function( )
-                {
-                    console.log( "A trap card was selected." );
-
-                    if(this.isCurrentPlayerActive() && this.checkAction( 'discardTrapCard', true ))
-                    { // player is allowed to discard a trap card (nomessage parameter is true so that an error message is not displayed)
-
-                        var trapsSelected = this.trapHand.getSelectedItems(); // get the trap cards that were selected
-
-                        if( trapsSelected.length == 1 )
-                        { // one card is selected
-                              console.log( "A single trap card is selected." );
-
-                              for( var i in trapsSelected )
-                              {
-                                  this.sendDiscardTrap(trapsSelected[i].id); // put the card IDs in a semicolon-delimited list
-                              }
-                        }
-                    }
-                    else
-                    { // we are not in a state where we can select trap cards
-                        this.trapHand.unselectAll();
-                        var unselectedCards = this.trapHand.getUnselectedItems(); // get the cards that were selected
-                        for( var i in unselectedCards )
-                        {
-                            var htmlIdOfCard = 'trap_hand_'+this.player_id+'_item_'+unselectedCards[i].id;
-                            dojo.removeClass( htmlIdOfCard, 'cardSelected' ); // give this card a new CSS class
-                            dojo.addClass( htmlIdOfCard, 'cardUnselected' ); // give this card a new CSS class
-
-                        }
-                    }
-                },
-
                 onClick_selectSaucerToPlace: function( evt )
                 {
                     var htmlIdOfButton = evt.currentTarget.id;
@@ -1192,18 +1124,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     {
                         this.CHOSEN_DIRECTION_SAUCER_2 = htmlIdOfToken;
                     }
-                },
-
-                onExecuteTrap: function( evt )
-                {
-                  if (this.checkAction( 'executeTrap', false ))
-                  { // player is allowed to execute a trap
-
-                      if ( this.isCurrentPlayerActive() )
-                      { // the active player is clicking
-                          this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteTrap.html", { lock: true }, this, function( result ) {}, function( is_error ) {} );
-                      }
-                  }
                 },
 
                 onClickSpace: function( evt )
@@ -2357,12 +2277,6 @@ this.unhighlightAllGarments();
 
                   break;
 
-                  case 'discardTrapCards':
-                      console.log( "onUpdateActionButtons for discardTrapCards where isCurrentPlayerActive="+this.isCurrentPlayerActive() );
-
-
-
-                  break;
 
                   case 'chooseAcceleratorDirection':
                       console.log( "onUpdateActionButtons for chooseAcceleratorDirection with ostrichChosen="+this.ostrichChosen );
@@ -4697,16 +4611,6 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             this.addActionButton( 'noBooster_button', _('Skip Booster'), 'skipBooster' );
         },
 
-        showAskStealOrDrawButtons: function(countOfStealableGarments)
-        {
-            if(countOfStealableGarments > 0)
-            {
-                this.addActionButton( 'steal_button', _('Steal a Garment'), 'onChooseToStealGarment' );
-            }
-
-            this.addActionButton( 'draw_button', _('Draw Zigs'), 'onDraw2Zigs' );
-        },
-
         sendXValue: function(value)
         {
             this.ajaxcall( "/crashandgrab/crashandgrab/actSelectXValue.html", { xValue: value, lock: true }, this, function( result ) {
@@ -4984,13 +4888,6 @@ console.log("success... onClickUpgradeCardInHand");
 
         },
 
-        sendClaimZag: function(ostrich, cardsDiscarded)
-        {
-            console.log("sendClaimZag for ostrich " + ostrich);
-            this.ajaxcall( "/crashandgrab/crashandgrab/actClaimZag.html", { ostrich: ostrich, cardsDiscarded: cardsDiscarded, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
-        },
-
         sendRespawnRequest: function()
         {
           console.log("sendRespawnRequest");
@@ -5009,13 +4906,6 @@ console.log("success... onClickUpgradeCardInHand");
         {
             console.log("sendStealGarmentRequest");
             this.ajaxcall( "/crashandgrab/crashandgrab/actAskWhichGarmentToSteal.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
-        },
-
-        sendDiscardTrap: function(cardDiscarded, ostrichMoving, ostrichTakingTurn)
-        {
-            console.log("sendDiscardTrap card id " + cardDiscarded);
-            this.ajaxcall( "/crashandgrab/crashandgrab/actDiscardTrap.html", { cardDiscarded: cardDiscarded, ostrichMoving: ostrichMoving, ostrichTakingTurn: ostrichTakingTurn, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },
 
@@ -5118,30 +5008,10 @@ console.log("success... onClickUpgradeCardInHand");
         },
         */
 
-        onNoClaimZag: function()
-        {
-            this.sendSkipZag();
-
-            //this.mustChooseZagDiscards = false;
-            //this.askedZag = true;
-            //this.removeActionButtons(); // remove any action buttons that are currently showing
-            //dojo.destroy('askClaimZagYes_button'); // destroy Yes button
-            //dojo.destroy('askClaimZagNo_button'); // destroy No button
-            //this.showChooseZigButtons();
-        },
 
         onOstrichRespawn: function()
         {
             this.sendRespawnRequest(); // tell the server to respawn the active ostrich
-        },
-
-        onDraw2Zigs: function()
-        {
-            // make sure we are allowed to take this action
-            if( ! this.checkAction( 'clickDraw2Zigs' ) )
-            { return; }
-
-            this.sendDraw2ZigsRequest(); // tell server this player wants to draw 2 cards
         },
 
         onChooseToStealGarment: function()
@@ -5159,53 +5029,6 @@ console.log("success... onClickUpgradeCardInHand");
             //this.addActionButton( 'stealCancel_button', _('Cancel'), 'onStealGarmentCancel', null, false, 'red' );
 
             //this.setPlayerInstructions('Choose the garment you wish to steal.');
-        },
-
-        onDiscard3ClaimRED: function()
-        {
-            var cardsDiscarded = this.convertSelectedCardsToString();
-
-            this.sendClaimZag(this.REDCOLOR, cardsDiscarded); // tell the server which cards we are discarding for the zag and which ostrich is doing it
-        },
-
-        onDiscard3ClaimBLUE: function()
-        {
-            var cardsDiscarded = this.convertSelectedCardsToString();
-
-            this.sendClaimZag(this.BLUECOLOR, cardsDiscarded); // tell the server which cards we are discarding for the zag and which ostrich is doing it
-        },
-
-        onDiscard3ClaimGREEN: function()
-        {
-            var cardsDiscarded = this.convertSelectedCardsToString();
-
-            this.sendClaimZag(this.GREENCOLOR, cardsDiscarded); // tell the server which cards we are discarding for the zag and which ostrich is doing it
-        },
-
-        onDiscard3ClaimYELLOW: function()
-        {
-            var cardsDiscarded = this.convertSelectedCardsToString();
-
-            this.sendClaimZag(this.YELLOWCOLOR, cardsDiscarded); // tell the server which cards we are discarding for the zag and which ostrich is doing it
-        },
-
-        onDiscard3ClaimPURPLE: function()
-        {
-            var cardsDiscarded = this.convertSelectedCardsToString();
-
-            this.sendClaimZag(this.PURPLECOLOR, cardsDiscarded); // tell the server which cards we are discarding for the zag and which ostrich is doing it
-        },
-
-        onDiscard3ClaimORANGE: function()
-        {
-            var cardsDiscarded = this.convertSelectedCardsToString();
-
-            this.sendClaimZag(this.ORANGECOLOR, cardsDiscarded); // tell the server which cards we are discarding for the zag and which ostrich is doing it
-        },
-
-        onDiscard3Cancel: function()
-        {
-            this.mustChooseZagDiscards = false;
         },
 
         onClick_energyReward: function( evt )
@@ -5588,174 +5411,6 @@ console.log("success... onClickUpgradeCardInHand");
             var value = node.split('_')[0];
 
             this.sendXValue(value);
-        },
-
-        onTrapRed: function()
-        { // the player would like to play a trap
-            console.log( "DO set a trap on red" );
-
-            if( this.checkAction( 'setTrap', false ) )
-            {
-                this.resetPlanPhaseVariables(); // now that we are in the trap phase, we can reset PLAN phase variables TODO: we probably don't need this... refactor to remove
-
-                var items = this.trapHand.getAllItems(); // get all traps in this player's hand
-
-                if( items.length > 0 )
-                { // there is at least one card in hand
-                      var card_id = items[0].id; // the id of the trap card
-
-                      // SET THE TRAP
-                      this.ajaxcall( "/crashandgrab/crashandgrab/actSetTrap.html", { ostrich: this.REDCOLOR, lock: true }, this, function( result )
-                      { // we successfully set the trap
-
-                          // slide the card from current player's hand to targeted ostrich's mat
-                          this.slideToObject( 'trap_hand_'+this.player_id+'_item_'+card_id, 'ostrich_mat_'+this.REDCOLOR).play();
-
-                      }, function( is_error) { } );
-                }
-            }
-        },
-
-        onTrapBlue: function()
-        { // the player would like to play a trap
-          console.log( "DO set a trap on blue" );
-
-          if( this.checkAction( 'setTrap', false ) )
-          {
-              this.resetPlanPhaseVariables(); // now that we are in the trap phase, we can reset PLAN phase variables TODO: we probably don't need this... refactor to remove
-
-              var items = this.trapHand.getAllItems(); // get all traps in this player's hand
-
-              if( items.length > 0 )
-              { // there is at least one card in hand
-                    var card_id = items[0].id; // the id of the trap card
-
-                    // SET THE TRAP
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actSetTrap.html", { ostrich: this.BLUECOLOR, lock: true }, this, function( result )
-                    { // we successfully set the trap
-
-                        // slide the card from current player's hand to targeted ostrich's mat
-                        this.slideToObject( 'trap_hand_'+this.player_id+'_item_'+card_id, 'ostrich_mat_'+this.BLUECOLOR).play();
-
-                    }, function( is_error) { } );
-              }
-          }
-        },
-
-        onTrapGreen: function()
-        { // the player would like to play a trap
-          console.log( "DO set a trap on green" );
-
-          if( this.checkAction( 'setTrap', false ) )
-          {
-              this.resetPlanPhaseVariables(); // now that we are in the trap phase, we can reset PLAN phase variables TODO: we probably don't need this... refactor to remove
-
-              var items = this.trapHand.getAllItems(); // get all traps in this player's hand
-
-              if( items.length > 0 )
-              { // there is at least one card in hand
-                    var card_id = items[0].id; // the id of the trap card
-
-                    // SET THE TRAP
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actSetTrap.html", { ostrich: this.GREENCOLOR, lock: true }, this, function( result )
-                    { // we successfully set the trap
-
-                        // slide the card from current player's hand to targeted ostrich's mat
-                        this.slideToObject( 'trap_hand_'+this.player_id+'_item_'+card_id, 'ostrich_mat_'+this.GREENCOLOR).play();
-
-                    }, function( is_error) { } );
-              }
-          }
-        },
-
-        onTrapYellow: function()
-        { // the player would like to play a trap
-          console.log( "DO set a trap" );
-
-          if( this.checkAction( 'setTrap', false ) )
-          {
-              this.resetPlanPhaseVariables(); // now that we are in the trap phase, we can reset PLAN phase variables TODO: we probably don't need this... refactor to remove
-
-              var items = this.trapHand.getAllItems(); // get all traps in this player's hand
-
-              if( items.length > 0 )
-              { // there is at least one card in hand
-                    var card_id = items[0].id; // the id of the trap card
-
-                    // SET THE TRAP
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actSetTrap.html", { ostrich: this.YELLOWCOLOR, lock: true }, this, function( result )
-                    { // we successfully set the trap
-
-                        // slide the card from current player's hand to targeted ostrich's mat
-                        this.slideToObject( 'trap_hand_'+this.player_id+'_item_'+card_id, 'ostrich_mat_'+this.YELLOWCOLOR).play();
-
-                    }, function( is_error) { } );
-              }
-          }
-        },
-
-        onTrapPurple: function()
-        { // the player would like to play a trap
-          console.log( "DO set a trap" );
-
-          if( this.checkAction( 'setTrap', false ) )
-          {
-              this.resetPlanPhaseVariables(); // now that we are in the trap phase, we can reset PLAN phase variables TODO: we probably don't need this... refactor to remove
-
-              var items = this.trapHand.getAllItems(); // get all traps in this player's hand
-
-              if( items.length > 0 )
-              { // there is at least one card in hand
-                    var card_id = items[0].id; // the id of the trap card
-
-                    // SET THE TRAP
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actSetTrap.html", { ostrich: this.PURPLECOLOR, lock: true }, this, function( result )
-                    { // we successfully set the trap
-
-                        // slide the card from current player's hand to targeted ostrich's mat
-                        this.slideToObject( 'trap_hand_'+this.player_id+'_item_'+card_id, 'ostrich_mat_'+this.PURPLECOLOR).play();
-
-                    }, function( is_error) { } );
-              }
-          }
-        },
-
-        onTrapOrange: function()
-        { // the player would like to play a trap
-          console.log( "DO set a trap" );
-
-          if( this.checkAction( 'setTrap', false ) )
-          {
-              this.resetPlanPhaseVariables(); // now that we are in the trap phase, we can reset PLAN phase variables TODO: we probably don't need this... refactor to remove
-
-              var items = this.trapHand.getAllItems(); // get all traps in this player's hand
-
-              if( items.length > 0 )
-              { // there is at least one card in hand
-                    var card_id = items[0].id; // the id of the trap card
-
-                    // SET THE TRAP
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actSetTrap.html", { ostrich: this.ORANGECOLOR, lock: true }, this, function( result )
-                    { // we successfully set the trap
-
-                        // slide the card from current player's hand to targeted ostrich's mat
-                        this.slideToObject( 'trap_hand_'+this.player_id+'_item_'+card_id, 'ostrich_mat_'+this.ORANGECOLOR).play();
-
-                    }, function( is_error) { } );
-              }
-          }
-        },
-
-        noTrap: function()
-        { // the player would NOT like to play a trap
-          console.log( "do NOT set a trap" );
-
-          //this.finishedTrapping = true; // this player is done trapping
-
-          this.resetPlanPhaseVariables(); // now that we are in the trap phase, we can reset PLAN phase variables
-
-          this.ajaxcall( "/crashandgrab/crashandgrab/actNoTrap.html", { id: 0, lock: true }, this, function( result ) {
-          }, function( is_error) { } );
         },
 
         onGiveCards: function()

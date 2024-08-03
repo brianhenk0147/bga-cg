@@ -435,15 +435,6 @@
         self::ajaxResponse( );
     }
 
-    public function actSetTrap()
-    {
-        self::setAjaxMode();
-        $ostrich_color = self::getArg( "ostrich", AT_alphanum, true ); // ff0000, 0000ff, etc.
-
-        $this->game->executeSetTrap( $ostrich_color );
-        self::ajaxResponse( );
-    }
-
     // not used yet
     public function actEndPlanPhase()
     {
@@ -557,32 +548,6 @@
         self::ajaxResponse( );
     }
 
-    public function actStealGarment()
-    {
-        self::setAjaxMode();
-        $garment_type = self::getArg( "garmentType", AT_alphanum, true ); // head, legs, etc.
-        $garment_color = self::getArg( "garmentColor", AT_alphanum, true ); // ff0000, etc
-
-
-        //echo "Replacing garment at ($destination_x, $destination_y). <br>";
-
-        $this->game->executeStealGarment(  $garment_type, $garment_color );
-        self::ajaxResponse( );
-    }
-
-    public function actDiscardGarment()
-    {
-        self::setAjaxMode();
-        $garment_type = self::getArg( "garmentType", AT_alphanum, true ); // head, legs, etc.
-        $garment_color = self::getArg( "garmentColor", AT_alphanum, true ); // ff0000, etc
-
-
-        //echo "Replacing garment at ($destination_x, $destination_y). <br>";
-
-        $this->game->executeDiscardGarment(  $garment_type, $garment_color );
-        self::ajaxResponse( );
-    }
-
     // The player pushed someone off a cliff and chose to draw 2 zigs instead of stealing a garment.
     public function actDraw2Zigs()
     {
@@ -598,48 +563,11 @@
         self::ajaxResponse( );
     }
 
-    public function actClaimZag()
-    {
-        self::setAjaxMode();
-
-        $ostrich_color = self::getArg( "ostrich", AT_alphanum, true ); // ff0000, 0000ff, etc.
-        $cards_raw = self::getArg( "cardsDiscarded", AT_numberlist, true ); // the list of cards they chose to discard
-
-        // Removing last ';' if exists
-        if( substr( $cards_raw, -1 ) == ';' )
-            $cards_raw = substr( $cards_raw, 0, -1 );
-        if( $cards_raw == '' )
-            $cards_discarded = array();
-        else
-            $cards_discarded = explode( ';', $cards_raw );
-
-
-        $this->game->executeClaimZag(  $ostrich_color, $cards_discarded );
-        self::ajaxResponse( );
-    }
-
     public function actRespawnOstrich()
     {
       self::setAjaxMode();
       $this->game->executeRespawnOstrich();
       self::ajaxResponse( );
-    }
-
-    public function actDiscardTrap()
-    {
-        self::setAjaxMode();
-
-        $cardDiscarded = self::getArg( "cardDiscarded", AT_posint, true ); // the trap card they are discarding
-
-        $this->game->executeDiscardTrap( $cardDiscarded );
-        self::ajaxResponse( );
-    }
-
-    public function actExecuteTrap()
-    {
-        self::setAjaxMode();
-        $this->game->executeTrapUsage();
-        self::ajaxResponse( );
     }
 
   }

@@ -316,20 +316,22 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// PLAYER STATS
 				self::initStat( 'player', 'turns_number', 0 );
 				self::initStat( 'player', 'rounds_started', 0 );
-				self::initStat( 'player', 'zags_claimed', 0 );
-				self::initStat( 'player', 'traps_drawn', 0 ); // number of traps the player has drawn
+				self::initStat( 'player', 'crewmembers_picked_up', 0 );
+				self::initStat( 'player', 'crewmembers_you_stole', 0 );
 
-				self::initStat( 'player', 'ran_off_cliff', 0 );
-				self::initStat( 'player', 'pushed_ostrich_off_cliff', 0 );
-				self::initStat( 'player', 'was_pushed_off_cliff', 0 );
-				self::initStat( 'player', 'pushed_an_ostrich', 0 );
-				self::initStat( 'player', 'was_pushed', 0 );
+				self::initStat( 'player', 'crewmembers_stolen_from_you', 0 );
+				self::initStat( 'player', 'saucers_you_crashed', 0 );
+				self::initStat( 'player', 'times_you_were_crashed', 0 );
+				self::initStat( 'player', 'times_you_crashed_yourself', 0 );
+				self::initStat( 'player', '2s_played', 0 );
 
-				self::initStat( 'player', 'i_used_trap', 0 );
-				self::initStat( 'player', 'trap_used_on_me', 0 );
+				self::initStat( 'player', '3s_played', 0 );
+				self::initStat( 'player', 'Xs_played', 0 );
 
-				self::initStat( 'player', 'garments_i_stole', 0 );
-				self::initStat( 'player', 'garments_stolen_from_me', 0 );
+				self::initStat( 'player', 'accelerators_used', 0 );
+				self::initStat( 'player', 'distance_moved', 0 );
+				self::initStat( 'player', 'upgrades_played', 0 );
+				self::initStat( 'player', 'upgrades_activated', 0 );
 		}
 
 		function initializeMoveCards()
@@ -424,9 +426,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// type_arg: probably don't need... should mimic card id
 
 				$cardsList = array(
-						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
+						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 8),
 						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
+						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 8),
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
@@ -438,13 +440,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 8),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)
 				);
 
 				if($this->getNumberOfPlayers() > 2)
 				{
-						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 8));
+						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1));
 				}
 
 
@@ -1132,6 +1134,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$sqlUpdate = "UPDATE movementCards SET ";
 				$sqlUpdate .= "card_chosen_state='unchosen'";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function resetAllUpgradeValues()
+		{
+				$sqlUpdate = "UPDATE upgradeCards SET ";
+				$sqlUpdate .= "value_1='0',value_2='0'";
 
 				self::DbQuery( $sqlUpdate );
 		}
@@ -4213,6 +4223,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 			self::DbQuery( $sqlUpdate );
 		}
 
+		function resetAllCliffPushers()
+		{
+			$sqlUpdate = "UPDATE ostrich SET ";
+			$sqlUpdate .= "ostrich_causing_cliff_fall='' ";
+
+			self::DbQuery( $sqlUpdate );
+		}
+
 		function convertTurnOrderIntToText($turnOrderInt)
 		{
 				switch($turnOrderInt)
@@ -4636,7 +4654,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						$crashRewardAcquired = $saucerCrashDetails['crash_penalty_rendered'];
 						$ownerOfSaucerColor = $this->getOwnerIdOfOstrich($saucerColor);
 
-						//echo "saucerColor:$saucerColor <br> saucerIsCrashed:$saucerIsCrashed <br> saucerWasCrashedBy:$saucerWasCrashedBy <br> crashRewardAcquired:$crashRewardAcquired <br>";
+						//if($saucerIsCrashed && $saucerWasCrashedBy != $saucerWhoseTurnItIs)
+						//	throw new feException( "saucerColor:$saucerColor <br> saucerIsCrashed:$saucerIsCrashed <br> saucerWasCrashedBy:$saucerWasCrashedBy <br> crashRewardAcquired:$crashRewardAcquired <br>" );
 
 						if($saucerColor != $saucerWhoseTurnItIs &&
 						   $saucerIsCrashed &&
@@ -6397,6 +6416,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// see if we are within 1 space of our other saucer
 				$this->checkIfPassedByOtherSaucer($saucerMoving, $currentX, $currentY);
 
+				// get the type of movement we're doing
+				$moveType = $this->getMoveTypeWeAreExecuting();
 
 				if($this->LEFT_DIRECTION == $direction)
 				{ // we're traveling from right to left
@@ -6408,13 +6429,19 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								// see if we are within 1 space of our other saucer
 								$this->checkIfPassedByOtherSaucer($saucerMoving, $thisX, $currentY);
 
-								/*echo "The value at ($thisX, $currentY) is: $boardValue <br>";
-								throw new feException("The value at ($thisX, $currentY) is: $boardValue");*/
+								//echo "The value at ($thisX, $currentY) is: $boardValue <br>";
+								//throw new feException("The value at ($thisX, $currentY) is: $boardValue");
+
+								//if($thisX < 0)
+							//		throw new feException("setSaucerXValue($saucerMoving, $thisX) with distance $distance");
 
 								$this->setSaucerXValue($saucerMoving, $thisX); // set X value for Saucer
 
-								// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
-								$this->incrementSpacesMoved($saucerMoving);
+								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
+								{ // we are moving because of blast off thrusters or landing legs
+										// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
+										$this->incrementSpacesMoved($saucerMoving);
+								}
 
 								$saucerWeCollideWith = $this->getSaucerAt($thisX, $currentY, $saucerMoving); // get any ostriches that might be at this location
 								$garmentId = $this->getGarmentIdAt($thisX,$currentY); // get a garment here if there is one
@@ -6550,8 +6577,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 								$this->setSaucerXValue($saucerMoving, $thisX); // set X value for Saucer
 
-								// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
-								$this->incrementSpacesMoved($saucerMoving);
+								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
+								{ // we are moving because of blast off thrusters or landing legs
+										// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
+										$this->incrementSpacesMoved($saucerMoving);
+								}
 
 								$saucerWeCollideWith = $this->getSaucerAt($thisX, $currentY, $saucerMoving); // get any ostriches that might be at this location
 								$garmentId = $this->getGarmentIdAt($thisX,$currentY); // get a garment here if there is one
@@ -6678,8 +6708,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 								$this->setSaucerYValue($saucerMoving, $thisY); // set Y value for Saucer
 
-								// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
-								$this->incrementSpacesMoved($saucerMoving);
+								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
+								{ // we are moving because of blast off thrusters or landing legs
+										// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
+										$this->incrementSpacesMoved($saucerMoving);
+								}
 
 								$saucerWeCollideWith = $this->getSaucerAt($currentX, $thisY, $saucerMoving); // get any ostriches that might be at this location
 								$garmentId = $this->getGarmentIdAt($currentX, $thisY); // get a garment here if there is one
@@ -6802,8 +6835,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 							  $this->setSaucerYValue($saucerMoving, $thisY); // set Y value for Saucer
 
-								// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
-								$this->incrementSpacesMoved($saucerMoving);
+								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
+								{ // we are moving because of blast off thrusters or landing legs
+										// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
+										$this->incrementSpacesMoved($saucerMoving);
+								}
 
 								$saucerWeCollideWith = $this->getSaucerAt($currentX, $thisY, $saucerMoving); // get any ostriches that might be at this location
 								$garmentId = $this->getGarmentIdAt($currentX, $thisY); // get a garment here if there is one
@@ -7192,7 +7228,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 										// set the saucer murderer so we know to give them a reward and put in the message log
 										$this->setSaucerMurderer($ostrichColor, $ostrichTakingTurn);
-
+//throw new feException( "murdered: $ostrichColor murderer: $ostrichTakingTurn");
 										$ostrichColorText = $this->convertColorToHighlightedText($ostrichColor);
 										$saucerMurdererText = $this->convertColorToHighlightedText($ostrichTakingTurn);
 
@@ -7208,7 +7244,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 															'saucerWhoCrashedText' => $ostrichColorText
 													) );
 */
-													self::incStat( 1, 'ran_off_cliff', $ownerOfOstrich ); // add a that you ran off a cliff
+													self::incStat( 1, 'times_you_crashed_yourself', $ownerOfOstrich ); // add a that you ran off a cliff
 										}
 										else
 										{ // the ostrich was pushed off a cliff by the player taking their turn
@@ -7221,8 +7257,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 														'saucerWhoIsStealingText' => $saucerMurdererText
 												) );
 */
-												self::incStat( 1, 'pushed_ostrich_off_cliff', $ownerOfOstrichTakingTurn ); // add stat that the current player pushed an ostrich off a cliff
-												self::incStat( 1, 'was_pushed_off_cliff', $ownerOfOstrich ); // add a stat that the owner of the ostrich who fell off the cliff was pushed off a cliff
+												self::incStat( 1, 'saucers_you_crashed', $ownerOfOstrichTakingTurn ); // add stat that the current player pushed an ostrich off a cliff
+												self::incStat( 1, 'times_you_were_crashed', $ownerOfOstrich ); // add a stat that the owner of the ostrich who fell off the cliff was pushed off a cliff
 										}
 								}
 						}
@@ -7999,6 +8035,12 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// set the saucer murderer so we know to give them a reward and put in the message log
 				$this->setSaucerMurderer($saucerCrashed, $saucerWhoseTurnItIs);
 
+				$ownerOfMurderer = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+				$ownerOfMurderee = $this->getOwnerIdOfOstrich($saucerCrashed);
+
+				self::incStat( 1, 'saucers_you_crashed', $ownerOfMurderer ); // add stat that the current player pushed an ostrich off a cliff
+				self::incStat( 1, 'times_you_were_crashed', $ownerOfMurderee ); // add a stat that the owner of the ostrich who fell off the cliff was pushed off a cliff
+
 				// move them off the board and notify players
 				$this->placeSaucerOnSpace($saucerCrashed, 0, 0);
 
@@ -8321,8 +8363,7 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						$saucerGiving = $this->getOstrichWhoseTurnItIs();
 						$saucerReceiving = $this->getPlayersOtherSaucer($saucerGiving);
 				}
-
-				if($areWeTaking)
+				elseif($areWeTaking)
 				{ // we are taking a crewmember from one of our saucers to the other one
 						$saucerReceiving = $this->getOstrichWhoseTurnItIs();
 						$saucerGiving = $this->getPlayersOtherSaucer($saucerReceiving);
@@ -8335,10 +8376,6 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				// change the owner of the crewmember in the database
 				$sql = "UPDATE garment SET garment_location='$saucerReceiving' WHERE garment_location='$saucerGiving' AND garment_color='$stolenColor' AND garment_type=$stolenTypeInt";
 				self::DbQuery( $sql );
-
-				// increment any stats related to thefts
-				//self::incStat( 1, 'i_used_trap', $playerUsing ); // add stat that says the player using played a trap
-				//self::incStat( 1, 'trap_used_on_me', $ownerOfOstrichTarget ); // add stat that the owner of the ostrich targeted was targeted by a trap
 
 				$stealingSaucerColorText = $this->convertColorToHighlightedText($saucerReceiving);
 				$stolenFromSaucerColorText = $this->convertColorToHighlightedText($saucerGiving);
@@ -8371,6 +8408,13 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				else
 				{ // this is a standard steal, not passing between saucers
 						$this->markCrashPenaltyRendered($saucerGiving);
+
+						// increment any stats related to thefts
+						$ownerOfStealer = $this->getOwnerIdOfOstrich($saucerReceiving);
+						$ownerOfStealee = $this->getOwnerIdOfOstrich($saucerGiving);
+						self::incStat( 1, 'crewmembers_you_stole', $ownerOfStealer ); // add stat that says the player using played a trap
+						self::incStat( 1, 'crewmembers_stolen_from_you', $ownerOfStealee ); // add stat that the owner of the ostrich targeted was targeted by a trap
+
 						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
 		}
@@ -8409,22 +8453,6 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				$this->markCrashPenaltyRendered($saucerGiving);
 
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
-		}
-
-		// The current PLAYER is using a trap on a specific OSTRICH.
-		function executeSetTrap($ostrichTargeted)
-		{
-				$playerUsing = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
-
-				$this->setTrapCardTarget($playerUsing, $ostrichTargeted); // Change the location of the trap card in the playerUsing's hand to be played on the ostrichTargeted.
-
-				$ownerOfOstrichTarget = $this->getOwnerIdOfOstrich($ostrichTargeted);
-				self::incStat( 1, 'i_used_trap', $playerUsing ); // add stat that says the player using played a trap
-				self::incStat( 1, 'trap_used_on_me', $ownerOfOstrichTarget ); // add stat that the owner of the ostrich targeted was targeted by a trap
-
-				// Make this player unactive now
-        // and tell the machine state to use transtion "directionChosen" if all players are now unactive
-        $this->gamestate->setPlayerNonMultiactive( $playerUsing, "allTrappersDone" );
 		}
 
 		function executeChooseOstrichToGoNext()
@@ -8830,7 +8858,6 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				$this->setState_PreMovement(); // set the player's phase based on what that player has available to them
 		}
 
-		// $isExtraMove means the saucer is getting a free move from an Upgrade and should not get to boost after nor undo afterwards.
 		function executeSaucerMove($saucerMoving)
 		{
 //throw new feException( "executeSaucerMove saucer moving: $saucerMoving");
@@ -8863,7 +8890,9 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				$moveType = $this->getMoveTypeWeAreExecuting();
 				$saucerX = $this->getSaucerXLocation($saucerMoving);
 				$saucerY = $this->getSaucerYLocation($saucerMoving);
-//throw new feException( "saucerX:$saucerX saucerY:$saucerY saucerMoving:$saucerMoving");
+//throw new feException( "moveType:$moveType saucerX:$saucerX saucerY:$saucerY saucerMoving:$saucerMoving");
+
+				// see if we ended move sequence because we need to activate an upgrade
 				$saucerWeCollideWith = $this->getSaucerAt($saucerX, $saucerY, $saucerMoving);
 				if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") && $saucerWeCollideWith != "" && $spacesLeft > 0)
 				{ // this saucer has phase shifter played and we are colliding with another saucer and we have at least 1 space left after colliding
@@ -8875,12 +8904,25 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 
 						$this->gamestate->nextState( "askToProximityMine" );
 				}
+				elseif($moveType == 'Landing Legs')
+				{ // the moved because they had Landing Legs
+
+						// reset the upgrade value_1 and value_2 for all saucers so we know movement upgrades have been used already
+						$this->resetAllUpgradeValues();
+
+						// decide the state to go to after the move
+						$this->setState_AfterMovementEvents($saucerMoving, $moveType);
+				}
 				elseif($moveType == 'Blast Off Thrusters')
 				{ // the moved because they had Blast Off Thrusters
 						$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
+						// reset the upgrade value_1 and value_2 for all saucers so we know movement upgrades have been used already
+						$this->resetAllUpgradeValues();
+
 						// decide the state to go to after the move
 						$countOfStartOfTurnUpgrades = count($this->getAllStartOfTurnUpgradesToActivateForSaucer($saucerWhoseTurnItIs));
+						//throw new feException( "countOfStartOfTurnUpgrades:$countOfStartOfTurnUpgrades");
 						if($countOfStartOfTurnUpgrades > 0)
 						{ // saucer has at least one start of turn upgrade active
 		//throw new feException( "checkStartOfTurnUpgrades true");
@@ -8899,27 +8941,31 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						// decide the state to go to after the move
 						$this->setState_AfterMovementEvents($saucerMoving, $moveType);
 				}
+
+
 		}
 
 		function getMoveTypeWeAreExecuting()
 		{
-				// figure out which type of move this is
-				$currentState = $this->getStateName();
-				//throw new feException( "currentState: $currentState" );
+				$saucerColor = $this->getOstrichWhoseTurnItIs();
+
+				//$blast = $this->getUpgradeValue2($saucerColor, "Blast Off Thrusters");
+				//throw new feException( "blast: $blast");
+
 				$moveType = 'regular';
-				if($currentState == "chooseBlastOffThrusterSpace")
+				if($this->getUpgradeValue2($saucerColor, "Blast Off Thrusters") != 0)
 				{
 						$moveType = 'Blast Off Thrusters';
 				}
-				elseif($currentState == "chooseLandingLegsSpace")
+				elseif($this->getUpgradeValue2($saucerColor, "Landing Legs") != 0)
 				{
 						$moveType = 'Landing Legs';
 				}
-				elseif($currentState == "chooseAfterburnerSpace")
+				elseif($this->getUpgradeValue2($saucerColor, "Afterburner") != 0)
 				{
 						$moveType = 'Afterburner';
 				}
-
+//throw new feException( "moveType: $moveType");
 				return $moveType;
 		}
 
@@ -9045,10 +9091,13 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				$currentY = $this->getSaucerYLocation($saucerMoving); // 5
 
 				$moveType = $this->getMoveTypeWeAreExecuting();
+				//throw new feException( "moveType:$moveType");
 				if($moveType == 'Landing Legs' || $moveType == 'Blast Off Thrusters')
 				{ // we are moving from a start or end of turn upgrade
 						$distance = $this->getUpgradeValue1($saucerMoving, $moveType);
 						$direction = $this->getUpgradeValue2($saucerMoving, $moveType);
+
+						//throw new feException( "distance:$distance direction:$direction");
 				}
 
 				if($distance == 0)
@@ -9197,56 +9246,6 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 		function executeAskWhichGarmentToSteal()
 		{
 				$this->gamestate->nextState( "chooseGarmentToSteal" );
-		}
-
-		// A player would like to discard 3 cards to claim a zag.
-		function executeClaimZag($ostrich, $cardsDiscarded)
-		{
-				self::checkAction( 'claimZag' ); // make sure it is a "possible action" at this game state (see states.inc.php)
-
-				if(count($cardsDiscarded) != 3)
-				{	// they didn't select exactly 3 cards
-						throw new BgaUserException( self::_("You must select exactly 3 matching Zigs.") );
-				}
-
-				if($this->doesOstrichHaveZag($ostrich))
-				{ // the ostrich already has a zag (shouldn't happen)
-						throw new feException( "This ostrich already has a Zag." );
-				}
-
-				if(!$this->doTheseCardsMatch($cardsDiscarded))
-				{ // the 3 selected Zigs do not match
-						throw new BgaUserException( self::_("These Zigs do not match.") );
-				}
-
-				// transition to choose zig phase
-				$currentPlayer = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
-				$this->gamestate->setPlayerNonMultiactive( $currentPlayer, "transitionToChooseZig" ); // set this player to not active and use transition chooseZig if all players are done
-
-
-				$this->saveOstrichZag($ostrich, 1); // give the ostrich a zag token (set ostrich.ostrich_has_zag to true)
-				$player_id = 0; // this will be set based on the cards discarded
-
-				// discard the 3 cards
-				foreach( $cardsDiscarded as $card )
-		    { // go through all the cards that were played
-								$player_id = $this->getPlayerIdForZigCardId($card); // grab the player ID before we discard the card
-								$this->movementCards->moveCard( $card, 'discard'); // move the card to the discard pile
-				}
-
- 				$replacementCards = $this->movementCards->pickCards( 3, 'movementCardDeck', $player_id ); // draw 3 replacement cards
-				$this->updateZigDrawStats($replacementCards, $player_id); // update the statistics about zig cards being drawn
-
-				$player_name = self::getCurrentPlayerName();
-				self::notifyAllPlayers( 'zagClaimed', clienttranslate( '${player_name} claimed a Zag.' ), array(
-								'player_id' => $player_id,
-								'discardedCards' => $cardsDiscarded,
-								'newCards' => $replacementCards,
-								'ostrich' => $ostrich,
-								'player_name' => $player_name
-				) );
-
-    		self::incStat( 1, 'zags_claimed', $player_id ); // increase end game player stat
 		}
 
 		function executeSkipActivateStartOfTurnUpgrade()
@@ -9668,69 +9667,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				throw new BgaUserException( self::_("That is not a valid space to place a Saucer.") );
 		}
 
-		function executeDiscardGarment($garmentType, $garmentColor)
-		{
-				self::checkAction( 'discardGarmentClick' ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php)
-
-				$ostrichHoldingGarmentChosen = $this->getOstrichHoldingGarment($garmentType, $garmentColor); // get the ostrich holding the garment of type and color
-				$ostrichWhoseTurnItIs = $this->getOstrichWhoseTurnItIs(); // get the ostrich whose turn it is
-
-				if($ostrichHoldingGarmentChosen != $ostrichWhoseTurnItIs)
-				{ // make sure the active player is discarding their own garment
-						throw new BgaUserException( self::_("You can only discard your own garments.") );
-				}
-
-				$garmentId = $this->getGarmentIdFromType($garmentType, $garmentColor);
-				$this->moveGarmentToPile($garmentId); // update the database putting it back in the pile and send notification to all players
-				$this->resetCliffPusher($ostrichHoldingGarmentChosen);
-
-				$this->updatePlayerScores(); // update player boards with current scores
-
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" ); // set the state now that moving is complete
-		}
-
-		function executeStealGarment($garmentType, $garmentColor)
-		{
-				self::checkAction( 'stealGarmentClick' ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php)
-
-				$ostrichHoldingGarmentChosen = $this->getOstrichHoldingGarment($garmentType, $garmentColor); // get the ostrich holding the garment of type and color
-				if(!$this->canOstrichBeStolenFrom($ostrichHoldingGarmentChosen))
-				{ // this ostrich cannot be stolen from
-						throw new BgaUserException( self::_("You can only steal off-colored garments from the ostrich you pushed off a cliff.") );
-				}
-
-				$murdererOfOstrichHoldingGarmentChosen = $this->getMurdererOfOstrich($ostrichHoldingGarmentChosen); // get the ostrich who pushed this ostrich off the cliff
-				$ostrichWhoseTurnItIs = $this->getOstrichWhoseTurnItIs(); // get the ostrich whose turn it is (the one stealing the garment)
-
-				if($murdererOfOstrichHoldingGarmentChosen != $ostrichWhoseTurnItIs)
-				{ // make sure the active player pushed the owner of that garment off a cliff
-						throw new BgaUserException( self::_("You can only steal from the ostrich you pushed off a cliff.") );
-				}
-
-				$garmentId = $this->getGarmentIdFromType($garmentType, $garmentColor);
-				$this->giveCrewmemberToSaucer($garmentId, $murdererOfOstrichHoldingGarmentChosen); // update the database giving it to the new player and send notification to all players
-				$this->resetCliffPusher($ostrichHoldingGarmentChosen);
-
-				// update stealing stats
-				$ownerOfOstrichStolenFrom = $this->getOwnerIdOfOstrich($ostrichHoldingGarmentChosen);
-				$ownerOfOstrichWhoIsStealing = $this->getOwnerIdOfOstrich($ostrichWhoseTurnItIs);
-				self::incStat( 1, 'garments_i_stole', $ownerOfOstrichWhoIsStealing );
-				self::incStat( 1, 'garments_stolen_from_me', $ownerOfOstrichStolenFrom );
-
-				$this->setOstrichToNotStealable($ostrichHoldingGarmentChosen); // set that the ostrich who had their garment stolen is no longer stealable so they don't get stolen from again
-
-				$this->updatePlayerScores(); // update player boards with current scores since someone may have gone up or down in points
-
-				if($this->getNextOstrichToStealFromValue() != 0)
-				{ // there is another ostrich off the cliff who needs a garment stolen or zigs drawn
-						$this->gamestate->nextState( "askStealOrDraw" ); // transition to ask if the player would like to steal a garment or draw a card
-				}
-				else
-				{
-						$this->gamestate->nextState( "endSaucerTurnCleanUp" ); // set the state now that moving is complete
-				}
-		}
-
 		// PURPOSE: The player is saying they would like to end their movement turn now.
 		// 					Everyone is down to a max of 1 trap card.
 		//          All garments have been replaced.
@@ -9920,7 +9856,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				{
 						return 0;
 				}
-
+//throw new feException( "cardId $cardId" );
 				return self::getUniqueValueFromDb("SELECT value_2 FROM `upgradeCards` WHERE card_id=$cardId LIMIT 1");
 		}
 
@@ -10883,6 +10819,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				// mark all crash penalties to 0
 				$this->resetCrashPenalties();
+
+				// reset value for who murdered a saucer
+				$this->resetAllCliffPushers();
 
 				// reset crewmember properties
 				$this->resetCrewmembers();

@@ -82,65 +82,58 @@ $stats_type = array(
                     "name" => totranslate("Rounds You Started"),
                     "type" => "int" ),
 
-        "zags_claimed" => array("id"=> 12,
-                    "name" => totranslate("Zags Claimed"),
+        "crewmembers_picked_up" => array("id"=> 12,
+                    "name" => totranslate("Crewmembers Picked Up"),
                     "type" => "int" ),
 
-        "traps_drawn" => array("id"=> 13,
-                    "name" => totranslate("Traps Drawn"),
+        "crewmembers_you_stole" => array("id"=> 13,
+                    "name" => totranslate("Crewmembers You Stole"),
                     "type" => "int" ),
 
-        "x_drawn" => array("id"=> 14,
-                    "name" => totranslate("delete me"),
+        "crewmembers_stolen_from_you" => array("id"=> 14,
+                    "name" => totranslate("Crewmembers Stolen from You"),
                     "type" => "int" ),
 
-        "ones_drawn" => array("id"=> 15,
-                    "name" => totranslate("delete me"),
+        "saucers_you_crashed" => array("id"=> 15,
+                    "name" => totranslate("Saucers You Crashed"),
                     "type" => "int" ),
 
-        "twos_drawn" => array("id"=> 16,
-                    "name" => totranslate("delete me"),
+        "times_you_were_crashed" => array("id"=> 16,
+                    "name" => totranslate("Times You Were Crashed"),
                     "type" => "int" ),
 
-        "threes_drawn" => array("id"=> 17,
-                    "name" => totranslate("delete me"),
+        "times_you_crashed_yourself" => array("id"=> 17,
+                    "name" => totranslate("Times You Crashed Yourself"),
                     "type" => "int" ),
 
-        "ran_off_cliff" => array("id"=> 18,
-                    "name" => totranslate("You Ran Off a Cliff"),
+        "2s_played" => array("id"=> 18,
+                    "name" => totranslate("2s Played"),
                     "type" => "int" ),
 
-        "pushed_ostrich_off_cliff" => array("id"=> 19,
-                    "name" => totranslate("You Pushed an Ostrich Off a Cliff"),
+        "3s_played" => array("id"=> 19,
+                    "name" => totranslate("3s Played"),
                     "type" => "int" ),
 
-        "was_pushed_off_cliff" => array("id"=> 20,
-                    "name" => totranslate("An Ostrich Pushed You Off a Cliff"),
+        "Xs_played" => array("id"=> 20,
+                    "name" => totranslate("0-5s Played"),
                     "type" => "int" ),
 
-        "pushed_an_ostrich" => array("id"=> 21,
-                    "name" => totranslate("You Pushed an Ostrich"),
+        "accelerators_used" => array("id"=> 21,
+                    "name" => totranslate("Accelerators Used"),
                     "type" => "int" ),
 
-        "was_pushed" => array("id"=> 22,
-                    "name" => totranslate("An Ostrich Pushed You"),
+        "distance_moved" => array("id"=> 22,
+                    "name" => totranslate("Distance Moved"),
                     "type" => "int" ),
 
-        "i_used_trap" => array("id"=> 23,
-                    "name" => totranslate("You Used a Trap"),
+        "upgrades_played" => array("id"=> 23,
+                    "name" => totranslate("Upgrades Played"),
                     "type" => "int" ),
 
-        "trap_used_on_me" => array("id"=> 24,
-                    "name" => totranslate("Trap Used on You"),
+        "upgrades_activated" => array("id"=> 24,
+                    "name" => totranslate("Upgrades Activated"),
                     "type" => "int" ),
 
-        "garments_i_stole" => array("id"=> 25,
-                    "name" => totranslate("Garments I Stole"),
-                    "type" => "int" ),
-
-        "garments_stolen_from_me" => array("id"=> 26,
-                    "name" => totranslate("Garments Stolen from Me"),
-                    "type" => "int" ),
 
 /*
         Examples:
