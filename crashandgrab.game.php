@@ -329,6 +329,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				self::initStat( 'player', 'Xs_played', 0 );
 
 				self::initStat( 'player', 'accelerators_used', 0 );
+				self::initStat( 'player', 'boosters_used', 0 );
+
 				self::initStat( 'player', 'distance_moved', 0 );
 				self::initStat( 'player', 'upgrades_played', 0 );
 				self::initStat( 'player', 'upgrades_activated', 0 );
@@ -426,9 +428,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// type_arg: probably don't need... should mimic card id
 
 				$cardsList = array(
-						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 8),
+						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 8),
+						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
@@ -440,7 +442,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 8),
+						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)
 				);
 
@@ -7080,6 +7082,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								'player_name' => $playerName
 						) );
 				}
+
+				// count how many times this saucer has gotten the probe
+				$ownerOfProbeOstrich = $this->getOwnerIdOfOstrich($ostrich);
+				self::incStat( 1, 'rounds_started', $ownerOfProbeOstrich );
 		}
 
 		function incrementAirlockExchangeable($crewmemberId)
@@ -8179,6 +8185,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 					'saucerColor' => $saucerWhoseTurnItIs
 				) );
 
+				// increment stat for picking up crewmembers
+				$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+				self::incStat( 1, 'crewmembers_picked_up', $ownerPickingUp );
+
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
@@ -9059,6 +9069,10 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 								'CREWMEMBERIMAGE' => 'CREWMEMBERIMAGE_'.$crewmemberType.'_'.$crewmemberColor
 							) );
 
+							// increment stat for picking up crewmembers
+							$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerMoving);
+							self::incStat( 1, 'crewmembers_picked_up', $ownerPickingUp );
+
 						}
 				}
 
@@ -9126,6 +9140,7 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 		function executeDirectionClick( $direction )
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs(); // you can only zag on your own turn
+				$ownerOfSaucerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
 
 				$currentState = $this->getStateName();
 
@@ -9143,6 +9158,8 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						$this->notifyPlayersOfBoosterUsage($saucerWhoseTurnItIs);
 						$this->decrementBoosterForSaucer($saucerWhoseTurnItIs); // must come after notification
 
+						self::incStat( 1, 'boosers_used', $ownerOfSaucerWhoseTurnItIs );
+
 						$this->gamestate->nextState( "executingMove" );
 						//$this->executeSaucerMove($saucerWhoseTurnItIs);
 				}
@@ -9155,6 +9172,8 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						$distanceType = $this->getSaucerDistanceType($saucerWhoseTurnItIs);
 						$cardId = $this->getMoveCardIdFromSaucerDistanceType($saucerWhoseTurnItIs, $distanceType);
 						$cardState = $this->getCardChosenState($cardId);
+
+						self::incStat( 1, 'accelerators_used', $ownerOfSaucerWhoseTurnItIs );
 
 						$this->gamestate->nextState( "executingMove" );
 						//$this->executeSaucerMove($saucerWhoseTurnItIs);
@@ -9753,7 +9772,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function rollRotationDie()
 		{
 				// if this is not the first round, set the player with the probe to go first
-
+//throw new feException( "test2" );
 				if($this->getNumberOfPlayers() > 2)
 				{ // we don't care about turn order in a 2-player game
 
@@ -9784,7 +9803,16 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						}
 
 				}
+				else
+				{ // more than 2 players
 
+						// roll the rotation die
+						$turnOrderInt = rand(0,1);
+
+						// set the turn order
+						$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+				}
+				
 				// tell all players a new round has started where they will send a random move card back of their opponents on to their mat
 
 		}
@@ -10668,6 +10696,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$distanceType = $this->getSaucerDistanceType($saucerWhoseTurnItIs); // 0=X, 1=2, 2=3
 				$direction = $this->getSaucerDirection($saucerWhoseTurnItIs); // sun
 				$saucerColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+				$ownerPlaying = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
 
 				$distanceString = $this->convertDistanceTypeToString($distanceType);
 
@@ -10679,8 +10708,18 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						'saucer_color_highlighted' => $saucerColorFriendly
 				) );
 
+				// update stats for cards used
+				if($distanceType == 0)
+					self::incStat( 1, '0-5s_played', $ownerPlaying );
+				elseif($distanceType == 1)
+					self::incStat( 1, '2s_played', $ownerPlaying );
+				elseif($distanceType == 2)
+					self::incStat( 1, '3s_played', $ownerPlaying );
+
 				if($distanceType == 0 && !$this->hasSaucerChosenX($saucerWhoseTurnItIs))
 				{ // saucer played an X and has not yet chosen its value
+
+						self::incStat( 1, 'Xs_played', $ownerPlaying );
 
 						// ask them to choose distance 0-5
 						$this->gamestate->nextState( "chooseDistanceDuringMoveReveal" );

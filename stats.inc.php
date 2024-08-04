@@ -122,15 +122,19 @@ $stats_type = array(
                     "name" => totranslate("Accelerators Used"),
                     "type" => "int" ),
 
-        "distance_moved" => array("id"=> 22,
+        "boosters_used" => array("id"=> 22,
+                    "name" => totranslate("Boosters Used"),
+                    "type" => "int" ),
+
+        "distance_moved" => array("id"=> 23,
                     "name" => totranslate("Distance Moved"),
                     "type" => "int" ),
 
-        "upgrades_played" => array("id"=> 23,
+        "upgrades_played" => array("id"=> 24,
                     "name" => totranslate("Upgrades Played"),
                     "type" => "int" ),
 
-        "upgrades_activated" => array("id"=> 24,
+        "upgrades_activated" => array("id"=> 25,
                     "name" => totranslate("Upgrades Activated"),
                     "type" => "int" ),
 
