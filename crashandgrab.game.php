@@ -4892,6 +4892,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$sql = "UPDATE upgradeCards SET times_activated_this_round=times_activated_this_round+1 WHERE ";
 				$sql .= "card_location='".$saucerColor."' AND card_type_arg=$collectorNumber AND card_is_played=1";
 				self::DbQuery( $sql );
+
+				// increase stat for activating
+				$ownerActivating = $this->getOwnerIdOfOstrich($saucerColor);
+				self::incStat( 1, 'upgrades_activated', $ownerActivating );
 		}
 
 		// Activated means the player has chosen to use it this round.
@@ -6415,6 +6419,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				//$moveEventList[0] = array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => 4, 'destination_Y' => 7);
 				//$moveEventList[1] = array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => 2, 'destination_Y' => 7);
 
+				$playerMoving = $this->getOwnerIdOfOstrich($saucerMoving);
+
 				// see if we are within 1 space of our other saucer
 				$this->checkIfPassedByOtherSaucer($saucerMoving, $currentX, $currentY);
 
@@ -6438,6 +6444,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							//		throw new feException("setSaucerXValue($saucerMoving, $thisX) with distance $distance");
 
 								$this->setSaucerXValue($saucerMoving, $thisX); // set X value for Saucer
+								self::incStat( 1, 'distance_moved', $playerMoving );
 
 								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
 								{ // we are moving because of blast off thrusters or landing legs
@@ -6578,6 +6585,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								throw new feException("The value at ($thisX, $currentY) is: $boardValue");*/
 
 								$this->setSaucerXValue($saucerMoving, $thisX); // set X value for Saucer
+								self::incStat( 1, 'distance_moved', $playerMoving );
 
 								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
 								{ // we are moving because of blast off thrusters or landing legs
@@ -6709,6 +6717,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$this->checkIfPassedByOtherSaucer($saucerMoving, $currentX, $thisY);
 
 								$this->setSaucerYValue($saucerMoving, $thisY); // set Y value for Saucer
+								self::incStat( 1, 'distance_moved', $playerMoving );
 
 								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
 								{ // we are moving because of blast off thrusters or landing legs
@@ -6836,6 +6845,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$this->checkIfPassedByOtherSaucer($saucerMoving, $currentX, $thisY);
 
 							  $this->setSaucerYValue($saucerMoving, $thisY); // set Y value for Saucer
+								self::incStat( 1, 'distance_moved', $playerMoving );
 
 								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
 								{ // we are moving because of blast off thrusters or landing legs
@@ -9414,6 +9424,9 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						$this->giveSaucerBooster($color);
 				}
 
+				$ownerPlaying = $this->getOwnerIdOfOstrich($playerId);
+				self::incStat( 1, 'upgrades_played', $ownerPlaying );
+
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
@@ -9786,11 +9799,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 								// let that player choose the direction
 								$this->gamestate->nextState( "askToRotationalStabilizer" );
-
-								// TODO: MOVE TO CLICK EVENT WHEN SOMEONE CHOOSES
-								// set it to that order
-								//self::setGameStateValue( 'TURN_ORDER', $rotationalStabilizerValue ); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
-
 						}
 						else
 						{ // usual case
@@ -9812,7 +9820,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						// set the turn order
 						$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 				}
-				
+
 				// tell all players a new round has started where they will send a random move card back of their opponents on to their mat
 
 		}

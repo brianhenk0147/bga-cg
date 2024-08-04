@@ -498,7 +498,7 @@
         self::ajaxResponse( );
     }
 
-    // The player has chosen a garment from the pile.
+    // The player has chosen a garment from the pile. 
     public function actReplaceGarmentChooseGarment()
     {
       self::setAjaxMode();
