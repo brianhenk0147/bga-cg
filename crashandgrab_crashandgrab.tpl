@@ -26,6 +26,19 @@
 -->
 <div id="board_area">
 
+  <div id="lost_crewmembers_column">
+      <div id="lost_crewmember_container">
+          <!-- BEGIN lost_crewmembers -->
+              <div class="available_garment_group">
+                  <div id="garment_holder_pilot_{PLAYER_COLOR}" class="garment_holder"></div>
+                  <div id="garment_holder_engineer_{PLAYER_COLOR}" class="garment_holder"></div>
+                  <div id="garment_holder_doctor_{PLAYER_COLOR}" class="garment_holder"></div>
+                  <div id="garment_holder_scientist_{PLAYER_COLOR}" class="garment_holder"></div>
+              </div>
+          <!-- END lost_crewmembers -->
+      </div>
+  </div>
+
   <div id="board_tile_column">
 
       <div id="outer_board">
@@ -1064,17 +1077,7 @@
       </div>
     </div> <!--outer_board-->
   </div> <!--board_tile_column -->
-  <div id="lost_crewmembers_and_move_cards">
-      <div id="lost_crewmember_container">
-          <!-- BEGIN lost_crewmembers -->
-              <div class="available_garment_group">
-                  <div id="garment_holder_pilot_{PLAYER_COLOR}" class="garment_holder"></div>
-                  <div id="garment_holder_engineer_{PLAYER_COLOR}" class="garment_holder"></div>
-                  <div id="garment_holder_doctor_{PLAYER_COLOR}" class="garment_holder"></div>
-                  <div id="garment_holder_scientist_{PLAYER_COLOR}" class="garment_holder"></div>
-              </div>
-          <!-- END lost_crewmembers -->
-      </div>
+  <div id="move_cards_column">
 
       <!-- BEGIN saucer -->
       <div class="mat_and_stuff_row transparent_background_{PLAYER_COLOR}">
