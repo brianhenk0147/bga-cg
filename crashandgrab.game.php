@@ -431,6 +431,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
+						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
@@ -439,10 +440,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Distress Signaler', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
+						//array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 10),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)
 				);
 
@@ -1143,7 +1144,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function resetAllUpgradeValues()
 		{
 				$sqlUpdate = "UPDATE upgradeCards SET ";
-				$sqlUpdate .= "value_1='0',value_2='0'";
+				$sqlUpdate .= "value_1='0',value_2='0',value_3='0',value_4='0'";
 
 				self::DbQuery( $sqlUpdate );
 		}
@@ -1693,6 +1694,39 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return $result;
 		}
 
+		function getPulseCannonSaucers()
+		{
+				$result = array();
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				$allOtherSaucers = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner
+																					 FROM ostrich WHERE ostrich_color<>'$saucerWhoseTurnItIs' ORDER BY ostrich_owner" );
+
+				$myRow = $this->getSaucerXLocation($saucerWhoseTurnItIs);
+				$myColumn = $this->getSaucerYLocation($saucerWhoseTurnItIs);
+
+				foreach( $allOtherSaucers as $saucer )
+				{
+						$saucerColor = $saucer['ostrich_color'];
+						$saucerColorText = $this->convertColorToText($saucerColor);
+
+						$saucerDetails = array();
+						$saucerDetails['saucerColor'] = $saucerColor;
+						$saucerDetails['saucerColorText'] = $saucerColorText;
+
+						$theirRow = $this->getSaucerXLocation($saucerColor);
+						$theirColumn = $this->getSaucerYLocation($saucerColor);
+
+						$isCrashed = $this->isSaucerCrashed($saucerColor);
+						if(!$isCrashed && ($myRow == $theirRow || $myColumn == $theirColumn))
+						{ // they are not crashed and they are in my row or column
+								array_push($result, $saucerDetails);
+						}
+				}
+
+				return $result;
+		}
+
 		function getAllSaucersByPlayer()
 		{
 				$result = array();
@@ -1748,6 +1782,15 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						$upgradeArray = array();
 						$upgradeArray['collectorNumber'] = 3;
 						$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(3);
+
+						array_push($result, $upgradeArray);
+				}
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon'))
+				{
+						$upgradeArray = array();
+						$upgradeArray['collectorNumber'] = 4;
+						$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(4);
 
 						array_push($result, $upgradeArray);
 				}
@@ -1813,6 +1856,15 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						return true;
 				}
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon') &&
+				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Pulse Cannon') < 2 &&
+					 $this->getAskedToActivateUpgrade($saucerColor, 'Pulse Cannon') == false)
+				{ // they have played this upgrade but they have not yet activated it
+
+						return true;
+				}
+
 
 				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Afterburner') &&
 				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Afterburner') < 1 &&
@@ -1915,6 +1967,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						case 3:
 								return clienttranslate( 'Afterburner');
 
+						case 4:
+								return clienttranslate( 'Pulse Cannon');
+
 						case 5:
 								return clienttranslate( 'Tractor Beam');
 
@@ -1975,6 +2030,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						case 3:
 								return clienttranslate( 'At the end of your turn, move onto any empty space in your row or column.');
 
+						// Pulse Cannon
+						case 4:
+								return clienttranslate( 'At the start and end of your turn, push any Saucers in your row or column 1 space away from you.');
+
 						// Tractor Beam
 						case 5:
 								return clienttranslate( 'At the end of your turn, pick up a Crewmember up to 2 spaces away from you.');
@@ -1993,7 +2052,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						// Scavenger Bot
 						case 10:
-								return clienttranslate( 'When your Saucer is located, take your Booster and an Energy.');
+								return clienttranslate( 'When your Saucer is placed, take your Booster and an Energy.');
 
 						// Distress Signaler
 						case 11:
@@ -2005,7 +2064,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						// Regeneration Gateway
 						case 13:
-								return clienttranslate( 'When your Saucer is located, you choose the Crash Site.');
+								return clienttranslate( 'When your Saucer is placed, you choose the Crash Site.');
 
 						// Phase Shifter
 						case 14:
@@ -2056,6 +2115,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result[3] = array();
 				$result[3]['name'] = $this->getUpgradeTitleFromCollectorNumber(3);
 				$result[3]['effect'] = $this->getUpgradeEffectFromCollectorNumber(3);
+
+				// Pulse Cannon
+				$result[4] = array();
+				$result[4]['name'] = $this->getUpgradeTitleFromCollectorNumber(4);
+				$result[4]['effect'] = $this->getUpgradeEffectFromCollectorNumber(4);
 
 				// Tractor Beam
 				$result[5] = array();
@@ -2379,6 +2443,25 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						}
 				}
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon') &&
+						$this->getUpgradeTimesActivatedThisRound($saucerColor, 'Pulse Cannon') < 1)
+				{ // they have played Pulse Cannon but they have not yet activated it this round
+
+						if(!$this->isSaucerCrashed($saucerColor))
+						{ // they are not crashed
+
+								$result[$index] = array();
+								$result[$index]['buttonId'] = 'upgradeButton_4';
+								$result[$index]['buttonLabel'] = $this->getUpgradeTitleFromCollectorNumber(4);
+								$result[$index]['hoverOverText'] = '';
+								$result[$index]['actionName'] = 'activateUpgrade';
+								$result[$index]['isDisabled'] = false;
+								$result[$index]['makeRed'] = false;
+
+								$index++;
+						}
+				}
+
 				return $result;
 		}
 
@@ -2407,9 +2490,28 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						}
 				}
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon') &&
+						$this->getUpgradeTimesActivatedThisRound($saucerColor, 'Pulse Cannon') < 1)
+				{ // they have played Pulse Cannon but they have not yet activated it this round
+
+						if(!$this->isSaucerCrashed($saucerColor))
+						{ // they are not crashed
+
+								$result[$index] = array();
+								$result[$index]['buttonId'] = 'upgradeButton_4';
+								$result[$index]['buttonLabel'] = $this->getUpgradeTitleFromCollectorNumber(4);
+								$result[$index]['hoverOverText'] = '';
+								$result[$index]['actionName'] = 'activateUpgrade';
+								$result[$index]['isDisabled'] = false;
+								$result[$index]['makeRed'] = false;
+
+								$index++;
+						}
+				}
+
 				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Afterburner') &&
 						$this->getUpgradeTimesActivatedThisRound($saucerColor, 'Afterburner') < 1)
-				{ // they have played Wormhold Generator but they have not yet activated it this round
+				{ // they have played Afterburner but they have not yet activated it this round
 
 						if(!$this->isSaucerCrashed($saucerColor))
 						{ // they are not crashed
@@ -4845,6 +4947,16 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array_push($result, $upgradeArray);
 				}
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon'))
+				{
+					//throw new feException( "Pulse Cannon ");
+						$upgradeArray = array();
+						$upgradeArray['collectorNumber'] = 4;
+						$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(4);
+
+						array_push($result, $upgradeArray);
+				}
+
 				return $result;
 		}
 
@@ -6426,6 +6538,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				// get the type of movement we're doing
 				$moveType = $this->getMoveTypeWeAreExecuting();
+				//throw new feException("moveType:$moveType");
 
 				if($this->LEFT_DIRECTION == $direction)
 				{ // we're traveling from right to left
@@ -6446,7 +6559,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$this->setSaucerXValue($saucerMoving, $thisX); // set X value for Saucer
 								self::incStat( 1, 'distance_moved', $playerMoving );
 
-								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
+								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs" && $moveType != "Pulse Cannon")
 								{ // we are moving because of blast off thrusters or landing legs
 										// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
 										$this->incrementSpacesMoved($saucerMoving);
@@ -6587,7 +6700,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$this->setSaucerXValue($saucerMoving, $thisX); // set X value for Saucer
 								self::incStat( 1, 'distance_moved', $playerMoving );
 
-								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
+								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs" && $moveType != "Pulse Cannon")
 								{ // we are moving because of blast off thrusters or landing legs
 										// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
 										$this->incrementSpacesMoved($saucerMoving);
@@ -6719,7 +6832,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$this->setSaucerYValue($saucerMoving, $thisY); // set Y value for Saucer
 								self::incStat( 1, 'distance_moved', $playerMoving );
 
-								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
+								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs" && $moveType != "Pulse Cannon")
 								{ // we are moving because of blast off thrusters or landing legs
 										// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
 										$this->incrementSpacesMoved($saucerMoving);
@@ -6847,7 +6960,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							  $this->setSaucerYValue($saucerMoving, $thisY); // set Y value for Saucer
 								self::incStat( 1, 'distance_moved', $playerMoving );
 
-								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs")
+								if($moveType != "Blast Off Thrusters" && $moveType != "Landing Legs" && $moveType != "Pulse Cannon")
 								{ // we are moving because of blast off thrusters or landing legs
 										// we have moved a space so we need to update that in the database so we know when we have moved all our spaces
 										$this->incrementSpacesMoved($saucerMoving);
@@ -7998,6 +8111,80 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
+		function executePulseCannonSelectSaucer($saucerColor)
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$mySaucerX = $this->getSaucerXLocation($saucerWhoseTurnItIs);
+				$mySaucerY = $this->getSaucerYLocation($saucerWhoseTurnItIs);
+
+				$chosenSaucerX = $this->getSaucerXLocation($saucerColor);
+				$chosenSaucerY = $this->getSaucerYLocation($saucerColor);
+
+				$cardId = $this->getUpgradeCardId($saucerWhoseTurnItIs, "Pulse Cannon");
+
+//throw new feException( "cardId:$cardId with saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerColor:$saucerColor");
+				$this->setUpgradeValue1($cardId, 1); // 1 distance
+				$this->setUpgradeValue4($cardId, $saucerColor); // save the saucer we are pushing
+
+				if($mySaucerX == $chosenSaucerX)
+				{ // the saucer is on my row
+
+						if($mySaucerY < $chosenSaucerY)
+						{	// i am lower than the saucer
+								$this->setPushedOnSaucerTurn($saucerColor, $saucerWhoseTurnItIs);
+
+								$this->setUpgradeValue2($cardId, $this->DOWN_DIRECTION);
+
+
+								//$this->setPushedDistance($saucerColor, 1);
+								//$this->setPushedDirection($saucerColor, $this->UP_DIRECTION);
+
+						}
+						else
+						{ // i am higher than the saucer
+								$this->setPushedOnSaucerTurn($saucerColor, $saucerWhoseTurnItIs);
+
+								$this->setUpgradeValue2($cardId, $this->UP_DIRECTION);
+
+
+								//$this->setPushedDistance($saucerColor, 1);
+								//$this->setPushedDirection($saucerColor, $this->DOWN_DIRECTION);
+						}
+				}
+				elseif($mySaucerY == $chosenSaucerY)
+				{ // the saucer is on my column
+
+						if($mySaucerX < $chosenSaucerX)
+						{	// i am to the left of the saucer
+								$this->setPushedOnSaucerTurn($saucerColor, $saucerWhoseTurnItIs);
+
+								$this->setUpgradeValue2($cardId, $this->RIGHT_DIRECTION);
+
+								//$this->setPushedDistance($saucerColor, 1);
+								//$this->setPushedDirection($saucerColor, $this->RIGHT_DIRECTION);
+						}
+						else
+						{ // i am to the right of the saucer
+								$this->setPushedOnSaucerTurn($saucerColor, $saucerWhoseTurnItIs);
+
+								$this->setUpgradeValue2($cardId, $this->LEFT_DIRECTION);
+
+
+								//$this->setPushedDistance($saucerColor, 1);
+								//$this->setPushedDirection($saucerColor, $this->LEFT_DIRECTION);
+						}
+				}
+
+				// update the X and Y and notify all players
+				//$this->placeSaucerOnSpace($saucerColor, $mySaucerX, $mySaucerY);
+				//$this->placeSaucerOnSpace($saucerWhoseTurnItIs, $chosenSaucerX, $chosenSaucerY);
+
+				// mark that we have activated it
+				$this->activateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, 4);
+
+				$this->gamestate->nextState( "executingMove" );
+		}
+
 		function executeEnergyRewardSelection($saucerCrashed)
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -8594,6 +8781,9 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 
 				!$this->isValidMove($saucer1Color, $saucer1Distance, $saucer1Direction, $saucer2Color, $saucer2Distance, $saucer2Direction, true); // validate the move in different ways and throw an error if any failures
 
+				// reset whether we've asked about upgrades so you can use upgrades both before and after your turn (Pulse Cannon)
+				$this->resetAllUpgradesActivatedThisRound();
+
 				$playerConfirming = $this->getOwnerIdOfOstrich($saucer1Color);
 
 				// save the move card and direction we used
@@ -8905,6 +9095,7 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				$distance = $this->getSaucerDistance($saucerMoving);
 				$spacesMoved = $this->getSpacesMoved($saucerMoving);
 				$spacesLeft = $distance - $spacesMoved;
+//throw new feException( "distance:$distance spacesMoved:$spacesMoved spacesLeft:$spacesLeft");
 
 				// figure out which type of move this is
 				$moveType = $this->getMoveTypeWeAreExecuting();
@@ -8932,6 +9123,47 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 
 						// decide the state to go to after the move
 						$this->setState_AfterMovementEvents($saucerMoving, $moveType);
+				}
+				elseif($moveType == 'Pulse Cannon')
+				{ // the moved because they had Pulse Cannon
+						$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+						$stateUsedIn = $this->getUpgradeValue3($saucerWhoseTurnItIs, "Pulse Cannon");
+
+						// get the saucer we pushed with pulse cannon
+						$pushedSaucer = $this->getUpgradeValue4($saucerWhoseTurnItIs, "Pulse Cannon");
+
+						//throw new feException( "executeSaucerMove Pulse Cannon saucerWhoseTurnItIs:$saucerWhoseTurnItIs stateUsedIn:$stateUsedIn pushedSaucer:$pushedSaucer");
+
+						// reset the upgrade value_1 and value_2 for all saucers so we know movement upgrades have been used already
+						$this->resetAllUpgradeValues();
+
+						// must set the pushed_on_saucer_turn to empty string so we know that this saucer is not moving on the next movement execution
+						$this->setPushedOnSaucerTurn($pushedSaucer, '');
+
+						if($stateUsedIn == "askWhichStartOfTurnUpgradeToUse")
+						{ // this was used at start of turn
+
+								// decide the state to go to after the move
+								$countOfStartOfTurnUpgrades = count($this->getAllStartOfTurnUpgradesToActivateForSaucer($saucerWhoseTurnItIs));
+								//throw new feException( "countOfStartOfTurnUpgrades:$countOfStartOfTurnUpgrades");
+								if($countOfStartOfTurnUpgrades > 0)
+								{ // saucer has at least one start of turn upgrade active
+				//throw new feException( "checkStartOfTurnUpgrades true");
+										// ask which one they want to use or if they want to skip
+										$this->gamestate->nextState( "askWhichStartOfTurnUpgradeToUse" );
+								}
+								else
+								{ // no start of turn upgrades active
+
+										$this->gamestate->nextState( "checkForRevealDecisions" );
+								}
+						}
+						else
+						{ // we used it at end of turn
+
+								// decide the state to go to after the move
+								$this->setState_AfterMovementEvents($saucerMoving, $moveType);
+						}
 				}
 				elseif($moveType == 'Blast Off Thrusters')
 				{ // the moved because they had Blast Off Thrusters
@@ -8980,6 +9212,10 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				elseif($this->getUpgradeValue2($saucerColor, "Landing Legs") != 0)
 				{
 						$moveType = 'Landing Legs';
+				}
+				elseif($this->getUpgradeValue2($saucerColor, "Pulse Cannon") != 0)
+				{ // we have set the direction for a pulse cannon push
+						$moveType = 'Pulse Cannon';
 				}
 				elseif($this->getUpgradeValue2($saucerColor, "Afterburner") != 0)
 				{
@@ -9092,6 +9328,10 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 		function getMovingEvents( $saucerMoving )
 		{
 				$allEvents = array();
+
+				// if the saucer moving was pushed, it's a different saucer whose turn it is and sometimes we need to know this
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
 				//self::debug( "getMovingEvents saucerMoving:$saucerMoving" );
 
 				$originalDistance = $this->getSaucerDistance($saucerMoving); //2, 3, 5, etc
@@ -9116,10 +9356,10 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 
 				$moveType = $this->getMoveTypeWeAreExecuting();
 				//throw new feException( "moveType:$moveType");
-				if($moveType == 'Landing Legs' || $moveType == 'Blast Off Thrusters')
+				if($moveType == 'Landing Legs' || $moveType == 'Blast Off Thrusters' || $moveType == 'Pulse Cannon')
 				{ // we are moving from a start or end of turn upgrade
-						$distance = $this->getUpgradeValue1($saucerMoving, $moveType);
-						$direction = $this->getUpgradeValue2($saucerMoving, $moveType);
+						$distance = $this->getUpgradeValue1($saucerWhoseTurnItIs, $moveType);
+						$direction = $this->getUpgradeValue2($saucerWhoseTurnItIs, $moveType);
 
 						//throw new feException( "distance:$distance direction:$direction");
 				}
@@ -9168,7 +9408,7 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						$this->notifyPlayersOfBoosterUsage($saucerWhoseTurnItIs);
 						$this->decrementBoosterForSaucer($saucerWhoseTurnItIs); // must come after notification
 
-						self::incStat( 1, 'boosers_used', $ownerOfSaucerWhoseTurnItIs );
+						self::incStat( 1, 'boosters_used', $ownerOfSaucerWhoseTurnItIs );
 
 						$this->gamestate->nextState( "executingMove" );
 						//$this->executeSaucerMove($saucerWhoseTurnItIs);
@@ -9306,7 +9546,14 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 
 				$this->setAskedToActivateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, $collectorNumber);
 
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				if($this->doesPlayerHaveAnyEndOfTurnUpgradesToActivate($saucerWhoseTurnItIs))
+				{ // see if they want to use any end of turn upgrades
+						$this->gamestate->nextState( "askWhichEndOfTurnUpgradeToUse" );
+				}
+				else
+				{
+						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				}
 		}
 
 		// skip a single start of turn upgrade after you chose to activate it
@@ -9317,7 +9564,18 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 
 				$this->setAskedToActivateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, $collectorNumber);
 
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				$countOfStartOfTurnUpgrades = count($this->getAllStartOfTurnUpgradesToActivateForSaucer($saucerWhoseTurnItIs));
+				if($countOfStartOfTurnUpgrades > 0)
+				{ // saucer has at least one start of turn upgrade active
+//throw new feException( "checkStartOfTurnUpgrades true");
+						// ask which one they want to use or if they want to skip
+						$this->gamestate->nextState( "askWhichStartOfTurnUpgradeToUse" );
+				}
+				else
+				{ // no start of turn upgrades active
+
+						$this->gamestate->nextState( "checkForRevealDecisions" );
+				}
 		}
 
 		function executeActivateUpgrade($collectorNumber)
@@ -9341,6 +9599,19 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				{ // Afterburner
 
 						$this->gamestate->nextState( "chooseAfterburnerSpace" );
+				}
+				elseif($collectorNumber == 4)
+				{ // Pulse Cannon
+						$cardId = $this->getUpgradeCardId($saucerWhoseTurnItIs, "Pulse Cannon");
+						$currentState = $this->getStateName();
+
+						//throw new feException( "setting cardId $cardId value1 to 1 and value 2 to $direction" );
+
+						// save the state name so we know we used pulse cannon this turn and we know whether we did it
+						// at the before or after we move so we know which state to go in afterwards
+						$this->setUpgradeValue3($cardId, $currentState);
+
+						$this->gamestate->nextState( "chooseSaucerPulseCannon" );
 				}
 				elseif($collectorNumber == 5)
 				{ // Tractor Beam
@@ -9424,8 +9695,8 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 						$this->giveSaucerBooster($color);
 				}
 
-				$ownerPlaying = $this->getOwnerIdOfOstrich($playerId);
-				self::incStat( 1, 'upgrades_played', $ownerPlaying );
+				// increase stat for how many upgrades have been played
+				self::incStat( 1, 'upgrades_played', $playerId );
 
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
@@ -9896,6 +10167,30 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				return self::getUniqueValueFromDb("SELECT value_2 FROM `upgradeCards` WHERE card_id=$cardId LIMIT 1");
 		}
 
+		function getUpgradeValue3($saucerColor, $upgradeNameOrCollectorNumber)
+		{
+				$cardId = $this->getUpgradeCardId($saucerColor, $upgradeNameOrCollectorNumber);
+
+				if($cardId == 0 || $cardId == '' || is_null($cardId))
+				{
+						return 0;
+				}
+//throw new feException( "cardId $cardId" );
+				return self::getUniqueValueFromDb("SELECT value_3 FROM `upgradeCards` WHERE card_id=$cardId LIMIT 1");
+		}
+
+		function getUpgradeValue4($saucerColor, $upgradeNameOrCollectorNumber)
+		{
+				$cardId = $this->getUpgradeCardId($saucerColor, $upgradeNameOrCollectorNumber);
+
+				if($cardId == 0 || $cardId == '' || is_null($cardId))
+				{
+						return 0;
+				}
+//throw new feException( "cardId $cardId" );
+				return self::getUniqueValueFromDb("SELECT value_4 FROM `upgradeCards` WHERE card_id=$cardId LIMIT 1");
+		}
+
 		function setUpgradeValue1($cardId, $newValue)
 		{
 				$sqlUpdate = "UPDATE upgradeCards SET ";
@@ -9909,6 +10204,24 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 				$sqlUpdate = "UPDATE upgradeCards SET ";
 				$sqlUpdate .= "value_2='$newValue' WHERE ";
+				$sqlUpdate .= "card_id=$cardId";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function setUpgradeValue3($cardId, $newValue)
+		{
+				$sqlUpdate = "UPDATE upgradeCards SET ";
+				$sqlUpdate .= "value_3='$newValue' WHERE ";
+				$sqlUpdate .= "card_id=$cardId";
+
+				self::DbQuery( $sqlUpdate );
+		}
+
+		function setUpgradeValue4($cardId, $newValue)
+		{
+				$sqlUpdate = "UPDATE upgradeCards SET ";
+				$sqlUpdate .= "value_4='$newValue' WHERE ";
 				$sqlUpdate .= "card_id=$cardId";
 
 				self::DbQuery( $sqlUpdate );
@@ -10056,6 +10369,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Afterburner":
 								return 3;
 
+						case "Pulse Cannon":
+								return 4;
+
 						case "Tractor Beam":
 								return 5;
 
@@ -10124,6 +10440,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Afterburner":
 						case 3:
 								$sql .= " AND card_type_arg=3";
+								break;
+
+						case "Pulse Cannon":
+						case 4:
+								$sql .= " AND card_type_arg=4";
 								break;
 
 						case "Tractor Beam":
@@ -10235,6 +10556,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=3";
 								break;
 
+						case "Pulse Cannon":
+						case 4:
+								$sql .= " AND card_type_arg=4";
+								break;
+
 						case "Tractor Beam":
 						case 5:
 								$sql .= " AND card_type_arg=5";
@@ -10343,6 +10669,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=3";
 								break;
 
+						case "Pulse Cannon":
+						case 4:
+								$sql .= " AND card_type_arg=4";
+								break;
+
 						case "Tractor Beam":
 						case 5:
 								$sql .= " AND card_type_arg=5";
@@ -10439,6 +10770,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Afterburner":
 						case 3:
 								$sql .= " AND card_type_arg=3";
+								break;
+
+						case "Pulse Cannon":
+						case 4:
+								$sql .= " AND card_type_arg=4";
 								break;
 
 						case "Tractor Beam":
@@ -10708,6 +11044,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				$distanceString = $this->convertDistanceTypeToString($distanceType);
 
+				// reset whether we've asked about upgrades so you can use upgrades both before and after your turn (Pulse Cannon)
+				$this->resetAllUpgradesActivatedThisRound();
+
 				self::notifyAllPlayers( "cardRevealed", clienttranslate( '${saucer_color_highlighted} revealed a ${distance_string} in the ${direction} direction.' ), array(
 						'saucer_color' => $saucerWhoseTurnItIs,
 						'distance_type' => $distanceType,
@@ -10718,7 +11057,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				// update stats for cards used
 				if($distanceType == 0)
-					self::incStat( 1, '0-5s_played', $ownerPlaying );
+					self::incStat( 1, 'Xs_played', $ownerPlaying );
 				elseif($distanceType == 1)
 					self::incStat( 1, '2s_played', $ownerPlaying );
 				elseif($distanceType == 2)
@@ -10726,8 +11065,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				if($distanceType == 0 && !$this->hasSaucerChosenX($saucerWhoseTurnItIs))
 				{ // saucer played an X and has not yet chosen its value
-
-						self::incStat( 1, 'Xs_played', $ownerPlaying );
 
 						// ask them to choose distance 0-5
 						$this->gamestate->nextState( "chooseDistanceDuringMoveReveal" );
@@ -11185,6 +11522,31 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				return array(
 						'startOfTurnUpgradesToActivate' => self::getStartOfTurnUpgradesToActivateForSaucer($saucerWhoseTurnItIs)
+				);
+		}
+
+		function argGetPulseCannonSaucers()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(4);
+
+				$validSaucers = self::getPulseCannonSaucers();
+				$stateUsedIn = $this->getUpgradeValue3($saucerWhoseTurnItIs, "Pulse Cannon"); // askWhichStartOfTurnUpgradeToUse
+				$stateUsedInShort = "EndOfTurn";
+				if($stateUsedIn == "askWhichStartOfTurnUpgradeToUse")
+				{
+						$stateUsedInShort = "StartOfTurn";
+				}
+
+				//throw new feException( "stateUsedIn: $stateUsedIn" );
+
+				// return both the location of all the
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
+						'upgradeName' => $upgradeName,
+						'validSaucers' => $validSaucers,
+						'stateUsedIn' => $stateUsedInShort
 				);
 		}
 

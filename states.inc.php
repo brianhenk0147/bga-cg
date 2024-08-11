@@ -294,7 +294,7 @@ $machinestates = array(
         "description" => clienttranslate('Starting player turn...'),
         "type" => "game",
         "action" => "playerTurnStart",
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array( "chooseWhichSaucerGoesFirst" => 26, "saucerTurnStart" => 27 )
     ),
 
@@ -360,7 +360,7 @@ $machinestates = array(
         "description" => clienttranslate('Checking for reveal decisions...'),
         "type" => "game",
         "action" => "checkForRevealDecisions",
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32, "chooseWhetherToHyperdrive" => 45, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70 )
     ),
 
@@ -400,7 +400,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetStartOfTurnUpgradesToActivate',
         "possibleactions" => array( "skipActivateUpgrade", "activateUpgrade" ),
-        "transitions" => array( "checkForRevealDecisions" => 38, "chooseBlastOffThrusterSpace" => 60  )
+        "transitions" => array( "checkForRevealDecisions" => 38, "chooseBlastOffThrusterSpace" => 60, "chooseSaucerPulseCannon" => 69  )
     ),
 
     43 => array(
@@ -479,7 +479,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
         "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64, "chooseSaucerPulseCannon" => 69 )
     ),
 
     54 => array(
@@ -519,7 +519,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetTakeableCrewmembers',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49, "endGame" => 99 )
     ),
 
     58 => array(
@@ -621,7 +621,7 @@ $machinestates = array(
         "transitions" => array(  "executingMove" => 70 )
     ),
 
-    67 => array(
+    68 => array(
         "name" => "askToRotationalStabilizer",
         "description" => clienttranslate('${saucerColor} is choosing the turn direction.'),
         "descriptionmyturn" => clienttranslate('Rotational Stabilizer: Which order should the turn direction go?'),
@@ -631,6 +631,16 @@ $machinestates = array(
         "transitions" => array(  "playerTurnStart" => 29 )
     ),
 
+    69 => array(
+        "name" => "chooseSaucerPulseCannon",
+        "description" => clienttranslate('${actplayer} is generating a wormhole.'),
+        "descriptionmyturn" => clienttranslate('Pulse Cannon: Which Saucer will you push?'),
+        "type" => "activeplayer",
+        'args' => 'argGetPulseCannonSaucers',
+        "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "executingMove" => 70, "checkStartOfTurnUpgrades" => 24, "checkForRevealDecisions" => 38 )
+    ),
+
     70 => array(
         "name" => "executingMove",
         "description" => clienttranslate('executingMove state.'),
@@ -638,7 +648,8 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeMove",
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "endGame" => 99 )
+        "updateGameProgression" => true,
+        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "endGame" => 99 )
     ),
 
 

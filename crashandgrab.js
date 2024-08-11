@@ -907,12 +907,16 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     var htmlIdOfButton = evt.currentTarget.id; // wormhole_saucer_button_01b508
                     var type = htmlIdOfButton.split('_')[0]; // wormhole
                     var saucerColor = htmlIdOfButton.split('_')[3]; // b92bba
-                    console.log( "A saucer button was clicked during wormhole generation activation with node "+htmlIdOfButton+"." );
+                    console.log( "A saucer button was clicked during wormhole generation or pulse cannon activation with node "+htmlIdOfButton+"." );
 
                     switch(type)
                     {
                         case 'wormhole':
                             this.ajaxcall( "/crashandgrab/crashandgrab/actWormholeSelectSaucer.html", { saucerColor: saucerColor, lock: true }, this, function( result ) {}, function( is_error ) {} );
+                        break;
+
+                        case 'pulse':
+                            this.ajaxcall( "/crashandgrab/crashandgrab/actPulseCannonSelectSaucer.html", { saucerColor: saucerColor, lock: true }, this, function( result ) {}, function( is_error ) {} );
                         break;
                     }
                 },
@@ -1988,6 +1992,39 @@ this.unhighlightAllGarments();
 
                       }
 
+                  break;
+
+                  case 'chooseSaucerPulseCannon':
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+                          var saucerButtonList = args.validSaucers;
+                          var stateUsedIn = args.stateUsedIn; // EndOfTurn or StartOfTurn
+
+                          const saucerButtonKeys = Object.keys(saucerButtonList);
+                          for (const buttonKey of saucerButtonKeys)
+                          { // go through each button
+
+                              var color = saucerButtonList[buttonKey]['saucerColor'];
+                              var buttonLabel = saucerButtonList[buttonKey]['saucerColorText'];
+                              var isDisabled = false;
+                              var hoverOverText = ''; // hover over text or '' if we don't want a hover over
+                              var actionName = 'saucerButtonClick'; // selectSaucerToGoFirst
+                              var makeRed = false;
+
+                              //this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
+                              this.addActionButton( 'pulse_saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_saucerButtonClick', null, null, 'gray');
+                          }
+
+                          // add a skip button in case they do not want to activate an available upgrade
+                          var skipActivateUpgradeButtonLabel = 'Skip';
+                          var skipActivateUpgradeIsDisabled = false;
+                          var skipActivateUpgradeHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                          var skipActivateUpgradeActionName = 'skipActivateSpecificEndOfTurnUpgrade'; // such as selectSaucerToGoFirst
+                          var skipActivateUpgradeMakeRed = true;
+                          //this.addButtonToActionBar(skipActivateUpgradeButtonLabel, skipActivateUpgradeIsDisabled, skipActivateUpgradeHoverOverText, skipActivateUpgradeActionName, skipActivateUpgradeMakeRed);
+                          this.addActionButton( 'skipButton_4', _('Skip'), 'onClick_skipActivateSpecific'+stateUsedIn+'Upgrade', null, false, 'red' );
+
+                      }
                   break;
 
                   case 'endRoundPlaceCrashedSaucer':
@@ -6017,6 +6054,24 @@ console.log("success... onClickUpgradeCardInHand");
 
             // update the player board with the value of how many boosters
             this.energy_counters[saucerColorPlayingCard].setValue(energyQuantity);
+
+            // remove 2 energy cubes
+            var firstEnergyInteger = +energyQuantity + +1;
+            var firstEnergy = "energy_"+saucerColorPlayingCard+"_"+firstEnergyInteger;
+            console.log("firstEnergy:"+firstEnergy);
+            if( $(firstEnergy ) )
+            { // it exists
+                dojo.destroy(firstEnergy);
+            }
+
+            var secondEnergyInteger = +energyQuantity + +2;
+            var secondEnergy = "energy_"+saucerColorPlayingCard+"_"+secondEnergyInteger;
+            console.log("secondEnergy:"+secondEnergy);
+            if( $(secondEnergy ) )
+            { // it exists
+                dojo.destroy(secondEnergy);
+            }
+
 
             this.playUpgradeCard(saucerColorPlayingCard, playerPlayingCard, collectorNumber, cardInHandDatabaseId);
         },

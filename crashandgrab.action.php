@@ -144,6 +144,15 @@
         self::ajaxResponse( );
     }
 
+    public function actPulseCannonSelectSaucer()
+    {
+        self::setAjaxMode();
+        $saucerColor = self::getArg( "saucerColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executePulseCannonSelectSaucer( $saucerColor );
+        self::ajaxResponse( );
+    }
+
     public function actExecuteChooseCrashSite()
     {
         self::setAjaxMode();
@@ -498,7 +507,7 @@
         self::ajaxResponse( );
     }
 
-    // The player has chosen a garment from the pile. 
+    // The player has chosen a garment from the pile.
     public function actReplaceGarmentChooseGarment()
     {
       self::setAjaxMode();
