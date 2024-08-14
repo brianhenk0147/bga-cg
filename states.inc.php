@@ -267,7 +267,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "rollRotationDie",
         "updateGameProgression" => true,
-        "transitions" => array( "playerTurnStart" => 29, "askToRotationalStabilizer" => 67 )
+        "transitions" => array( "playerTurnStart" => 29, "askToRotationalStabilizer" => 68 )
     ),
 
     26 => array(

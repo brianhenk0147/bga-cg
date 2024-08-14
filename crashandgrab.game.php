@@ -5066,7 +5066,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		// crashed state. Return '' when there are none.
 		function getSaucerThatCrashed()
 		{
-				$saucerWithProbe = $this->getOstrichWithCrown();
+				$saucerWithProbe = $this->getSaucerWithProbe();
 				$ownerOfSaucerWithProbe = $this->getOwnerIdOfOstrich($saucerWithProbe);
 
 				$player = $ownerOfSaucerWithProbe; // start with the player who has the probe
@@ -7093,7 +7093,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 		}
 
-		function getOstrichWithCrown()
+		function getSaucerWithProbe()
 		{
 				return self::getUniqueValueFromDb("SELECT ostrich_color FROM ostrich WHERE ostrich_has_crown=1");
 		}
@@ -7171,7 +7171,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		function giveProbe($ostrich)
 		{
-				$ostrichWithCrown = $this->getOstrichWithCrown();
+				$ostrichWithCrown = $this->getSaucerWithProbe();
 
 				$playerName = $this->getOwnerNameOfOstrich($ostrich);
 
@@ -10077,7 +10077,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								// roll the rotation die
 								$turnOrderInt = rand(0,1);
 
-								// set the turn order
+								// set the turn order and go to playerTurnStart state
 								$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 						}
 
@@ -10088,7 +10088,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						// roll the rotation die
 						$turnOrderInt = rand(0,1);
 
-						// set the turn order
+						// set the turn order and go to playerTurnStart state
 						$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 				}
 

@@ -1632,7 +1632,6 @@ this.unhighlightAllGarments();
 
                   case 'askToRotationalStabilizer':
 
-
                       if ( this.isCurrentPlayerActive() )
                       { // we are the active player
 
