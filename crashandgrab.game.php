@@ -4166,12 +4166,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				self::DbQuery( $sql );
 		}
 
-		function setGarmentLocation($garmentId, $newLocation)
-		{
-				$sql = "UPDATE garment SET garment_location='$newLocation' WHERE garment_id=$garmentId";
-				self::DbQuery( $sql );
-		}
-
 		// Returns the number of saucers each player controls.
 		function getSaucersPerPlayer()
 		{
@@ -4577,6 +4571,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						'acquiringOstrichOwnerName' => self::getPlayerNameById($acquiringPlayer)
 				) );
 */
+				$this->updatePlayerScores(); // update the player boards with current scores
+
 		}
 
 		function moveGarmentToPile($garmentId)
@@ -6574,7 +6570,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
 										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
-										$this->updatePlayerScores(); // update the player boards with current scores
+
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
 										{ // they have Airlock
@@ -6714,7 +6710,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
 										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
-										$this->updatePlayerScores(); // update the player boards with current scores
+
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
 										{ // they have Airlock
@@ -6846,7 +6842,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
 										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
-										$this->updatePlayerScores(); // update the player boards with current scores
+
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
 										{ // they have Airlock
@@ -6974,7 +6970,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
 										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
-										$this->updatePlayerScores(); // update the player boards with current scores
+
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock"))
 										{ // they have Airlock
@@ -8031,6 +8027,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 				else if($boardValue == "S")
 				{ // the saucer onto an accelerator on their turn
+					//throw new feException("accelerator");
 						$this->gamestate->nextState( "chooseAcceleratorDirection" ); // need to ask the player which direction they want to go on the skateboard
 				}
 				else if($this->canSaucerBoost($saucerWhoseTurnItIs) && $this->getSkippedBoosting($saucerWhoseTurnItIs) == 0 && $moveType == 'regular')
@@ -8367,7 +8364,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->giveCrewmemberToSaucer($crewmemberId, $saucerWhoseTurnItIs); // give the garment to the ostrich (set garment_location to the color)
 				//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 				//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
-				$this->updatePlayerScores(); // update the player boards with current scores
+
 
 				$crewmemberColor = $this->getCrewmemberColorFromId($crewmemberId);
 				$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($crewmemberId);
@@ -8386,7 +8383,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
 				self::incStat( 1, 'crewmembers_picked_up', $ownerPickingUp );
 
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				if($this->isEndGameConditionMet())
+				{ // the game has ended
+						$this->gamestate->nextState( "endGame" );
+				}
+				else
+				{
+						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				}
 		}
 
 		// Called when a player chooses a Distress Signaler crewmember to TAKE.
@@ -8410,7 +8414,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->giveCrewmemberToSaucer($crewmemberId, $saucerWhoseTurnItIs); // give the garment to the ostrich (set garment_location to the color)
 				//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 				//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
-				$this->updatePlayerScores(); // update the player boards with current scores
+
 
 				$crewmemberColor = $this->getCrewmemberColorFromId($crewmemberId);
 				$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($crewmemberId);
@@ -8453,7 +8457,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 //throw new feException( "giving crewmember $crewmemberGivenId to saucer $saucerHoldingTakenCrewmember");
 						$this->giveCrewmemberToSaucer($crewmemberGivenId, $saucerHoldingTakenCrewmember);
-						$this->updatePlayerScores(); // update the player boards with current scores
+
 
 						$crewmemberColor = $this->getCrewmemberColorFromId($crewmemberGivenId);
 						$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($crewmemberGivenId);
@@ -8468,7 +8472,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							'saucerColor' => $saucerHoldingTakenCrewmember
 						) );
 
-						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+						if($this->isEndGameConditionMet())
+						{ // the game has ended
+								$this->gamestate->nextState( "endGame" );
+						}
+						else
+						{
+								$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+						}
 				}
 		}
 
@@ -8496,11 +8507,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// get the Crewmember we're giving
 				$crewmemberGivingId = $this->getGarmentIdFromType($crewmemberType, $crewmemberColor);
 				//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
-throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucerHoldingTakenCrewmember");
+//throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucerHoldingTakenCrewmember");
 				$this->giveCrewmemberToSaucer($crewmemberGivingId, $saucerHoldingTakenCrewmember); // give the garment to the ostrich (set garment_location to the color)
 				//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 				//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
-				$this->updatePlayerScores(); // update the player boards with current scores
+
 
 				$crewmemberGivingColor = $this->getCrewmemberColorFromId($crewmemberGivingId);
 				$crewmemberGivingTypeId = $this->getCrewmemberTypeIdFromId($crewmemberGivingId);
@@ -8516,8 +8527,14 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				) );
 
 				//throw new feException( "afternotify");
-
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				if($this->isEndGameConditionMet())
+				{ // the game has ended
+						$this->gamestate->nextState( "endGame" );
+				}
+				else
+				{
+						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				}
 		}
 
 		function executeAirlockCrewmember($crewmemberType, $crewmemberColor)
@@ -8531,7 +8548,7 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				$this->giveCrewmemberToSaucer($crewmemberId, $saucerWhoseTurnItIs); // give the garment to the ostrich (set garment_location to the color)
 				//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
 				//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
-				$this->updatePlayerScores(); // update the player boards with current scores
+
 
 				$crewmemberColor = $this->getCrewmemberColorFromId($crewmemberId);
 				$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($crewmemberId);
@@ -8557,7 +8574,14 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				// place the Crewmember they originally took
 				$this->randomlyPlaceCrewmember($crewmemberIdTaken);
 
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				if($this->isEndGameConditionMet())
+				{ // the game has ended
+						$this->gamestate->nextState( "endGame" );
+				}
+				else
+				{
+						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				}
 		}
 
 		function executeStealCrewmember( $stolenTypeText, $stolenColor, $areWePassing, $areWeTaking )
@@ -8584,6 +8608,9 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				$sql = "UPDATE garment SET garment_location='$saucerReceiving' WHERE garment_location='$saucerGiving' AND garment_color='$stolenColor' AND garment_type=$stolenTypeInt";
 				self::DbQuery( $sql );
 
+				$this->updatePlayerScores(); // update the player boards with current scores
+
+
 				$stealingSaucerColorText = $this->convertColorToHighlightedText($saucerReceiving);
 				$stolenFromSaucerColorText = $this->convertColorToHighlightedText($saucerGiving);
 //throw new feException( "saucerStealing:$stealingSaucerColorText saucerCrashed: $stolenFromSaucerColorText");
@@ -8603,7 +8630,21 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 
 				// mark that the reward for this crash has been acquired so we don't let them have multiple rewards
 
-				if($areWePassing)
+				if($this->isEndGameConditionMet())
+				{ // the game has ended
+
+						if(!$areWePassing && !$areWeTaking)
+						{
+								// increment any stats related to thefts
+								$ownerOfStealer = $this->getOwnerIdOfOstrich($saucerReceiving);
+								$ownerOfStealee = $this->getOwnerIdOfOstrich($saucerGiving);
+								self::incStat( 1, 'crewmembers_you_stole', $ownerOfStealer ); // add stat that says the player using played a trap
+								self::incStat( 1, 'crewmembers_stolen_from_you', $ownerOfStealee ); // add stat that the owner of the ostrich targeted was targeted by a trap
+						}
+
+						$this->gamestate->nextState( "endGame" );
+				}
+				elseif($areWePassing)
 				{ // we are passing a Crewmember to our other Saucer
 						$this->setState_AfterMovementEvents($saucerGiving, true); // set to true because we're already passed the boosting if we're passing so that is safest
 
@@ -8637,6 +8678,9 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				$sql = "UPDATE garment SET garment_location='$saucerToGiveToColorHex' WHERE garment_location='$saucerGiving' AND garment_color='$crewmemberColor' AND garment_type=$crewmemberTypeInt";
 				self::DbQuery( $sql );
 
+				$this->updatePlayerScores(); // update the player boards with current scores
+
+
 				// increment any stats related to thefts
 				//self::incStat( 1, 'i_used_trap', $playerUsing ); // add stat that says the player using played a trap
 				//self::incStat( 1, 'trap_used_on_me', $ownerOfOstrichTarget ); // add stat that the owner of the ostrich targeted was targeted by a trap
@@ -8659,7 +8703,14 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				// mark that the reward for this crash has been acquired so we don't let them have multiple rewards
 				$this->markCrashPenaltyRendered($saucerGiving);
 
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				if($this->isEndGameConditionMet())
+				{ // the game has ended
+						$this->gamestate->nextState( "endGame" );
+				}
+				else
+				{
+						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+				}
 		}
 
 		function executeChooseOstrichToGoNext()
@@ -9103,9 +9154,15 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				$saucerY = $this->getSaucerYLocation($saucerMoving);
 //throw new feException( "moveType:$moveType saucerX:$saucerX saucerY:$saucerY saucerMoving:$saucerMoving");
 
+				$spaceType = $this->getBoardSpaceType($saucerX, $saucerY);
+
 				// see if we ended move sequence because we need to activate an upgrade
 				$saucerWeCollideWith = $this->getSaucerAt($saucerX, $saucerY, $saucerMoving);
-				if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") && $saucerWeCollideWith != "" && $spacesLeft > 0)
+				if($this->isEndGameConditionMet())
+				{ // the game has ended
+						$this->gamestate->nextState( "endGame" );
+				}
+				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") && $saucerWeCollideWith != "" && $spacesLeft > 0)
 				{ // this saucer has phase shifter played and we are colliding with another saucer and we have at least 1 space left after colliding
 
 						$this->gamestate->nextState( "askToPhaseShift" );
@@ -9118,8 +9175,13 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				elseif($moveType == 'Landing Legs')
 				{ // the moved because they had Landing Legs
 
-						// reset the upgrade value_1 and value_2 for all saucers so we know movement upgrades have been used already
-						$this->resetAllUpgradeValues();
+						if($spaceType != 'S')
+						{ // we are not on an accelerator (if we are on an accelerator we need to know we are still executing Landing Legs)
+								//throw new feException( "no accelerator");
+								// reset the upgrade value_1 _2 _3 _4 for all saucers so we know movement for Landing Legs is complete
+								$this->resetAllUpgradeValues();
+						}
+						//throw new feException( "yes accelerator");
 
 						// decide the state to go to after the move
 						$this->setState_AfterMovementEvents($saucerMoving, $moveType);
@@ -9396,6 +9458,9 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 
 				$this->saveSaucerMoveCardDirection($saucerWhoseTurnItIs, $direction); // save the direction
 
+				$moveType = $this->getMoveTypeWeAreExecuting();
+				//throw new feException( "moveType: $moveType");
+
 				if($currentState == "chooseIfYouWillUseBooster")
 				{ // they are boosting
 
@@ -9415,6 +9480,11 @@ throw new feException( "crewmemberGivingId $crewmemberGivingId to saucer $saucer
 				}
 				elseif($currentState == "chooseAcceleratorDirection")
 				{ // they are accelerating
+
+						if($moveType == "Landing Legs")
+						{ // they are using landing legs
+
+						}
 
 						// set the number of spaces moved back to 0 since we're starting a new movement
 						$this->setSpacesMoved($saucerWhoseTurnItIs, 0);
@@ -11735,7 +11805,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function argGetGiveAwayCrewmembers()
 		{
 				$saucerGivingAway = $this->getOstrichWhoseTurnItIs();
-				$saucerGivingAwayText = $this->convertColorToText($saucerGivingAway);
+				$saucerGivingAwayText = $this->convertColorToHighlightedText($saucerGivingAway);
 
 				// get a list of all the saucers other than the one who is giving away
 				$otherSaucers = $this->getAllOtherPlayerSaucersHex($saucerGivingAway);

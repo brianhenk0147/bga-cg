@@ -2086,7 +2086,7 @@ this.unhighlightAllGarments();
                           this.showGiveAwayCrewmemberButtons(args.giveAwayCrewmembers, args.otherSaucers);
 
                           // add a skip button in case they do not want to for some reason
-                          this.addActionButton( 'skipButton', _('Skip'), 'onClick_skipGiveAwayCrewmember', null, false, 'red' );
+                          //this.addActionButton( 'skipButton', _('Skip'), 'onClick_skipGiveAwayCrewmember', null, false, 'red' );
                       }
                   break;
 
@@ -4582,6 +4582,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
                 this.addActionButton( 'giveawayCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickGiveAwayCrewmember', null, null, 'gray');
             }
+
 
             for (const color of otherSaucers)
             { // go through each saucer

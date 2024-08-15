@@ -454,8 +454,8 @@ $machinestates = array(
 
     51 => array(
     		"name" => "crashPenaltyAskWhichToGiveAway",
-    		"description" => clienttranslate('${actplayer} is giving away a Crewmember.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose which Crewmember you will give to PLAYERNAME because you crashed.'),
+    		"description" => clienttranslate('${saucerWhoCrashedText} is giving away a Crewmember.'),
+    		"descriptionmyturn" => clienttranslate('Because ${saucerWhoCrashedText} crashed, choose which Crewmember you will give away and the Saucer who will get it.'),
     		"type" => "activeplayer",
         'args' => 'argGetGiveAwayCrewmembers',
         "possibleactions" => array( "clickCrewmember" ),
@@ -469,7 +469,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetStealableCrewmembers',
         "possibleactions" => array( "clickCrewmember", "gainEnergy" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "endGame" => 99 )
     ),
 
     53 => array(

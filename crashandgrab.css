@@ -1604,11 +1604,6 @@ width: 170px;
   background-image: url('img/ship_mats_154_154.png');
 }
 
-.saucer_button
-{
-
-}
-
 .saucer_color_01b508 { background-position: -49px 0px;   } /* green */
 .saucer_color_0090ff { background-position: -98px 0px;   } /* blue */
 .saucer_color_fedf3d { background-position: -147px 0px;   } /* yellow */
