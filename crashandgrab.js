@@ -6227,6 +6227,9 @@ console.log("success... onClickUpgradeCardInHand");
 
             var animationId = this.slideToObject( source, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
             dojo.connect(animationId, 'onEnd', () => {
+
+                var rotatingClass = 'played_'+garmentType;
+                dojo.removeClass( source, rotatingClass ); // remove transform property because otherwise it will be rotated as it would be on ship mat
             });
             animationId.play();
 

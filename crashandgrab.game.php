@@ -443,13 +443,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						//array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 10),
+						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)
 				);
 
 				if($this->getNumberOfPlayers() > 2)
 				{
-						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1));
+						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 8));
 				}
 
 
@@ -1316,6 +1316,30 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return false;
 		}
 
+		// returns TRUE if there is a different saucer in the row or column
+		// of the sourceSaucer
+		function isSaucerInRowOrColumnOfSaucer($sourceSaucer)
+		{
+				$sourceSaucerX = $this->getSaucerXLocation($sourceSaucer);
+				$sourceSaucerY = $this->getSaucerYLocation($sourceSaucer);
+
+				$allSaucers = $this->getAllSaucers();
+				foreach( $allSaucers as $saucer )
+				{ // go through each crewmember
+						$saucerX = $saucer['ostrich_x'];
+						$saucerY = $saucer['ostrich_y'];
+						$saucerColor = $saucer['ostrich_color'];
+
+						if($saucerColor != $sourceSaucer && (
+							$sourceSaucerX == $saucerX || $sourceSaucerY == $saucerY))
+						{ // this is not our source saucer but it is in the same row or column
+								return true;
+						}
+				}
+
+				return false;
+		}
+
 		function getAllPlayerSaucerMoves()
 		{
 				$result = array();
@@ -1862,7 +1886,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 					 $this->getAskedToActivateUpgrade($saucerColor, 'Pulse Cannon') == false)
 				{ // they have played this upgrade but they have not yet activated it
 
-						return true;
+						if($this->isSaucerInRowOrColumnOfSaucer($saucerColor))
+						{ // there is another saucer in the row or column of our saucer
+							//throw new feException( "true dat");
+								return true;
+						}
 				}
 
 
@@ -4960,21 +4988,40 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$result = array();
 //throw new feException( "getAllStartOfTurnUpgradesToActivateForSaucer");
-				$allPlayedStartOfTurnUpgrades = $this->getAllPlayedStartOfTurnUpgradesForSaucer($saucerColor);
-				foreach($allPlayedStartOfTurnUpgrades as $upgrade)
-				{
-						$collectorNumber = $upgrade['collectorNumber'];
-						$upgradeName = $this->getUpgradeTitleFromCollectorNumber($collectorNumber);
-//throw new feException( "played start of turn upgrade:$upgradeName");
-						if($this->getUpgradeTimesActivatedThisRound($saucerColor, $upgradeName) < 1 &&
-							$this->getAskedToActivateUpgrade($saucerColor, $upgradeName) == false)
-						{ // this has not been activated and we have not yet asked
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Blast Off Thrusters') &&
+				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Blast Off Thrusters') < 1 &&
+					 $this->getAskedToActivateUpgrade($saucerColor, 'Blast Off Thrusters') == false)
+				{ // they have played this upgrade but they have not yet activated it
+					//throw new feException( "Blast Off Thrusters ");
+
+						if(!$this->isSaucerCrashed($saucerColor))
+						{ // they are not crashed
 								$upgradeArray = array();
-								$upgradeArray['collectorNumber'] = $collectorNumber;
-								$upgradeArray['upgradeName'] = $upgradeName;
+								$upgradeArray['collectorNumber'] = 1;
+								$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(1);
 
 								array_push($result, $upgradeArray);
+						}
+				}
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon') &&
+				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Pulse Cannon') < 1 &&
+					 $this->getAskedToActivateUpgrade($saucerColor, 'Pulse Cannon') == false)
+				{ // they have played this upgrade but they have not yet activated it
+
+						if($this->isSaucerInRowOrColumnOfSaucer($saucerColor))
+						{ // there is another saucer in the row or column of our saucer
+							//throw new feException( "true dat");
+
+								if(!$this->isSaucerCrashed($saucerColor))
+								{ // they are not crashed
+										$upgradeArray = array();
+										$upgradeArray['collectorNumber'] = 4;
+										$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(4);
+
+										array_push($result, $upgradeArray);
+								}
 						}
 				}
 
