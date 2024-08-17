@@ -1662,15 +1662,15 @@ width: 170px;
 }
 
 .mat_and_stuff_row {
-    width: 330px;
-    height: 135px;
+    width: 120px;
+    height: 330px;
 
     /* center it */
     display:flex;
     justify-content: center;
     align-items: center;
 
-    float: right;
+    float: left;
     vertical-align: middle;
     margin: 5px;
     margin-left: 10px;
@@ -1732,7 +1732,7 @@ width: 170px;
     margin-left: 15px;
     margin-top: 10px;
     margin-bottom: 2px;
-    width: 320px;
+    width: 100px;
 }
 
 .mat_inner_row {
@@ -2140,7 +2140,6 @@ margin-top: 6px;
 
 #move_cards_column
 {
-    width: 340px;
     float: left;
 }
 
@@ -2148,7 +2147,6 @@ margin-top: 6px;
 #upgrade_deck_container
 {
     width: 232px;
-    height: 400px;
 
     margin: 20px;
     padding: 7px;
