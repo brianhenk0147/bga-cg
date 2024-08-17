@@ -37,6 +37,16 @@
               </div>
           <!-- END lost_crewmembers -->
       </div>
+
+      <div id="booster_pile"></div>
+
+      <div id="energy_pile"></div>
+
+      <div id="upgrade_deck_container">
+          <div id="upgrade_deck" class="upgrade_deck"></div>
+          <div id="upgrade_discard" class="upgrade_deck"></div>
+      </div>
+
   </div>
 
   <div id="board_tile_column">
@@ -1092,9 +1102,6 @@
           </div>
       </div>
       <!-- END saucer -->
-
-      <div id="booster_pile"></div>
-      <div id="energy_pile"></div>
 
   </div>
 

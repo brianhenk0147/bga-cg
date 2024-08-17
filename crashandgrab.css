@@ -1966,7 +1966,7 @@ width: 170px;
 
 /***** BOOSTERS *****/
 #booster_pile {
-    width: 120px;
+    width: 110px;
     height: 64px;
     background-image: url('img/booster_pile.png');
 
@@ -2038,14 +2038,14 @@ width: 170px;
 
 /***** ENERGY *****/
 #energy_pile {
-    width: 120px;
+    width: 110px;
     height: 64px;
     background-image: url('img/energy_pile.png');
 
     display: inline-block;
     position: relative;
 
-    margin-left: 30px;
+    margin-left: 12px;
 
     background-color: rgba(90,90,90,0.5);
 
@@ -2134,7 +2134,7 @@ margin-top: 6px;
 
 #lost_crewmembers_column
 {
-    max-width: 735px;
+    width: 300px;
     float: left;
 }
 
@@ -2144,10 +2144,48 @@ margin-top: 6px;
     float: left;
 }
 
+/***** UPGRADE DECK *****/
+#upgrade_deck_container
+{
+    width: 232px;
+    height: 400px;
+
+    margin: 20px;
+    padding: 7px;
+
+    background-color: rgba(191,107,153,0.5);
+
+    border-radius: 10px;
+    border: 5px #bf6b99 solid;
+}
+
+#upgrade_deck
+{
+    background-image: url('img/ship_upgrades_230_164.jpg');
+
+}
+
+#upgrade_discard
+{
+    background-image: url('img/ship_upgrades_230_164.jpg');
+    margin-top: 40px;
+}
+
+.upgrade_deck
+{
+    width: 230px;
+    height: 164px;
+
+    cursor: pointer;
+
+    border-radius: 10px;
+    border: 1px black solid;
+}
+
 /***** CREWMEMBERS *****/
 #lost_crewmember_container
 {
-    width: 226px;
+    width: 230px;
 
     /*center it*/
     /*display:flex;*/
@@ -2156,7 +2194,7 @@ margin-top: 6px;
 
     vertical-align: top;
     margin: 20px;
-    padding: 10px;
+    padding: 8px;
 
     float: left;
 
