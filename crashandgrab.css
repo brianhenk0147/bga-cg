@@ -128,7 +128,6 @@ body {
     float: left;
     vertical-align: top;
     width: 810px;
-    margin-left: -100px;
     margin-top: 25px;
 }
 
@@ -2143,22 +2142,21 @@ margin-top: 6px;
 {
     width: 340px;
     float: left;
-    margin-left: -100px;
 }
 
 /***** CREWMEMBERS *****/
 #lost_crewmember_container
 {
-    width: 400px;
-    height: 250px;
+    width: 226px;
 
     /*center it*/
-    display:flex;
+    /*display:flex;*/
     justify-content: center;
     align-items: center;
 
     vertical-align: top;
     margin: 20px;
+    padding: 10px;
 
     float: left;
 
@@ -2182,13 +2180,12 @@ margin-top: 6px;
 /* This is the container holding a single garment */
 .garment_holder {
   width: 51px;
-  height: 51px;
+  height: 47px;
 
-  margin: 0px;
-  margin-top: 5px;
-  padding: 0px;
+  padding: 3px;
 
-  display: inline-block;
+  display: inline;
+  float: right;
   position: relative;  /* must be absolute or relative to use slideToObject */
 
 }
@@ -2201,11 +2198,9 @@ margin-top: 6px;
 */
 
 .available_garment_group {
-    margin-left: 3px;
-    margin-right: 3px;
-    margin-bottom: 2px;
-    width: 47px;
-    display: inline-block;
+    width: 228px;
+    height: 55px;
+    display: block;
 }
 
 .garment_column_left {
@@ -2222,10 +2217,8 @@ margin-top: 6px;
 .crewmember {
     width: 47px;
     height: 47px;
-    padding: 0px;
-    margin: 2px;
+
     position: relative;  /* must be absolute or relative to use slideToObject */
-    display: inline-block;
     background-image: url('img/crewmembers.png');
     z-index: 10;
 }
