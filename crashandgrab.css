@@ -1973,7 +1973,7 @@ width: 170px;
     display: inline-block;
     position: relative;
 
-    margin-left: 20px;
+    margin-left: 0px;
     margin-top: 5px;
 
     background-color: rgba(90,90,90,0.5);
@@ -2045,7 +2045,7 @@ width: 170px;
     display: inline-block;
     position: relative;
 
-    margin-left: 12px;
+    margin-left: 205px;
 
     background-color: rgba(90,90,90,0.5);
 
@@ -2193,8 +2193,6 @@ margin-top: 6px;
     vertical-align: top;
     margin: 20px;
     padding: 8px;
-
-    float: left;
 
     background-color: rgba(255,255,255,0.5);
 

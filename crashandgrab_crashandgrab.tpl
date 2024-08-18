@@ -44,14 +44,17 @@
 
   </div>
 
-  
+
 
   <div id="board_tile_column">
 
       <div id="outer_board">
         <div id="outer_board_top_row">
+          <div id="booster_pile"></div>
+
           <div id="direction_sun" class="direction_token"></div>
-          <div id="replacement_garment_chosen_holder"></div>
+
+          <div id="energy_pile"></div>
         </div>
         <div id="middle_board_row">
           <div id="outer_board_left_column">
@@ -1099,9 +1102,7 @@
           <!-- END lost_crewmembers -->
       </div>
 
-      <div id="booster_pile"></div>
 
-      <div id="energy_pile"></div>
 
       <div id="upgrade_deck_container">
           <div id="upgrade_deck" class="upgrade_deck"></div>
