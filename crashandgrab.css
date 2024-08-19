@@ -2174,7 +2174,8 @@ margin-top: 6px;
 
 #other_player_saucers_row
 {
-    min-width: 600px;
+    min-width: 740px;
+    display: inline-block;
 }
 
 #move_cards_column

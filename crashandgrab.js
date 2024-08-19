@@ -4116,7 +4116,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 // center the directions based on the number of players
                 dojo.style('direction_constellation', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_sun', "marginLeft", "305px");
+                dojo.style('direction_sun', "marginLeft", "180px");
                 dojo.style('direction_meteor', "marginLeft", "305px");
 
                 dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
@@ -4131,7 +4131,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 dojo.style('direction_constellation', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
                 //dojo.style('direction_sun', "marginLeft", "330px");
-                dojo.style('direction_sun', "marginLeft", "183px");
+                dojo.style('direction_sun', "marginLeft", "203px");
                 dojo.style('direction_meteor', "marginLeft", "330px");
 
                 dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
