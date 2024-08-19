@@ -157,22 +157,17 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 // place any boosters they have on their saucer mat
                 var boosterQuantity = saucer.booster_quantity;
-                if(boosterQuantity == 1)
-                { // they have a booster
 
+                for (let i = 1; i <= boosterQuantity; i++)
+                {
                     // place it on the mat
-                    var matBoosterLocationHtmlId = 'booster_acquired_'+saucer.color;
+                    var matBoosterLocationHtmlId = 'boosters_container_'+saucer.color;
                     dojo.place( this.format_block( 'jstpl_booster', {
                          location: saucer.color,
-                         position: boosterQuantity
+                         position: i
                     } ) , matBoosterLocationHtmlId);
                 }
-                else if(boosterQuantity == 2)
-                { // they have a Cargo Hold with an additional booster
 
-                    // place it on the Cargo Hold card
-
-                }
                 // update the player board with the value of how many boosters
                 this.booster_counters[saucer.color].setValue(boosterQuantity);
 
@@ -180,7 +175,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 var energyQuantity = saucer.energy_quantity;
                 for (let i = 1; i <= energyQuantity; i++)
                 {
-                    var matEnergyLocationHtmlId = 'energy_acquired_'+saucer.color;
+                    var matEnergyLocationHtmlId = 'energy_container_'+saucer.color;
                     dojo.place( this.format_block( 'jstpl_energy', {
                          location: saucer.color,
                          position: i
@@ -350,7 +345,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 { // this crewmember has been claimed by a player
                     // var matLocationHtmlId = 'mat_'+typeString+"_"+wearingOrBackpack+"_"+currentTypeLocationCount+"_"+location;
                     //location = '0090ff';
-                    var matLocationHtmlId = 'player_board_saucer_mat_'+typeString+'_'+location; // example: player_board_saucer_mat_pilot_01b508
+                    var matLocationHtmlId = typeString+'_container_'+location; // example: pilot_container_f6033b
                     var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color; // example: crewmember_pilot_01b508
 
                     console.log('matLocationHtmlId:'+matLocationHtmlId+' crewmemberHtmlId:'+crewmemberHtmlId);
@@ -2510,7 +2505,7 @@ console.log("return false");
 
         adjustCrewmemberLocationBasedOnUpgrades: function(matColor, crewmemberTypeString)
         {
-            var matLocationHtmlId = 'player_board_saucer_mat_'+crewmemberTypeString+'_'+matColor; // example: player_board_saucer_mat_pilot_01b508
+            var matLocationHtmlId = crewmemberTypeString+'_container_'+matColor; // example: pilot_container_f6033b
             console.log("ADJUSTING");
             if(this.gamedatas.saucer2 != '')
             { // each player controls two saucers
@@ -2997,7 +2992,7 @@ console.log("selectSelectedMoveCard of color: "+color);
             var destination = "move_card_holder_" + distanceType + "_"+color;
             if(document.getElementById(htmlId))
             { // this component exists
-                console.log('Move card FROM ' + htmlId + ' to player_board_move_card_holder_' + destination + '.');
+                console.log('Move card FROM ' + htmlId + ' to played_move_card_container_' + destination + '.');
                 //this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id ); // teleport card FROM, TO
 
                 this.attachToNewParent( htmlId, destination ); // needed so it doesn't slide under the player board
@@ -3300,7 +3295,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
                     var convertedType = this.convertCrewmemberType(crewmemberType); // temp until i fix this weird issue switching these
-                    destination = 'player_board_saucer_mat_'+convertedType+'_'+saucerColor; // player_board_saucer_mat_pilot_0090ff
+                    destination = convertedType+'_container_'+saucerColor; // pilot_container_f6033b
 
                     // give it a new parent so it's no longer on the space
                     this.attachToNewParent(source, destination);
@@ -3808,7 +3803,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 if(saucerIndex == 1)
                 {
                     this.upgradesPlayed_1 = new ebg.stock();
-                    this.upgradesPlayed_1.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_1.create( this, $('played_upgrade_cards_container_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
                     this.upgradesPlayed_1.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_1.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
@@ -3840,7 +3835,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 else if(saucerIndex == 2)
                 {
                     this.upgradesPlayed_2 = new ebg.stock();
-                    this.upgradesPlayed_2.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_2.create( this, $('played_upgrade_cards_container_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
                     this.upgradesPlayed_2.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_2.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
@@ -3870,7 +3865,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 else if(saucerIndex == 3)
                 {
                     this.upgradesPlayed_3 = new ebg.stock();
-                    this.upgradesPlayed_3.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_3.create( this, $('played_upgrade_cards_container_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
                     this.upgradesPlayed_3.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_3.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
@@ -3901,7 +3896,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 else if(saucerIndex == 4)
                 {
                     this.upgradesPlayed_4 = new ebg.stock();
-                    this.upgradesPlayed_4.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_4.create( this, $('played_upgrade_cards_container_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
                     this.upgradesPlayed_4.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_4.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
@@ -3932,7 +3927,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 else if(saucerIndex == 5)
                 {
                     this.upgradesPlayed_5 = new ebg.stock();
-                    this.upgradesPlayed_5.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_5.create( this, $('played_upgrade_cards_container_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
                     this.upgradesPlayed_5.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_5.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
@@ -3963,7 +3958,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 else if(saucerIndex == 6)
                 {
                     this.upgradesPlayed_6 = new ebg.stock();
-                    this.upgradesPlayed_6.create( this, $('player_board_played_upgrade_cards_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
+                    this.upgradesPlayed_6.create( this, $('played_upgrade_cards_container_'+saucerColor), this.upgradecardwidth, this.upgradecardheight );
                     this.upgradesPlayed_6.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_6.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
@@ -4106,7 +4101,8 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 // center the directions based on the number of players
                 dojo.style('direction_constellation', "marginTop", "224px"); // move the left direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "224px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_sun', "marginLeft", "280px");
+                //dojo.style('direction_sun', "marginLeft", "280px");
+                dojo.style('direction_sun', "marginLeft", "155px");
                 dojo.style('direction_meteor', "marginLeft", "280px");
 
                 dojo.style('board_tile_column', "width", "685px"); // set the width of the board based on saucer count
@@ -4135,7 +4131,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 dojo.style('direction_constellation', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
                 //dojo.style('direction_sun', "marginLeft", "330px");
-                dojo.style('direction_sun', "marginLeft", "205px");
+                dojo.style('direction_sun', "marginLeft", "183px");
                 dojo.style('direction_meteor', "marginLeft", "330px");
 
                 dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
@@ -4270,7 +4266,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                                 x: this.getMoveCardBackgroundX(saucerColor),
                                 y: this.getMoveCardBackgroundY(saucerColor),
                                 color: saucerColor
-                    } ), 'player_board_move_card_holder_'+saucerColor );
+                    } ), 'played_move_card_container_'+saucerColor );
 
                     this.rotateTo( 'move_card_back_'+saucerColor, 45 );
                 }
@@ -4280,10 +4276,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
         slideMoveCard: function(sourceHtmlId, saucerColor, direction)
         {
 
-            console.log('Move card FROM ' + sourceHtmlId + ' to player_board_move_card_holder_' + saucerColor + '.');
+            console.log('Move card FROM ' + sourceHtmlId + ' to played_move_card_container_' + saucerColor + '.');
             //this.placeOnObject( 'cardontable_'+player_id, 'myhand_item_'+card_id ); // teleport card FROM, TO
 
-            var destinationHtmlId = 'player_board_move_card_holder_'+saucerColor;
+            var destinationHtmlId = 'played_move_card_container_'+saucerColor;
             this.attachToNewParent( sourceHtmlId, destinationHtmlId ); // needed so it doesn't slide under the player board
             this.rotateTo( sourceHtmlId, this.getDegreesRotated(direction) );
             var animationId = this.slideToObject( sourceHtmlId, destinationHtmlId, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
@@ -5975,7 +5971,7 @@ console.log("success... onClickUpgradeCardInHand");
 
 
             var objectMovingId = 'energy_'+saucerColor+'_'+energyPosition;
-            var destination = 'energy_acquired_'+saucerColor;
+            var destination = 'energy_container_'+saucerColor;
 
             var classToAdd = 'energy_'+energyPosition;
             dojo.addClass( objectMovingId, classToAdd );
@@ -6013,7 +6009,7 @@ console.log("success... onClickUpgradeCardInHand");
             } ) , 'booster_pile');
 
             var objectMovingId = 'booster_'+saucerColor+'_'+boosterPosition;
-            var destination = 'booster_acquired_'+saucerColor;
+            var destination = 'boosters_container_'+saucerColor;
 
             var animationId = this.slideToObject( objectMovingId, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
             dojo.connect(animationId, 'onEnd', () => {
@@ -6116,7 +6112,7 @@ console.log("success... onClickUpgradeCardInHand");
 
             console.log('crewmemberType:'+crewmemberType);
             console.log('saucerColorStealing:'+saucerColorStealing);
-            var destination = 'player_board_saucer_mat_'+crewmemberType+'_'+saucerColorStealing; // player_board_saucer_mat_pilot_0090ff
+            var destination = crewmemberType+'_container_'+saucerColorStealing; // pilot_container_f6033b
 
             console.log("source:"+source+" destination:"+destination);
 
@@ -6155,7 +6151,7 @@ console.log("success... onClickUpgradeCardInHand");
 
             console.log('crewmemberType:'+crewmemberType);
             console.log('saucerColor:'+saucerColor);
-            var destination = 'player_board_saucer_mat_'+crewmemberType+'_'+saucerColor; // player_board_saucer_mat_pilot_0090ff
+            var destination = crewmemberType+'_container_'+saucerColor; // pilot_container_f6033b
 
             console.log("source:"+source+" destination:"+destination);
 
@@ -6466,7 +6462,7 @@ console.log("success... onClickUpgradeCardInHand");
                         x: this.getMoveCardBackgroundX(saucerChoosing),
                         y: this.getMoveCardBackgroundY(saucerChoosing),
                         color: saucerChoosing
-            } ), 'player_board_move_card_holder_'+saucerChoosing );
+            } ), 'played_move_card_container_'+saucerChoosing );
 
             // Move card from player panel
             //this.placeOnObject( 'cardontable_'+player_id, 'overall_player_board_'+player_id );
@@ -6493,7 +6489,7 @@ console.log("notif_cardChosen ()"+'move_card_back_'+saucerChoosing+') is being r
                 dojo.destroy(moveCardBackHtmlId);
             }
 
-            var destinationHtmlId = 'player_board_move_card_holder_'+saucerColor;
+            var destinationHtmlId = 'played_move_card_container_'+saucerColor;
             var moveCardFrontHtmlId = 'move_card_'+distanceType+'_'+saucerColor;
             console.log("placing move card in:"+destinationHtmlId);
 

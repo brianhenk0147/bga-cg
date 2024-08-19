@@ -7355,6 +7355,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		// True if the player can be given a Booster. False otherwise.
 		function hasAvailableBoosterSlot($saucerColor)
 		{
+				return true; // trying unlimited boosters
+				
 				$boosterCount = $this->getBoosterCountForSaucer($saucerColor);
 
 				if($boosterCount == 0)
@@ -11906,8 +11908,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetSaucerAcceleratorAndBoosterMoves()
 		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				return array(
-						'playerSaucerAcceleratorMoves' => self::getSaucerAcceleratorAndBoosterMoves()
+						'playerSaucerAcceleratorMoves' => self::getSaucerAcceleratorAndBoosterMoves(),
+						'saucerColor' => $saucerHighlightedText
 				);
 		}
 

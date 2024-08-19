@@ -309,7 +309,7 @@ $machinestates = array(
 
     32 => array(
     		"name" => "chooseIfYouWillUseBooster",
-    		"description" => clienttranslate('${actplayer} is deciding if they will boost.'),
+    		"description" => clienttranslate('${saucerColor} is deciding if they will boost.'),
     		"descriptionmyturn" => clienttranslate('Would you like to use a Booster?'),
     		"type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',

@@ -133,17 +133,14 @@
         global $g_user;
         $current_player_id = $g_user->get_id();
 
-        // get all saucers
-        $allSaucers = $this->game->getAllSaucers();
-
         // get the saucers this player owns
         $thisPlayersSaucers = $this->game->getSaucersForPlayer($current_player_id);
 
-        // SAUCER MAT AREAS
-        $this->page->begin_block( "crashandgrab_crashandgrab", "saucer" );
+        // MY SAUCER MAT AREAS
+        $this->page->begin_block( "crashandgrab_crashandgrab", "my_saucer" );
         foreach( $thisPlayersSaucers as $saucer )
         {
-                $this->page->insert_block( "saucer", array(
+                $this->page->insert_block( "my_saucer", array(
                                                     "PLAYER_COLOR" => $saucer['color'],
                                                     "PLAYER_ID" => $saucer['owner'],
                                                     "PLAYER_NAME" => $saucer['ownerName']
@@ -151,8 +148,19 @@
 
         }
 
+        // OTHER SAUCER MATS
+        $otherPlayerSaucers = $this->game->getAllSaucersNotOwnedByPlayer($current_player_id);
+        $this->page->begin_block( "crashandgrab_crashandgrab", "other_saucer" );
+        foreach( $otherPlayerSaucers as $saucer )
+        {
+            $this->page->insert_block( "other_saucer", array(
+                                                "PLAYER_COLOR" => $saucer['ostrich_color'],
+                                                "PLAYER_ID" => $saucer['ostrich_owner']
+                                                 ) );
+        }
 
         // GARMENTS
+        $allSaucers = $this->game->getAllSaucers();
         $this->page->begin_block( "crashandgrab_crashandgrab", "lost_crewmembers" );
         $playerIndex = 0;
         foreach( $allSaucers as $saucer )

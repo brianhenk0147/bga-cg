@@ -28,8 +28,8 @@
 
   <div id="move_cards_column">
 
-      <!-- BEGIN saucer -->
-      <div class="mat_and_stuff_row transparent_background_{PLAYER_COLOR}">
+      <!-- BEGIN my_saucer -->
+      <div class="my_mat_and_stuff_row transparent_background_{PLAYER_COLOR}">
           <div class="mat_row">
 
               <div id="move_card_hand_{PLAYER_COLOR}" class="move_card_hand" style="color:#{PLAYER_COLOR}">
@@ -38,9 +38,34 @@
                   <div id="move_card_holder_0_{PLAYER_COLOR}" class="move_card_holder_in_hand"></div>
               </div>
 
+              <div id="saucer_mat_container_{PLAYER_COLOR}">
+                  <div id="saucer_mat_and_extra_crewmembers_{PLAYER_COLOR}">
+                      <div id="saucer_mat_{PLAYER_COLOR}" class="saucer_mat">
+                          <div id="boosters_container_{PLAYER_COLOR}" class="boosters_container"></div>
+                          <div id="crewmembers_and_energy_container_{PLAYER_COLOR}">
+                              <div id="pilot_doctor_container">
+                                  <div id="pilot_container_{PLAYER_COLOR}" class="pilot_container"></div>
+                                  <div id="doctor_container_{PLAYER_COLOR}" class="doctor_container"></div>
+                              </div>
+                              <div id="energy_container_{PLAYER_COLOR}" class="energy_container"></div>
+                              <div id="engineer_scientist_container">
+                                  <div id="engineer_container_{PLAYER_COLOR}" class="engineer_container"></div>
+                                  <div id="scientist_container_{PLAYER_COLOR}" class="scientist_container"></div>
+                              </div>
+                          </div>
+                      </div>
+                      <div id="extra_crewmembers_container_{PLAYER_COLOR}" class="extra_crewmembers_container"></div>
+                  </div>
+                  <div id="played_move_card_container_{PLAYER_COLOR}" class="played_move_card_container"></div>
+              </div>
+
+              <div id="played_upgrade_cards_container_{PLAYER_COLOR}"  class="my_played_upgrade_cards_container">
+
+              </div>
+
           </div>
       </div>
-      <!-- END saucer -->
+      <!-- END my_saucer -->
 
   </div>
 
@@ -1111,6 +1136,44 @@
 
   </div>
 
+
+  <div id="other_player_saucers_row">
+
+      <!-- BEGIN other_saucer -->
+      <div class="other_mat_and_stuff_row transparent_background_{PLAYER_COLOR}">
+          <div class="mat_row">
+
+              <div id="saucer_mat_container_{PLAYER_COLOR}">
+                  <div id="saucer_mat_and_extra_crewmembers_{PLAYER_COLOR}">
+                      <div id="saucer_mat_{PLAYER_COLOR}" class="saucer_mat">
+                          <div id="boosters_container_{PLAYER_COLOR}" class="boosters_container"></div>
+                          <div id="crewmembers_and_energy_container_{PLAYER_COLOR}">
+                              <div id="pilot_doctor_container">
+                                  <div id="pilot_container_{PLAYER_COLOR}" class="pilot_container"></div>
+                                  <div id="doctor_container_{PLAYER_COLOR}" class="doctor_container"></div>
+                              </div>
+                              <div id="energy_container_{PLAYER_COLOR}" class="energy_container"></div>
+                              <div id="engineer_scientist_container">
+                                  <div id="engineer_container_{PLAYER_COLOR}" class="engineer_container"></div>
+                                  <div id="scientist_container_{PLAYER_COLOR}" class="scientist_container"></div>
+                              </div>
+                          </div>
+                      </div>
+                      <div id="extra_crewmembers_container_{PLAYER_COLOR}" class="extra_crewmembers_container"></div>
+                  </div>
+                  <div id="played_move_card_container_{PLAYER_COLOR}" class="played_move_card_container"></div>
+              </div>
+
+              <div id="played_upgrade_cards_container_{PLAYER_COLOR}"  class="played_upgrade_cards_container">
+
+              </div>
+
+          </div>
+      </div>
+      <!-- END other_saucer -->
+
+  </div>
+
 </div><!--board_area-->
 
 
@@ -1183,7 +1246,7 @@ var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}" 
                                           <div id="player_board_crown_holder_${color}" class="player_board_crown_holder"></div>\
                                           <div id="player_board_direction_holder_${owner}" class="player_board_direction_holder"></div>\
                                         </div>\
-                                        <div id="player_board_saucer_mat_holder_${color}" class="player_board_saucer_mat_holder">\
+                                        <div id="saucer_mat_${color}" class="saucer_mat">\
                                           <div id="booster_acquired_${color}" class="booster_acquired_area_${firstOrSecond}"></div>\
                                           <div id="pilot_and_engineer_row">\
                                             <div id="player_board_saucer_mat_pilot_${color}" class="player_board_saucer_mat_pilot_${firstOrSecond}"></div>\

@@ -962,7 +962,6 @@ float: left;
     height: 82px;
     background-image: url('img/movement_cards_sprite.jpg');
 
-    display: inline-block;
     position: relative; /* must be absolute or relative to use slideToObject */
 
     z-index: 11; /* we want it to be on top of any played upgrades they have */
@@ -980,14 +979,16 @@ float: left;
 }
 
 .move_card_hand {
-    margin-top: 5px;
+    margin: 7px;
     vertical-align: middle;
 }
 
 .move_card_holder_in_hand {
-    width: 100px;
-    height: 100px;
+    width: 82px;
+    height: 82px;
     display: inline-block;
+
+    margin: 2px;
 
     /* needed to keep move cards vertically centered no matter whether one is chosen (rotated) or not. */
     vertical-align: middle;
@@ -1594,11 +1595,19 @@ width: 170px;
       margin-top: -70px;
 }
 
-.player_board_saucer_mat_holder {
+.extra_crewmembers_container
+{
+    display: inline-block;
+    width: 51px;
+    height: 145px;
+}
+
+.saucer_mat {
   width: 154px;
   height: 154px;
   margin-top: 10px;
   margin-bottom: 10px;
+  margin-left: 5px;
   display: inline-block;
   background-image: url('img/ship_mats_154_154.png');
 }
@@ -1611,32 +1620,32 @@ width: 170px;
 .saucer_color_b92bba { background-position: -196px 0px;   } /* purple */
 
 /* green */
-#player_board_saucer_mat_holder_01b508 {
+#saucer_mat_01b508 {
     background-position: 0px 0px;
 }
 
 /* blue */
-#player_board_saucer_mat_holder_0090ff {
+#saucer_mat_0090ff {
     background-position: -154px 0px;
 }
 
 /* yellow */
-#player_board_saucer_mat_holder_fedf3d {
+#saucer_mat_fedf3d {
     background-position: -308px 0px;
 }
 
 /* red */
-#player_board_saucer_mat_holder_f6033b {
+#saucer_mat_f6033b {
     background-position: -462px 0px;
 }
 
 /* orange */
-#player_board_saucer_mat_holder_e77324 {
+#saucer_mat_e77324 {
     background-position: -616px 0px;
 }
 
 /* purple */
-#player_board_saucer_mat_holder_b92bba {
+#saucer_mat_b92bba {
     background-position: -770px 0px;
 }
 
@@ -1657,13 +1666,23 @@ width: 170px;
 .player_board_for_saucer {
 
   width: 234px;
-
-
 }
 
-.mat_and_stuff_row {
-    width: 120px;
-    height: 330px;
+.my_mat_and_stuff_row {
+    width: 282px;
+
+    display:block;
+
+    vertical-align: middle;
+    margin: 5px;
+    margin-left: 10px;
+
+    border-radius: 10px;
+    border: 0px black solid;
+}
+
+.other_mat_and_stuff_row {
+    width: 232px;
 
     /* center it */
     display:flex;
@@ -1672,8 +1691,9 @@ width: 170px;
 
     float: left;
     vertical-align: middle;
+    padding: 10px;
     margin: 5px;
-    margin-left: 10px;
+    margin-left: 6px;
 
     border-radius: 10px;
     border: 0px black solid;
@@ -1727,12 +1747,24 @@ width: 170px;
   border: 5px #f6033b solid;
 }
 
+.boosters_container
+{
+    width: 154px;
+    height: 30px;
+
+    text-align: center;
+    margin-top: 5px;
+}
+
+.my_played_upgrade_cards_container
+{
+    margin-left: 18px;
+    margin-bottom: 10px;
+}
+
 .mat_row {
-  display: inline-block;
-    margin-left: 15px;
-    margin-top: 10px;
-    margin-bottom: 2px;
-    width: 100px;
+    display: block;
+    width: 282px;
 }
 
 .mat_inner_row {
@@ -1989,6 +2021,8 @@ width: 170px;
     background-image: url('img/booster_30.png');
 
     position: relative;
+    display: inline-block;
+    margin:auto;
 
     z-index: 10;
 }
@@ -2136,6 +2170,11 @@ margin-top: 6px;
 {
     width: 300px;
     float: left;
+}
+
+#other_player_saucers_row
+{
+    min-width: 600px;
 }
 
 #move_cards_column
@@ -2288,6 +2327,65 @@ margin-top: 6px;
   transform: rotate(-45deg);
 }
 
+#pilot_doctor_container
+{
+    display: inline-block;
+    height: 100px;
+    width: 64px;
+}
+
+#engineer_scientist_container
+{
+    display: inline-block;
+    height: 100px;
+}
+
+.pilot_container
+{
+    width: 47px;
+    height: 47px;
+
+    margin-left: 1px;
+    margin-top: 5px;
+}
+
+.engineer_container
+{
+    width: 47px;
+    height: 47px;
+
+    margin-left: 5px;
+    margin-top: 8px;
+}
+
+.energy_container
+{
+    width: 20px;
+    height: 60px;
+
+    display: inline-block;
+
+    margin-left: 0px;
+}
+
+.doctor_container
+{
+    width: 47px;
+    height: 47px;
+
+    margin-left: 17px;
+    margin-top: 0px;
+}
+
+.scientist_container
+{
+    width: 47px;
+    height: 47px;
+
+    margin-left: 0px;
+    margin-top: 0px;
+}
+
 /* CREWMEMBER IN PLAY */
 /* red garments */
 .crewmember_pilot_f6033b { background-position: -141px 0px;   }
@@ -2414,7 +2512,7 @@ margin-top: 6px;
     position: relative;
 }
 
-
+/*obsolete*/
 .player_board_trap_and_zag_holder {
   width: 154px;
   height: 100apx;
@@ -2422,16 +2520,26 @@ margin-top: 6px;
   float: left;
 }
 
+/*obsolete*/
 .player_board_trap_holder {
   display: inline-block;
   width: 25px;
   height: 25px;
 }
 
+/*obsolete*/
 .player_board_zag_holder {
   display: block;
   width: 25px;
   height: 25px;
+}
+
+.played_move_card_container
+{
+    margin-top: -10px;
+    margin-left: 40px;
+    width: 100px;
+    height: 80px;
 }
 
 /* FLOAT */
