@@ -158,6 +158,9 @@ body {
 .direction_token {
   border-radius: 6px;
   border: 1px black solid;
+
+  /*fixed issue where off board spaces were overlapping direction tokens*/
+  position: relative;
 }
 
 /* this is really a column */
