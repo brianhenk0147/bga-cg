@@ -244,7 +244,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 if(singleOstrich.ostrich_has_crown == 1)
                 { // this ostrich has the crown
                     console.log("gets crown:" + singleOstrich.color);
-                    this.putProbeOnPlayerBoard(singleOstrich.color); // place it on their player board on the right
+                    this.putProbeOnPlayerBoard(singleOstrich.owner); // place it on their player board on the right
 
                     var arrowX = 0;
                     if(singleOstrich.ostrich_last_turn_order == 1)
@@ -254,7 +254,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                     for( var player_id in gamedatas.players )
                     {
-                        this.putArrowOnPlayerBoard(arrowX, 0, player_id); // draw a zig into this player's hand
+                        this.putArrowOnPlayerBoard(arrowX, 0, player_id);
                         console.log("stateName:" + gamedatas.stateName);
                         if(gamedatas.stateName == 'chooseZigPhase' || gamedatas.stateName == 'claimZag' || gamedatas.stateName == 'askTrapBasic' || gamedatas.stateName == 'setTrapPhase')
                         { // hide the turn direction
@@ -4156,17 +4156,16 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             }
         },
 
-        putProbeOnPlayerBoard: function( color )
+        putProbeOnPlayerBoard: function( player_id )
         {
-          dojo.place( this.format_block( 'jstpl_crown', {
-              color: color
-          } ) , 'player_board_crown_holder_'+color );
+            console.log("placing probe:"+'player_board_turn_order_'+player_id);
+            dojo.place( this.format_block( 'jstpl_crown', {} ) , 'player_board_turn_order_'+player_id );
 
         },
 
         putArrowOnPlayerBoard: function( x, y, player_id )
         {
-            var arrowHolder = 'player_board_direction_holder_'+player_id;
+            var arrowHolder = 'player_board_turn_order_'+player_id;
             console.log("placing arrow in:"+arrowHolder);
             dojo.place( this.format_block( 'jstpl_arrow', {
                 x: x,
@@ -5728,6 +5727,7 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'cardRevealed', this, "notif_cardRevealed");
             dojo.subscribe( 'confirmedMovement', this, "notif_confirmedMovement");
             dojo.subscribe( 'crewmemberPickup', this, "notif_crewmemberPickup");
+            dojo.subscribe( 'resetSaucerPosition', this, "notif_resetSaucerPosition");
         },
 
         // TODO: from this point and below, you can write your game notifications handling methods
@@ -5839,6 +5839,18 @@ console.log("success... onClickUpgradeCardInHand");
 
             console.log("Moving ostrich " + ostrichMoving + " to X=" + x + " and Y=" + y + " which is space type " + spaceType + ".");
             this.moveOstrichOnBoard(ostrichMoving, ostrichTakingTurn, x, y, spaceType, ostrichMovingHasZag); // move the ostrich of a particular color to a particular space
+        },
+
+        notif_resetSaucerPosition: function( notif )
+        {
+            var x = notif.args.x;
+            var y = notif.args.y;
+            var owner = notif.args.owner;
+            var color = notif.args.color;
+
+            var saucerHtmlId = 'saucer_'+color;
+            var space = 'square_'+x+'_'+y;
+            this.attachToNewParent( saucerHtmlId, space );
         },
 
         notif_iChoseDirection: function( notif )

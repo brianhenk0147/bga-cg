@@ -2080,7 +2080,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						// Scavenger Bot
 						case 10:
-								return clienttranslate( 'When your Saucer is placed, take your Booster and an Energy.');
+								return clienttranslate( 'When your Saucer is placed, take a Booster and an Energy.');
 
 						// Distress Signaler
 						case 11:
@@ -5818,6 +5818,25 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				self::DbQuery( $sql );
 		}
 
+		function resetSaucersInDOM()
+		{
+				$allSaucers = $this->getAllSaucers();
+				foreach( $allSaucers as $saucer )
+				{ // go through each saucer
+						$saucerX = $saucer['ostrich_x'];
+						$saucerY = $saucer['ostrich_y'];
+						$saucerColor = $saucer['ostrich_color'];
+						$saucerOwner = $saucer['ostrich_owner'];
+
+						self::notifyAllPlayers( "resetSaucerPosition", "", array(
+								'x' => $saucerX,
+								'y' => $saucerY,
+								'color' => $saucerColor,
+								'owner' => $saucerOwner
+						) );
+				}
+		}
+
 		function resetSaucers()
 		{
 
@@ -7356,7 +7375,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function hasAvailableBoosterSlot($saucerColor)
 		{
 				return true; // trying unlimited boosters
-				
+
 				$boosterCount = $this->getBoosterCountForSaucer($saucerColor);
 
 				if($boosterCount == 0)
@@ -8772,6 +8791,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		function executeClickedSaucerToPlace($colorAsHex)
 		{
+				// since saucers don't get moved in the DOM while moving, we need to put them in the right spot
+				// before anything gets spawned to avoid a saucer being in the same space as a crewmember or another saucer
+				$this->resetSaucersInDOM();
+
 				$currentState = $this->getStateName();
 
 				// place it at a random location
@@ -11048,6 +11071,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		// Returns true if an unoccupied crash site was found, false otherwise.
 		function randomlyPlaceCrewmember($crewmemberId)
 		{
+				// since saucers don't get moved in the DOM while moving, we need to put them in the right spot
+				// before anything gets spawned to avoid a saucer being in the same space as a crewmember or another saucer
+				$this->resetSaucersInDOM();
+
 				// get all crash sites
 				$allCrashSites = $this->getAllCrashSites();
 				shuffle($allCrashSites); // randomize the order

@@ -1119,10 +1119,10 @@
       <div id="lost_crewmember_container">
           <!-- BEGIN lost_crewmembers -->
               <div class="available_garment_group">
-                  <div id="garment_holder_pilot_{PLAYER_COLOR}" class="garment_holder"></div>
-                  <div id="garment_holder_engineer_{PLAYER_COLOR}" class="garment_holder"></div>
-                  <div id="garment_holder_doctor_{PLAYER_COLOR}" class="garment_holder"></div>
                   <div id="garment_holder_scientist_{PLAYER_COLOR}" class="garment_holder"></div>
+                  <div id="garment_holder_doctor_{PLAYER_COLOR}" class="garment_holder"></div>
+                  <div id="garment_holder_engineer_{PLAYER_COLOR}" class="garment_holder"></div>
+                  <div id="garment_holder_pilot_{PLAYER_COLOR}" class="garment_holder"></div>
               </div>
           <!-- END lost_crewmembers -->
       </div>
@@ -1231,6 +1231,9 @@ var jstpl_upgradeCardText = '<div class="upgradeCardContent">\
                     <div class="upgradeEffect">${effect}</div>\
                     </div>'
 
+
+
+<!--OBSOLETE-->
 var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}" class="player_board_for_saucer">\
                                          <div id="player_board_energy_and_booster_count_holder_${color}" class="player_board_energy_and_booster_count_holder">\
                                             <div id="player_board_booster_count_holder_${color}" class="player_board_booster_count_holder">\
@@ -1268,7 +1271,22 @@ var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}" 
                                     </div>';
 
 
-var jstpl_crown = '<div id="player_board_crown" class="starting_color_${color}"></div>';
+var jstpl_player_board_for_saucer = '<div id="player_board_saucer_${color}" class="player_board_saucer">\
+                                          <div id="player_board_saucer_section_${color}" class="player_board_saucer_section"></div>\
+                                          <div id="player_board_counts_${color}" class="player_board_counts">\
+                                              <div id="player_board_booster_count_holder_${color}" class="player_board_booster_count_holder">\
+                                                  <span id="player_board_booster_count_value_${color}">0</span>\
+                                                  <div class="player_board_booster booster_token_small"></div>\
+                                              </div>\
+                                              <div id="player_board_energy_count_holder_${color}" class="player_board_energy_count_holder">\
+                                                  <span id="player_board_energy_count_value_${color}">0</span>\
+                                                  <div class="player_board_energy energy_cube player_board_energy"></div>\
+                                              </div>\
+                                          </div>\
+                                          <div id="player_board_turn_order_${owner}" class="player_board_turn_order"></div>\
+                                      </div>';
+
+var jstpl_crown = '<div id="player_board_crown"></div>';
 var jstpl_arrow = '<div id="player_board_arrow_${id}" class="player_board_arrow" style="background-position-x:-${x}px"></div>';
 
 var jstpl_moveCard = '<div id="move_card_${distance}_${color}" class="move_card component_rounding" style="background-position:-${x}px -${y}px"></div>';
