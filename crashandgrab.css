@@ -2060,8 +2060,8 @@ width: 170px;
 }
 
 .player_board_booster_count_holder {
-    width: 35px;
-    display: block;
+    width: 32px;
+    display: inline-block;
 }
 
 .player_board_booster {
@@ -2134,7 +2134,8 @@ margin-top: 6px;
 }
 
 .player_board_energy_count_holder {
-    width: 35px;
+    width: 32px;
+    margin-left: 10px;
     display: inline-block;
 }
 
@@ -2487,6 +2488,13 @@ margin-top: 6px;
     position: relative;
 }
 
+.turn_order_indicator {
+    width: 35px;
+    height: 56px;
+    background-image: url('img/turn_order_sprite_35w.png');
+    position: relative;
+}
+
 .player_board_crown_holder {
     display: block;
     width: 45px;
@@ -2507,6 +2515,84 @@ margin-top: 6px;
   display: block;
   float: left;
 }
+
+.default_container {height: 100%; width:100%;}
+.left, .middle, .right {display: inline-block; *display: inline; zoom: 1; vertical-align: top;}
+.left {width: 25%; background: blue;}
+.middle {width: 50%; background: green;}
+.right {width: 25%; background: yellow;}
+
+.player_board_saucer {
+  width: 100%;
+  display: grid;
+  column-gap: 0px;
+  row-gap: 0px;
+  grid-template-columns: auto auto auto auto;
+  grid-template-rows: auto auto;
+  justify-content: space-evenly;
+}
+
+.player_board_saucer_section {
+
+  grid-row: 1 / span 1;
+  grid-column: 1 / span 1;
+}
+
+.player_board_turn_order {
+
+  grid-row: 1 / span 1;
+  grid-column: 2 / span 1;
+}
+
+.player_board_upgrades_and_counts
+{
+  grid-row: 1 / span 1;
+  grid-column: 3 / span 2;
+}
+
+.player_board_upgrade_thumbnails {
+  display: block;
+  margin-top: 7px;
+}
+
+.player_board_upgrade_thumbnail
+{
+  width: 32px;
+  height: 20px;
+  background-color: purple;
+}
+
+.player_board_counts {
+
+  display: inline-block;
+}
+
+
+.player_board_crewmembers_pilots
+{
+    grid-row: 2 / span 1;
+    grid-column: 1 / span 1;
+}
+
+.player_board_crewmembers_engineers
+{
+    grid-row: 2 / span 1;
+    grid-column: 1 / span 1;
+}
+
+.player_board_crewmembers_doctors
+{
+    grid-row: 2 / span 1;
+    grid-column: 1 / span 1;
+}
+
+.player_board_crewmembers_scientists
+{
+    grid-row: 2 / span 1;
+    grid-column: 1 / span 1;
+}
+
+
 
 .player_board_arrow {
     width: 35px;

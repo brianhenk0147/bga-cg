@@ -1183,6 +1183,7 @@
 // Templates
 
 var jstpl_saucer='<div class="saucer saucer_color_${color} saucer_float" id="saucer_${color}"></div>';
+var jstpl_saucerInformational='<div class="saucer saucer_color_${color}" id="saucer_informational_${color}"></div>';
 
 var jstpl_zag='<div class="zag component_circle" id="zag_${color}"></div>';
 
@@ -1273,19 +1274,30 @@ var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}" 
 
 var jstpl_player_board_for_saucer = '<div id="player_board_saucer_${color}" class="player_board_saucer">\
                                           <div id="player_board_saucer_section_${color}" class="player_board_saucer_section"></div>\
-                                          <div id="player_board_counts_${color}" class="player_board_counts">\
-                                              <div id="player_board_booster_count_holder_${color}" class="player_board_booster_count_holder">\
-                                                  <span id="player_board_booster_count_value_${color}">0</span>\
-                                                  <div class="player_board_booster booster_token_small"></div>\
+                                          <div id="player_board_turn_order_${color}" class="player_board_turn_order"></div>\
+                                          <div id="player_board_upgrades_and_counts_${color}" class="player_board_upgrades_and_counts">\
+                                              <div id="player_board_counts_${color}" class="player_board_counts">\
+                                                  <div id="player_board_booster_count_holder_${color}" class="player_board_booster_count_holder">\
+                                                      <span id="player_board_booster_count_value_${color}">0</span>\
+                                                      <div class="player_board_booster booster_token_small"></div>\
+                                                  </div>\
+                                                  <div id="player_board_energy_count_holder_${color}" class="player_board_energy_count_holder">\
+                                                      <span id="player_board_energy_count_value_${color}">0</span>\
+                                                      <div class="player_board_energy energy_cube player_board_energy"></div>\
+                                                  </div>\
                                               </div>\
-                                              <div id="player_board_energy_count_holder_${color}" class="player_board_energy_count_holder">\
-                                                  <span id="player_board_energy_count_value_${color}">0</span>\
-                                                  <div class="player_board_energy energy_cube player_board_energy"></div>\
-                                              </div>\
+                                              <div id="player_board_upgrade_thumbnails_${color}" class="player_board_upgrade_thumbnails"></div>\
                                           </div>\
-                                          <div id="player_board_turn_order_${owner}" class="player_board_turn_order"></div>\
+                                          <div id="player_board_pilot_container_${color}" class="player_board_crewmembers_pilots"></div>\
+                                          <div id="player_board_engineer_container_${color}" class="player_board_crewmembers_engineers"></div>\
+                                          <div id="player_board_doctor_container_${color}" class="player_board_crewmembers_doctors"></div>\
+                                          <div id="player_board_scientist_container_${color}" class="player_board_crewmembers_scientists"></div>\
                                       </div>';
 
+var jstpl_turnOrderIndicator = '<div id="player_board_turn_order_indicator_${color}" class="turn_order_indicator" style="background-position:-${x}px -${y}px"></div>';
+var jstpl_upgradeThumbnail = '<div class="player_board_upgrade_thumbnail"></div>';
+
+<!--OBSOLETE-->
 var jstpl_crown = '<div id="player_board_crown"></div>';
 var jstpl_arrow = '<div id="player_board_arrow_${id}" class="player_board_arrow" style="background-position-x:-${x}px"></div>';
 

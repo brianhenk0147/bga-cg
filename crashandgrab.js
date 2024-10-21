@@ -241,37 +241,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             { // go through each ostrich
                 var singleOstrich = gamedatas.ostrich[i];
 
-                if(singleOstrich.ostrich_has_crown == 1)
-                { // this ostrich has the crown
-                    console.log("gets crown:" + singleOstrich.color);
-                    this.putProbeOnPlayerBoard(singleOstrich.owner); // place it on their player board on the right
-
-                    var arrowX = 0;
-                    if(singleOstrich.ostrich_last_turn_order == 1)
-                    { // we're going counter-clockwise
-                      arrowX = 35;
-                    }
-
-                    for( var player_id in gamedatas.players )
-                    {
-                        this.putArrowOnPlayerBoard(arrowX, 0, player_id);
-                        console.log("stateName:" + gamedatas.stateName);
-                        if(gamedatas.stateName == 'chooseZigPhase' || gamedatas.stateName == 'claimZag' || gamedatas.stateName == 'askTrapBasic' || gamedatas.stateName == 'setTrapPhase')
-                        { // hide the turn direction
-                            console.log("we need to hideTurnDirection");
-                            this.setTurnDirectionArrow(70, 0, player_id); // we don't want to show the turn direction arrow until it has been chosen for this round
-                        }
-                        else
-                        {
-                            console.log("we do NOT want to hideTurnDirection");
-                        }
-                    }
-                }
-
-
-
                 this.putSaucerOnTile( singleOstrich.x, singleOstrich.y, singleOstrich.owner, singleOstrich.color ); // add the ostrich to the board
+                this.putSaucerOnPlayerBoard(singleOstrich.color);
 
+                dojo.style('timeToThink_'+singleOstrich.owner, "top", "0px"); // for some reason the time left gets bumped down for an unknown reason so this is resetting it
             }
 
             this.lastMovedOstrich = this.gamedatas.lastMovedOstrich; // this is the color of the ostrich that was last moved
@@ -369,7 +342,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
 
 
-            this.updateTurnOrder(this.gamedatas.turnOrder);
+            this.initializeTurnOrder(this.gamedatas.turnOrder, this.gamedatas.probePlayer, gamedatas.ostrich);
+
+            top:0
 
             // First Param: css class to target
             // Second Param: type of events
@@ -1630,10 +1605,7 @@ this.unhighlightAllGarments();
                       if ( this.isCurrentPlayerActive() )
                       { // we are the active player
 
-                          this.addActionButton( 'clockwise_button', '<div class="player_board_arrow" style="background-position-x:0px"></div>', 'onClick_clockwise', null, null, 'gray');
-
-                          this.addActionButton( 'counter_button', '<div class="player_board_arrow" style="background-position-x:-35px"></div>', 'onClick_counter', null, null, 'gray');
-
+                          this.addRotationalStabilizerSaucerButtons(args.saucerButtons);
                       }
 
                   break;
@@ -3382,31 +3354,83 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             //we might want to remove the attachment from the crewmember pickups too
         },
 
-        updateTurnOrder: function(turnOrder)
+        // turnOrder: 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+        initializeTurnOrder: function(turnOrder, playerWithProbe, saucers)
         {
-            var x = 0;
-            var y = 0;
+            // place turn order indicator for each saucer
+            for( var saucerIndex in saucers )
+            { // go through each saucer
+                var saucer = saucers[saucerIndex];
+console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
-            if( turnOrder == 1)
-            { // we are going clockwise
-                x=35;
-                console.log("COUNTER-CLOCKWISE");
-            }
-            else if(turnOrder == 0) {
-                x=0;
-                console.log("CLOCKWISE");
-            }
-            else
-            {
-              x=70;
-              console.log("DO NOT SHOW");
-            }
+                if(playerWithProbe == saucer.owner)
+                { // this is a saucer owned by the player with the probe
 
-            for( var player_id in this.gamedatas.players )
-            {
-                var player = this.gamedatas.players[player_id];
-                console.log("turnOrder arrow player:"+player_id);
-                this.setTurnDirectionArrow(x, y, player_id); // we don't want to show the turn direction arrow until it has been chosen for this round
+                    x = 35; // set to probe icon
+                }
+                else
+                {
+                    x = 0;
+                }
+
+                var turnOrderHolder = 'player_board_turn_order_'+saucer.color;
+                console.log("placing turn order indicator in:"+turnOrderHolder);
+                dojo.place( this.format_block( 'jstpl_turnOrderIndicator', {
+                    x: x,
+                    y: 0,
+                    color: saucer.color
+                } ) , turnOrderHolder );
+            }
+        },
+
+        giveSaucerProbe: function(saucerWithProbe, ownerOfSaucer)
+        {
+            // reset all saucers to question marks
+            var saucerIndex = 0;
+            for( var i in this.gamedatas.ostrich )
+            { // go through each saucer
+                saucerIndex++;
+                var saucer = this.gamedatas.ostrich[i];
+                var color = saucer.color;
+                var owner = saucer.owner;
+                var x = 0; // question mark
+
+                if(color == saucerWithProbe || owner == ownerOfSaucer)
+                { // this is the saucer with the probe or owned by the same player
+                    x = 35; // probe
+                    console.log('setting turn order background position x:'+x+' saucerWithProbe:'+saucerWithProbe+' owner:'+owner);
+                }
+
+                dojo.style( 'player_board_turn_order_indicator_'+color, 'backgroundPositionX', '-'+x+'px' );
+            }
+        },
+
+        setTurnDirectionArrow: function(x, y, player_id)
+        {
+            dojo.style( 'player_board_arrow_'+player_id, 'backgroundPositionX', '-'+x+'px' );
+            //dojo.style( 'my_element', 'display', 'none' );
+
+            console.log('setting arrow background position x:'+x+' y:'+y+' player_id:'+player_id);
+        },
+
+        // Set the turn order indicator for all saucers.
+        // turnOrder: 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+        updateTurnOrder: function(turnOrder, playerWithProbe, turnOrderArray)
+        {
+
+            for( var i in turnOrderArray )
+            { // go through each saucer turn order info
+                var saucerTurnInfo = turnOrderArray[i];
+                var saucerColor = saucerTurnInfo[1];
+                var turnOrderInt = saucerTurnInfo[0];
+
+                console.log('saucerColor:'+saucerColor+' turnOrderInt:'+turnOrderInt);
+
+                var htmlOfTurnOrderIndicator = 'player_board_turn_order_indicator_'+saucerColor;
+                var x = turnOrderInt * 35;
+
+                // set the background position based on place in turn order
+                dojo.style( htmlOfTurnOrderIndicator, 'backgroundPositionX', '-'+x+'px' );
             }
         },
 
@@ -4012,6 +4036,14 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
                     // add to this saucer's played area
                     upgradesPlayedStock.addToStockWithId( collectorNumber, databaseId );
+
+                    // put a thumbnail for this on the player board for the saucer
+
+                    dojo.place( this.format_block( 'jstpl_upgradeThumbnail', {
+                        collectorNumber: collectorNumber
+                    } ), 'player_board_upgrade_thumbnails_'+saucerColor );
+
+
                 }
             }
         },
@@ -4156,22 +4188,11 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             }
         },
 
-        putProbeOnPlayerBoard: function( player_id )
+        putSaucerOnPlayerBoard: function(color)
         {
-            console.log("placing probe:"+'player_board_turn_order_'+player_id);
-            dojo.place( this.format_block( 'jstpl_crown', {} ) , 'player_board_turn_order_'+player_id );
-
-        },
-
-        putArrowOnPlayerBoard: function( x, y, player_id )
-        {
-            var arrowHolder = 'player_board_turn_order_'+player_id;
-            console.log("placing arrow in:"+arrowHolder);
-            dojo.place( this.format_block( 'jstpl_arrow', {
-                x: x,
-                y: y,
-                id: player_id
-            } ) , arrowHolder );
+            dojo.place( this.format_block( 'jstpl_saucerInformational', {
+                color: color
+            } ) , 'player_board_saucer_section_'+color );
         },
 
         putMoveCardInPlayerHand: function( used, distance, saucer_color )
@@ -4199,14 +4220,8 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
         {
             for( var player_id in this.gamedatas.players )
             {
-                this.setTurnDirectionArrow(70, 0, player_id);
+                //this.setTurnDirectionArrow(70, 0, player_id);
             }
-        },
-
-        moveCrownToPlayerBoard: function( color )
-        {
-            console.log('moving crown from (player_board_crown) to (player_board_crown_holder_'+color+')');
-            this.slideToObject( 'player_board_crown', 'player_board_crown_holder_'+color ).play();
         },
 
         placeMoveCard: function(saucerColor, distance, direction, revealed)
@@ -4609,6 +4624,35 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 //this.addActionButton( 'crashSite_'+crashSiteNumber+'_button', '<div id="button_crash_site_'+crashSiteNumber+'" class="crashSite"></div>', 'onClickCrashSite', null, null, 'gray');
                 this.addActionButton( 'crashSite_'+crashSiteNumber+'_button', _(crashSiteNumber), 'onClickCrashSite' ); // show text button for now
             }
+        },
+
+        addRotationalStabilizerSaucerButtons: function(saucerButtonList)
+        {
+            console.log("go first saucers:");
+            console.log(saucerButtonList);
+
+            // CLOCKWISE
+            var color = saucerButtonList['clockwise']['saucerColor'];
+            var buttonLabel = saucerButtonList['clockwise']['buttonLabel'];
+            var isDisabled = saucerButtonList['clockwise']['isDisabled'];
+            var hoverOverText = saucerButtonList['clockwise']['hoverOverText']; // hover over text or '' if we don't want a hover over
+            var actionName = saucerButtonList['clockwise']['actionName']; // selectSaucerToGoFirst
+            var makeRed = saucerButtonList['clockwise']['makeRed'];
+            this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_clockwise', null, null, 'gray');
+
+            // COUNTER-CLOCKWISE
+            color = saucerButtonList['counterclockwise']['saucerColor'];
+            buttonLabel = saucerButtonList['counterclockwise']['buttonLabel'];
+            isDisabled = saucerButtonList['counterclockwise']['isDisabled'];
+            hoverOverText = saucerButtonList['counterclockwise']['hoverOverText']; // hover over text or '' if we don't want a hover over
+            actionName = saucerButtonList['counterclockwise']['actionName']; // selectSaucerToGoFirst
+            makeRed = saucerButtonList['counterclockwise']['makeRed'];
+            this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_counter', null, null, 'gray');
+
+          //this.addActionButton( 'clockwise_button', '<div class="player_board_arrow" style="background-position-x:0px"></div>', 'onClick_clockwise', null, null, 'gray');
+
+          //this.addActionButton( 'counter_button', '<div class="player_board_arrow" style="background-position-x:-35px"></div>', 'onClick_counter', null, null, 'gray');
+
         },
 
         showLostCrewmemberButtons: function(lostCrewmembers)
@@ -5703,7 +5747,7 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'replacementGarmentSpaceChosen', this, "notif_replacementGarmentSpaceChosen" );
             dojo.subscribe( 'zagUsed', this, "notif_zagUsed" );
             dojo.subscribe( 'xSelected', this, "notif_xSelected" );
-            dojo.subscribe( 'crownAcquired', this, "notif_crownAcquired" );
+            dojo.subscribe( 'saucerGivenProbe', this, "notif_saucerGivenProbe" );
             dojo.subscribe( 'someoneDrewNewTrapCard', this, "notif_someoneDrewNewTrapCard" );
             dojo.subscribe( 'iGetNewTrapCard', this, "notif_iGetNewTrapCard" );
             dojo.subscribe( 'trapDiscarded', this, "notif_trapDiscarded" );
@@ -6298,12 +6342,14 @@ console.log("success... onClickUpgradeCardInHand");
             // I don't think we actually need to do anything... but having this puts a note in the message log with details
         },
 
-        notif_crownAcquired: function( notif )
+        notif_saucerGivenProbe: function( notif )
         {
-            console.log("Entered notif_crownAcquired.");
-            var ostrichColor = notif.args.color;
+            console.log("Entered notif_saucerGivenProbe.");
+            var saucerColor = notif.args.color;
+            var owner = notif.args.owner;
 
-            this.moveCrownToPlayerBoard(ostrichColor);
+            // set this saucer turn order to have the probe
+            this.giveSaucerProbe(saucerColor, owner);
         },
 
         notif_iGetNewTrapCard: function( notif )
@@ -6459,8 +6505,12 @@ console.log("success... onClickUpgradeCardInHand");
         {
             console.log("Entered notif_updateTurnOrder.");
             var turnOrder = notif.args.turnOrder;
+            var playerWithProbe = notif.args.probePlayer;
+            var turnOrderArray = notif.args.turnOrderArray;
 
-            this.updateTurnOrder(turnOrder);
+            console.log(turnOrderArray);
+
+            this.updateTurnOrder(turnOrder, playerWithProbe, turnOrderArray);
         },
 
         notif_cardChosen: function(notif)

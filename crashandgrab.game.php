@@ -270,7 +270,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				$result['garment'] = self::getObjectListFromDB( "SELECT garment_x,garment_y,garment_location,garment_color,garment_type FROM garment ORDER BY garment_location,garment_type");
 
-				$result['turnOrder'] = $this->getGameStateValue("TURN_ORDER");
+				$result['turnOrder'] = $this->getGameStateValue("TURN_ORDER"); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+				$result['probePlayer'] = $this->getStartPlayer(); // get the owner of the saucer with the probe
 
         return $result;
     }
@@ -997,6 +998,53 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result['actionName'] = 'selectSaucerToPlace';
 				$result['isDisabled'] = false;
 				$result['makeRed'] = false;
+
+				return $result;
+		}
+
+		function getSaucerToGoSecond()
+		{
+				$result = array();
+
+				//$currentPlayer = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				$activePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+
+				$saucerWithProbe = $this->getSaucerWithProbe();
+				$playerWithProbe = $this->getOwnerIdOfOstrich($saucerWithProbe);
+				$clockwisePlayer = $this->getPlayerAfter($playerWithProbe);
+				$counterClockwisePlayer = $this->getPlayerBefore($playerWithProbe);
+
+				$clockwiseSaucers = $this->getSaucersForPlayer($clockwisePlayer);
+				foreach( $clockwiseSaucers as $saucer )
+				{ // go through each saucer owned by this player
+
+						$playerColor = $saucer['ostrich_color']; // get the color this player was assigned
+						$playerColorFriendly = $this->convertColorToText($playerColor);
+
+						$result['clockwise'] = array();
+						$result['clockwise']['saucerColor'] = $playerColor;
+						$result['clockwise']['buttonLabel'] = $playerColorFriendly;
+						$result['clockwise']['hoverOverText'] = '';
+						$result['clockwise']['actionName'] = 'selectSaucerToGoFirst';
+						$result['clockwise']['isDisabled'] = false;
+						$result['clockwise']['makeRed'] = false;
+				}
+
+				$counterClockwiseSaucers = $this->getSaucersForPlayer($counterClockwisePlayer);
+				foreach( $counterClockwiseSaucers as $saucer )
+				{ // go through each saucer owned by this player
+
+						$playerColor = $saucer['ostrich_color']; // get the color this player was assigned
+						$playerColorFriendly = $this->convertColorToText($playerColor);
+
+						$result['counterclockwise'] = array();
+						$result['counterclockwise']['saucerColor'] = $playerColor;
+						$result['counterclockwise']['buttonLabel'] = $playerColorFriendly;
+						$result['counterclockwise']['hoverOverText'] = '';
+						$result['counterclockwise']['actionName'] = 'selectSaucerToGoFirst';
+						$result['counterclockwise']['isDisabled'] = false;
+						$result['counterclockwise']['makeRed'] = false;
+				}
 
 				return $result;
 		}
@@ -5060,6 +5108,25 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				self::DbQuery( $sql );
 		}
 
+		function resetUpgradeActivatedThisRound($upgradeName, $saucerColor)
+		{
+				$collectorNumber = $this->convertUpgradeNameToCollectorNumber($upgradeName);
+				$cardId = $this->getUpgradeCardId($saucerColor, $upgradeName);
+
+				$sql = "UPDATE upgradeCards SET times_activated_this_round=0,asked_to_activate_this_round=0 WHERE ";
+
+				if($cardId)
+				{ // we were able to find a cardId
+						$sql .= "card_id=$cardId";
+				}
+				else
+				{ // we were not able to find a cardId so just use collectorNumber
+						$sql .= "card_type_arg=$collectorNumber";
+				}
+
+				self::DbQuery( $sql );
+		}
+
 		function getSaucerCrashDetailsForSaucer($saucer)
 		{
 				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner, ostrich_x, ostrich_y, ostrich_causing_cliff_fall, crash_penalty_rendered
@@ -5792,7 +5859,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$sql = "UPDATE ostrich SET ostrich_zig_distance=20, ostrich_zig_direction=''" ;
 				self::DbQuery( $sql );
 		}
-
 		function resetOstrichChosen()
 		{
 				$sql = "UPDATE ostrich SET ostrich_is_chosen=0" ;
@@ -6025,6 +6091,20 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		    }
 
 		    return $matrix90;
+		}
+
+		function getSaucerIsChosen($saucerColor)
+		{
+				$isChosenValue = self::getUniqueValueFromDb("SELECT ostrich_is_chosen FROM ostrich WHERE ostrich_color='$saucerColor'");
+
+				if($isChosenValue == 1)
+				{
+						return true;
+				}
+				else
+				{
+						return false;
+				}
 		}
 
 		function getPlayerIdForZigCardId($cardId)
@@ -6288,6 +6368,23 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 
 				return null; // should never get here
+		}
+
+		function hasPlayerChosen($playerId)
+		{
+				$ostrichSql = "SELECT SUM(ostrich_is_chosen) ";
+				$ostrichSql .= "FROM ostrich ";
+				$ostrichSql .= "WHERE ostrich_owner=$playerId";
+				$result = self::getUniqueValueFromDb($ostrichSql);
+
+				if($result > 0)
+				{ // this player has chosen
+					return true;
+				}
+				else
+				{ // this player has not chosen
+					return false;
+				}
 		}
 
 		function isThisFirstTurnInRoundForPlayer($playerWhoseTurnItIs)
@@ -7231,21 +7328,24 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->moveCrewmemberToBoard($crewmemberId, $locX, $locY);
 		}
 
-		function giveProbe($ostrich)
+		function giveProbe($newSaucerGettingProbe)
 		{
-				$ostrichWithCrown = $this->getSaucerWithProbe();
+				$currentSaucerWithProbe = $this->getSaucerWithProbe();
 
-				$playerName = $this->getOwnerNameOfOstrich($ostrich);
+				$ownerOfNewSaucerWithProbe = $this->getOwnerIdOfOstrich($newSaucerGettingProbe);
+
+				$playerName = $this->getOwnerNameOfOstrich($newSaucerGettingProbe);
 
 				// get the colored version and friendly name of the hex color
-				$saucerColorFriendly = $this->convertColorToHighlightedText($ostrich);
+				$saucerColorFriendly = $this->convertColorToHighlightedText($newSaucerGettingProbe);
 
-				if($ostrich == $ostrichWithCrown)
-				{
-						self::notifyAllPlayers( "crownAcquired", clienttranslate( '${ostrichName} already has the Probe.' ), array(
+				if($newSaucerGettingProbe == $currentSaucerWithProbe)
+				{ // the same saucer gets the probe twice in a row
+						self::notifyAllPlayers( "saucerGivenProbe", clienttranslate( '${ostrichName} already has the Probe.' ), array(
 								'ostrichName' => $saucerColorFriendly,
 								'player_name' => $playerName,
-								'color' => $ostrich
+								'color' => $newSaucerGettingProbe,
+								'owner' => $ownerOfNewSaucerWithProbe
 						) );
 				}
 				else
@@ -7256,21 +7356,21 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						// set the one who got the crown
 						$sqlCrown = "UPDATE ostrich SET ostrich_has_crown=1
-													WHERE ostrich_color='$ostrich' " ;
+													WHERE ostrich_color='$newSaucerGettingProbe' " ;
 						self::DbQuery( $sqlCrown );
 
 
 
-						self::notifyAllPlayers( "crownAcquired", clienttranslate( '${ostrichName} has the Probe and will go first this round!' ), array(
-								'color' => $ostrich,
+						self::notifyAllPlayers( "saucerGivenProbe", clienttranslate( '${ostrichName} has the Probe and will go first this round!' ), array(
 								'ostrichName' => $saucerColorFriendly,
-								'player_name' => $playerName
+								'player_name' => $playerName,
+								'color' => $newSaucerGettingProbe,
+								'owner' => $ownerOfNewSaucerWithProbe
 						) );
 				}
 
 				// count how many times this saucer has gotten the probe
-				$ownerOfProbeOstrich = $this->getOwnerIdOfOstrich($ostrich);
-				self::incStat( 1, 'rounds_started', $ownerOfProbeOstrich );
+				self::incStat( 1, 'rounds_started', $ownerOfNewSaucerWithProbe );
 		}
 
 		function incrementAirlockExchangeable($crewmemberId)
@@ -7290,7 +7390,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				self::DbQuery( $sql );
 		}
 
-		function setOstrichToChosen($ostrich)
+		function setSaucerToChosen($ostrich)
 		{
 				$sql = "UPDATE ostrich SET ostrich_is_chosen=1
 											WHERE ostrich_color='$ostrich' " ;
@@ -8784,7 +8884,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function executeChooseOstrichToGoNext()
 		{
 				$ostrich = $this->getOstrichWhoseTurnItIs();
-				$this->setOstrichToChosen($ostrich);
+				$this->setSaucerToChosen($ostrich);
 
 				$this->gamestate->nextState( "zigChosen" ); // stay in this phase
 		}
@@ -8851,7 +8951,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function executeClickedSaucerToGoFirst($colorHex)
 		{
 				// set this saucer to the one going next ostrich_is_chosen
-				$this->setOstrichToChosen($colorHex);
+				$this->setSaucerToChosen($colorHex);
+
+				$this->updateTurnOrder(0);
 
 				$this->gamestate->nextState( "locateCrashedSaucer" );
 		}
@@ -9579,6 +9681,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						// specify that we have already set the direction this round so we don't ask again
 						$this->activateUpgrade($saucerWhoseTurnItIs, "Time Machine");
 
+						// set asked_to_activate_this_round to 1 so we don't ask again
+						$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Time Machine");
+
 
 
 						// notify the player so they can rotate the card on the UI
@@ -10200,7 +10305,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				// if this is not the first round, set the player with the probe to go first
 //throw new feException( "test2" );
 				if($this->getNumberOfPlayers() > 2)
-				{ // we don't care about turn order in a 2-player game
+				{ // more than 2 players
 
 						// get the chosen turn order if someone has played rotational stabilizer
 						$rotationalStabilizerOwner = $this->getRotationalStabilizerOwner();
@@ -10221,17 +10326,14 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 								// set the turn order and go to playerTurnStart state
 								$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+								$this->gamestate->nextState( "playerTurnStart" ); // start the PLAYER turn (not the SAUCER turn)
 						}
 
 				}
 				else
-				{ // more than 2 players
+				{ // 2 players
 
-						// roll the rotation die
-						$turnOrderInt = rand(0,1);
-
-						// set the turn order and go to playerTurnStart state
-						$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+						$this->gamestate->nextState( "playerTurnStart" ); // start the PLAYER turn (not the SAUCER turn)
 				}
 
 				// tell all players a new round has started where they will send a random move card back of their opponents on to their mat
@@ -10243,15 +10345,109 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				self::setGameStateValue( 'TURN_ORDER', $turnOrderInt ); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 
 				$turnOrderFriendly = $this->convertTurnOrderIntToText($turnOrderInt);
+				$playerWithProbe = $this->getStartPlayer(); // get the owner of the saucer with the probe
+
+				$turnOrder = $this->createTurnOrderArray($playerWithProbe, $turnOrderInt);
 
 				// notify players of the direction (send clockwise/counter)
 				self::notifyAllPlayers( 'updateTurnOrder', clienttranslate( 'The turn direction this round is ${turnOrderFriendly}.' ), array(
 								'i18n' => array('turnOrderFriendly'),
 								'turnOrderFriendly' => $turnOrderFriendly,
-								'turnOrder' => $turnOrderInt
+								'turnOrder' => $turnOrderInt,
+								'probePlayer' => $playerWithProbe,
+								'turnOrderArray' => $turnOrder
 				) );
+		}
 
-				$this->gamestate->nextState( "playerTurnStart" ); // start the PLAYER turn (not the SAUCER turn)
+		function createTurnOrderArray($playerWithProbe, $turnOrderInt)
+		{
+				$turnOrderArraySaucers = array();
+				$turnIndex = 1;
+				$numberOfPlayers = $this->getNumberOfPlayers();
+
+				// assume we are going CLOCKWISE
+				$nextPlayer = $this->getPlayerAfter( $playerWithProbe );
+
+				if($turnOrderInt == 1)
+				{ // we are going COUNTERCLOCKWISE
+						$nextPlayer = $this->getPlayerBefore( $playerWithProbe );
+				}
+
+				// add this player's saucers to the SAUCER array
+				$saucersForPlayer = $this->getSaucersForPlayer($playerWithProbe);
+				foreach( $saucersForPlayer as $saucer )
+				{ // go through each saucer of this player
+						$saucerColor = $saucer['ostrich_color'];
+						$turnOrder = $turnIndex;
+
+						if($numberOfPlayers == 2)
+						{ // this is a 2 player game
+
+								if($this->hasPlayerChosen($playerWithProbe))
+								{ // this player has chosen which of its saucers will go first
+
+										$thisSaucerIsChosen = $this->getSaucerIsChosen($saucerColor);
+										if(!$thisSaucerIsChosen)
+										{ // this saucer was NOT the one chosen
+												$turnOrder = 3; // they will go third
+										}
+								}
+						}
+
+						$saucerOrder = array();
+						array_push($saucerOrder, $turnOrder);
+						array_push($saucerOrder, $saucerColor);
+						array_push($turnOrderArraySaucers, $saucerOrder);
+				}
+
+				while($nextPlayer != $playerWithProbe)
+				{ // go through each player
+						$turnIndex++;
+						$turnOrder = $turnIndex;
+
+						$saucersForPlayer = $this->getSaucersForPlayer($nextPlayer);
+						foreach( $saucersForPlayer as $saucer )
+						{ // go through each saucer of this player
+								$saucerColor = $saucer['ostrich_color'];
+
+								if($numberOfPlayers == 2)
+								{ // this is a 2 player game
+
+										if($this->hasPlayerChosen($nextPlayer))
+										{ // this player has chosen which of its saucers will go first (and it's not the probe player so they are going second and fourth)
+
+												$thisSaucerIsChosen = $this->getSaucerIsChosen($saucerColor);
+												if($thisSaucerIsChosen)
+												{
+														$turnOrder = 2; // they will go second
+												}
+												else { // this saucer was NOT the one chosen
+														$turnOrder = 4; // they will go fourth because this player does not have the probe
+												}
+										}
+										else
+										{ // this player has not chosen
+												$turnOrder = 0; // we don't know their order yet
+										}
+								}
+
+								$saucerOrder = array();
+								array_push($saucerOrder, $turnOrder);
+								array_push($saucerOrder, $saucerColor);
+								array_push($turnOrderArraySaucers, $saucerOrder);
+						}
+
+						if($turnOrderInt == 1)
+						{ // we are going COUNTERCLOCKWISE
+								$nextPlayer = $this->getPlayerBefore( $nextPlayer );
+						}
+						else
+						{ // we are going CLOCKWISE
+								$nextPlayer = $this->getPlayerAfter( $nextPlayer );
+						}
+				}
+
+				return $turnOrderArraySaucers;
 		}
 
 		// Convert a player ID into a player NAME.
@@ -10895,7 +11091,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function getUpgradeCardId($saucerColor, $nameOrCollectorNumber)
 		{
-			$sql = "SELECT card_id FROM upgradeCards WHERE card_location='$saucerColor' && card_is_played=1";
+			$sql = "SELECT card_id FROM upgradeCards WHERE card_location='$saucerColor' AND card_is_played=1";
 
 			switch($nameOrCollectorNumber)
 			{
@@ -10993,7 +11189,13 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
 				$sql .= "  ORDER BY times_activated_this_round DESC LIMIT 1";
 
-				return self::getUniqueValueFromDb($sql);
+				$valueToReturn = self::getUniqueValueFromDb($sql);
+
+				//if($nameOrCollectorNumber == "Time Machine")
+				//	throw new feException( "valueToReturn:".$valueToReturn." name:".$nameOrCollectorNumber." sql for cardId:".$sql);
+
+
+				return $valueToReturn;
 		}
 
 		function getSkippedBoosting($saucerColor)
@@ -11191,7 +11393,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$distanceString = $this->convertDistanceTypeToString($distanceType);
 
 				// reset whether we've asked about upgrades so you can use upgrades both before and after your turn (Pulse Cannon)
-				$this->resetAllUpgradesActivatedThisRound();
+				$this->resetUpgradeActivatedThisRound("Pulse Cannon", $saucerWhoseTurnItIs); // just reset pulse cannon because if you do all, it will mess up others like Time Machine
+				//$this->resetAllUpgradesActivatedThisRound();
 
 				self::notifyAllPlayers( "cardRevealed", clienttranslate( '${saucer_color_highlighted} revealed a ${distance_string} in the ${direction} direction.' ), array(
 						'saucer_color' => $saucerWhoseTurnItIs,
@@ -11472,10 +11675,15 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						foreach( $playersWithLeastCrewmembers as $playerCounts )
 						{
 								$playerId = $playerCounts['playerId'];
-								$saucerColor = $this->getFirstSaucerForPlayer($playerId);
+								$allPlayersSaucers = $this->getSaucersForPlayer($playerId);
+								foreach( $allPlayersSaucers as $saucer )
+								{ // go through each saucer owned by this player
 
-								// they get the probe
-								$this->giveProbe($saucerColor);
+										$saucerColor = $saucer['ostrich_color'];
+
+										// they get the probe
+										$this->giveProbe($saucerColor);
+								}
 
 								// make them go first in turn order
 								$this->gamestate->changeActivePlayer( $playerId );
@@ -11508,13 +11716,21 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 									foreach($playersWithLeastCrewmembers as $playerDetails)
 									{
-											$playerId = $playerDetails['playerId'];
+											$playerId = $playerDetails['playerId']; // we already know they were the most recent to go so they get the probe
+
 											$saucerColor = $playerDetails['saucerColor'];
 											if($playerId == $currentPlayer)
 											{ // this player is tied for the lowest total crewmembers
 
-													// we already know they were the most recent to go so they get the probe
-													$this->giveProbe($saucerColor);
+													$allPlayersSaucers = $this->getSaucersForPlayer($playerId);
+													foreach( $allPlayersSaucers as $saucer )
+													{ // go through each saucer owned by this player
+
+															$saucerColor = $saucer['ostrich_color'];
+
+
+															$this->giveProbe($saucerColor);
+													}
 
 													// make them go first in turn order
 													$this->gamestate->changeActivePlayer( $playerId );
@@ -11785,7 +12001,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 //throw new feException( "saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerToCrash: $saucerToCrash" );
 				return array(
-						'saucerColor' => $saucerWhoseTurnItIsColorFriendly
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
+						'saucerButtons' => self::getSaucerToGoSecond()
 				);
 		}
 
