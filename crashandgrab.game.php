@@ -8953,7 +8953,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// set this saucer to the one going next ostrich_is_chosen
 				$this->setSaucerToChosen($colorHex);
 
-				$this->updateTurnOrder(0);
+				$this->updateTurnOrder(0); // clockwise/counter doesn't matter because this only happens in 2-player games
 
 				$this->gamestate->nextState( "locateCrashedSaucer" );
 		}
@@ -9291,6 +9291,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->gamestate->changeActivePlayer( $startPlayer ); // set the active player (this cannot be done in an activeplayer game state)
 
 				$this->setState_PreMovement(); // set the player's phase based on what that player has available to them
+		}
+
+		// called when Rotational Stabilizer player chooses who goes second in turn order
+		function executeChooseTurnOrder($turnOrderInt)
+		{
+				$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+				$this->gamestate->nextState( "playerTurnStart" ); // start the PLAYER turn (not the SAUCER turn)
 		}
 
 		function executeSaucerMove($saucerMoving)

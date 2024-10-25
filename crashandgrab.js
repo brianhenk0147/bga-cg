@@ -87,6 +87,10 @@ function (dojo, declare) {
             this.saucermatwidth = 154;
             this.saucermatheight = 154;
 
+            // crewmember height
+            this.crewmemberwidth = 47;
+            this.crewmemberheight = 47;
+
             // sub-states
             this.playedCardThisTurn = false; // true if I have chosen the Zig I will play this round
             this.choseDirectionThisTurn = false; // true if I have chosen the DIRECTION of the Zig I will play this round
@@ -115,6 +119,9 @@ function (dojo, declare) {
             // counters for player boards
             this.energy_counters={};
             this.booster_counters={};
+
+            // player board crewmember stocks
+            this.playerBoardCrewmemberStocks={};
         },
 
         /*
@@ -184,6 +191,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 // update the player board with the value of how many boosters
                 this.energy_counters[saucer.color].setValue(energyQuantity);
+
+                this.createPlayerBoardCrewmemberStock(saucer.color);
             }
 
 
@@ -336,6 +345,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     // in 2-player games, we must adjust the location of crewmembers because
                     // they get pushed down by the number of upgrades their teammat has
                     this.adjustCrewmemberLocationBasedOnUpgrades(location, typeString);
+
+                    // add it to the stock on the player board
+                    this.addCrewmemberToPlayerBoard(location, color, typeString);
                 }
 
             }
@@ -2517,6 +2529,133 @@ console.log("return false");
             }
         },
 
+        addCrewmemberToPlayerBoard: function(saucerColor, crewmemberColor, crewmemberType)
+        {
+            var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType);
+
+            console.log("for saucerColor " + saucerColor + " crewmemberColor " + crewmemberColor + " with crewmemberType " + crewmemberType + " has uniqueId " + uniqueId);
+            console.log(this.playerBoardCrewmemberStocks[saucerColor][crewmemberType]);
+
+            this.playerBoardCrewmemberStocks[saucerColor][crewmemberType].addToStockWithId( uniqueId, uniqueId );
+            //this.playerBoardCrewmemberStocks[saucerColor][crewmemberType].updateDisplay(); // re-layout
+
+            var crewmemberHtmlId = "player_board_"+crewmemberType+"_container_"+saucerColor+"_item_"+uniqueId;
+            console.log("crewmemberHtmlId:" + crewmemberHtmlId);
+
+            // update the z-index so the correct ones are on top
+            dojo.style(crewmemberHtmlId, "zIndex", uniqueId);
+        },
+
+        removeCrewmemberFromPlayerBoard: function(saucerColor, crewmemberColor, crewmemberType)
+        {
+            var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType);
+
+            console.log("removing crewmemberType " + crewmemberType + " from saucer " + saucerColor + " using uniqueId " + uniqueId);
+
+            this.playerBoardCrewmemberStocks[saucerColor][crewmemberType].removeFromStockById( uniqueId );
+        },
+
+        convertColorToInt: function(color)
+        {
+            switch(color)
+            {
+                case this.GREENCOLOR:
+                  return 0;
+                case this.BLUECOLOR:
+                  return 1;
+                case this.YELLOWCOLOR:
+                  return 2;
+                case this.REDCOLOR:
+                  return 3;
+                case this.ORANGECOLOR:
+                  return 4;
+                case this.PURPLECOLOR:
+                  return 5;
+            }
+
+            return -1;
+        },
+
+        getCrewmemberUniqueId: function(crewmemberColor, crewmemberType)
+        {
+            console.log("converting crewmemberType " + crewmemberType);
+            switch( crewmemberType )
+            {
+                case "0":
+                case "head":
+                case "pilot":
+                    switch( crewmemberColor )
+                    {
+                        case this.GREENCOLOR:
+                          return 0;
+                        case this.BLUECOLOR:
+                          return 1;
+                        case this.YELLOWCOLOR:
+                          return 2;
+                        case this.REDCOLOR:
+                          return 3;
+                        case this.ORANGECOLOR:
+                          return 4;
+                        case this.PURPLECOLOR:
+                          return 5;
+                    }
+                case "1":
+                case "body":
+                case "engineer":
+                        switch( crewmemberColor )
+                        {
+                            case this.GREENCOLOR:
+                              return 6;
+                            case this.BLUECOLOR:
+                              return 7;
+                            case this.YELLOWCOLOR:
+                              return 8;
+                            case this.REDCOLOR:
+                              return 9;
+                            case this.ORANGECOLOR:
+                              return 10;
+                            case this.PURPLECOLOR:
+                              return 11;
+                        }
+                case "2":
+                case "legs":
+                case "doctor":
+                        switch( crewmemberColor )
+                        {
+                            case this.GREENCOLOR:
+                              return 12;
+                            case this.BLUECOLOR:
+                              return 13;
+                            case this.YELLOWCOLOR:
+                              return 14;
+                            case this.REDCOLOR:
+                              return 15;
+                            case this.ORANGECOLOR:
+                              return 16;
+                            case this.PURPLECOLOR:
+                              return 17;
+                        }
+                case "3":
+                case "feet":
+                case "scientist":
+                        switch( crewmemberColor )
+                        {
+                            case this.GREENCOLOR:
+                              return 18;
+                            case this.BLUECOLOR:
+                              return 19;
+                            case this.YELLOWCOLOR:
+                              return 20;
+                            case this.REDCOLOR:
+                              return 21;
+                            case this.ORANGECOLOR:
+                              return 22;
+                            case this.PURPLECOLOR:
+                              return 23;
+                        }
+            }
+        },
+
         convertCrewmemberType: function(crewmemberType)
         {
           console.log("converting crewmemberType " + crewmemberType);
@@ -3276,6 +3415,9 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     dojo.addClass(source, 'played_'+crewmemberType);
 
                     animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
+
+                    // add it to the stock on the player board
+                    this.addCrewmemberToPlayerBoard(saucerColor, crewmemberColor, crewmemberType);
                 }
                 else if(eventType == 'saucerCrashed')
                 { // the saucer crashed
@@ -3486,6 +3628,161 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
         resetMovePhaseVariables: function() {
             this.ostrichChosen = false;
             this.mustSkateboard = false;
+        },
+
+        createPlayerBoardCrewmemberStock: function(saucerColor)
+        {
+            this.playerBoardCrewmemberStocks[saucerColor] = {};
+
+/*
+            var greenWeight = 0;
+            var blueWeight = 0;
+            var yellowWeight = 0;
+            var redWeight = 0;
+            var orangeWeight = 0;
+            var purpleWeight = 0;
+
+            if(saucerColor == this.GREENCOLOR)
+            {
+                greenWeight = 10;
+            }
+            else if(saucerColor == this.BLUECOLOR)
+            {
+                blueWeight = 10;
+            }
+            else if(saucerColor == this.YELLOWCOLOR)
+            {
+                yellowWeight = 10;
+            }
+            else if(saucerColor == this.REDCOLOR)
+            {
+                redWeight = 10;
+            }
+            else if(saucerColor == this.ORANGECOLOR)
+            {
+                orangeWeight = 10;
+            }
+            else if(saucerColor == this.PURPLECOLOR)
+            {
+                purpleWeight = 10;
+            }
+*/
+
+            var pilotHtmlId = 'player_board_pilot_container_'+saucerColor;
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'] = new ebg.stock();
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].create( this, $(pilotHtmlId), this.crewmemberwidth, this.crewmemberheight );
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].image_items_per_row = 6; // the number of card images per row in the sprite image
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].container_div.width = "47px"; // enought just for 1 card
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].autowidth = false; // this is required so it obeys the width set above
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].vertical_overlap = 75; // overlap percentage
+            //this.playerBoardCrewmemberStocks[saucerColor]['pilot'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].item_margin = 0; // has to be 0 if using overlap
+
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 0, 0, g_gamethemeurl+'img/crewmembers.png', 0 ); // green pilot
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 1, 1, g_gamethemeurl+'img/crewmembers.png', 1 ); // blue pilot
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 2, 2, g_gamethemeurl+'img/crewmembers.png', 2 ); // yellow pilot
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 3, 3, g_gamethemeurl+'img/crewmembers.png', 3 ); // red pilot
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 4, 4, g_gamethemeurl+'img/crewmembers.png', 4 ); // orange pilot
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 5, 5, g_gamethemeurl+'img/crewmembers.png', 5 ); // purple pilot
+//this.playerBoardCrewmemberStocks[saucerColor]['pilot'].updateDisplay(); // re-layout
+
+
+            var engineerHtmlId = 'player_board_engineer_container_'+saucerColor;
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'] = new ebg.stock();
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].create( this, $(engineerHtmlId), this.crewmemberwidth, this.crewmemberheight );
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].image_items_per_row = 6; // the number of card images per row in the sprite image
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].container_div.width = "47px"; // enought just for 1 card
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].autowidth = false; // this is required so it obeys the width set above
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].vertical_overlap = 75; // overlap percentage
+            //this.playerBoardCrewmemberStocks[saucerColor]['engineer'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].item_margin = 0; // has to be 0 if using overlap
+
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 6, 6, g_gamethemeurl+'img/crewmembers.png', 6 ); // green engineer
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 7, 7, g_gamethemeurl+'img/crewmembers.png', 7 ); // blue engineer
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 8, 8, g_gamethemeurl+'img/crewmembers.png', 8 ); // yellow engineer
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 9, 9, g_gamethemeurl+'img/crewmembers.png', 9 ); // red engineer
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 10, 10, g_gamethemeurl+'img/crewmembers.png', 10 ); // orange engineer
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 11, 11, g_gamethemeurl+'img/crewmembers.png', 11 ); // purple engineer
+
+
+
+
+            var doctorHtmlId = 'player_board_doctor_container_'+saucerColor;
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'] = new ebg.stock();
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].create( this, $(doctorHtmlId), this.crewmemberwidth, this.crewmemberheight );
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].image_items_per_row = 6; // the number of card images per row in the sprite image
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].container_div.width = "47px"; // enought just for 1 card
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].autowidth = false; // this is required so it obeys the width set above
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].vertical_overlap = 75; // overlap percentage
+            //this.playerBoardCrewmemberStocks[saucerColor]['doctor'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].item_margin = 0; // has to be 0 if using overlap
+
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 12, 12, g_gamethemeurl+'img/crewmembers.png', 12 ); // green doctor
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 13, 13, g_gamethemeurl+'img/crewmembers.png', 13 ); // blue doctor
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 14, 14, g_gamethemeurl+'img/crewmembers.png', 14 ); // yellow doctor
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 15, 15, g_gamethemeurl+'img/crewmembers.png', 15 ); // red doctor
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 16, 16, g_gamethemeurl+'img/crewmembers.png', 16 ); // orange doctor
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 17, 17, g_gamethemeurl+'img/crewmembers.png', 17 ); // purple doctor
+
+
+
+            var scientistHtmlId = 'player_board_scientist_container_'+saucerColor;
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'] = new ebg.stock();
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].create( this, $(scientistHtmlId), this.crewmemberwidth, this.crewmemberheight );
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].image_items_per_row = 6; // the number of card images per row in the sprite image
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].container_div.width = "47px"; // enought just for 1 card
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].autowidth = false; // this is required so it obeys the width set above
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].vertical_overlap = 75; // overlap percentage
+            //this.playerBoardCrewmemberStocks[saucerColor]['scientist'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].item_margin = 0; // has to be 0 if using overlap
+
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 18, 18, g_gamethemeurl+'img/crewmembers.png', 18 ); // green scientist
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 19, 19, g_gamethemeurl+'img/crewmembers.png', 19 ); // blue scientist
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 20, 20, g_gamethemeurl+'img/crewmembers.png', 20 ); // yellow scientist
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 21, 21, g_gamethemeurl+'img/crewmembers.png', 21 ); // red scientist
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 22, 22, g_gamethemeurl+'img/crewmembers.png', 22 ); // orange scientist
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 23, 23, g_gamethemeurl+'img/crewmembers.png', 23 ); // purple scientist
+
+
+            /*
+            var pilotHtmlId = 'player_board_engineer_container_'+saucerColor;
+            this.playerBoardCrewmemberStocks[saucerColor] = new ebg.stock();
+            this.playerBoardCrewmemberStocks[saucerColor].create( this, $(pilotHtmlId), this.crewmemberwidth, this.crewmemberheight );
+            this.playerBoardCrewmemberStocks[saucerColor].image_items_per_row = 6; // the number of card images per row in the sprite image
+
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 0, greenWeight, g_gamethemeurl+'img/crewmembers.png', 0 ); // green pilot
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 1, blueWeight, g_gamethemeurl+'img/crewmembers.png', 1 ); // blue pilot
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 2, yellowWeight, g_gamethemeurl+'img/crewmembers.png', 2 ); // yellow pilot
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 3, redWeight, g_gamethemeurl+'img/crewmembers.png', 3 ); // red pilot
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 4, orangeWeight, g_gamethemeurl+'img/crewmembers.png', 4 ); // orange pilot
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 5, purpleWeight, g_gamethemeurl+'img/crewmembers.png', 5 ); // purple pilot
+
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 6, greenWeight, g_gamethemeurl+'img/crewmembers.png', 6 ); // green engineer
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 7, blueWeight, g_gamethemeurl+'img/crewmembers.png', 7 ); // blue engineer
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 8, yellowWeight, g_gamethemeurl+'img/crewmembers.png', 8 ); // yellow engineer
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 9, redWeight, g_gamethemeurl+'img/crewmembers.png', 9 ); // red engineer
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 10, orangeWeight, g_gamethemeurl+'img/crewmembers.png', 10 ); // orange engineer
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 11, purpleWeight, g_gamethemeurl+'img/crewmembers.png', 11 ); // purple engineer
+
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 12, greenWeight, g_gamethemeurl+'img/crewmembers.png', 12 ); // green doctor
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 13, blueWeight, g_gamethemeurl+'img/crewmembers.png', 13 ); // blue doctor
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 14, yellowWeight, g_gamethemeurl+'img/crewmembers.png', 14 ); // yellow doctor
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 15, redWeight, g_gamethemeurl+'img/crewmembers.png', 15 ); // red doctor
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 16, orangeWeight, g_gamethemeurl+'img/crewmembers.png', 16 ); // orange doctor
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 17, purpleWeight, g_gamethemeurl+'img/crewmembers.png', 17 ); // purple doctor
+
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 18, greenWeight, g_gamethemeurl+'img/crewmembers.png', 18 ); // green scientist
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 19, blueWeight, g_gamethemeurl+'img/crewmembers.png', 19 ); // blue scientist
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 20, yellowWeight, g_gamethemeurl+'img/crewmembers.png', 20 ); // yellow scientist
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 21, redWeight, g_gamethemeurl+'img/crewmembers.png', 21 ); // red scientist
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 22, orangeWeight, g_gamethemeurl+'img/crewmembers.png', 22 ); // orange scientist
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 23, purpleWeight, g_gamethemeurl+'img/crewmembers.png', 23 ); // purple scientist
+            */
+
         },
 
         createUpgradeHandStock: function()
@@ -6175,6 +6472,12 @@ console.log("success... onClickUpgradeCardInHand");
             // give it a new parent so it's no longer on the previous saucer mat
             this.attachToNewParent(source, destination);
 
+            // remove it from the stock of the other player
+            this.removeCrewmemberFromPlayerBoard(saucerColorStealing, crewmemberColor, crewmemberType);
+
+            // add it to the stock on the player board
+            this.addCrewmemberToPlayerBoard(saucerColorStealing, crewmemberColor, crewmemberType);
+
             // set the speed it will move
             var animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
 
@@ -6217,6 +6520,9 @@ console.log("success... onClickUpgradeCardInHand");
             // give it a played class so it's rotated correctly
             dojo.addClass(source, 'played_'+crewmemberType);
 
+            // add it to the stock on the player board
+            this.addCrewmemberToPlayerBoard(saucerColor, crewmemberColor, crewmemberType);
+
             // set the speed it will move
             var animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
 
@@ -6236,7 +6542,6 @@ console.log("success... onClickUpgradeCardInHand");
 
             });
             animationId.play();
-
         },
 
         notif_replacementGarmentChosen: function( notif )

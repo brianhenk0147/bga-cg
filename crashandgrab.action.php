@@ -165,14 +165,14 @@
     public function actClockwise()
     {
         self::setAjaxMode();
-        $this->game->updateTurnOrder(0); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+        $this->game->executeChooseTurnOrder(0); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
         self::ajaxResponse( );
     }
 
     public function actCounter()
     {
         self::setAjaxMode();
-        $this->game->updateTurnOrder(1); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+        $this->game->executeChooseTurnOrder(1); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
         self::ajaxResponse( );
     }
 
