@@ -3419,6 +3419,48 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     // add it to the stock on the player board
                     this.addCrewmemberToPlayerBoard(saucerColor, crewmemberColor, crewmemberType);
                 }
+                else if(eventType == 'crewmemberPickupExtras')
+                { // the saucer picked up a crewmember that should go to their extras
+                    saucerColor = nextEvent['saucer_moving']; // ff0000
+                    var crewmemberColor = nextEvent['crewmember_color']; // ff0000
+
+                    crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
+                    source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
+
+                    destination = 'extra_crewmembers_container_'+saucerColor;
+
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(source, destination);
+
+                    // take away the played class so it's rotated back to normal
+                    dojo.removeClass(source, 'played_'+crewmemberType);
+
+                    animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
+
+                    // add it to the stock on the player board
+                    this.addCrewmemberToPlayerBoard(saucerColor, crewmemberColor, crewmemberType);
+                }
+                else if(eventType == 'crewmemberPickupMoveToExtras')
+                { // move crewmember from saucer to extras
+                    saucerColor = nextEvent['saucer_moving']; // ff0000
+                    var crewmemberColor = nextEvent['crewmember_color']; // ff0000
+
+                    crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
+                    source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
+
+                    destination = 'extra_crewmembers_container_'+saucerColor;
+
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(source, destination);
+
+                    // take away the played class so it's rotated back to normal
+                    dojo.removeClass(source, 'played_'+crewmemberType);
+
+                    animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
+
+                    // add it to the stock on the player board
+                    this.addCrewmemberToPlayerBoard(saucerColor, crewmemberColor, crewmemberType);
+                }
                 else if(eventType == 'saucerCrashed')
                 { // the saucer crashed
 

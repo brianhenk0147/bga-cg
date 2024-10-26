@@ -4770,6 +4770,16 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return false;
 		}
 
+		// Returns how many crewmembers of a particular type a saucer has.
+		function countCrewmembersOfType($saucerColor, $crewmemberTypeAsInt)
+		{
+				$crewmembersForSaucerOfType = self::getObjectListFromDB( "SELECT *
+																				FROM garment
+																				WHERE garment_location='$saucerColor' AND garment_type=$crewmemberTypeAsInt" );
+
+				return count($crewmembersForSaucerOfType);
+		}
+
 		// Returns true if all of the following are true:
 		// a crewmember needs to be placed
 		// there is at least 1 lost crewmember
@@ -6747,11 +6757,48 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($garmentId);
 										$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
 
-										// add an animation event for the crewmember sliding to the saucer
-										array_push($moveEventList, array( 'event_type' => 'crewmemberPickup', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
 
 										// add the animation for the saucer moving onto the space of the crewmember
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
+										// see how many crewmembers we have of this type
+										$countOfCrewmembersOfType = $this->countCrewmembersOfType($saucerMoving, $crewmemberTypeId);
+
+										// see if this crewmembers is the first of this type for this saucer or its color matches the saucer
+										if($saucerMoving == $crewmemberColor || $countOfCrewmembersOfType == 1)
+										{ // this goes on the spot on the player mat
+//throw new feException( "crewmemberPickup");
+												// add an animation event for the crewmember sliding to the saucer
+												array_push($moveEventList, array( 'event_type' => 'crewmemberPickup', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
+										}
+										else
+										{ // this goes to the extras
+
+												// add an animation event for the crewmember sliding to the extras spot on the mat
+												array_push($moveEventList, array( 'event_type' => 'crewmemberPickupExtras', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
+										}
+
+										// see if we need to move any extras off saucer to the extras area
+										if($saucerMoving == $crewmemberColor && $countOfCrewmembersOfType > 1)
+										{ // it's your color and you already had one on your mat
+
+												$crewmembersOnBoard = $this->getCrewmembersOnSaucer($saucerMoving);
+												foreach($crewmembersOnBoard as $crewmember)
+												{ // go through each crewmember on our saucer
+
+														// get the crewmember coords
+														$crewmemberTypeIntOnSaucer = $crewmember['garment_type'];
+														$crewmemberColorOnSaucer = $crewmember['garment_color'];
+														$crewmemberTypeOnSaucer = $this->convertGarmentTypeIntToString($crewmemberTypeIntOnSaucer);
+
+														if($crewmemberTypeIntOnSaucer == $crewmemberTypeId && $crewmemberColorOnSaucer != $crewmemberColor)
+														{ // this is of the type we just got but not the exact one we just got
+
+																// add an animation event for all crewmembers of a type sliding to the extras so a new one can take its place
+																array_push($moveEventList, array( 'event_type' => 'crewmemberPickupMoveToExtras', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColorOnSaucer, 'crewmember_type' => $crewmemberTypeOnSaucer));
+														}
+												}
+										}
 								}
 								else if($boardValue == "C" || $boardValue == "O")
 								{ // this is a CRASH SITE
@@ -6887,11 +6934,47 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($garmentId);
 										$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
 
-										// add an animation event for the crewmember sliding to the saucer
-										array_push($moveEventList, array( 'event_type' => 'crewmemberPickup', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
-
 										// add the animation for the saucer moving onto the space of the crewmember
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
+										// see how many crewmembers we have of this type
+										$countOfCrewmembersOfType = $this->countCrewmembersOfType($saucerMoving, $crewmemberTypeId);
+
+										// see if this crewmembers is the first of this type for this saucer or its color matches the saucer
+										if($saucerMoving == $crewmemberColor || $countOfCrewmembersOfType == 1)
+										{ // this goes on the spot on the player mat
+//throw new feException( "crewmemberPickup");
+												// add an animation event for the crewmember sliding to the saucer
+												array_push($moveEventList, array( 'event_type' => 'crewmemberPickup', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
+										}
+										else
+										{ // this goes to the extras
+
+												// add an animation event for the crewmember sliding to the extras spot on the mat
+												array_push($moveEventList, array( 'event_type' => 'crewmemberPickupExtras', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
+										}
+
+										// see if we need to move any extras off saucer to the extras area
+										if($saucerMoving == $crewmemberColor && $countOfCrewmembersOfType > 1)
+										{ // it's your color and you already had one on your mat
+
+												$crewmembersOnBoard = $this->getCrewmembersOnSaucer($saucerMoving);
+												foreach($crewmembersOnBoard as $crewmember)
+												{ // go through each crewmember on our saucer
+
+														// get the crewmember coords
+														$crewmemberTypeIntOnSaucer = $crewmember['garment_type'];
+														$crewmemberColorOnSaucer = $crewmember['garment_color'];
+														$crewmemberTypeOnSaucer = $this->convertGarmentTypeIntToString($crewmemberTypeIntOnSaucer);
+
+														if($crewmemberTypeIntOnSaucer == $crewmemberTypeId && $crewmemberColorOnSaucer != $crewmemberColor)
+														{ // this is of the type we just got but not the exact one we just got
+
+																// add an animation event for all crewmembers of a type sliding to the extras so a new one can take its place
+																array_push($moveEventList, array( 'event_type' => 'crewmemberPickupMoveToExtras', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColorOnSaucer, 'crewmember_type' => $crewmemberTypeOnSaucer));
+														}
+												}
+										}
 								}
 								else if($boardValue == "C" || $boardValue == "O")
 								{ // this is a CRASH SITE
@@ -7019,11 +7102,47 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($garmentId);
 										$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
 
-										// add an animation event for the crewmember sliding to the saucer
-										array_push($moveEventList, array( 'event_type' => 'crewmemberPickup', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
-
 										// add the animation for the saucer moving onto the space of the crewmember
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
+										// see how many crewmembers we have of this type
+										$countOfCrewmembersOfType = $this->countCrewmembersOfType($saucerMoving, $crewmemberTypeId);
+
+										// see if this crewmembers is the first of this type for this saucer or its color matches the saucer
+										if($saucerMoving == $crewmemberColor || $countOfCrewmembersOfType == 1)
+										{ // this goes on the spot on the player mat
+//throw new feException( "crewmemberPickup");
+												// add an animation event for the crewmember sliding to the saucer
+												array_push($moveEventList, array( 'event_type' => 'crewmemberPickup', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
+										}
+										else
+										{ // this goes to the extras
+
+												// add an animation event for the crewmember sliding to the extras spot on the mat
+												array_push($moveEventList, array( 'event_type' => 'crewmemberPickupExtras', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
+										}
+
+										// see if we need to move any extras off saucer to the extras area
+										if($saucerMoving == $crewmemberColor && $countOfCrewmembersOfType > 1)
+										{ // it's your color and you already had one on your mat
+
+												$crewmembersOnBoard = $this->getCrewmembersOnSaucer($saucerMoving);
+												foreach($crewmembersOnBoard as $crewmember)
+												{ // go through each crewmember on our saucer
+
+														// get the crewmember coords
+														$crewmemberTypeIntOnSaucer = $crewmember['garment_type'];
+														$crewmemberColorOnSaucer = $crewmember['garment_color'];
+														$crewmemberTypeOnSaucer = $this->convertGarmentTypeIntToString($crewmemberTypeIntOnSaucer);
+
+														if($crewmemberTypeIntOnSaucer == $crewmemberTypeId && $crewmemberColorOnSaucer != $crewmemberColor)
+														{ // this is of the type we just got but not the exact one we just got
+
+																// add an animation event for all crewmembers of a type sliding to the extras so a new one can take its place
+																array_push($moveEventList, array( 'event_type' => 'crewmemberPickupMoveToExtras', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColorOnSaucer, 'crewmember_type' => $crewmemberTypeOnSaucer));
+														}
+												}
+										}
 								}
 								else if($boardValue == "C" || $boardValue == "O")
 								{ // this is a CRASH SITE
@@ -7147,11 +7266,47 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($garmentId);
 										$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
 
-										// add an animation event for the crewmember sliding to the saucer
-										array_push($moveEventList, array( 'event_type' => 'crewmemberPickup', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
-
 										// add the animation for the saucer moving onto the space of the crewmember
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
+										// see how many crewmembers we have of this type
+										$countOfCrewmembersOfType = $this->countCrewmembersOfType($saucerMoving, $crewmemberTypeId);
+
+										// see if this crewmembers is the first of this type for this saucer or its color matches the saucer
+										if($saucerMoving == $crewmemberColor || $countOfCrewmembersOfType == 1)
+										{ // this goes on the spot on the player mat
+//throw new feException( "crewmemberPickup");
+												// add an animation event for the crewmember sliding to the saucer
+												array_push($moveEventList, array( 'event_type' => 'crewmemberPickup', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
+										}
+										else
+										{ // this goes to the extras
+
+												// add an animation event for the crewmember sliding to the extras spot on the mat
+												array_push($moveEventList, array( 'event_type' => 'crewmemberPickupExtras', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColor, 'crewmember_type' => $crewmemberType));
+										}
+
+										// see if we need to move any extras off saucer to the extras area
+										if($saucerMoving == $crewmemberColor && $countOfCrewmembersOfType > 1)
+										{ // it's your color and you already had one on your mat
+
+												$crewmembersOnBoard = $this->getCrewmembersOnSaucer($saucerMoving);
+												foreach($crewmembersOnBoard as $crewmember)
+												{ // go through each crewmember on our saucer
+
+														// get the crewmember coords
+														$crewmemberTypeIntOnSaucer = $crewmember['garment_type'];
+														$crewmemberColorOnSaucer = $crewmember['garment_color'];
+														$crewmemberTypeOnSaucer = $this->convertGarmentTypeIntToString($crewmemberTypeIntOnSaucer);
+
+														if($crewmemberTypeIntOnSaucer == $crewmemberTypeId && $crewmemberColorOnSaucer != $crewmemberColor)
+														{ // this is of the type we just got but not the exact one we just got
+
+																// add an animation event for all crewmembers of a type sliding to the extras so a new one can take its place
+																array_push($moveEventList, array( 'event_type' => 'crewmemberPickupMoveToExtras', 'saucer_moving' => $saucerMoving, 'crewmember_color' => $crewmemberColorOnSaucer, 'crewmember_type' => $crewmemberTypeOnSaucer));
+														}
+												}
+										}
 								}
 								else if($boardValue == "C" || $boardValue == "O")
 								{ // this is an EMPTY CRATE
