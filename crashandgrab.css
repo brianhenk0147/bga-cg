@@ -129,6 +129,7 @@ body {
     vertical-align: top;
     width: 810px;
     margin-top: 25px;
+    margin-left: 5px;
 }
 
 .component_rounding {
@@ -140,6 +141,11 @@ body {
     -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
     box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
     filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
+.component_rounding_no_shadow {
+    border-radius: 10px;
+    border: 1px black solid;
 }
 
 .component_circle {
@@ -1676,11 +1682,9 @@ width: 170px;
 .my_mat_and_stuff_row {
     width: 282px;
 
-    display:block;
-
-    vertical-align: middle;
+    display: inline-block;
+    vertical-align: top;
     margin: 5px;
-    margin-left: 10px;
 
     border-radius: 10px;
     border: 0px black solid;
@@ -2167,9 +2171,13 @@ margin-top: 6px;
 }
 
 #upgradeCardHolder {
+    width: 470px;
     height: 164px;
+
     font-weight: 400;
     line-height: 10px;
+
+    margin: 0 auto;
 }
 
 #lost_crewmembers_column
@@ -2187,12 +2195,14 @@ margin-top: 6px;
 #move_cards_column
 {
     float: left;
+    margin-left: 5px;
 }
 
 /***** UPGRADE DECK *****/
 #upgrade_deck_container
 {
     width: 232px;
+    height: 380px;
 
     margin: 20px;
     padding: 7px;
@@ -2211,7 +2221,7 @@ margin-top: 6px;
 
 #upgrade_discard
 {
-    background-image: url('img/ship_upgrades_230_164.jpg');
+
     margin-top: 40px;
 }
 

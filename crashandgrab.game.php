@@ -252,6 +252,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				$result['upgradeCardContent'] = $this->getAllUpgradeCardContent();
 				$result['playedUpgrades'] = $this->getAllPlayedUpgradesBySaucer();
+				$result['discardedUpgrades'] = $this->getAllDiscardedUpgrades();
 
 
 
@@ -2706,6 +2707,16 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function getUpgradesToPlay()
 		{
 				$drawnCardsCount = $this->countDrawnCards();
+				$upgradesInDeck = $this->getUpgradesInDeck();
+
+				if(count($upgradesInDeck) < 2)
+				{ // we will be exhausting the deck
+
+						// notify all players to reshuffle
+						self::notifyAllPlayers( "reshuffleUpgrades", clienttranslate( 'Reshuffling the Upgrades Deck.' ), array(
+		            'upgrades_in_deck' => $upgradesInDeck
+		        ));
+				}
 
 				// draw 2 upgrades
 				if($drawnCardsCount < 2)
@@ -4995,6 +5006,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return $chosenMoveCards;
 		}
 
+		function getAllDiscardedUpgrades()
+		{
+				return self::getObjectListFromDB("SELECT * FROM upgradeCards WHERE card_location='discard'");
+		}
+
 		function getAllPlayedUpgradesBySaucer()
 		{
 				$result = array();
@@ -5657,6 +5673,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function getTotalCrewmembersForSaucer($saucerColor)
 		{
 				return self::getUniqueValueFromDb("SELECT COUNT(garment_id) FROM garment WHERE garment_location='$saucerColor'");
+		}
+
+		function getUpgradesInDeck()
+		{
+				return self::getObjectListFromDB("SELECT * FROM upgradeCards WHERE card_location='deck'");
 		}
 
 		function countDrawnCards()
@@ -10072,9 +10093,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// move card to saucer
 				$this->upgradeCards->moveCard($databaseId, $color);
 
-				// put unselected cards back in deck
-				$this->upgradeCards->moveAllCardsInLocation('drawn', 'deck');
-
 				// take away Energy for playing it
 				$this->decrementEnergyForSaucer($color);
 				$this->decrementEnergyForSaucer($color);
@@ -10106,6 +10124,34 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				// increase stat for how many upgrades have been played
 				self::incStat( 1, 'upgrades_played', $playerId );
+
+				$drawnUpgrades = $this->upgradeCards->getCardsInLocation('drawn');
+				foreach( $drawnUpgrades as $card )
+        { // go through all the drawn cards
+
+						$collectorNumberDiscarded = $card['type_arg']; // collector number
+						$databaseIdDiscarded = $card['id']; // database id
+						$nameOfUpgradeDiscarded = $this->getUpgradeTitleFromCollectorNumber($collectorNumberDiscarded); // name of upgrade discarded
+
+						if($databaseIdDiscarded != $databaseId)
+						{ // this is an upgrade the player did not choose to play
+
+								// notify all players that is has been played
+								self::notifyAllPlayers( 'upgradeDiscarded', clienttranslate( '${color_name} discarded the upgrade ${name_of_upgrade}.' ), array(
+										'saucerColor' => $color,
+										'collectorNumber' => $collectorNumberDiscarded,
+										'databaseId' => $databaseIdDiscarded,
+										'playerId' => $playerId,
+										'player_name' => $playerName,
+										'name_of_upgrade' => $nameOfUpgradeDiscarded,
+										'color_name' => $colorName,
+										'energyQuantity' => $energyQuantity
+								) );
+						}
+				}
+
+				// put unselected cards into discard pile
+				$this->upgradeCards->moveAllCardsInLocation('drawn', 'discard');
 
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
