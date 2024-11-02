@@ -66,6 +66,28 @@
     }
 */
 
+/***** FONTS *****/
+@font-face {
+  font-family: 'Brands';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Brands'), local('Brands-Regular'), url(http://ff.static.1001fonts.net/q/w/qwigley.regular.ttf) format('ttf');
+}
+
+@font-face {
+  font-family: 'Qwigley';
+  font-style: normal;
+  font-weight: normal;
+  src: local('Qwigley'), local('Qwigley-Regular'), url(http://ff.static.1001fonts.net/q/w/qwigley.regular.ttf) format('ttf');
+}
+
+@font-face {
+    font-display: block;
+    font-family: Font Awesome\ 6 Free;
+    font-style: normal;
+    font-weight: 400;
+    src: url(font-awesome-6.4.0/webfonts/fa-regular-400.woff2) format("woff2"),url(font-awesome-6.4.0/webfonts/fa-regular-400.ttf) format("truetype")
+}
 
 /***** GENERAL LAYOUT *****/
 body {
@@ -73,6 +95,8 @@ body {
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     text-size-adjust: 100%;
+
+    font-family: Roboto, Arial, sans-serif;
 }
 
 #board_area {
@@ -146,6 +170,14 @@ body {
 .component_rounding_no_shadow {
     border-radius: 10px;
     border: 1px black solid;
+}
+
+.shadow {
+    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
 }
 
 .component_circle {
@@ -1758,11 +1790,12 @@ width: 170px;
 
 .boosters_container
 {
-    width: 154px;
+    width: 124px;
     height: 30px;
 
-    text-align: center;
     margin-top: 5px;
+
+    position: relative; /*needed so we can position the boosters with absolute and it goes to the right player*/
 }
 
 .my_played_upgrade_cards_container
@@ -2029,11 +2062,14 @@ width: 170px;
 
     background-image: url('img/booster_30.png');
 
-    position: relative;
+    position: absolute;
     display: inline-block;
-    margin:auto;
+
+    left: 62px;
 
     z-index: 10;
+
+    filter: drop-shadow(1px 1px 1px #222);
 }
 
 .booster_token_small {
@@ -2045,6 +2081,25 @@ width: 170px;
     position: relative;
 
     z-index: 10;
+
+    filter: drop-shadow(1px 1px 1px #222);
+}
+
+.text_shadow {
+    text-shadow: 1px 0 0 #000,0 1px 0 #000,-1px 0 0 #000,0 -1px 0 #000,1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000,0 2px 0 #000,0 0 3px #000,0 0 6px #fff,0 0 5px #fff,0 0 5px #fff,0 0 4px #fff
+}
+
+.saucer_mat_booster_count {
+    position: absolute; /*needed so we can keep the container relative and the boosters and count absolute*/
+    z-index: 12;
+
+    left: 71px;
+    top: 2px;
+
+/*    font: 22px/22px "Brands";*/
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 22px;
+    color: white;
 }
 
 .booster_acquired_area_1 {
@@ -2103,6 +2158,15 @@ width: 170px;
     position: relative;
 
     z-index: 10;
+    filter: drop-shadow(1px 1px 1px #222);
+
+/*
+    -moz-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    -o-box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.4);
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+*/
 }
 
 .energy_acquired_area_1 {
@@ -2233,7 +2297,6 @@ margin-top: 6px;
     cursor: pointer;
 
     border-radius: 10px;
-    border: 1px black solid;
 }
 
 /***** CREWMEMBERS *****/

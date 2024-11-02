@@ -165,15 +165,30 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 // place any boosters they have on their saucer mat
                 var boosterQuantity = saucer.booster_quantity;
 
+                var matBoosterLocationHtmlId = 'boosters_container_'+saucer.color;
+
                 for (let i = 1; i <= boosterQuantity; i++)
                 {
                     // place it on the mat
-                    var matBoosterLocationHtmlId = 'boosters_container_'+saucer.color;
                     dojo.place( this.format_block( 'jstpl_booster', {
                          location: saucer.color,
                          position: i
                     } ) , matBoosterLocationHtmlId);
                 }
+
+                var boosterQtyText = ''; // default to hiding the value
+                if(boosterQuantity != 0 && boosterQuantity != '0')
+                { // this saucer has at least 1 booster
+                    boosterQtyText = boosterQuantity;
+                }
+
+                console.log('booster quantity ('+boosterQuantity+') for saucer '+saucer.color+' has boosterQtyText ('+boosterQtyText+')');
+
+                // add a label to say how many there are
+                dojo.place( this.format_block( 'jstpl_boosterLabel', {
+                     color: saucer.color,
+                     qty: boosterQtyText
+                } ) , matBoosterLocationHtmlId);
 
                 // update the player board with the value of how many boosters
                 this.booster_counters[saucer.color].setValue(boosterQuantity);
@@ -4568,9 +4583,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 dojo.style('direction_constellation', "marginTop", "224px"); // move the left direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "224px"); // move the right direction to where the extra tiles would have been
                 //dojo.style('direction_sun', "marginLeft", "280px");
-                dojo.style('direction_sun', "marginLeft", "155px");
+                dojo.style('direction_sun', "marginLeft", "277px");
                 dojo.style('direction_meteor', "marginLeft", "280px");
-                dojo.style('energy_pile', "marginLeft", "155px");
+                //dojo.style('energy_pile', "marginLeft", "155px");
 
                 dojo.style('board_tile_column', "width", "685px"); // set the width of the board based on saucer count
             }
@@ -4583,10 +4598,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 // center the directions based on the number of players
                 dojo.style('direction_constellation', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_sun', "marginLeft", "180px");
+                dojo.style('direction_sun', "marginLeft", "302px");
                 dojo.style('direction_meteor', "marginLeft", "305px");
 
-                dojo.style('energy_pile', "marginLeft", "180px");
+                //dojo.style('energy_pile', "marginLeft", "180px");
 
                 dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
             }
@@ -4600,10 +4615,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 dojo.style('direction_constellation', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
                 //dojo.style('direction_sun', "marginLeft", "330px");
-                dojo.style('direction_sun', "marginLeft", "203px");
+                dojo.style('direction_sun', "marginLeft", "325px");
                 dojo.style('direction_meteor', "marginLeft", "330px");
 
-                dojo.style('energy_pile', "marginLeft", "203px");
+                //dojo.style('energy_pile', "marginLeft", "203px");
 
                 dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
             }
@@ -6461,11 +6476,13 @@ console.log("success... onClickUpgradeCardInHand");
             // update the player board
             this.energy_counters[saucerColor].setValue(energyPosition);
 
+            var source = 'played_move_card_container_'+saucerColor;
+
             // show the energy token on the mat of the saucer who acquired it
             dojo.place( this.format_block( 'jstpl_energy', {
                  location: saucerColor,
                  position: energyPosition
-            } ) , 'energy_pile');
+            } ) , source);
 
 
             var objectMovingId = 'energy_'+saucerColor+'_'+energyPosition;
@@ -6500,11 +6517,13 @@ console.log("success... onClickUpgradeCardInHand");
             // update the player board
             this.booster_counters[saucerColor].setValue(boosterPosition);
 
+            var source = 'played_move_card_container_'+saucerColor;
+
             // show the booster token on the mat of the saucer who acquired it
             dojo.place( this.format_block( 'jstpl_booster', {
                  location: saucerColor,
                  position: boosterPosition
-            } ) , 'booster_pile');
+            } ) , source);
 
             var objectMovingId = 'booster_'+saucerColor+'_'+boosterPosition;
             var destination = 'boosters_container_'+saucerColor;
@@ -6522,6 +6541,17 @@ console.log("success... onClickUpgradeCardInHand");
                 // if this is the active player, enable Move button?
             });
             animationId.play();
+
+
+            var textHtml = $('saucer_mat_booster_count_value_'+saucerColor);
+            textHtml.innerHTML = boosterPosition; // make sure text is translated before it is sent to this function
+
+/*
+            dojo.place( this.format_block( 'jstpl_boosterLabel', {
+                 color: saucerColor,
+                 qty: boosterPosition
+            } ) , destination);
+*/
         },
 
         notif_moveCardChange: function( notif )
@@ -6555,13 +6585,15 @@ console.log("success... onClickUpgradeCardInHand");
             // update the player board with the value of how many boosters
             this.energy_counters[saucerColorPlayingCard].setValue(energyQuantity);
 
+            var destination = 'upgrade_deck'; // send it into the upgrade deck
+
             // remove 2 energy cubes
             var firstEnergyInteger = +energyQuantity + +1;
             var firstEnergy = "energy_"+saucerColorPlayingCard+"_"+firstEnergyInteger;
             console.log("firstEnergy:"+firstEnergy);
             if( $(firstEnergy ) )
             { // it exists
-                dojo.destroy(firstEnergy);
+                this.slideToObjectAndDestroy( firstEnergy, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
             }
 
             var secondEnergyInteger = +energyQuantity + +2;
@@ -6569,7 +6601,7 @@ console.log("success... onClickUpgradeCardInHand");
             console.log("secondEnergy:"+secondEnergy);
             if( $(secondEnergy ) )
             { // it exists
-                dojo.destroy(secondEnergy);
+                this.slideToObjectAndDestroy( secondEnergy, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
             }
 
 
@@ -6785,7 +6817,7 @@ console.log("success... onClickUpgradeCardInHand");
             var boosterQuantityBeforeUsage = notif.args.boosterQuantity;
 
             var objectMovingId = 'booster_'+saucer+'_'+boosterQuantityBeforeUsage;
-            var destination = 'booster_pile';
+            var destination = 'played_move_card_container_'+saucer; // send it into the move card they chose
 
             console.log('objectMovingId:'+objectMovingId);
 
@@ -6795,6 +6827,15 @@ console.log("success... onClickUpgradeCardInHand");
                 this.slideToObjectAndDestroy( objectMovingId, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
 
             }
+
+            var boosterQtyText = boosterQuantityBeforeUsage - 1;
+            if(boosterQuantityBeforeUsage == 1)
+            { // they are using their last booster
+                boosterQtyText = '';
+            }
+
+            var textHtml = $('saucer_mat_booster_count_value_'+saucer);
+            textHtml.innerHTML = boosterQtyText;
 
             // update the player board with the value of how many boosters (must subtract one because it was the before usage quantity)
             this.booster_counters[saucer].setValue(boosterQuantityBeforeUsage - 1);

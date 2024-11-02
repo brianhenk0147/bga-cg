@@ -75,11 +75,11 @@
 
       <div id="outer_board">
         <div id="outer_board_top_row">
-          <div id="booster_pile"></div>
+          <!--<div id="booster_pile"></div>-->
 
           <div id="direction_sun" class="direction_token"></div>
 
-          <div id="energy_pile"></div>
+          <!--<div id="energy_pile"></div>-->
         </div>
         <div id="middle_board_row">
           <div id="outer_board_left_column">
@@ -1189,6 +1189,7 @@ var jstpl_zag='<div class="zag component_circle" id="zag_${color}"></div>';
 
 var jstpl_energy='<div class="energy_cube" id="energy_${location}_${position}"></div>';
 var jstpl_booster='<div class="booster_token" id="booster_${location}_${position}"></div>';
+var jstpl_boosterLabel = '<span id="saucer_mat_booster_count_value_${color}" class="saucer_mat_booster_count text_shadow">${qty}</span>';
 
 var jstpl_garment='<div class="${size} crewmember_${small}${garment_type}_${color}" id="crewmember_${garment_type}_${color}"></div>';
 
