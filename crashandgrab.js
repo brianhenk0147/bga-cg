@@ -4583,7 +4583,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 dojo.style('direction_constellation', "marginTop", "224px"); // move the left direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "224px"); // move the right direction to where the extra tiles would have been
                 //dojo.style('direction_sun', "marginLeft", "280px");
-                dojo.style('direction_sun', "marginLeft", "277px");
+                dojo.style('direction_sun', "marginLeft", "281px");
                 dojo.style('direction_meteor', "marginLeft", "280px");
                 //dojo.style('energy_pile', "marginLeft", "155px");
 
@@ -4598,7 +4598,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 // center the directions based on the number of players
                 dojo.style('direction_constellation', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "254px"); // move the right direction to where the extra tiles would have been
-                dojo.style('direction_sun', "marginLeft", "302px");
+                dojo.style('direction_sun', "marginLeft", "306px");
                 dojo.style('direction_meteor', "marginLeft", "305px");
 
                 //dojo.style('energy_pile', "marginLeft", "180px");
@@ -4615,7 +4615,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 dojo.style('direction_constellation', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
                 dojo.style('direction_asteroids', "marginTop", "280px"); // move the right direction to where the extra tiles would have been
                 //dojo.style('direction_sun', "marginLeft", "330px");
-                dojo.style('direction_sun', "marginLeft", "325px");
+                dojo.style('direction_sun', "marginLeft", "329px");
                 dojo.style('direction_meteor', "marginLeft", "330px");
 
                 //dojo.style('energy_pile', "marginLeft", "203px");
