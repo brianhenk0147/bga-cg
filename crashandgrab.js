@@ -4603,7 +4603,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
                 //dojo.style('energy_pile', "marginLeft", "180px");
 
-                dojo.style('board_tile_column', "width", "750px"); // set the width of the board based on saucer count
+                dojo.style('board_tile_column', "width", "680px"); // set the width of the board based on saucer count
             }
             else if(numberOfPlayers == 6)
             { // we are playing with 6 players
@@ -4620,7 +4620,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
                 //dojo.style('energy_pile', "marginLeft", "203px");
 
-                dojo.style('board_tile_column', "width", "790px"); // set the width of the board based on saucer count
+                dojo.style('board_tile_column', "width", "730px"); // set the width of the board based on saucer count
             }
         },
 
