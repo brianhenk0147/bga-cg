@@ -1098,6 +1098,42 @@ float: left;
     border-radius: 100%;
 }
 
+.clockwise
+{
+  width: 30px;
+  height: 24px;
+  background-image: url('img/clockwise_30w.png');
+  background-position: 0px, 0px;
+}
+
+.counterclockwise
+{
+  width: 30px;
+  height: 24px;
+  background-image: url('img/clockwise_30w.png');
+  background-position: 30px, 0px;
+}
+
+#button_counterclockwise
+{
+    float: right;
+}
+
+#tile_rotation_direction_button_holder
+{
+    margin-top: 10px;
+}
+
+#confirmRotateTile
+{
+    margin-top: 10px !important;
+}
+
+.buttonSelected
+{
+  outline: 4px solid #00FFCB;
+}
+
 .crewmemberButtonSelected
 {
     outline: 4px solid #00FFCB;
@@ -1211,6 +1247,10 @@ content: '';
     height: 50px;
     opacity: 0;
   }
+}
+
+.boardTileSelected {
+  outline: 4px solid #00FFCB;
 }
 
 

@@ -176,6 +176,29 @@
         self::ajaxResponse( );
     }
 
+    public function actActivateQuakeMaker()
+    {
+        self::setAjaxMode();
+        $tilePosition = self::getArg( "tilePosition", AT_posint, true ); // 1, 2, 3, 4
+        $timesRotated = self::getArg( "timesRotated", AT_posint, true ); // 0, 1, 2, 3
+        $this->game->executeRotateTile($tilePosition, $timesRotated);
+        self::ajaxResponse( );
+    }
+
+    public function actActivateWasteAccelerator()
+    {
+        self::setAjaxMode();
+        $this->game->executeActivateWasteAccelerator();
+        self::ajaxResponse( );
+    }
+
+    public function actSkipWasteAccelerator()
+    {
+        self::setAjaxMode();
+        $this->game->executeSkipWasteAccelerator();
+        self::ajaxResponse( );
+    }
+
     public function actActivateProximityMines()
     {
         self::setAjaxMode();

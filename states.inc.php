@@ -479,7 +479,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
         "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64, "chooseSaucerPulseCannon" => 69 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64, "chooseSaucerPulseCannon" => 69, "chooseTileRotationQuakeMaker" => 72 )
     ),
 
     54 => array(
@@ -650,6 +650,24 @@ $machinestates = array(
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
         "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "endGame" => 99 )
+    ),
+
+    71 => array(
+        "name" => "askToWasteAccelerate",
+        "description" => clienttranslate('${saucerColor} is deciding whether they will use their Waste Accelerator.'),
+        "descriptionmyturn" => clienttranslate('Waste Accelerator: Would you like to use your Waste Accelerator here?'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "chooseWasteAccelerator", "declineWasteAccelerator" ),
+        "transitions" => array(  "executingMove" => 70, "chooseAcceleratorDirection" => 9 )
+    ),
+    
+    72 => array(
+        "name" => "chooseTileRotationQuakeMaker",
+        "description" => clienttranslate('${actplayer} is rotating a tile.'),
+        "descriptionmyturn" => clienttranslate('${you} may rotate a tile.'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "rotateTile", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
     ),
 
 

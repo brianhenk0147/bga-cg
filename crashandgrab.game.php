@@ -437,6 +437,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
+						array( 'type' => 'Waste Accelerator', 'type_arg' => 8, 'card_location' => 'deck','nbr' => 10),
 						array( 'type' => 'Hyperdrive', 'type_arg' => 9, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Scavenger Bot', 'type_arg' => 10, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Distress Signaler', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
@@ -446,12 +447,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 10),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)
 				);
 
 				if($this->getNumberOfPlayers() > 2)
 				{
-						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 8));
+						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1));
 				}
 
 
@@ -1913,6 +1915,15 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array_push($result, $upgradeArray);
 				}
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Quake Maker'))
+				{
+						$upgradeArray = array();
+						$upgradeArray['collectorNumber'] = 18;
+						$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(18);
+
+						array_push($result, $upgradeArray);
+				}
+
 				return $result;
 		}
 
@@ -2024,6 +2035,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						}
 				}
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Quake Maker') &&
+				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Quake Maker') < 1 &&
+					 $this->getAskedToActivateUpgrade($saucerColor, 'Quake Maker') == false)
+				{ // they have played this upgrade but they have not yet activated it
+
+						return true;
+				}
+
 				//$cloakingDeviceTimesActivated = $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Cloaking Device');
 				//throw new feException( "false saucer:$saucerColor cloakingDeviceTimesActivated:$cloakingDeviceTimesActivated");
 
@@ -2056,6 +2075,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						case 7:
 								return clienttranslate( 'Cloaking Device');
 
+						case 8:
+							return clienttranslate( 'Waste Accelerator');
+
 						case 9:
 								return clienttranslate( 'Hyperdrive');
 
@@ -2082,6 +2104,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						case 17:
 								return clienttranslate( 'Landing Legs');
+
+						case 18:
+								return clienttranslate( 'Quake Maker');
 
 						case 19:
 								return clienttranslate( 'Rotational Stabilizer');
@@ -2123,6 +2148,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						case 7:
 								return clienttranslate( 'At the end of your turn, remove your Saucer from the board and place it at the end of the round.');
 
+						// Waste Accelerator
+						case 8:
+							return clienttranslate( 'Use one empty Crash Site per turn as if it were an Accelerator.');
+
 						// Hyperdrive
 						case 9:
 								return clienttranslate( 'Double your movement.');
@@ -2158,6 +2187,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						// Landing Legs
 						case 17:
 								return clienttranslate( 'At the end of your turn, move one space in any direction.');
+
+						// Quake Maker
+						case 18:
+							return clienttranslate( 'At the end of your turn, rotate a tile to any orientation.');
 
 						// Rotational Stabilizer
 						case 19:
@@ -2213,6 +2246,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result[7]['name'] = $this->getUpgradeTitleFromCollectorNumber(7);
 				$result[7]['effect'] = $this->getUpgradeEffectFromCollectorNumber(7);
 
+				// Waste Accelerator
+				$result[8] = array();
+				$result[8]['name'] = $this->getUpgradeTitleFromCollectorNumber(8);
+				$result[8]['effect'] = $this->getUpgradeEffectFromCollectorNumber(8);
+
 				// Hyperdrive
 				$result[9] = array();
 				$result[9]['name'] = $this->getUpgradeTitleFromCollectorNumber(9);
@@ -2257,6 +2295,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result[17] = array();
 				$result[17]['name'] = $this->getUpgradeTitleFromCollectorNumber(17);
 				$result[17]['effect'] = $this->getUpgradeEffectFromCollectorNumber(17);
+
+				// Quake Maker
+				$result[18] = array();
+				$result[18]['name'] = $this->getUpgradeTitleFromCollectorNumber(18);
+				$result[18]['effect'] = $this->getUpgradeEffectFromCollectorNumber(18);
 
 				// Rotational Stabilizer
 				$result[19] = array();
@@ -2696,6 +2739,22 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 								$index++;
 						}
+				}
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Quake Maker') &&
+						$this->getUpgradeTimesActivatedThisRound($saucerColor, 'Quake Maker') < 1)
+				{ // they have played Quake Maker but they have not yet activated it this round
+
+								$result[$index] = array();
+								$result[$index]['buttonId'] = 'upgradeButton_18';
+								$result[$index]['buttonLabel'] = $this->getUpgradeTitleFromCollectorNumber(18);
+								$result[$index]['hoverOverText'] = '';
+								$result[$index]['actionName'] = 'activateUpgrade';
+								$result[$index]['isDisabled'] = false;
+								$result[$index]['makeRed'] = false;
+
+								$index++;
+						
 				}
 
 				return $result;
@@ -3280,62 +3339,119 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				//echo "getting the tile position of $ostrich ostrich with x $ostrichX and y $ostrichY";
 
-				if($garmentX < 5 && $garmentY < 5)
+				$firstTileX = 1;
+				$firstTileY = 1;
+				$secondTileX = 5;
+				$secondTileY = 1;
+				$thirdTileX = 1;
+				$thirdTileY = 5;
+				$fourthTileX = 5;
+				$fourthTileY = 5;
+				$seventhTileX = 0; // this will be overwritten
+				$eighthTileY = 0; // this will be overwritten
+
+				if($this->getNumberOfPlayers() == 5)
+				{ // we need to extend the board by 1
+						$secondTileX = 6;
+						$thirdTileY = 6;
+						$fourthTileX = 6;
+						$fourthTileY = 6;
+						$seventhTileX = 6;
+						$eighthTileY = 6;
+				}
+				elseif($this->getNumberOfPlayers() == 6)
+				{ // we need to extend the board by 2
+						$secondTileX = 7;
+						$thirdTileY = 7;
+						$fourthTileX = 7;
+						$fourthTileY = 7;
+						$seventhTileX = 7;
+						$eighthTileY = 7;
+				}
+
+				if($garmentX < ($firstTileX+4) && $garmentY < ($firstTileY+4))
 				{ // ostrich is on tile 1
 						return 1;
 				}
-				else if($garmentX < 9 && $garmentY < 5)
+				else if($garmentX < ($secondTileX+4) && $garmentY < ($secondTileY+4))
 				{ // ostrich is on tile 2
 						return 2;
 				}
-				else if($garmentX < 5 && $garmentY < 9)
+				else if($garmentX < ($thirdTileX+4) && $garmentY < ($thirdTileY+4))
 				{ // ostrich is on tile 3
 						return 3;
 				}
-				else if($garmentX < 9 && $garmentY < 9)
+				else if($garmentX < ($fourthTileX+4) && $garmentY < ($fourthTileY+4))
 				{ // ostrich is on tile 4
 						return 4;
 				}
-				else if($garmentX < 13 && $garmentY < 9)
-				{ // ostrich is on tile 5
-						return 5;
-				}
 				else
-				{ // we'll assume they are on tile 6
-						return 6;
+				{ // we'll assume they are on one of the extension tiles
+						return 0;
 				}
 		}
 
+		// Tile Position is where the tiles are from a layout perspective.
+		// Returns 0 if it is not one of the 4 main tiles.
 		function getTilePositionOfOstrich($ostrich)
 		{
-				$ostrichX = $this->getSaucerXLocation($ostrich);
-				$ostrichY = $this->getSaucerYLocation($ostrich);
+			$tileNumber = null;
+			$ostrichX = $this->getSaucerXLocation($ostrich);
+			$ostrichY = $this->getSaucerYLocation($ostrich);
 
 				//echo "getting the tile position of $ostrich ostrich with x $ostrichX and y $ostrichY";
 
-				if($ostrichX < 5 && $ostrichY < 5)
+				
+
+				$firstTileX = 1;
+				$firstTileY = 1;
+				$secondTileX = 5;
+				$secondTileY = 1;
+				$thirdTileX = 1;
+				$thirdTileY = 5;
+				$fourthTileX = 5;
+				$fourthTileY = 5;
+				$seventhTileX = 0; // this will be overwritten
+				$eighthTileY = 0; // this will be overwritten
+
+				if($this->getNumberOfPlayers() == 5)
+				{ // we need to extend the board by 1
+						$secondTileX = 6;
+						$thirdTileY = 6;
+						$fourthTileX = 6;
+						$fourthTileY = 6;
+						$seventhTileX = 6;
+						$eighthTileY = 6;
+				}
+				elseif($this->getNumberOfPlayers() == 6)
+				{ // we need to extend the board by 2
+						$secondTileX = 7;
+						$thirdTileY = 7;
+						$fourthTileX = 7;
+						$fourthTileY = 7;
+						$seventhTileX = 7;
+						$eighthTileY = 7;
+				}
+
+				if($ostrichX < ($firstTileX+4) && $ostrichY < ($firstTileY+4))
 				{ // ostrich is on tile 1
 						return 1;
 				}
-				else if($ostrichX < 9 && $ostrichY < 5)
+				else if($ostrichX < ($secondTileX+4) && $ostrichY < ($secondTileY+4))
 				{ // ostrich is on tile 2
 						return 2;
 				}
-				else if($ostrichX < 5 && $ostrichY < 9)
+				else if($ostrichX < ($thirdTileX+4) && $ostrichY < ($thirdTileY+4))
 				{ // ostrich is on tile 3
 						return 3;
 				}
-				else if($ostrichX < 9 && $ostrichY < 9)
+				else if($ostrichX < ($fourthTileX+4) && $ostrichY < ($fourthTileY+4))
 				{ // ostrich is on tile 4
 						return 4;
 				}
-				else if($ostrichX < 13 && $ostrichY < 9)
-				{ // ostrich is on tile 5
-						return 5;
-				}
 				else
-				{ // we'll assume they are on tile 6
-						return 6;
+				{ // we'll assume they are on one of the extension tiles
+						return 0;
 				}
 		}
 
@@ -4314,24 +4430,15 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				switch($this->getNumberOfPlayers())
 				{
 						case 2:
-							return 2;
-						break;
 						case 3:
-							//return 4;
-							return 2; // this will change to 4 if 3-player games alllow controlling 2 saucers
-						break;
 						case 4:
 							return 2;
-						break;
-						case 3:
-							return 5;
-						break;
-						case 4:
-							return 6;
-						break;
+						case 5:
+							return 3;
+						case 6:
+							return 4;
 						default:
 							return 0;
-							break;
 				}
 		}
 
@@ -4807,6 +4914,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				//throw new feException( "countCrewmembersNeededForPlayerCount:$countCrewmembersNeededForPlayerCount");
 				//throw new feException( "countCrewmembersOnBoard:$countCrewmembersOnBoard");
 				//throw new feException( "countLostCrewmembers:$countLostCrewmembers");
+				//throw new feException( "countCrewmembersNeededForPlayerCount:$countCrewmembersNeededForPlayerCount countCrewmembersOnBoard:$countCrewmembersOnBoard countLostCrewmembers:$countLostCrewmembers");
 
 				if($countCrewmembersOnBoard < $countCrewmembersNeededForPlayerCount)
 				{ // we are missing a crewmember on the board
@@ -5825,6 +5933,80 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 		}
 
+		function rotateCrewmembersNumberOfTimes($tileNumberToRotate, $numberOfTimesClockwise)
+		{
+
+				$allGarmentsOnBoard = self::getObjectListFromDB( "SELECT garment_id, garment_color, garment_type
+																							FROM garment WHERE garment_location='board'" );
+//throw new feException( "rotateCrewmembersNumberOfTimes tileNumberToRotate:$tileNumberToRotate");
+
+				foreach( $allGarmentsOnBoard as $garment )
+				{ // go through all the garments
+
+					$garmentId = $garment['garment_id'];
+					$garmentColor = $garment['garment_color'];
+					$garmentType = $garment['garment_type'];
+
+					$tilePositionOfGarment = $this->getTilePositionOfGarment($garmentId); // get which tile it is on
+					$tileNumberOfGarment = $this->getTileNumber($tilePositionOfGarment); // find the number of that tile
+					
+					//throw new feException( "crewmember tileNumberToRotate:$tileNumberToRotate tileNumberOfGarment:$tileNumberOfGarment tilePositionOfGarment:$tilePositionOfGarment");
+
+					if($tileNumberOfGarment == $tileNumberToRotate)
+					{	// we need to rotate this garment
+							$xOffsetOfTile = $this->getTileXFromTileNumber($tileNumberToRotate) - 1;
+							$yOffsetOfTile = $this->getTileYFromTileNumber($tileNumberToRotate) - 1;
+							$currentGarmentX = $this->getGarmentXLocation($garmentId);
+							$currentGarmentY = $this->getGarmentYLocation($garmentId);
+							$newGarmentX = 0;
+							$newGarmentY = 0;
+
+							//throw new feException( "numberOfTimesClockwise: $numberOfTimesClockwise");
+							if($numberOfTimesClockwise == 1)
+							{
+										// rotate 1 clockwise
+										$newGarmentX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentGarmentY)+1; //newX=(xOffset+yOffset+4)-oldY+1
+										$newGarmentY = $currentGarmentX+($yOffsetOfTile-$xOffsetOfTile); //newY=oldX+(yOffset-xOffset)
+							}
+							elseif($numberOfTimesClockwise == 2)
+							{
+										// rotate 180
+										$newGarmentX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentGarmentY)+1; //newX=(xOffset+yOffset+4)-oldY+1
+										$newGarmentY = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentGarmentX)+1; //newY=(yOffset+xOffset+4)-oldX+1
+
+							}
+							elseif($numberOfTimesClockwise == 3)
+							{
+										// rotate 1 counter-clockwise
+										$newGarmentX = $currentGarmentY+($xOffsetOfTile-$yOffsetOfTile); //newX=oldY+(xOffset-yOffset)
+										$newGarmentY = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentGarmentX)+1; //newY=(yOffset+xOffset+4)-oldX+1
+							}
+							else
+							{
+										// don't rotate
+										$newGarmentX = $currentGarmentX;
+										$newGarmentY = $currentGarmentY;
+							}
+
+							
+							
+
+							$sql = "UPDATE garment SET garment_x=$newGarmentX,garment_y=$newGarmentY WHERE garment_id=$garmentId";
+							self::DbQuery( $sql );
+
+							$garmentTypeString = $this->convertGarmentTypeIntToString($garmentType);
+
+							// notify players that this garment has been moved
+							self::notifyAllPlayers( "moveGarmentToBoard", "", array(
+									'garmentColor' => $garmentColor,
+								  'garmentType' => $garmentTypeString,
+									'xDestination' => $newGarmentX,
+									'yDestination' => $newGarmentY
+							) );
+					}
+				}
+		}
+
 		function rotateOstriches($tileNumberToRotate, $isClockwise)
 		{
 				$allOstriches = $this->getSaucersInOrder(); // get all ostriches
@@ -5863,6 +6045,71 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										'ostrichTakingTurn' => $ostrichColor,
 										'x' => $newOstrichX,
 									  'y' => $newOstrichY,
+										'spaceType' => "B",
+										'ostrichMovingHasZag' => false,
+										'ostrichMovingIsOffCliff' => false,
+										'ostrichName' => $this->getOstrichName($ostrichColor)
+								) );
+						}
+				}
+		}
+
+		function rotateSaucersNumberOfTimes($tileNumberToRotate, $numberOfTimesClockwise)
+		{
+				$allOstriches = $this->getSaucersInOrder(); // get all ostriches
+
+				foreach($allOstriches as $ostrich)
+				{
+						$ostrichColor = $ostrich['color'];
+						$tilePosition = $this->getTilePositionOfOstrich($ostrichColor); // get which tile they are on (like 1,2,3,4 are the main tile positions)
+						$tileNumber = $this->getTileNumber($tilePosition); // find the unique identifier for the tile
+
+						//throw new feException( "saucer tileNumberToRotate:$tileNumberToRotate tileNumber:$tileNumber tilePosition:$tilePosition");
+
+						if($tileNumber == $tileNumberToRotate)
+						{	// we need to rotate this ostrich
+								$xOffsetOfTile = $this->getTileXFromTileNumber($tileNumberToRotate) - 1;
+								$yOffsetOfTile = $this->getTileYFromTileNumber($tileNumberToRotate) - 1;
+								$currentOstrichX = $this->getSaucerXLocation($ostrichColor);
+								$currentOstrichY = $this->getSaucerYLocation($ostrichColor);
+								$newOstrichX = 0;
+								$newOstrichY = 0;
+
+								//throw new feException( "found saucer on tileNumber($tileNumber) equal to tileNumberToRotate($tileNumberToRotate)");
+								if($numberOfTimesClockwise == 1)
+								{
+										// rotate 1 clockwise
+										$newOstrichX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichY)+1; //newX=(xOffset+yOffset+4)-oldY+1
+										$newOstrichY = $currentOstrichX+($yOffsetOfTile-$xOffsetOfTile); //newY=oldX+(yOffset-xOffset)
+								}
+								elseif($numberOfTimesClockwise == 2)
+								{
+										// rotate 180
+										$newOstrichX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichY)+1; //newX=(xOffset+yOffset+4)-oldY+1
+										$newOstrichY = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichX)+1; //newY=(yOffset+xOffset+4)-oldX+1
+
+								}
+								elseif($numberOfTimesClockwise == 3)
+								{
+										// rotate 1 counter-clockwise
+										$newOstrichX = $currentOstrichY+($xOffsetOfTile-$yOffsetOfTile); //newX=oldY+(xOffset-yOffset)
+										$newOstrichY = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichX)+1; //newY=(yOffset+xOffset+4)-oldX+1
+								}
+								else
+								{
+										// don't rotate
+										$newOstrichX = $currentOstrichX;
+										$newOstrichY = $currentOstrichY;
+								}
+
+								$sql = "UPDATE ostrich SET ostrich_x=$newOstrichX,ostrich_y=$newOstrichY WHERE ostrich_color='$ostrichColor'";
+								self::DbQuery( $sql );
+
+								self::notifyAllPlayers( "moveOstrich", "", array(
+										'color' => $ostrichColor,
+										'ostrichTakingTurn' => $ostrichColor,
+										'x' => $newOstrichX,
+									    'y' => $newOstrichY,
 										'spaceType' => "B",
 										'ostrichMovingHasZag' => false,
 										'ostrichMovingIsOffCliff' => false,
@@ -6826,6 +7073,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
+										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
+ 										   $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Waste Accelerator") < 1)
+										{ // they have Waste Accelerator played and they haven't used it yet this round
+
+											// do not move any further because they will need to answer a question
+											return $moveEventList;
+										}
+
 								}
 								else if($boardValue == "S")
 								{ // this is an ACCELERATOR
@@ -6877,7 +7132,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 														$this->setPushedDistance($saucerWeCollideWith, $distance);
 														$this->setPushedDirection($saucerWeCollideWith, $direction);
 
-														// do not move any further because
+														// do not move any further because they will need to answer a question
 														return $moveEventList;
 												}
 										}
@@ -7001,6 +7256,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								{ // this is a CRASH SITE
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
+										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
+ 										   $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Waste Accelerator") < 1)
+										{ // they have Waste Accelerator played and they haven't used it yet this round
+											
+											// do not move any further because they will need to answer a question
+											return $moveEventList;
+										}
 
 								}
 								else if($boardValue == "S")
@@ -7170,6 +7433,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
+										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
+ 										   $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Waste Accelerator") < 1)
+										{ // they have Waste Accelerator played and they haven't used it yet this round
+											
+											// do not move any further because they will need to answer a question
+											return $moveEventList;
+										}
+
 								}
 								else if($boardValue == "S")
 								{ // we hit an accelerator
@@ -7330,10 +7601,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										}
 								}
 								else if($boardValue == "C" || $boardValue == "O")
-								{ // this is an EMPTY CRATE
+								{ // this is a CRASH SITE
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
+										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
+ 										   $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Waste Accelerator") < 1)
+										{ // they have Waste Accelerator played and they haven't used it yet this round
+											
+											// do not move any further because they will need to answer a question
+											return $moveEventList;
+										}
 								}
 								else if($boardValue == "S")
 								{ // we hit an Accelerator
@@ -8266,6 +8544,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$needToPlaceCrewmember = $this->doesCrewmemberNeedToBePlaced();
 				//echo "needToPlaceCrewmember is ($needToPlaceCrewmember) for ostrich $saucerWhoseTurnItIs <br>";
 				//echo "nextSaucerWithPendingCrashReward is ($nextSaucerWithPendingCrashReward) for ostrich $saucerWhoseTurnItIs <br>";
+				//throw new feException( "nextSaucerWithPendingCrashReward:$nextSaucerWithPendingCrashReward needToPlaceCrewmember:$needToPlaceCrewmember");
 				if($this->hasPendingCrashPenalty($saucerWhoseTurnItIs) && $this->getSkippedGivingAway($saucerWhoseTurnItIs) != 1)
 				{ // player whose turn it is crashed and hasn't yet been penalized for crashing on their own turn
 						$this->gamestate->nextState( "crashPenaltyAskWhichToGiveAway" );
@@ -8452,6 +8731,65 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
+		// We want to rotate a tile with Quake Maker (or could work for other rotations wish some small modifications).
+		// tilePosition: the tile we want to rotate
+		// timesRotated: how many times we want to rotate it 90 degrees clockwise, so "3" would be 270 degrees clockwise.
+		function executeRotateTile($tilePosition, $timesRotated)
+		{
+				// rotate a tile chosen by Quake Maker
+
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				
+				// mark that we have activated Quake Maker
+				$this->activateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, 18);
+
+				// find the board tile the victim ostrich is on
+				//$tilePosition = $this->getTilePositionOfOstrich($trappedOstrich); // get which tile they are on
+				$tileNumber = $this->getTileNumber($tilePosition); // find the number of that tile
+
+				$sideOfTile = $this->getTileSide($tilePosition); // get whether this tile is on side A or B
+
+				$oldDegreeRotation = $this->getTileRotation($tilePosition); // tile_degree_rotation
+				$degreeRotation = $oldDegreeRotation + $timesRotated;
+				if($degreeRotation > 3)
+				{
+					$degreeRotation = $degreeRotation - 4;
+				}
+				//throw new feException( "oldDegreeRotation:$oldDegreeRotation degreeRotation: $degreeRotation tilePosition:$tilePosition tileNumber: $tileNumber");
+
+				// convert this to an integer 1 or 0
+				$useSideA = 1;
+				if($sideOfTile == "B")
+				{ // this tile is on side B
+						$useSideA = 0;
+				}
+
+				// rotate that tile
+				//echo "setting board tile number $tileNumber at position $tilePosition with useSideA of $useSideA and degree rotation $degreeRotation";
+				$this->setBoardTile($tileNumber, $useSideA, $degreeRotation, $tilePosition); // update the board table with each new space value
+				$this->updateTileRotations($tileNumber, $degreeRotation); // also update the tile table with the new degree rotation
+
+
+				//$this->rotateOstriches($tileNumber, true); // rotate any ostriches on it clockwise
+				$this->rotateSaucersNumberOfTimes($tileNumber, $timesRotated);
+				//$this->rotateGarments($tileNumber, true); // rotate any garments on it clockwise
+				$this->rotateCrewmembersNumberOfTimes($tileNumber, $timesRotated);
+
+				$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+
+				// notify players of what changed
+				self::notifyAllPlayers( "executeTrapRotateTile", clienttranslate( '${saucerMovingHighlightedText} rotated a board tile.' ), array(
+									'saucerMovingHighlightedText' => $saucerMovingHighlightedText,
+									'tileNumber' => $tileNumber,
+									'oldDegreeRotation' => $oldDegreeRotation,
+									'newDegreeRotation' => $degreeRotation,
+									'tileSide' => $sideOfTile,
+									'tilePosition' => $tilePosition
+				) );
+
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+		}
+
 		function executePulseCannonSelectSaucer($saucerColor)
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -8565,6 +8903,26 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				// set asked_to_activate_this_round to 1 so we don't ask again
 				//$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
+
+				// finish any movement that still remains
+				$this->gamestate->nextState( "executingMove" );
+		}
+
+		function executeActivateWasteAccelerator()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				$this->activateUpgrade($saucerWhoseTurnItIs, "Waste Accelerator");
+
+				//throw new feException( "executeSkipPhaseShifter");
+
+				// let them choose the direction they will travel on this "accelerator"
+				$this->gamestate->nextState( "chooseAcceleratorDirection" );
+		}
+
+		function executeSkipWasteAccelerator()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
 				// finish any movement that still remains
 				$this->gamestate->nextState( "executingMove" );
@@ -9067,10 +9425,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		function executeClickedSaucerToPlace($colorAsHex)
 		{
-				// since saucers don't get moved in the DOM while moving, we need to put them in the right spot
-				// before anything gets spawned to avoid a saucer being in the same space as a crewmember or another saucer
-				$this->resetSaucersInDOM();
-
 				$currentState = $this->getStateName();
 
 				// place it at a random location
@@ -9165,10 +9519,15 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				// update the card direction to none?
 
 
+				// since saucers don't get moved in the DOM while moving, we need to put them in the right spot
+				// before anything gets spawned to avoid a saucer being in the same space as a crewmember or another saucer
+				$this->resetSaucersInDOM();
+
+
 				// notify all players that this move is finished so the card can be returned to hand
 				self::notifyAllPlayers( "confirmedMovement", '', array(
             'saucer_color' => $saucerWhoseTurnItIs
-        ) );
+		        ) );
 
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
@@ -9528,6 +9887,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{ // this saucer has proximity mines played and we are colliding with another saucer
 
 						$this->gamestate->nextState( "askToProximityMine" );
+				}
+				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && ($spaceType == "C" || $spaceType == "O"))
+				{ // this saucer has Waste Accelerator played and we are on a Crash Site
+
+						$this->gamestate->nextState( "askToWasteAccelerate" );
 				}
 				elseif($moveType == 'Landing Legs')
 				{ // the moved because they had Landing Legs
@@ -10071,6 +10435,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{ // Landing Legs
 
 						$this->gamestate->nextState( "chooseLandingLegsSpace" );
+				}
+				elseif($collectorNumber == 18)
+				{ // Quake Maker
+						$this->gamestate->nextState( "chooseTileRotationQuakeMaker" );
 				}
 				else
 				{
@@ -10927,6 +11295,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Cloaking Device":
 								return 7;
 
+						case "Waste Accelerator":
+								return 8;
+
 						case "Hyperdrive":
 								return 9;
 
@@ -10953,6 +11324,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 						case "Landing Legs":
 								return 17;
+
+						case "Quake Maker":
+								return 18;
 
 						case "Rotational Stabilizer":
 								return 19;
@@ -11008,6 +11382,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=7";
 								break;
 
+						case "Waste Accelerator":
+						case 8:
+								$sql .= " AND card_type_arg=8";
+								break;
+
 					 	case "Hyperdrive":
 						case 9:
 								$sql .= " AND card_type_arg=9";
@@ -11051,6 +11430,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Landing Legs":
 						case 17:
 								$sql .= " AND card_type_arg=17";
+								break;
+
+						case "Quake Maker":
+						case 18:
+								$sql .= " AND card_type_arg=18";
 								break;
 
 						case "Rotational Stabilizer":
@@ -11122,6 +11506,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=7";
 								break;
 
+						case "Waste Accelerator":
+						case 8:
+								$sql .= " AND card_type_arg=8";
+								break;
+
 						case "Hyperdrive":
 						case 9:
 								$sql .= " AND card_type_arg=9";
@@ -11165,6 +11554,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Landing Legs":
 						case 17:
 								$sql .= " AND card_type_arg=17";
+								break;
+
+						case "Quake Maker":
+						case 18:
+								$sql .= " AND card_type_arg=18";
 								break;
 
 						case "Rotational Stabilizer":
@@ -11235,6 +11629,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=7";
 								break;
 
+						case "Waste Accelerator":
+						case 8:
+								$sql .= " AND card_type_arg=8";
+								break;
+
 						case "Hyperdrive":
 						case 9:
 								$sql .= " AND card_type_arg=9";
@@ -11278,6 +11677,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Landing Legs":
 						case 17:
 								$sql .= " AND card_type_arg=17";
+								break;
+
+						case "Quake Maker":
+						case 18:
+								$sql .= " AND card_type_arg=18";
 								break;
 
 						case "Rotational Stabilizer":
@@ -11336,6 +11740,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Cloaking Device":
 						case 7:
 								$sql .= " AND card_type_arg=7";
+								break;
+
+						case "Waste Accelerator":
+						case 8:
+								$sql .= " AND card_type_arg=8";
 								break;
 
 						case "Hyperdrive":
@@ -11481,10 +11890,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		// Returns true if an unoccupied crash site was found, false otherwise.
 		function randomlyPlaceCrewmember($crewmemberId)
 		{
-				// since saucers don't get moved in the DOM while moving, we need to put them in the right spot
-				// before anything gets spawned to avoid a saucer being in the same space as a crewmember or another saucer
-				$this->resetSaucersInDOM();
-
 				// get all crash sites
 				$allCrashSites = $this->getAllCrashSites();
 				shuffle($allCrashSites); // randomize the order

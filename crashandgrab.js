@@ -122,6 +122,10 @@ function (dojo, declare) {
 
             // player board crewmember stocks
             this.playerBoardCrewmemberStocks={};
+
+            // tile rotation
+            this.CHOSEN_ROTATION_TILE=0;
+            this.CHOSEN_ROTATION_TIMES=0;
         },
 
         /*
@@ -534,6 +538,53 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     } );
                 },
 
+                onClick_activateWasteAccelerator: function (evt )
+                {
+                    console.log( "Clicked activate Waste Accelerator button." );
+
+                    var htmlIdOfButton = evt.currentTarget.id;
+                    console.log( "Clicked button "+htmlIdOfButton+"." );
+                    var saucerWhoCrashed = htmlIdOfButton.split('_')[1]; // ff00ff
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actActivateWasteAccelerator.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+
+                },
+
+                onClick_skipWasteAccelerator: function (evt )
+                {
+                    console.log( "Clicked skip Waste Accelerator button." );
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actSkipWasteAccelerator.html", {
+                                                                                lock: true
+                                                                             },
+                                     this, function( result ) {
+
+                                        // What to do after the server call if it succeeded
+                                        // (most of the time: nothing)
+
+
+                                     }, function( is_error) {
+
+                                        // What to do after the server call in anyway (success or failure)
+                                        // (most of the time: nothing)
+
+                    } );
+                },
+
                 onClick_activateProximityMines: function (evt )
                 {
                     console.log( "Clicked activate proximity mines button." );
@@ -900,6 +951,67 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     }
                 },
 
+                onClickRotateTileClockwise: function (evt)
+                {
+                    if(this.CHOSEN_ROTATION_TIMES>2)
+                    {
+                        this.CHOSEN_ROTATION_TIMES=0;
+                    }
+                    else
+                    {
+                        this.CHOSEN_ROTATION_TIMES++;
+                    }
+
+                    var tileHtmlId = 'board_tile_'+this.CHOSEN_ROTATION_TILE;
+                    if($(tileHtmlId))
+                    {
+                        this.rotateTo( tileHtmlId, this.CHOSEN_ROTATION_TIMES*90 );
+                    }
+                },
+
+                onClickRotateTileCounterclockwise: function (evt)
+                {
+                    if(this.CHOSEN_ROTATION_TIMES<1)
+                        {
+                            this.CHOSEN_ROTATION_TIMES=3;
+                        }
+                        else
+                        {
+                            this.CHOSEN_ROTATION_TIMES--;
+                        }
+    
+                        this.rotateTo( 'board_tile_'+this.CHOSEN_ROTATION_TILE, this.CHOSEN_ROTATION_TIMES*90 );
+                },
+
+                onConfirmTileToRotate: function(evt)
+                {
+                    
+                        var boardTileHtml = 'board_tile_'+this.CHOSEN_ROTATION_TILE;
+                        console.log('boardTileHtml:'+boardTileHtml);
+                        if( $(boardTileHtml) )
+                        { // this element exists
+
+                            // make the tile invisible 
+                            //dojo.style( boardTileHtml, 'display', 'none' );
+                        }
+
+                    this.ajaxcall( "/crashandgrab/crashandgrab/actActivateQuakeMaker.html", {
+                        tilePosition: this.CHOSEN_ROTATION_TILE,
+                        timesRotated: this.CHOSEN_ROTATION_TIMES,
+                        lock: true
+                     },
+                    this, function( result ) {
+                        // What to do after the server call if it succeeded
+                        // (most of the time: nothing)
+                        
+
+                    }, function( is_error) {
+                        // What to do after the server call in anyway (success or failure)
+                        // (most of the time: nothing)
+
+                    } );
+                },
+
                 onClick_saucerButtonClick: function (evt)
                 {
                     var htmlIdOfButton = evt.currentTarget.id; // wormhole_saucer_button_01b508
@@ -981,6 +1093,21 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     this.selectSelectedDirection(saucerColor); // select the direction that is currently selected by this saucer (or none if none are selected)
 
                     this.highlightSpacesForSelectedSaucer(saucerColor); // highlight the board spaces for the selected saucer and move card (or none if none are selected)
+                },
+
+                selectTile: function(tileNumber)
+                {
+                    var tileHtmlId = 'board_tile_'+tileNumber;
+                    var tileButtonHtmlId = 'rotate_'+tileNumber+'_button';
+
+                    this.unhighlightAllBoardTiles(); // unselect all board tiles
+                    this.unrotateAllBoardTiles(false); // put all board tiles back to their regular rotation position
+
+                    dojo.addClass( tileHtmlId, 'boardTileSelected' ); // select this tile
+                    dojo.addClass( tileButtonHtmlId, 'buttonSelected'); // select the button
+
+                    // save the selection
+                    this.CHOSEN_ROTATION_TILE = tileNumber;
                 },
 
                 onClick_direction: function( evt )
@@ -1628,6 +1755,32 @@ this.unhighlightAllGarments();
 
                   break;
 
+                  case 'askToWasteAcclerate':
+
+                      if ( this.isCurrentPlayerActive() )
+                      { // we are the active player
+
+                          // add a button for confirming the move
+                          var finalizeButtonLabel = _('Use It Here');
+                          var finalizeIsDisabled = false;
+                          var finalizeHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                          var finalizeActionName = 'activateWasteAccelerator'; // such as selectSaucerToGoFirst
+                          var finalizeMakeRed = false;
+                          //this.addButtonToActionBar(finalizeButtonLabel, finalizeIsDisabled, finalizeHoverOverText, finalizeActionName, finalizeMakeRed);
+                          this.addActionButton( 'button_useWasteAccelerator', _(finalizeButtonLabel), 'onClick_activateWasteAccelerator' );
+
+                          // add a button for undo'ing the move
+                          var undoButtonLabel = _('Skip');
+                          var undoIsDisabled = false;
+                          var undoHoverOverText = ''; // hover over text or '' if we don't want a hover over
+                          var undoActionName = 'skipWasteAccelerator'; // such as selectSaucerToGoFirst
+                          var undoMakeRed = false;
+                          this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
+
+                      }
+
+                  break;
+
                   case 'askToRotationalStabilizer':
 
                       if ( this.isCurrentPlayerActive() )
@@ -1950,6 +2103,48 @@ this.unhighlightAllGarments();
                           this.highlightAllTheseSpaces(validSpaces);
 
                           this.addActionButton( 'skipButton_17', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
+                      }
+
+                  break;
+
+                  case 'chooseTileRotationQuakeMaker':
+
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+                            // when we first enter this state, the args need to give us:
+                            //   - the location of all saucers
+                            //   - the location of all crewmembers
+                            //   - the orientations of all the tiles
+                        
+                            // selecting a tile:
+                            //   - puts a green border around the tile (and removes any green borders around other tiles)
+                            //   - resets all tiles to their original position (rotating animation as appropriate preferably but snapping back would probably be fine)
+                            //   - shows a "Rotate" and "Submit" button
+
+                            // pressing the Rotate button:
+                            //   - rotates the tile 90 degrees, including any saucers and crewmembers on it
+
+                            // pressing the Submit button:
+                            //   - sends the tile and rotation they chose, which will then send the rotation notification to all players
+
+                            // create a place to put saucer 1 move selection button
+                            var holderDiv = $('generalactions');
+
+                            dojo.place( this.format_block( 'jstpl_tileRotateTileButtonHolder', {} ) , holderDiv );
+                            this.addActionButton( 'rotate_1_button', _('1'), 'onSelectTileToRotate', 'tile_rotation_tile_button_holder', null, 'blue' );
+                            this.addActionButton( 'rotate_2_button', _('2'), 'onSelectTileToRotate', 'tile_rotation_tile_button_holder', null, 'blue' );
+                            this.addActionButton( 'rotate_3_button', _('3'), 'onSelectTileToRotate', 'tile_rotation_tile_button_holder', null, 'blue' );
+                            this.addActionButton( 'rotate_4_button', _('4'), 'onSelectTileToRotate', 'tile_rotation_tile_button_holder', null, 'blue' );
+
+                            
+                            dojo.place( this.format_block( 'jstpl_tileRotateDirectionButtonHolder', {} ) , holderDiv );
+                            this.addActionButton( 'rotateTile_clockwise_button', '<div id="button_clockwise" class="clockwise"></div>', 'onClickRotateTileClockwise', 'tile_rotation_direction_button_holder', null, 'gray');
+                            this.addActionButton( 'rotateTile_counterclockwise_button', '<div id="button_counterclockwise" class="counterclockwise"></div>', 'onClickRotateTileCounterclockwise', 'tile_rotation_direction_button_holder', null, 'gray');
+
+                            
+                            dojo.place( this.format_block( 'jstpl_tileRotateConfirmButtonHolder', {} ) , holderDiv );
+                            this.addActionButton( 'confirmRotateTile', _('Confirm'), 'onConfirmTileToRotate', 'tile_rotation_confirm_button_holder', null, 'blue' );
+
                       }
 
                   break;
@@ -2740,7 +2935,32 @@ console.log("return false");
           dojo.query( '.highlighted_garment' ).removeClass( 'highlighted_garment' ); // remove highlights from all garments
         },
 
+        unhighlightAllBoardTiles: function()
+        {
+            dojo.query( '.board_tile' ).removeClass( 'boardTileSelected' );
+            dojo.query( '.bgabutton' ).removeClass( 'buttonSelected' );
+        },
 
+        unrotateAllBoardTiles: function(instant)
+        {
+            if(instant==true)
+            {
+                this.rotateInstantTo( 'board_tile_1', 0 );
+                this.rotateInstantTo( 'board_tile_2', 0 );
+                this.rotateInstantTo( 'board_tile_3', 0 );
+                this.rotateInstantTo( 'board_tile_4', 0 );
+            }
+            else
+            {
+                this.rotateTo( 'board_tile_1', 0 );
+                this.rotateTo( 'board_tile_2', 0 );
+                this.rotateTo( 'board_tile_3', 0 );
+                this.rotateTo( 'board_tile_4', 0 );
+            }
+
+            // reset the selection too
+            this.CHOSEN_ROTATION_TIMES=0;
+        },
 
         selectSpecificSaucer: function(color)
         {
@@ -5235,6 +5455,15 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             }, function( is_error) { } );
         },
 
+        onSelectTileToRotate: function( evt )
+        {
+            var node = evt.currentTarget.id; // "rotate_1_button
+            console.log("onSelectTileToRotate node:"+node);
+            var tileNumber = node.split('_')[1]; // 4
+
+            this.selectTile(tileNumber);
+        },
+
         onClickCrashSite: function( evt )
         {
             var node = evt.currentTarget.id; // "button_crash_site_4
@@ -6985,6 +7214,11 @@ console.log("success... onClickUpgradeCardInHand");
 
         notif_executeTrapRotateTile: function( notif )
         {
+            this.unhighlightAllBoardTiles(); // unselect all board tiles
+            this.unrotateAllBoardTiles(true); // put all board tiles back to their regular rotation position
+            this.CHOSEN_ROTATION_TILE=0;
+            this.CHOSEN_ROTATION_TIMES=0;
+
             console.log("Entered notif_executeTrapRotateTile.");
             var tileNumber = notif.args.tileNumber; // the tile number rotated
             var tilePosition = notif.args.tilePosition; // the tile position rotated
@@ -6994,6 +7228,13 @@ console.log("success... onClickUpgradeCardInHand");
 
             var tileId = 'board_tile_'+tilePosition;
 
+                        if( $(tileId) )
+                        { // this element exists
+
+                            // make the tile visible 
+                            //dojo.style( tileId, 'display', 'inline-block' );
+                        }
+
             var classToRemove = 'board_tile_image_'+tileNumber+'_'+side+'_'+oldRotation;
             dojo.removeClass( tileId, classToRemove ); // remove existing style like board_tile_image_1_A_1
 
@@ -7001,6 +7242,20 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.addClass( tileId, classToAdd ); // add style like board_tile_image_1_A_2
 
             console.log("removed class " + classToRemove + " and added class " + classToAdd);
+
+
+            // need a new function that rotates a tile
+            // it will:
+            //  - update the class to match the new tile
+            //  - move any saucers on that tile
+            //  - move any crewmembers on that tile
+
+            // need a new function that resets a tile
+            // it will:
+            // - update the classes to match what each tile had originally
+            // - reset locations of saucers to what they were originally
+            // - reset locations of crewmembers to what they were originally
+
         },
 
         notif_updateScore: function(notif)

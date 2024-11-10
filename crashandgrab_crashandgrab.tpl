@@ -1193,9 +1193,11 @@ var jstpl_boosterLabel = '<span id="saucer_mat_booster_count_value_${color}" cla
 
 var jstpl_garment='<div class="${size} crewmember_${small}${garment_type}_${color}" id="crewmember_${garment_type}_${color}"></div>';
 
-var jstpl_actionButtonHolder='<div id="saucer_${saucerNumber}_action_button_holder"></div>'
+var jstpl_actionButtonHolder='<div id="saucer_${saucerNumber}_action_button_holder"></div>';
 
-
+var jstpl_tileRotateTileButtonHolder='<div id="tile_rotation_tile_button_holder"></div>';
+var jstpl_tileRotateDirectionButtonHolder='<div id="tile_rotation_direction_button_holder"></div>';
+var jstpl_tileRotateConfirmButtonHolder='<div id="tile_rotation_confirm_button_holder"></div>';
 
 <!--OBSOLETE-->
 <!-- match the class to the css class for the image location -->
