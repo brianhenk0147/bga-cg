@@ -437,14 +437,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Waste Accelerator', 'type_arg' => 8, 'card_location' => 'deck','nbr' => 10),
+						array( 'type' => 'Waste Accelerator', 'type_arg' => 8, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Hyperdrive', 'type_arg' => 9, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Scavenger Bot', 'type_arg' => 10, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Distress Signaler', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
 						//array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 10),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 10),
@@ -2178,7 +2178,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						// Cargo Hold
 						case 15:
-								return clienttranslate( 'Take a Booster. You may hold an additional Booster.');
+								return clienttranslate( 'Take 3 Boosters.');
 
 						// Proximity Mines
 						case 16:
@@ -5930,7 +5930,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								  'garmentType' => $garmentTypeString,
 									'xDestination' => $newGarmentX,
 									'yDestination' => $newGarmentY,
-									'slide' => false
+									'slide' => true
 							) );
 					}
 				}
@@ -6005,7 +6005,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								  'garmentType' => $garmentTypeString,
 									'xDestination' => $newGarmentX,
 									'yDestination' => $newGarmentY,
-									'slide' => false
+									'slide' => true
 							) );
 					}
 				}
@@ -9923,12 +9923,18 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
 					  ($this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1) &&
+					  ($this->getAskedToActivateUpgrade($saucerMoving, "Waste Accelerator") == false) && 
 					  $this->isCrashSite($spaceType) && 
 					  $wasAPushEvent == false && 
 					  $lastEventType != "crewmemberPickup")
 				{ // this saucer has Waste Accelerator played and unused, we are on a Crash Site, they did not collide with someone here, and they did not just pick up a crewmember here
 					//throw new feException( "saucerWeCollideWith:$saucerWeCollideWith");
-						$this->gamestate->nextState( "askToWasteAccelerate" );
+					
+					// make that we have already asked so we don't ask over and over again
+					$this->setAskedToActivateUpgrade($saucerMoving, "Waste Accelerator");
+					
+					
+					$this->gamestate->nextState( "askToWasteAccelerate" );
 				}
 				elseif($moveType == 'Landing Legs')
 				{ // the moved because they had Landing Legs
@@ -10549,7 +10555,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				if($collectorNumber == 15)
 				{ // they just played Cargo Hold
 
-						// they get a booster when playing it
+						// they get 3 boosters when playing it
+						$this->giveSaucerBooster($color);
+						$this->giveSaucerBooster($color);
 						$this->giveSaucerBooster($color);
 				}
 
