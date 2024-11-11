@@ -6564,11 +6564,18 @@ console.log("success... onClickUpgradeCardInHand");
             var spaceType = notif.args.spaceType;
             var ostrichMovingHasZag = notif.args.ostrichMovingHasZag;
             var ostrichMovingIsOffCliff = notif.args.ostrichMovingIsOffCliff;
+            var slide = notif.args.slide;
 
             this.lastMovedOstrich = ostrichMoving; // save which ostrich last moved in case they hit a skateboard and we need to ask them which direction they want to go
-
-            console.log("Moving ostrich " + ostrichMoving + " to X=" + x + " and Y=" + y + " which is space type " + spaceType + ".");
-            this.moveOstrichOnBoard(ostrichMoving, ostrichTakingTurn, x, y, spaceType, ostrichMovingHasZag); // move the ostrich of a particular color to a particular space
+            if(slide == true)
+            {
+                console.log("Moving ostrich " + ostrichMoving + " to X=" + x + " and Y=" + y + " which is space type " + spaceType + ".");
+                this.moveOstrichOnBoard(ostrichMoving, ostrichTakingTurn, x, y, spaceType, ostrichMovingHasZag); // move the ostrich of a particular color to a particular space
+            }
+            else
+            {
+                this.putSaucerOnTile( x, y, '', ostrichMoving );
+            }
         },
 
         notif_resetSaucerPosition: function( notif )
@@ -7030,13 +7037,29 @@ console.log("success... onClickUpgradeCardInHand");
             var garmentColor = notif.args.garmentColor;
             var xDestination = notif.args.xDestination;
             var yDestination = notif.args.yDestination;
+            var slide = notif.args.slide;
 
             var garmentHtmlId = 'crewmember_'+garmentType+'_'+garmentColor;
             var spaceHtmlId = 'square_'+xDestination+'_'+yDestination;
 
-            console.log('moving ' + garmentHtmlId + ' to ' + spaceHtmlId);
-            this.slideToObject( garmentHtmlId, spaceHtmlId).play();
-            this.slideToObject( garmentHtmlId, spaceHtmlId).play(); // it flies off the screen if we don't do this twice... we could place it first but would need the original x/y passed in
+            if(slide == true)
+            {
+                console.log('moving ' + garmentHtmlId + ' to ' + spaceHtmlId);
+                this.slideToObject( garmentHtmlId, spaceHtmlId).play();
+                this.slideToObject( garmentHtmlId, spaceHtmlId).play(); // it flies off the screen if we don't do this twice... we could place it first but would need the original x/y passed in
+            }
+            else
+            { // we don't want them to slide there, we just want to place them there
+
+                        console.log('placing garmentColor:'+garmentColor+' garmentType:'+garmentType);
+
+                        dojo.place( this.format_block( 'jstpl_garment', {
+                            color: garmentColor,
+                            garment_type: garmentType,
+                            size: "crewmember",
+                            small: ""
+                        } ) , spaceHtmlId );
+            }
         },
 
         notif_zagUsed: function( notif )

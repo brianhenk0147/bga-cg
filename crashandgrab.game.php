@@ -5427,7 +5427,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								'ostrichMovingHasZag' => false,
 								'player_name' => self::getActivePlayerName(),
 								'ostrichName' => $this->getOstrichName($saucerColor),
-								'location_description' => $locationDescription
+								'location_description' => $locationDescription,
+								'slide' => true
 				) );
 		}
 
@@ -5471,7 +5472,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 									'spaceType' => $boardValue,
 									'ostrichMovingHasZag' => false,
 									'player_name' => self::getActivePlayerName(),
-									'ostrichName' => $this->getOstrichName($ostrichColor)
+									'ostrichName' => $this->getOstrichName($ostrichColor),
+									'slide' => true
 				) );
 
 
@@ -5927,7 +5929,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 									'garmentColor' => $garmentColor,
 								  'garmentType' => $garmentTypeString,
 									'xDestination' => $newGarmentX,
-									'yDestination' => $newGarmentY
+									'yDestination' => $newGarmentY,
+									'slide' => false
 							) );
 					}
 				}
@@ -6001,7 +6004,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 									'garmentColor' => $garmentColor,
 								  'garmentType' => $garmentTypeString,
 									'xDestination' => $newGarmentX,
-									'yDestination' => $newGarmentY
+									'yDestination' => $newGarmentY,
+									'slide' => false
 							) );
 					}
 				}
@@ -6048,7 +6052,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										'spaceType' => "B",
 										'ostrichMovingHasZag' => false,
 										'ostrichMovingIsOffCliff' => false,
-										'ostrichName' => $this->getOstrichName($ostrichColor)
+										'ostrichName' => $this->getOstrichName($ostrichColor),
+										'slide' => true
 								) );
 						}
 				}
@@ -6113,7 +6118,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										'spaceType' => "B",
 										'ostrichMovingHasZag' => false,
 										'ostrichMovingIsOffCliff' => false,
-										'ostrichName' => $this->getOstrichName($ostrichColor)
+										'ostrichName' => $this->getOstrichName($ostrichColor),
+										'slide' => true
 								) );
 						}
 				}
