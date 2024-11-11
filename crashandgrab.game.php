@@ -2925,7 +2925,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$xPlusOne = $currentSaucerX + 1;
 
 								$spaceType = $this->getBoardSpaceType($xPlusOne, $currentSaucerY);
-								if($spaceType != "C" && $spaceType != "O" && $spaceType != "S" && $spaceType != "D")
+								if(!$this->isCrashSite($spaceType) && $spaceType != "S" && $spaceType != "D")
 								{ // empty space
 											$saucerHere = $this->getSaucerAt($xPlusOne, $currentSaucerY, $saucerColor);
 											$crewmemberId = $this->getGarmentIdAt($xPlusOne, $currentSaucerY);
@@ -2940,7 +2940,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$xMinusOne = $currentSaucerX - 1;
 
 								$spaceType = $this->getBoardSpaceType($xMinusOne, $currentSaucerY);
-								if($spaceType != "C" && $spaceType != "O" && $spaceType != "S" && $spaceType != "D")
+								if(!$this->isCrashSite($spaceType) && $spaceType != "S" && $spaceType != "D")
 								{ // empty space
 											$saucerHere = $this->getSaucerAt($xMinusOne, $currentSaucerY, $saucerColor);
 											$crewmemberId = $this->getGarmentIdAt($xMinusOne, $currentSaucerY);
@@ -2954,7 +2954,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 								$yPlusOne = $currentSaucerY + 1;
 								$spaceType = $this->getBoardSpaceType($currentSaucerX, $yPlusOne);
-								if($spaceType != "C" && $spaceType != "O" && $spaceType != "S" && $spaceType != "D")
+								if(!$this->isCrashSite($spaceType) && $spaceType != "S" && $spaceType != "D")
 								{ // empty space
 											$saucerHere = $this->getSaucerAt($currentSaucerX, $yPlusOne, $saucerColor);
 											$crewmemberId = $this->getGarmentIdAt($currentSaucerX, $yPlusOne);
@@ -2968,7 +2968,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 								$yMinusOne = $currentSaucerY - 1;
 								$spaceType = $this->getBoardSpaceType($currentSaucerX, $yMinusOne);
-								if($spaceType != "C" && $spaceType != "O" && $spaceType != "S" && $spaceType != "D")
+								if(!$this->isCrashSite($spaceType) && $spaceType != "S" && $spaceType != "D")
 								{ // empty space
 											$saucerHere = $this->getSaucerAt($currentSaucerX, $yMinusOne, $saucerColor);
 											$crewmemberId = $this->getGarmentIdAt($currentSaucerX, $yMinusOne);
@@ -3003,7 +3003,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 														$formattedSpace = $column.'_'.$row;
 
 														$spaceType = $this->getBoardSpaceType($column, $row);
-														if($spaceType != "C" && $spaceType != "O" && $spaceType != "S" && $spaceType != "D")
+														if(!$this->isCrashSite($spaceType) && $spaceType != "S" && $spaceType != "D")
 														{ // empty space
 																	$saucerHere = $this->getSaucerAt($column, $row, $saucerColor);
 																	$crewmemberId = $this->getGarmentIdAt($column, $row);
@@ -7074,13 +7074,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 												}
 										}
 								}
-								else if($boardValue == "C" || $boardValue == "O")
-								{ // this is a CRASH SITE
+								else if($this->isCrashSite($boardValue) && $saucerWeCollideWith == "")
+								{ // this is an empty CRASH SITE
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
- 										   $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Waste Accelerator") < 1)
+ 										   $this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1)
 										{ // they have Waste Accelerator played and they haven't used it yet this round
 
 											// do not move any further because they will need to answer a question
@@ -7258,13 +7258,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 												}
 										}
 								}
-								else if($boardValue == "C" || $boardValue == "O")
-								{ // this is a CRASH SITE
+								else if($this->isCrashSite($boardValue) && $saucerWeCollideWith == "")
+								{ // this is an empty CRASH SITE
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
- 										   $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Waste Accelerator") < 1)
+ 										   $this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1)
 										{ // they have Waste Accelerator played and they haven't used it yet this round
 											
 											// do not move any further because they will need to answer a question
@@ -7434,13 +7434,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 												}
 										}
 								}
-								else if($boardValue == "C" || $boardValue == "O")
-								{ // this is a CRASH SITE
+								else if($this->isCrashSite($boardValue) && $saucerWeCollideWith == "")
+								{ // this is an empty CRASH SITE
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
- 										   $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Waste Accelerator") < 1)
+ 										   $this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1)
 										{ // they have Waste Accelerator played and they haven't used it yet this round
 											
 											// do not move any further because they will need to answer a question
@@ -7520,7 +7520,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				if($this->DOWN_DIRECTION == $direction)
 			 	{
-
+					//throw new feException( "DOWN");
 
 						for ($y = 1; $y <= $distance; $y++)
 						{ // go space-by-space starting at your current location until the distance is
@@ -7529,6 +7529,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$thisY = $currentY+$y;
 
 								$boardValue = $this->getBoardSpaceType($currentX, $thisY);
+								//throw new feException( "boardValue:$boardValue");
 
 								// see if we are within 1 space of our other saucer
 								$this->checkIfPassedByOtherSaucer($saucerMoving, $currentX, $thisY);
@@ -7606,13 +7607,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 												}
 										}
 								}
-								else if($boardValue == "C" || $boardValue == "O")
-								{ // this is a CRASH SITE
-
+								else if($this->isCrashSite($boardValue) && $saucerWeCollideWith == "")
+								{ // this is an empty CRASH SITE
+//throw new feException( "crash site");
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
- 										   $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Waste Accelerator") < 1)
+ 										   $this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1)
 										{ // they have Waste Accelerator played and they haven't used it yet this round
 											
 											// do not move any further because they will need to answer a question
@@ -7775,6 +7776,29 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 
 				return $crashSiteNumber;
+		}
+
+		function isCrashSite($boardSpaceValue)
+		{
+			if($boardSpaceValue == "1" ||
+			$boardSpaceValue == "2" || 
+			$boardSpaceValue == "3" || 
+			$boardSpaceValue == "4" ||
+			$boardSpaceValue == "5" ||
+			$boardSpaceValue == "6" ||
+			$boardSpaceValue == "7" ||
+			$boardSpaceValue == "8" ||
+			$boardSpaceValue == "9" ||
+			$boardSpaceValue == "10" ||
+			$boardSpaceValue == "11" ||
+			$boardSpaceValue == "12" )
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		function locatePilot($saucerColor)
@@ -9857,6 +9881,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				self::notifyAllPlayers( "animateMovement", '', array(
 					'moveEventList' => $reversedMoveEventList
 				) );
+				$lastEventType = $this->getLastEventTypeFromEventList($moveEventList);
+				$wasAPushEvent = $this->wasThereSpecificEventInEventList($moveEventList, 'saucerPush');
+				//throw new feException( "lastEventType:$lastEventType");
 
 				// tell the players what happened in the game log
 				$this->updateGameLogForEvents($saucerMoving, $moveEventList);
@@ -9894,9 +9921,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						$this->gamestate->nextState( "askToProximityMine" );
 				}
-				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && ($spaceType == "C" || $spaceType == "O"))
-				{ // this saucer has Waste Accelerator played and we are on a Crash Site
-
+				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") && 
+					  ($this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1) &&
+					  $this->isCrashSite($spaceType) && 
+					  $wasAPushEvent == false && 
+					  $lastEventType != "crewmemberPickup")
+				{ // this saucer has Waste Accelerator played and unused, we are on a Crash Site, they did not collide with someone here, and they did not just pick up a crewmember here
+					//throw new feException( "saucerWeCollideWith:$saucerWeCollideWith");
 						$this->gamestate->nextState( "askToWasteAccelerate" );
 				}
 				elseif($moveType == 'Landing Legs')
@@ -10012,6 +10043,32 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 //throw new feException( "moveType: $moveType");
 				return $moveType;
+		}
+
+		function getLastEventTypeFromEventList($eventList)
+		{
+			$eventType = "unknown";
+			foreach($eventList as $event)
+			{
+					$eventType = $event['event_type']; // saucerMove
+			}
+			//throw new feException( "eventType: $eventType");
+			return $eventType;
+		}
+
+		function wasThereSpecificEventInEventList($eventList, $eventTypeInQuestion)
+		{
+			foreach($eventList as $event)
+			{
+
+					$eventType = $event['event_type'];
+					if($eventType == $eventTypeInQuestion)
+					{
+						return true;
+					}
+			}
+			//throw new feException( "eventType: $eventType");
+			return false;
 		}
 
 		function updateGameLogForEvents($saucerMoving, $eventList)
@@ -12534,7 +12591,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function argGetTractorBeamCrewmembers()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(5);
 
 				$validCrewmembers = $this->getCrewmembersWithin2($saucerWhoseTurnItIs);
@@ -12550,7 +12607,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function argGetDistressSignalerTakeCrewmembers()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(11);
 
 				$validCrewmembers = $this->getDistressSignalableTakeCrewmembers($saucerWhoseTurnItIs);
@@ -12566,7 +12623,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function argGetDistressSignalerGiveCrewmembers()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(11);
 
 				$validCrewmembers = $this->getDistressSignalableGiveCrewmembers($saucerWhoseTurnItIs);
@@ -12597,7 +12654,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function argAskToProximityMine()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
 
 				$saucerX = $this->getSaucerXLocation($saucerWhoseTurnItIs);
@@ -12609,13 +12666,25 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				return array(
 						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
 						'saucerToCrash' => $saucerToCrash
+				);																																																																																																																																
+		}						
+
+		function argAskToWasteAccelerate()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
+
+//throw new feException( "saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerToCrash: $saucerToCrash" );
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly
 				);
 		}
 
 		function argAskToRotationalStabilizer()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToText($saucerWhoseTurnItIs);
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
 
 //throw new feException( "saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerToCrash: $saucerToCrash" );
@@ -12653,7 +12722,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetStealableCrewmembers()
 		{
-				$saucerStealing = $this->getOstrichWhoseTurnItIs();
+				$saucerStealing = $this->getOstrichWhoseTurnItIs(); 
 				$crashedSaucer = $this->nextPendingCrashReward($saucerStealing);
 				$crashedSaucerText = $this->convertColorToHighlightedText($crashedSaucer);
 				$saucerStealingText = $this->convertColorToHighlightedText($saucerStealing);

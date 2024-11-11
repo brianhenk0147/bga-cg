@@ -1755,7 +1755,7 @@ this.unhighlightAllGarments();
 
                   break;
 
-                  case 'askToWasteAcclerate':
+                  case 'askToWasteAccelerate':
 
                       if ( this.isCurrentPlayerActive() )
                       { // we are the active player

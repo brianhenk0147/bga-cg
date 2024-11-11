@@ -649,7 +649,7 @@ $machinestates = array(
         "action" => "executeMove",
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
-        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "endGame" => 99 )
+        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "endGame" => 99 )
     ),
 
     71 => array(
@@ -657,6 +657,7 @@ $machinestates = array(
         "description" => clienttranslate('${saucerColor} is deciding whether they will use their Waste Accelerator.'),
         "descriptionmyturn" => clienttranslate('Waste Accelerator: Would you like to use your Waste Accelerator here?'),
         "type" => "activeplayer",
+        'args' => 'argAskToWasteAccelerate',
         "possibleactions" => array( "chooseWasteAccelerator", "declineWasteAccelerator" ),
         "transitions" => array(  "executingMove" => 70, "chooseAcceleratorDirection" => 9 )
     ),
