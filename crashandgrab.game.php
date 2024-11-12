@@ -444,7 +444,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
 						//array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 10),
+						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 10),
@@ -9861,8 +9861,20 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		// called when Rotational Stabilizer player chooses who goes second in turn order
 		function executeChooseTurnOrder($turnOrderInt)
 		{
+				//throw new feexception("turnOrderInt:$turnOrderInt");
 				$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
-				$this->gamestate->nextState( "playerTurnStart" ); // start the PLAYER turn (not the SAUCER turn)
+
+				$this->gamestate->nextState( "setActivePlayerToProbePlayer");
+		}
+
+		// called after Rotational Stabilizer player chooses who goes second in turn order just to change active player in a game state
+		function executeSetActivePlayerToProbePlayer()
+		{
+			$probeSaucer = $this->getSaucerWithProbe();
+			$probePlayer = $this->getOwnerIdOfOstrich($probeSaucer);
+			$this->gamestate->changeActivePlayer( $probePlayer ); // make probe owner go first in turn order (since currently the player with Rotational Stabilizer has control of the turn)
+
+			$this->gamestate->nextState( "playerTurnStart" ); // start the PLAYER turn (not the SAUCER turn)
 		}
 
 		function executeSaucerMove($saucerMoving)
@@ -11120,7 +11132,15 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function isTurnOrderClockwise()
 		{
+			$clockwiseAsInt = $this->getGameStateValue("TURN_ORDER"); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+			if($clockwiseAsInt == 0)
+			{
 				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 
 		function getPlayerTurnsTaken($playerId)

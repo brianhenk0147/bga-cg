@@ -1774,7 +1774,7 @@ this.unhighlightAllGarments();
                           var undoIsDisabled = false;
                           var undoHoverOverText = ''; // hover over text or '' if we don't want a hover over
                           var undoActionName = 'skipWasteAccelerator'; // such as selectSaucerToGoFirst
-                          var undoMakeRed = false;
+                          var undoMakeRed = true;
                           this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
 
                       }
@@ -5359,7 +5359,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         showAskToUseBoosterButtons: function()
         {
-            this.addActionButton( 'noBooster_button', _('Skip Booster'), 'skipBooster' );
+            this.addActionButton( 'noBooster_button', _('Skip Booster'), 'skipBooster', null, false, 'red' );
         },
 
         sendXValue: function(value)

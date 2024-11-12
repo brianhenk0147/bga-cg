@@ -628,7 +628,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argAskToRotationalStabilizer',
         "possibleactions" => array( "chooseTurnDirection" ),
-        "transitions" => array(  "playerTurnStart" => 29 )
+        "transitions" => array(  "playerTurnStart" => 29, "setActivePlayerToProbePlayer" => 73 )
     ),
 
     69 => array(
@@ -669,6 +669,15 @@ $machinestates = array(
         "type" => "activeplayer",
         "possibleactions" => array( "rotateTile", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+    ),
+
+    73 => array(
+        "name" => "setActivePlayerToProbePlayer",
+        "description" => clienttranslate('Setting turn order...'),
+        "type" => "game",
+        "action" => "executeSetActivePlayerToProbePlayer",
+        "updateGameProgression" => false,
+        "transitions" => array( "playerTurnStart" => 29 )
     ),
 
 
