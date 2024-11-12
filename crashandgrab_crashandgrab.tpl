@@ -1276,8 +1276,8 @@ var jstpl_player_board_for_saucer = '<div id="player_board_for_saucer_${color}" 
 
 
 var jstpl_player_board_for_saucer = '<div id="player_board_saucer_${color}" class="player_board_saucer">\
-                                          <div id="player_board_saucer_section_${color}" class="player_board_saucer_section"></div>\
                                           <div id="player_board_turn_order_${color}" class="player_board_turn_order"></div>\
+                                          <div id="player_board_saucer_section_${color}" class="player_board_saucer_section"></div>\
                                           <div id="player_board_upgrades_and_counts_${color}" class="player_board_upgrades_and_counts">\
                                               <div id="player_board_counts_${color}" class="player_board_counts">\
                                                   <div id="player_board_booster_count_holder_${color}" class="player_board_booster_count_holder">\

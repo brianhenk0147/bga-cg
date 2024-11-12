@@ -2648,13 +2648,13 @@ margin-top: 6px;
   margin-top: 5px;
 }
 
-.player_board_saucer_section {
+.player_board_turn_order {
 
   grid-row: 1 / span 1;
   grid-column: 1 / span 1;
 }
 
-.player_board_turn_order {
+.player_board_saucer_section {
 
   grid-row: 1 / span 1;
   grid-column: 2 / span 1;
@@ -2676,6 +2676,7 @@ margin-top: 6px;
   width: 32px;
   height: 20px;
   background-color: purple;
+  display: inline-block;
 }
 
 .player_board_counts {
