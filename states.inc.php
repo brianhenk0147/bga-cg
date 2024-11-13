@@ -549,7 +549,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetBlastOffThrustersSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "executingMove" => 70 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "executingMove" => 70, "checkStartOfTurnUpgrades" => 24)
     ),
 
     61 => array(
@@ -661,7 +661,7 @@ $machinestates = array(
         "possibleactions" => array( "chooseWasteAccelerator", "declineWasteAccelerator" ),
         "transitions" => array(  "executingMove" => 70, "chooseAcceleratorDirection" => 9 )
     ),
-    
+
     72 => array(
         "name" => "chooseTileRotationQuakeMaker",
         "description" => clienttranslate('${actplayer} is rotating a tile.'),

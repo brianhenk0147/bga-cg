@@ -979,19 +979,19 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                         {
                             this.CHOSEN_ROTATION_TIMES--;
                         }
-    
+
                         this.rotateTo( 'board_tile_'+this.CHOSEN_ROTATION_TILE, this.CHOSEN_ROTATION_TIMES*90 );
                 },
 
                 onConfirmTileToRotate: function(evt)
                 {
-                    
+
                         var boardTileHtml = 'board_tile_'+this.CHOSEN_ROTATION_TILE;
                         console.log('boardTileHtml:'+boardTileHtml);
                         if( $(boardTileHtml) )
                         { // this element exists
 
-                            // make the tile invisible 
+                            // make the tile invisible
                             //dojo.style( boardTileHtml, 'display', 'none' );
                         }
 
@@ -1003,7 +1003,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     this, function( result ) {
                         // What to do after the server call if it succeeded
                         // (most of the time: nothing)
-                        
+
 
                     }, function( is_error) {
                         // What to do after the server call in anyway (success or failure)
@@ -1267,7 +1267,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     var chosenSpaceX = node.split('_')[1]; // x location of the space
                     var chosenSpaceY = node.split('_')[2]; // y location of the space
 
-                    console.log("clicked on space " + chosenSpaceX + " " + chosenSpaceY);
+                    console.log("space click " + chosenSpaceX + " " + chosenSpaceY);
 
                     var hasClassUp = dojo.hasClass(node, 'spaceClick_'+this.UP_DIRECTION);
                     var hasClassLeft = dojo.hasClass(node, 'spaceClick_'+this.LEFT_DIRECTION);
@@ -1286,7 +1286,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     else if (this.checkPossibleActions( 'chooseUpgradeSpace' ))
                     { // we are choosing a space when activating an upgrade
                         this.ajaxcall( "/crashandgrab/crashandgrab/actChooseUpgradeSpace.html", {chosenX: chosenSpaceX, chosenY: chosenSpaceY, lock: true }, this, function( result ) {}, function( is_error ) {} );
-                        this.unhighlightAllSpaces();
                     }
                     else if (this.checkPossibleActions( 'chooseSaucerSpace', true ))
                     { // we are choosing a space to place a Saucer
@@ -1677,6 +1676,11 @@ this.unhighlightAllGarments();
                 console.log( "onLeavingState->askWhichGarmentToDiscard" );
                 this.unhighlightAllGarments();
             break;
+
+            case 'chooseBlastOffThrusterSpace':
+            case 'chooseLandingLegsSpace':
+            case 'chooseAfterburnerSpace':
+              this.unhighlightAllSpaces();
             }
         },
 
@@ -2115,7 +2119,7 @@ this.unhighlightAllGarments();
                             //   - the location of all saucers
                             //   - the location of all crewmembers
                             //   - the orientations of all the tiles
-                        
+
                             // selecting a tile:
                             //   - puts a green border around the tile (and removes any green borders around other tiles)
                             //   - resets all tiles to their original position (rotating animation as appropriate preferably but snapping back would probably be fine)
@@ -2136,12 +2140,12 @@ this.unhighlightAllGarments();
                             this.addActionButton( 'rotate_3_button', _('3'), 'onSelectTileToRotate', 'tile_rotation_tile_button_holder', null, 'blue' );
                             this.addActionButton( 'rotate_4_button', _('4'), 'onSelectTileToRotate', 'tile_rotation_tile_button_holder', null, 'blue' );
 
-                            
+
                             dojo.place( this.format_block( 'jstpl_tileRotateDirectionButtonHolder', {} ) , holderDiv );
                             this.addActionButton( 'rotateTile_clockwise_button', '<div id="button_clockwise" class="clockwise"></div>', 'onClickRotateTileClockwise', 'tile_rotation_direction_button_holder', null, 'gray');
                             this.addActionButton( 'rotateTile_counterclockwise_button', '<div id="button_counterclockwise" class="counterclockwise"></div>', 'onClickRotateTileCounterclockwise', 'tile_rotation_direction_button_holder', null, 'gray');
 
-                            
+
                             dojo.place( this.format_block( 'jstpl_tileRotateConfirmButtonHolder', {} ) , holderDiv );
                             this.addActionButton( 'confirmRotateTile', _('Confirm'), 'onConfirmTileToRotate', 'tile_rotation_confirm_button_holder', null, 'blue' );
 
@@ -4844,6 +4848,20 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             }
         },
 
+        teleportSaucerToTile: function( x, y, owner, color )
+        {
+            var saucerHtmlId = 'saucer_'+color;
+
+            //this.placeOnObject( 'disc_'+color, 'square_'+x+'_'+y );
+            this.slideToObject( saucerHtmlId, 'square_'+x+'_'+y, 0, 0 ).play();
+
+            if(color == this.gamedatas.saucer1 || color == this.gamedatas.saucer2)
+            { // this saucer is owned by this player
+
+                  dojo.addClass( saucerHtmlId, 'clickable' );
+            }
+        },
+
         putSaucerOnTile: function( x, y, owner, color )
         {
             var saucerHtmlId = 'saucer_'+color;
@@ -4995,23 +5013,23 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
             this.attachToNewParent( source, destination ); // move the saucer to the correct space in the DOM to avoid weird graphical issues
 
-            this.slideToObject( source, destination ).play(); // should be ostrich_COLOR
+            var animationId = this.slideToObject( source, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
+            dojo.connect(animationId, 'onEnd', () => {
+
+                // after sliding, the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
+                $(source).style.removeProperty('left'); // remove left property
+                $(source).style.removeProperty('top'); // remove top property
+
+            });
+            animationId.play();
 
             if(spaceType == "D")
             { // this ostrich fell off a cliff
 
             }
-            else if(spaceType == "S")
-            { // we are ending on a SKATEBOARD
-                this.mustSkateboard = true; // make sure we display the skateboard buttons
-                //this.showDirectionChoiceButtons();
-            }
             else if(ostrichMoving == ostrichTakingTurn && ostrichMovingHasZag)
             { // it is the moving ostrich's turn and they have a zag
                 this.showAskToUseBoosterButtons();
-            }
-            else {
-              this.mustSkateboard = false;
             }
         },
 
@@ -6574,7 +6592,7 @@ console.log("success... onClickUpgradeCardInHand");
             }
             else
             {
-                this.putSaucerOnTile( x, y, '', ostrichMoving );
+                this.teleportSaucerToTile( x, y, '', ostrichMoving );
             }
         },
 
@@ -7254,7 +7272,7 @@ console.log("success... onClickUpgradeCardInHand");
                         if( $(tileId) )
                         { // this element exists
 
-                            // make the tile visible 
+                            // make the tile visible
                             //dojo.style( tileId, 'display', 'inline-block' );
                         }
 
