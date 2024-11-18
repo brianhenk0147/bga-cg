@@ -79,7 +79,7 @@ $stats_type = array(
                     "type" => "int" ),
 
         "rounds_started" => array("id"=> 11,
-                    "name" => totranslate("Rounds You Started"),
+                    "name" => totranslate("Rounds With Probe"),
                     "type" => "int" ),
 
         "crewmembers_picked_up" => array("id"=> 12,
@@ -98,12 +98,12 @@ $stats_type = array(
                     "name" => totranslate("Saucers You Crashed"),
                     "type" => "int" ),
 
-        "times_you_were_crashed" => array("id"=> 16,
-                    "name" => totranslate("Times You Were Crashed"),
+        "times_you_crashed" => array("id"=> 16,
+                    "name" => totranslate("Times You Crashed"),
                     "type" => "int" ),
 
-        "times_you_crashed_yourself" => array("id"=> 17,
-                    "name" => totranslate("Times You Crashed Yourself"),
+        "distance_you_were_pushed" => array("id"=> 17,
+                    "name" => totranslate("Distance You Were Pushed"),
                     "type" => "int" ),
 
         "2s_played" => array("id"=> 18,
@@ -131,11 +131,11 @@ $stats_type = array(
                     "type" => "int" ),
 
         "upgrades_played" => array("id"=> 24,
-                    "name" => totranslate("Upgrades Played"),
+                    "name" => totranslate("Upgrades Collected"),
                     "type" => "int" ),
 
         "upgrades_activated" => array("id"=> 25,
-                    "name" => totranslate("Upgrades Activated"),
+                    "name" => totranslate("Upgrade Uses"),
                     "type" => "int" ),
 
 

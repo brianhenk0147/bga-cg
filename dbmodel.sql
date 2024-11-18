@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS `upgradeCards` (
   `card_is_played` smallint(5) unsigned NOT NULL DEFAULT '0',
   `times_activated_this_round` smallint(5) unsigned NOT NULL DEFAULT '0',
   `asked_to_activate_this_round` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `is_playable` smallint(5) unsigned NOT NULL DEFAULT '0',
   `value_1` varchar(60) NOT NULL DEFAULT '0',
   `value_2` varchar(60) NOT NULL DEFAULT '0',
   `value_3` varchar(60) NOT NULL DEFAULT '0',

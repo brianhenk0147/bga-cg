@@ -1680,6 +1680,8 @@ this.unhighlightAllGarments();
             case 'chooseBlastOffThrusterSpace':
             case 'chooseLandingLegsSpace':
             case 'chooseAfterburnerSpace':
+            case 'askWhichUpgradeToPlay':
+            case 'placeCrewmemberChooseCrewmember':
               this.unhighlightAllSpaces();
             }
         },
@@ -2516,6 +2518,9 @@ this.unhighlightAllGarments();
 
                           // show a button in the bar for each direction
                           this.showDirectionButtons();
+
+                          console.log("args.playerSaucerAcceleratorMoves:");
+                        console.log(args.playerSaucerAcceleratorMoves);
 
                           // highlight all spaces available
                           this.highlightPossibleAcceleratorOrBoostMoveSelections(args.playerSaucerAcceleratorMoves);
@@ -3516,7 +3521,7 @@ console.log(moveCardKeys);
                                     { // go through each direction for this move card
 
 console.log("directionKey is " + directionKey + " and direction is " + direction);
-                                        if(direction == '' || direction == directionKey)
+                                        if(direction == '' || direction == 'all' || direction == directionKey)
                                         {
 
                                             var spaces = playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey]; // array of spaces like 8_7, 3_4
