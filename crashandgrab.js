@@ -1140,6 +1140,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                         this.chooseMoveCardDirection(direction, saucerNumber);
 
                     }
+                    else if(this.checkPossibleActions('clickDirection'))
+                    {
+                        this.sendDirectionClick(direction);
+                    }
                     else
                     {
                         //this.showMessage( _("You cannot do anything with this right now."), 'error' );
@@ -1283,9 +1287,30 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                             }
 
                     }
-                    else if (this.checkPossibleActions( 'chooseUpgradeSpace' ))
+                    else if (this.checkPossibleActions( 'chooseUpgradeSpace', true ))
                     { // we are choosing a space when activating an upgrade
-                        this.ajaxcall( "/crashandgrab/crashandgrab/actChooseUpgradeSpace.html", {chosenX: chosenSpaceX, chosenY: chosenSpaceY, lock: true }, this, function( result ) {}, function( is_error ) {} );
+                        dojo.stopEvent( evt ); // Preventing default browser reaction
+
+                        this.ajaxcall( "/crashandgrab/crashandgrab/actChooseUpgradeSpace.html", {
+                                                                                    chosenX: chosenSpaceX,
+                                                                                    chosenY: chosenSpaceY,
+                                                                                    lock: true
+                                                                                 },
+                                         this, function( result ) {
+
+                                            // What to do after the server call if it succeeded
+                                            // (most of the time: nothing)
+
+
+
+                                         }, function( is_error) {
+
+                                            // What to do after the server call in anyway (success or failure)
+                                            // (most of the time: nothing)
+
+                        } );
+
+
                     }
                     else if (this.checkPossibleActions( 'chooseSaucerSpace', true ))
                     { // we are choosing a space to place a Saucer
@@ -1452,6 +1477,13 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                     }
 
+                  break;
+
+                  case 'chooseDirectionAfterPlacement':
+                    if( this.isCurrentPlayerActive() )
+                    { // this is the active player
+                        this.makeAllDirectionTokensClickable(); // make it clear you can click on directions
+                    }
                   break;
 
                   case 'chooseMoveCard':
@@ -1683,6 +1715,11 @@ this.unhighlightAllGarments();
             case 'askWhichUpgradeToPlay':
             case 'placeCrewmemberChooseCrewmember':
               this.unhighlightAllSpaces();
+              break;
+
+              case 'chooseDirectionAfterPlacement':
+              this.removeClickableFromAllDirectionTokens(); // remove the pointer hoverover from all direction tokens
+              break;
             }
         },
 
@@ -1892,6 +1929,12 @@ this.unhighlightAllGarments();
                           var undoActionName = 'beginTurn'; // such as selectSaucerToGoFirst
                           var undoMakeRed = false;
                           this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
+
+                          var saucerColor = args.saucerColor;
+                          var distanceType = args.distanceType;
+                          var direction = args.direction;
+                          var moveCardFrontHtmlId = 'move_card_'+distanceType+'_'+saucerColor;
+                          this.rotateTo( moveCardFrontHtmlId, this.getDegreesRotated(direction) );
                       }
                   break;
 
@@ -2244,6 +2287,7 @@ this.unhighlightAllGarments();
                   case 'chooseDirectionAfterPlacement':
                       if( this.isCurrentPlayerActive() )
                       { // this player is active
+
                           this.showDirectionButtons();
                       }
                   break;
@@ -3069,6 +3113,7 @@ console.log("return false");
 
         chooseAcceleratorDirection: function(direction)
         {
+          console.log("chooseAcceleratorDirection");
             this.ajaxcall( "/crashandgrab/crashandgrab/actClickedAcceleratorDirection.html", {
                                                                         direction: direction,
                                                                         lock: true

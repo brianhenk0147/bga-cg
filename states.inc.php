@@ -415,11 +415,11 @@ $machinestates = array(
 
     44 => array(
     		"name" => "beginTurn",
-    		"description" => clienttranslate('${saucerColor} is beginning their turn.'),
-    		"descriptionmyturn" => clienttranslate('You must begin your turn for ${saucerColor}.'),
+    		"description" => clienttranslate('${saucerColorText} is beginning their turn.'),
+    		"descriptionmyturn" => clienttranslate('You must begin your turn for ${saucerColorText}.'),
     		"type" => "activeplayer",
         "action" => "beginTurn",
-        'args' => 'argGetSaucerColor',
+        'args' => 'argGetSaucerMoveCardInfo',
         "possibleactions" => array( "clickBegin" ),
     		"transitions" => array(  "checkStartOfTurnUpgrades" => 24 )
     ),
