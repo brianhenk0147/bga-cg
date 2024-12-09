@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS `upgradeCards` (
   `value_2` varchar(60) NOT NULL DEFAULT '0',
   `value_3` varchar(60) NOT NULL DEFAULT '0',
   `value_4` varchar(60) NOT NULL DEFAULT '0',
+  `value_5` varchar(60) NOT NULL DEFAULT '0',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -130,6 +131,7 @@ CREATE TABLE IF NOT EXISTS `garment` (
   `garment_type` smallint(5) unsigned NOT NULL,
   `airlock_exchangeable` smallint(5) unsigned NOT NULL DEFAULT '0',
   `taken_with_distress` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `is_primary` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`garment_id`)
 ) ENGINE=InnoDB;
 

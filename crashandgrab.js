@@ -123,6 +123,9 @@ function (dojo, declare) {
             // player board crewmember stocks
             this.playerBoardCrewmemberStocks={};
 
+            // holds stocks for all saucer mat extra crewmembers
+            this.saucerMatExtraCrewmemberStocks={};
+
             // tile rotation
             this.CHOSEN_ROTATION_TILE=0;
             this.CHOSEN_ROTATION_TIMES=0;
@@ -212,6 +215,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 this.energy_counters[saucer.color].setValue(energyQuantity);
 
                 this.createPlayerBoardCrewmemberStock(saucer.color);
+                this.createSaucerMatExtraCrewmemberStock(saucer.color);
             }
 
 
@@ -290,6 +294,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 var typeString = this.convertCrewmemberType(typeInt);
                 var x = garment.garment_x;
                 var y = garment.garment_y;
+                var isPrimary = garment.is_primary;
                 var wearingOrBackpack = "wearing";
 
                 console.log("garment color:"+color+" typeString:"+typeString+" location:"+location);
@@ -347,24 +352,34 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 { // this crewmember has been claimed by a player
                     // var matLocationHtmlId = 'mat_'+typeString+"_"+wearingOrBackpack+"_"+currentTypeLocationCount+"_"+location;
                     //location = '0090ff';
-                    var matLocationHtmlId = typeString+'_container_'+location; // example: pilot_container_f6033b
-                    var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color; // example: crewmember_pilot_01b508
+                    console.log('isPrimary:'+isPrimary);
+                    if(isPrimary == 1)
+                    { // this goes directly on the mat
 
-                    console.log('matLocationHtmlId:'+matLocationHtmlId+' crewmemberHtmlId:'+crewmemberHtmlId);
+                        var matLocationHtmlId = typeString+'_container_'+location; // example: pilot_container_f6033b
+                        var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color; // example: crewmember_pilot_01b508
 
-                    dojo.place( this.format_block( 'jstpl_garment', {
-                          color: color,
-                          garment_type: typeString,
-                          size: "crewmember",
-                          small: ""
-                    } ) , matLocationHtmlId );
+                        console.log('matLocationHtmlId:'+matLocationHtmlId+' crewmemberHtmlId:'+crewmemberHtmlId);
+
+                        dojo.place( this.format_block( 'jstpl_garment', {
+                              color: color,
+                              garment_type: typeString,
+                              size: "crewmember",
+                              small: ""
+                        } ) , matLocationHtmlId );
 
 
-                    dojo.addClass( crewmemberHtmlId, 'played_'+typeString);
+                        dojo.addClass( crewmemberHtmlId, 'played_'+typeString);
 
-                    // in 2-player games, we must adjust the location of crewmembers because
-                    // they get pushed down by the number of upgrades their teammat has
-                    this.adjustCrewmemberLocationBasedOnUpgrades(location, typeString);
+                        // in 2-player games, we must adjust the location of crewmembers because
+                        // they get pushed down by the number of upgrades their teammat has
+                        this.adjustCrewmemberLocationBasedOnUpgrades(location, typeString);
+                    }
+                    else
+                    { // this is an extra crewmember
+
+                        this.moveCrewmemberFromBoardToSaucerMatExtras(location, location, color, typeString);
+                    }
 
                     // add it to the stock on the player board
                     this.addCrewmemberToPlayerBoard(location, color, typeString);
@@ -376,7 +391,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
             this.initializeTurnOrder(this.gamedatas.turnOrder, this.gamedatas.probePlayer, gamedatas.ostrich);
 
-            top:0
+
 
             // First Param: css class to target
             // Second Param: type of events
@@ -2103,7 +2118,7 @@ this.unhighlightAllGarments();
                             // add a button for each offcolored crewmember they have
                             this.showDistressSignalerTakeCrewmemberButtons(args.validCrewmembers);
 
-                            console.log('valid crew:');
+                            console.log('chooseDistressSignalerTakeCrewmember valid crew:');
                             console.log(args.validCrewmembers);
 
                             // add a skip button in case they do not want to for some reason
@@ -2119,11 +2134,8 @@ this.unhighlightAllGarments();
                             // add a button for each offcolored crewmember they have
                             this.showDistressSignalerGiveCrewmemberButtons(args.validCrewmembers);
 
-                            console.log('valid crew:');
+                            console.log('chooseDistressSignalerGiveCrewmember valid crew:');
                             console.log(args.validCrewmembers);
-
-                            // add a skip button in case they do not want to for some reason
-                            this.addActionButton( 'skipButton_11', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
                       }
                   break;
 
@@ -2139,7 +2151,7 @@ this.unhighlightAllGarments();
                             console.log(args.validCrewmembers);
 
                             // add a skip button in case they do not want to for some reason
-                            this.addActionButton( 'skipButton_20', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
+                            this.addActionButton( 'skipButton_20', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
                       }
 
                   break;
@@ -2678,7 +2690,7 @@ this.unhighlightAllGarments();
                     var crewmemberType = token_id.split('_')[1]; // engineer
                     var crewmemberColor = token_id.split('_')[2]; // f6033b
 
-                    var tokenDiv = this.format_block('jstpl_garment', {
+                    var tokenDiv = this.format_block('jstpl_garment_message_log', {
                         "garment_type" : crewmemberType,
                         "color" : crewmemberColor,
                         "size" : "crewmember_small",
@@ -2793,11 +2805,73 @@ console.log("return false");
             }
         },
 
+        moveCrewmemberFromBoardToSaucerMatPrimary: function(saucerColor, crewmemberColor, crewmemberType)
+        {
+            var source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
+
+            var convertedType = this.convertCrewmemberType(crewmemberType); // temp until i fix this weird issue switching these
+            var destination = convertedType+'_container_'+saucerColor; // pilot_container_f6033b
+
+            // give it a new parent so it's no longer on the space
+            this.attachToNewParent(source, destination);
+
+            // give it a played class so it's rotated correctly
+            dojo.addClass(source, 'played_'+crewmemberType);
+        },
+
+        moveCrewmemberFromBoardToSaucerMatExtras: function(sourceSaucerColor, destinationSaucerColor, crewmemberColor, crewmemberType)
+        {
+            var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType); // this is the unique id for the stock
+            var crewmemberHtmlId = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
+            if(sourceSaucerColor != 'board' && sourceSaucerColor != 'pile')
+            { // it's coming from a saucer
+                console.log("moveCrewmemberFromBoardToSaucerMatExtras for sourceSaucerColor " + sourceSaucerColor + " with crewmemberType " + crewmemberType + " has uniqueId " + uniqueId + " has stock:");
+                console.log(this.saucerMatExtraCrewmemberStocks[sourceSaucerColor]['primary']);
+            }
+
+            console.log("moveCrewmemberFromBoardToSaucerMatExtras for destinationSaucerColor " + destinationSaucerColor + " with crewmemberType " + crewmemberType + " has uniqueId " + uniqueId + " has stock:");
+            console.log(this.saucerMatExtraCrewmemberStocks[destinationSaucerColor]['primary']);
+
+            if($(crewmemberHtmlId))
+            { // the crewmember exists on the board somewhere
+
+                // we'll move it there
+                this.saucerMatExtraCrewmemberStocks[destinationSaucerColor]['primary'].addToStockWithId( uniqueId, uniqueId, crewmemberHtmlId );
+            }
+            else
+            { // the crewmember doesn't exist
+
+                // we can just create a new one and add it
+                this.saucerMatExtraCrewmemberStocks[destinationSaucerColor]['primary'].addToStockWithId( uniqueId, uniqueId );
+            }
+            this.saucerMatExtraCrewmemberStocks[destinationSaucerColor]['primary'].updateDisplay(); // re-layout
+
+            var stockCrewmemberHtmlId = "extra_crewmembers_container_"+destinationSaucerColor+"_item_"+uniqueId;
+            console.log("stockCrewmemberHtmlId:" + stockCrewmemberHtmlId);
+            if($(stockCrewmemberHtmlId))
+            {
+                // update the z-index so the correct ones are on top
+                dojo.style(stockCrewmemberHtmlId, "zIndex", uniqueId);
+
+                // remove the one that was on the board since we're creating a new one
+                dojo.destroy(crewmemberHtmlId);
+            }
+        },
+
+        removeExtraCrewmemberFromSaucerMat: function(saucerColor, crewmemberColor, crewmemberType)
+        {
+            var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType);
+
+            console.log("removeExtraCrewmemberFromSaucerMat removing crewmemberType " + crewmemberType + " from saucer " + saucerColor + " using uniqueId " + uniqueId);
+
+            this.saucerMatExtraCrewmemberStocks[saucerColor][crewmemberType].removeFromStockById( uniqueId );
+        },
+
         addCrewmemberToPlayerBoard: function(saucerColor, crewmemberColor, crewmemberType)
         {
             var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType);
 
-            console.log("for saucerColor " + saucerColor + " crewmemberColor " + crewmemberColor + " with crewmemberType " + crewmemberType + " has uniqueId " + uniqueId);
+            console.log("addCrewmemberToPlayerBoard for saucerColor " + saucerColor + " crewmemberColor " + crewmemberColor + " with crewmemberType " + crewmemberType + " has uniqueId " + uniqueId);
             console.log(this.playerBoardCrewmemberStocks[saucerColor][crewmemberType]);
 
             this.playerBoardCrewmemberStocks[saucerColor][crewmemberType].addToStockWithId( uniqueId, uniqueId );
@@ -2806,15 +2880,18 @@ console.log("return false");
             var crewmemberHtmlId = "player_board_"+crewmemberType+"_container_"+saucerColor+"_item_"+uniqueId;
             console.log("crewmemberHtmlId:" + crewmemberHtmlId);
 
-            // update the z-index so the correct ones are on top
-            dojo.style(crewmemberHtmlId, "zIndex", uniqueId);
+            if($(crewmemberHtmlId))
+            {
+                // update the z-index so the correct ones are on top
+                dojo.style(crewmemberHtmlId, "zIndex", uniqueId);
+            }
         },
 
         removeCrewmemberFromPlayerBoard: function(saucerColor, crewmemberColor, crewmemberType)
         {
             var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType);
 
-            console.log("removing crewmemberType " + crewmemberType + " from saucer " + saucerColor + " using uniqueId " + uniqueId);
+            console.log("removeCrewmemberFromPlayerBoard removing crewmemberType " + crewmemberType + " from saucer " + saucerColor + " using uniqueId " + uniqueId);
 
             this.playerBoardCrewmemberStocks[saucerColor][crewmemberType].removeFromStockById( uniqueId );
         },
@@ -3689,6 +3766,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 }
                 else if(eventType == 'crewmemberPickup')
                 { // the saucer picked up a crewmember
+
                     saucerColor = nextEvent['saucer_moving']; // ff0000
                     var crewmemberColor = nextEvent['crewmember_color']; // ff0000
 
@@ -3711,10 +3789,12 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 }
                 else if(eventType == 'crewmemberPickupExtras')
                 { // the saucer picked up a crewmember that should go to their extras
+
                     saucerColor = nextEvent['saucer_moving']; // ff0000
                     var crewmemberColor = nextEvent['crewmember_color']; // ff0000
 
                     crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
+/*
                     source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
                     destination = 'extra_crewmembers_container_'+saucerColor;
@@ -3726,6 +3806,11 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     dojo.removeClass(source, 'played_'+crewmemberType);
 
                     animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
+*/
+                    // do not animate this
+                    skipAnimation = true;
+
+                    this.moveCrewmemberFromBoardToSaucerMatExtras(saucerColor, saucerColor, crewmemberColor, crewmemberType);
 
                     // add it to the stock on the player board
                     this.addCrewmemberToPlayerBoard(saucerColor, crewmemberColor, crewmemberType);
@@ -3736,6 +3821,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     var crewmemberColor = nextEvent['crewmember_color']; // ff0000
 
                     crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
+/*
                     source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
                     destination = 'extra_crewmembers_container_'+saucerColor;
@@ -3747,6 +3833,11 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     dojo.removeClass(source, 'played_'+crewmemberType);
 
                     animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
+*/
+                    // do not animate this
+                    skipAnimation = true;
+
+                    this.moveCrewmemberFromBoardToSaucerMatExtras(saucerColor, crewmemberColor, crewmemberType);
 
                     // add it to the stock on the player board
                     this.addCrewmemberToPlayerBoard(saucerColor, crewmemberColor, crewmemberType);
@@ -3960,6 +4051,48 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
         resetMovePhaseVariables: function() {
             this.ostrichChosen = false;
             this.mustSkateboard = false;
+        },
+
+        createSaucerMatExtraCrewmemberStock: function(saucerColor)
+        {
+            this.saucerMatExtraCrewmemberStocks[saucerColor] = {};
+
+            var extraCrewmemberHtmlId = 'extra_crewmembers_container_'+saucerColor;
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'] = new ebg.stock();
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].create( this, $(extraCrewmemberHtmlId), this.crewmemberwidth, this.crewmemberheight );
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].image_items_per_row = 6; // the number of card images per row in the sprite image
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].container_div.width = "47px"; // enought just for 1 card
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].autowidth = false; // this is required so it obeys the width set above
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].vertical_overlap = 0; // overlap percentage
+            //this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].item_margin = 0; // has to be 0 if using overlap
+
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 0, 0, g_gamethemeurl+'img/crewmembers.png', 0 ); // green pilot
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 1, 1, g_gamethemeurl+'img/crewmembers.png', 1 ); // blue pilot
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 2, 2, g_gamethemeurl+'img/crewmembers.png', 2 ); // yellow pilot
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 3, 3, g_gamethemeurl+'img/crewmembers.png', 3 ); // red pilot
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 4, 4, g_gamethemeurl+'img/crewmembers.png', 4 ); // orange pilot
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 5, 5, g_gamethemeurl+'img/crewmembers.png', 5 ); // purple pilot
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 6, 6, g_gamethemeurl+'img/crewmembers.png', 6 ); // green engineer
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 7, 7, g_gamethemeurl+'img/crewmembers.png', 7 ); // blue engineer
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 8, 8, g_gamethemeurl+'img/crewmembers.png', 8 ); // yellow engineer
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 9, 9, g_gamethemeurl+'img/crewmembers.png', 9 ); // red engineer
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 10, 10, g_gamethemeurl+'img/crewmembers.png', 10 ); // orange engineer
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 11, 11, g_gamethemeurl+'img/crewmembers.png', 11 ); // purple engineer
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 12, 12, g_gamethemeurl+'img/crewmembers.png', 12 ); // green doctor
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 13, 13, g_gamethemeurl+'img/crewmembers.png', 13 ); // blue doctor
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 14, 14, g_gamethemeurl+'img/crewmembers.png', 14 ); // yellow doctor
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 15, 15, g_gamethemeurl+'img/crewmembers.png', 15 ); // red doctor
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 16, 16, g_gamethemeurl+'img/crewmembers.png', 16 ); // orange doctor
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 17, 17, g_gamethemeurl+'img/crewmembers.png', 17 ); // purple doctor
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 18, 18, g_gamethemeurl+'img/crewmembers.png', 18 ); // green scientist
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 19, 19, g_gamethemeurl+'img/crewmembers.png', 19 ); // blue scientist
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 20, 20, g_gamethemeurl+'img/crewmembers.png', 20 ); // yellow scientist
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 21, 21, g_gamethemeurl+'img/crewmembers.png', 21 ); // red scientist
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 22, 22, g_gamethemeurl+'img/crewmembers.png', 22 ); // orange scientist
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 23, 23, g_gamethemeurl+'img/crewmembers.png', 23 ); // purple scientist
+//this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].updateDisplay(); // re-layout
         },
 
         createPlayerBoardCrewmemberStock: function(saucerColor)
@@ -6522,9 +6655,12 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'cardChosen', this, "notif_cardChosen");
             dojo.subscribe( 'cardRevealed', this, "notif_cardRevealed");
             dojo.subscribe( 'confirmedMovement', this, "notif_confirmedMovement");
-            dojo.subscribe( 'crewmemberPickup', this, "notif_crewmemberPickup");
             dojo.subscribe( 'resetSaucerPosition', this, "notif_resetSaucerPosition");
             dojo.subscribe( 'reshuffleUpgrades', this, "notif_reshuffleUpgrades");
+            dojo.subscribe( 'moveCrewmemberToSaucerPrimary', this, "notif_moveCrewmemberToSaucerPrimary");
+            dojo.subscribe( 'moveCrewmemberToSaucerExtras', this, "notif_moveCrewmemberToSaucerExtras");
+
+
 
         },
 
@@ -6992,54 +7128,104 @@ console.log("success... onClickUpgradeCardInHand");
 
         },
 
-        notif_crewmemberPickup: function( notif )
+        notif_moveCrewmemberToSaucerExtras: function( notif )
         {
-            console.log("Entered notif_crewmemberPickup.");
+            console.log("Entered notif_moveCrewmemberToSaucerExtras.");
 
             // get data you will need
             var crewmemberType = notif.args.crewmemberType;
             var crewmemberColor = notif.args.crewmemberColor;
-            var saucerColor = notif.args.saucerColor;
+            var sourceSaucerColor = notif.args.sourceSaucerColor;
+            var destinationSaucerColor = notif.args.destinationSaucerColor;
 
-            console.log("Initial variables crewmemberType:"+crewmemberType+" crewmemberColor:"+crewmemberColor+" saucerColorStealing:"+saucerColor);
+            console.log("notif_moveCrewmemberToSaucerExtras crewmemberType:"+crewmemberType+" crewmemberColor:"+crewmemberColor+" sourceSaucerColor:"+sourceSaucerColor + " destinationSaucerColor:" + destinationSaucerColor);
+
+            // TODO: MAKE THIS WORK NOT JUST FROM BOARD TO EXTRAS BUT ANYWHERE TO EXTRAS
+            this.moveCrewmemberFromBoardToSaucerMatExtras(sourceSaucerColor, destinationSaucerColor, crewmemberColor, crewmemberType);
+
+            // add it to the stock on the player board
+            this.addCrewmemberToPlayerBoard(destinationSaucerColor, crewmemberColor, crewmemberType);
+        },
+
+        notif_moveCrewmemberToSaucerPrimary: function( notif )
+        {
+            console.log("Entered notif_moveCrewmemberToSaucerPrimary.");
+
+            // get data you will need
+            var crewmemberType = notif.args.crewmemberType;
+            var crewmemberColor = notif.args.crewmemberColor;
+            var sourceSaucerColor = notif.args.sourceSaucerColor;
+            var destinationSaucerColor = notif.args.destinationSaucerColor;
+            var isPrimary = notif.args.isPrimary;
+            var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType); // this is the unique id for the stock
+            var adjustPosition = true;
+
+            console.log("notif_moveCrewmemberToSaucerPrimary crewmemberType:"+crewmemberType+" crewmemberColor:"+crewmemberColor+" sourceSaucerColor:"+sourceSaucerColor+" destinationSaucerColor:"+destinationSaucerColor);
 
             // determine source and destinations
             var source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
-            console.log('crewmemberType:'+crewmemberType);
-            console.log('saucerColor:'+saucerColor);
-            var destination = crewmemberType+'_container_'+saucerColor; // pilot_container_f6033b
+            if(!$(source))
+            { // it's already in an extra stack (its own or another player's)
+                //source = 'extra_crewmembers_container_'+sourceSaucerColor+'_item_'+uniqueId;
 
-            console.log("source:"+source+" destination:"+destination);
+                this.removeExtraCrewmemberFromSaucerMat(sourceSaucerColor, crewmemberColor, crewmemberType);
 
-            // give it a new parent so it's no longer on the previous saucer mat
-            this.attachToNewParent(source, destination);
+                var sourceStackHtmlId = 'extra_crewmembers_container_'+sourceSaucerColor+'_item_'+uniqueId;
 
-            // give it a played class so it's rotated correctly
-            dojo.addClass(source, 'played_'+crewmemberType);
+                dojo.place( this.format_block( 'jstpl_garment', {
+                      color: crewmemberColor,
+                      garment_type: crewmemberType,
+                      size: "crewmember",
+                      small: ""
+                } ) , sourceStackHtmlId );
+            }
+
+
+                    console.log('crewmemberType:'+crewmemberType);
+                    console.log('destinationSaucerColor:'+destinationSaucerColor);
+                    var destination = crewmemberType+'_container_'+destinationSaucerColor; // pilot_container_f6033b
+
+                    console.log("source:"+source+" destination:"+destination);
+
+                    // give it a new parent so it's no longer on the previous saucer mat
+                    this.attachToNewParent(source, destination);
+
+                    // give it a played class so it's rotated correctly
+                    dojo.addClass(source, 'played_'+crewmemberType);
+
+                    // add it to the stock on the player board
+                    this.addCrewmemberToPlayerBoard(destinationSaucerColor, crewmemberColor, crewmemberType);
+
+                    // set the speed it will move
+                    var animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
+
+                    var animationId = this.slideToObject( source, destination, animationSpeed );
+                    dojo.connect(animationId, 'onEnd', () => {
+                        // anything we need to do after it slides
+
+                        console.log('removing top and left from '+source);
+                        // after sliding, the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
+                        $(source).style.removeProperty('left'); // remove left property
+                        $(source).style.removeProperty('top'); // remove top property
+
+
+                        // in 2-player games, we must adjust the location of crewmembers because
+                        // they get pushed down by the number of upgrades their teammat has
+                        this.adjustCrewmemberLocationBasedOnUpgrades(destinationSaucerColor, crewmemberType);
+
+                    });
+                    animationId.play();
+
+            if(sourceSaucerColor != 'board' && sourceSaucerColor != 'pile')
+            { // this is coming from a saucer
+
+                // remove it from the player board
+                this.removeCrewmemberFromPlayerBoard(sourceSaucerColor, crewmemberColor, crewmemberType);
+            }
 
             // add it to the stock on the player board
-            this.addCrewmemberToPlayerBoard(saucerColor, crewmemberColor, crewmemberType);
-
-            // set the speed it will move
-            var animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
-
-            var animationId = this.slideToObject( source, destination, animationSpeed );
-            dojo.connect(animationId, 'onEnd', () => {
-                // anything we need to do after it slides
-
-                console.log('removing top and left from '+source);
-                // after sliding, the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
-                $(source).style.removeProperty('left'); // remove left property
-                $(source).style.removeProperty('top'); // remove top property
-
-
-                // in 2-player games, we must adjust the location of crewmembers because
-                // they get pushed down by the number of upgrades their teammat has
-                this.adjustCrewmemberLocationBasedOnUpgrades(saucerColor, crewmemberType);
-
-            });
-            animationId.play();
+            this.addCrewmemberToPlayerBoard(destinationSaucerColor, crewmemberColor, crewmemberType);
         },
 
         notif_replacementGarmentChosen: function( notif )
@@ -7070,11 +7256,26 @@ console.log("success... onClickUpgradeCardInHand");
             var garmentColor = notif.args.garmentColor;
             var xDestination = notif.args.xDestination;
             var yDestination = notif.args.yDestination;
-
-
+            var sourceLocation = notif.args.sourceLocation;
+            var isPrimary = notif.args.isPrimary;
 
             var source = 'crewmember_'+garmentType+'_'+garmentColor;
             var destination = 'square_'+xDestination+'_'+yDestination;
+            var uniqueId = this.getCrewmemberUniqueId(garmentColor, garmentType); // this is the unique id for the stock
+
+
+
+            if(sourceLocation != 'board' && sourceLocation != 'pile')
+            { // this crewmember is coming from a saucer mat (like because this is happening because of Airlock)
+
+                // remove it from the player board
+                this.removeCrewmemberFromPlayerBoard(sourceLocation, garmentColor, garmentType);
+
+                if(!isPrimary)
+                { // this is coming from a saucer extras
+                    source = 'extra_crewmembers_container_'+sourceLocation+'_item_'+uniqueId;
+                }
+            }
 
             console.log("moving crewmember to board with source: " + source + " destination: " + destination);
 

@@ -93,7 +93,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "endRoundCleanup",
         "updateGameProgression" => true,
-        "transitions" => array( "newRound" => 2, "endRoundPlaceCrashedSaucer" => 37 )
+        "transitions" => array( "newRound" => 2, "endRoundPlaceCrashedSaucer" => 37, "chooseCrashSiteRegenerationGateway" => 40 )
     ),
 
     // END PLAN PHASE - ENTER TRAP PHASE
@@ -347,7 +347,7 @@ $machinestates = array(
 
     37 => array(
         "name" => "endRoundPlaceCrashedSaucer",
-        "description" => clienttranslate('${actplayer} is placing a crashed Saucer.'),
+        "description" => clienttranslate('${saucerColorHighlighted} is placing a crashed Saucer.'),
     		"descriptionmyturn" => clienttranslate('${you} must choose a Saucer to place.'),
         "type" => "activeplayer",
         'args' => 'argGetSaucerToPlaceButton',
@@ -376,7 +376,7 @@ $machinestates = array(
 
     40 => array(
         "name" => "chooseCrashSiteRegenerationGateway",
-        "description" => clienttranslate('${actplayer} is using their Regeneration Gateway.'),
+        "description" => clienttranslate('${saucerColor} is using their Regeneration Gateway.'),
         "descriptionmyturn" => clienttranslate('${you} must choose where to place your Saucer with your Regeneration Gateway.'),
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
@@ -474,7 +474,7 @@ $machinestates = array(
 
     53 => array(
         "name" => "askWhichEndOfTurnUpgradeToUse",
-        "description" => clienttranslate('${actplayer} is deciding if they will activate an Upgrade.'),
+        "description" => clienttranslate('${saucerColor} is deciding if they will activate an Upgrade.'),
         "descriptionmyturn" => clienttranslate('${you} must decide if you will activate an Upgrade.'),
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
@@ -565,7 +565,7 @@ $machinestates = array(
     62 => array(
         "name" => "chooseTractorBeamCrewmember",
         "description" => clienttranslate('${saucerColor} is using their ${upgradeName}.'),
-        "descriptionmyturn" => clienttranslate('Choose a Crewmember to pick up.'),
+        "descriptionmyturn" => clienttranslate('Choose 1 Crewmember to pick up.'),
         "type" => "activeplayer",
         'args' => 'argGetTractorBeamCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
@@ -579,7 +579,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAirlockCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
     64 => array(
@@ -595,7 +595,7 @@ $machinestates = array(
     65 => array(
         "name" => "chooseDistressSignalerGiveCrewmember",
         "description" => clienttranslate('${saucerColor} is using their ${upgradeName}.'),
-        "descriptionmyturn" => clienttranslate('Distress Signaler: You may exchange the ${crewmemberTakenColor} ${crewmemberTakenTypeString} you just picked up for one of these if you wish.'),
+        "descriptionmyturn" => clienttranslate('Distress Signaler: You must exchange the ${crewmemberTakenColor} ${crewmemberTakenTypeString} you just picked up for one of these.'),
         "type" => "activeplayer",
         'args' => 'argGetDistressSignalerGiveCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
@@ -638,7 +638,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetPulseCannonSaucers',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "executingMove" => 70, "checkStartOfTurnUpgrades" => 24, "checkForRevealDecisions" => 38 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "executingMove" => 70, "checkStartOfTurnUpgrades" => 24, "checkForRevealDecisions" => 38, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
     70 => array(

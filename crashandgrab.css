@@ -1683,6 +1683,8 @@ width: 170px;
     display: inline-block;
     width: 51px;
     height: 145px;
+
+    vertical-align: top;
 }
 
 .saucer_mat {
