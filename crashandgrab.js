@@ -1693,6 +1693,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                if( this.isCurrentPlayerActive() )
                { // this is the active player
                   this.unhighlightAllDirections();
+                  this.unhighlightAllSpaces();
                }
 
              break;
@@ -2862,9 +2863,11 @@ console.log("return false");
         {
             var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType);
 
-            console.log("removeExtraCrewmemberFromSaucerMat removing crewmemberType " + crewmemberType + " from saucer " + saucerColor + " using uniqueId " + uniqueId);
-
-            this.saucerMatExtraCrewmemberStocks[saucerColor][crewmemberType].removeFromStockById( uniqueId );
+            console.log("removeExtraCrewmemberFromSaucerMat removing crewmemberType " + crewmemberType + " from saucer " + saucerColor + " using uniqueId " + uniqueId + " stock contains:");
+            if(uniqueId != null && uniqueId != '' && this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'] != null)
+            {
+                this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].removeFromStockById( uniqueId );
+            }
         },
 
         addCrewmemberToPlayerBoard: function(saucerColor, crewmemberColor, crewmemberType)
@@ -5454,6 +5457,15 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         showGiveAwayCrewmemberButtons: function(giveAwayCrewmembers, otherSaucers)
         {
+            // create a place to put a list of crewmembers and saucers
+            var holderDiv = $('generalactions');
+            dojo.place( this.format_block( 'jstpl_actionButtonHolder_CrewmemberList', {
+            } ) , holderDiv ); //crewmember_action_button_holder
+            var crewmemberButtonHolderHtmlId = 'crewmember_action_button_holder';
+
+            dojo.place( this.format_block( 'jstpl_actionButtonHolder_SaucerList', {
+            } ) , holderDiv ); //saucer_action_button_holder
+            var saucerButtonHolderHtmlId = 'saucer_action_button_holder';
 
             for (const crewmember of giveAwayCrewmembers)
             { // go through each crewmember
@@ -5466,7 +5478,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 //console.log("highlighting space: " + htmlOfSpace);
                 //this.highlightSpace(htmlOfSpace);
 
-                this.addActionButton( 'giveawayCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickGiveAwayCrewmember', null, null, 'gray');
+                this.addActionButton( 'giveawayCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickGiveAwayCrewmember', 'crewmember_action_button_holder', null, 'gray');
             }
 
 
@@ -5475,7 +5487,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
                 console.log("give away saucer color:"+color);
 
-                this.addActionButton( 'giveawaySaucer_'+color+'_button', '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClickGiveAwayToSaucer', null, null, 'gray');
+                this.addActionButton( 'giveawaySaucer_'+color+'_button', '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClickGiveAwayToSaucer', 'saucer_action_button_holder', null, 'gray');
             }
 
         },
@@ -7263,7 +7275,7 @@ console.log("success... onClickUpgradeCardInHand");
             var destination = 'square_'+xDestination+'_'+yDestination;
             var uniqueId = this.getCrewmemberUniqueId(garmentColor, garmentType); // this is the unique id for the stock
 
-
+            console.log("notif_replacementGarmentSpaceChosen sourceLocation:" + sourceLocation + " isPrimary:" + isPrimary);
 
             if(sourceLocation != 'board' && sourceLocation != 'pile')
             { // this crewmember is coming from a saucer mat (like because this is happening because of Airlock)
@@ -7271,7 +7283,7 @@ console.log("success... onClickUpgradeCardInHand");
                 // remove it from the player board
                 this.removeCrewmemberFromPlayerBoard(sourceLocation, garmentColor, garmentType);
 
-                if(!isPrimary)
+                if(isPrimary == false)
                 { // this is coming from a saucer extras
                     source = 'extra_crewmembers_container_'+sourceLocation+'_item_'+uniqueId;
                 }

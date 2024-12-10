@@ -154,7 +154,6 @@ class CrashAndGrab extends Table
 
 				$this->dealMoveCards();
 
-				 $this->initializeTrapCards();
 				 $this->initializeUpgradeCards();
 
 
@@ -396,35 +395,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 		}
 
-		function initializeTrapCards()
-		{
-
-
-				// Create Movement Cards
-				// type: Deface Paint, Twirlybird
-				// type_arg: probably don't need... should mimic card id
-
-				$trapCardsList = array(
-						array( 'type' => 'Blastorocket', 'type_arg' => 0, 'card_location' => 'trapCardDeck','nbr' => 1),
-						array( 'type' => 'Boulderdash', 'type_arg' => 1, 'card_location' => 'trapCardDeck','nbr' => 1),
-						array( 'type' => 'Deface Paint', 'type_arg' => 2, 'card_location' => 'trapCardDeck','nbr' => 1),
-//						array( 'type' => 'Dizzerydoo', 'type_arg' => 3, 'card_location' => 'trapCardDeck','nbr' => 1),
-//						array( 'type' => 'Gadget Gobbler', 'type_arg' => 4, 'card_location' => 'trapCardDeck','nbr' => 1),
-//						array( 'type' => 'Kleptocopter', 'type_arg' => 5, 'card_location' => 'trapCardDeck','nbr' => 1),
-						array( 'type' => 'Krazy Crane', 'type_arg' => 6, 'card_location' => 'trapCardDeck','nbr' => 1),
-//						array( 'type' => 'Overheater', 'type_arg' => 7, 'card_location' => 'trapCardDeck','nbr' => 1),
-						array( 'type' => 'Rooster Booster', 'type_arg' => 8, 'card_location' => 'trapCardDeck','nbr' => 1),
-//						array( 'type' => 'Scrambler', 'type_arg' => 9, 'card_location' => 'trapCardDeck','nbr' => 1),
-//						array( 'type' => 'Stinkbomb', 'type_arg' => 10, 'card_location' => 'trapCardDeck','nbr' => 1),
-						array( 'type' => 'Twirlybird', 'type_arg' => 11, 'card_location' => 'trapCardDeck','nbr' => 1)
-				);
-
-
-				$this->trapCards->createCards( $trapCardsList, 'trapCardDeck' ); // create the deck
-
-				$this->trapCards->shuffle( 'trapCardDeck' ); // shuffle it
-		}
-
 		function initializeUpgradeCards()
 		{
 				// Create Movement Cards
@@ -433,7 +403,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				$cardsList = array(
 						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
-						//array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 5),
+						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 5),
 						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
@@ -444,7 +414,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Scavenger Bot', 'type_arg' => 10, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Distress Signaler', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
-						//array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 5),
+						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 5),
 						//array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
@@ -9600,7 +9570,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		}
 
 		// Moves a Crewmember from the board or another saucer to a new saucer.
-		function moveCrewmemberToSaucerMat($saucerColorReveiving, $crewmemberType, $crewmemberColor)
+		function moveCrewmemberToSaucerMat($saucerColorReceiving, $crewmemberType, $crewmemberColor)
 		{
 				$crewmemberId = $this->getGarmentIdFromType($crewmemberType, $crewmemberColor);
 				$crewmemberColor = $this->getCrewmemberColorFromId($crewmemberId);
@@ -9610,18 +9580,21 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
 
 				// before we change anything in the database, check if we already have a primary for this crewmember type
-				$currentPrimaryCrewmemberId = $this->getPrimaryCrewmemberId($saucerColorReveiving, $crewmemberTypeId);
+				$currentPrimaryCrewmemberId = $this->getPrimaryCrewmemberId($saucerColorReceiving, $crewmemberTypeId);
+
+				// see if it was primary on the originating saucer (if it's coming from a saucer)
+				$wasPreviouslyPrimary = $this->isPrimaryCrewmember($crewmemberId);
 
 				// see where this crewmember is (board, saucer, etc.) before the move to the saucer
 				$currentLocation = $this->getCrewmemberLocationFromId($crewmemberId);
 
 				// give the garment to the saucer in the database (set garment_location to the color)
-				$this->giveCrewmemberToSaucer($crewmemberId, $saucerColorReveiving);
+				$this->giveCrewmemberToSaucer($crewmemberId, $saucerColorReceiving);
 
 				// go through each crewmember for this saucer and set the primary and extras
-				$this->setCrewmemberPrimaryAndExtras($saucerColorReveiving, $crewmemberTypeId);
+				$this->setCrewmemberPrimaryAndExtras($saucerColorReceiving, $crewmemberTypeId);
 
-				$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerColorReveiving);
+				$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerColorReceiving);
 				$isPrimary = $this->isPrimaryCrewmember($crewmemberId);
 
 				if($isPrimary)
@@ -9630,7 +9603,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						if($currentPrimaryCrewmemberId !== '' &&
 							 $crewmemberId !== $currentPrimaryCrewmemberId)
 						{ // we want to replace the current crewmember of this type on this mat with the new one
-//throw new feException( "extras");
+//throw new feException( "extras currentPrimaryCrewmemberId:$currentPrimaryCrewmemberId");
 
 								$currentPrimaryCrewmemberColor = $this->getCrewmemberColorFromId($currentPrimaryCrewmemberId);
 								$currentPrimaryCrewmemberTypeId = $this->getCrewmemberTypeIdFromId($currentPrimaryCrewmemberId);
@@ -9640,11 +9613,44 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 									'crewmemberType' => $currentPrimaryCrewmemberType,
 									'crewmemberColor' => $currentPrimaryCrewmemberColor,
 									'sourceSaucerColor' => $currentLocation,
-									'destinationSaucerColor' => $saucerColorReveiving,
+									'destinationSaucerColor' => $saucerColorReceiving,
 									'isPrimary' => $isPrimary
 								) );
 
 						}
+
+
+						if($currentLocation != "board" && $currentLocation != "pile" &&
+							$wasPreviouslyPrimary)
+						{ // this is moving from a Saucer to another Saucer and it was Primary on the other saucer
+
+								// go through each crewmember for the GIVING saucer and set the primary and extras
+								$this->setCrewmemberPrimaryAndExtras($currentLocation, $crewmemberTypeId);
+
+								// get the new primary on the saucer giving the crewmember
+								$newPrimaryCrewmemberId = $this->getPrimaryCrewmemberId($currentLocation, $crewmemberTypeId);
+
+								//throw new feException( "newPrimaryCrewmemberId:$newPrimaryCrewmemberId currentLocation:$currentLocation crewmemberTypeId:$crewmemberTypeId");
+
+								if($newPrimaryCrewmemberId != "")
+								{ // there is an extras that can slide into the primary slot
+
+										$newPrimaryCrewmemberColor = $this->getCrewmemberColorFromId($newPrimaryCrewmemberId);
+										$newPrimaryCrewmemberTypeId = $this->getCrewmemberTypeIdFromId($newPrimaryCrewmemberId);
+										$newPrimaryCrewmemberType = $this->convertGarmentTypeIntToString($newPrimaryCrewmemberTypeId);
+
+										self::notifyAllPlayers( "moveCrewmemberToSaucerPrimary", '', array(
+											'crewmemberType' => $newPrimaryCrewmemberType,
+											'crewmemberColor' => $newPrimaryCrewmemberColor,
+											'sourceSaucerColor' => $currentLocation,
+											'destinationSaucerColor' => $currentLocation,
+											'isPrimary' => true
+										) );
+
+								}
+						}
+
+
 //throw new feException( "after currentPrimaryCrewmemberId:$currentPrimaryCrewmemberId crewmemberId:$crewmemberId");
 						// move this crewmember to the saucer mat for this crewmember type
 						self::notifyAllPlayers( "moveCrewmemberToSaucerPrimary", clienttranslate( '${saucerMovingHighlightedText} picked up ${CREWMEMBERIMAGE}.' ), array(
@@ -9653,7 +9659,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							'crewmemberType' => $crewmemberType,
 							'crewmemberColor' => $crewmemberColor,
 							'sourceSaucerColor' => $currentLocation,
-							'destinationSaucerColor' => $saucerColorReveiving,
+							'destinationSaucerColor' => $saucerColorReceiving,
 							'isPrimary' => $isPrimary
 						) );
 				}
@@ -9665,7 +9671,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							'crewmemberType' => $crewmemberType,
 							'crewmemberColor' => $crewmemberColor,
 							'sourceSaucerColor' => $currentLocation,
-							'destinationSaucerColor' => $saucerColorReveiving,
+							'destinationSaucerColor' => $saucerColorReceiving,
 							'isPrimary' => $isPrimary
 						) );
 				}
