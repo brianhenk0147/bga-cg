@@ -1218,66 +1218,66 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						if($moveType == "Landing Legs")
 						{ // we are moving from Landing Legs
 
-							// put it in the same format as when using a move card
-							$landingLegsMoves = $this->getValidSpacesForUpgrade($saucerWhoseTurnItIs, "Landing Legs"); // in order of right, left, down, up
-							$result[$owner][$color]['none'] = array(); // using 'none' for move card key because we don't care about that for Landing Legs
-							$result[$owner][$color]['none'][$this->UP_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
-							$result[$owner][$color]['none'][$this->DOWN_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
-							$result[$owner][$color]['none'][$this->LEFT_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
-							$result[$owner][$color]['none'][$this->RIGHT_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
+								// put it in the same format as when using a move card
+								$landingLegsMoves = $this->getValidSpacesForUpgrade($saucerWhoseTurnItIs, "Landing Legs"); // in order of right, left, down, up
+								$result[$owner][$color]['none'] = array(); // using 'none' for move card key because we don't care about that for Landing Legs
+								$result[$owner][$color]['none'][$this->UP_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
+								$result[$owner][$color]['none'][$this->DOWN_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
+								$result[$owner][$color]['none'][$this->LEFT_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
+								$result[$owner][$color]['none'][$this->RIGHT_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
 
-							$index = 0;
-							foreach($landingLegsMoves as $formattedSpace)
-							{
-									if($index == 0)
-									{ // right
-										array_push($result[$owner][$color]['none'][$this->RIGHT_DIRECTION], $formattedSpace);
-									}
-									elseif($index == 1)
-									{ // left
-										array_push($result[$owner][$color]['none'][$this->LEFT_DIRECTION], $formattedSpace);
-									}
-									elseif($index == 2)
-									{ // down
-										array_push($result[$owner][$color]['none'][$this->DOWN_DIRECTION], $formattedSpace);
-									}
-									elseif($index == 3)
-									{ // up
-										array_push($result[$owner][$color]['none'][$this->UP_DIRECTION], $formattedSpace);
-									}
+								$index = 0;
+								foreach($landingLegsMoves as $formattedSpace)
+								{
+										if($index == 0)
+										{ // right
+											array_push($result[$owner][$color]['none'][$this->RIGHT_DIRECTION], $formattedSpace);
+										}
+										elseif($index == 1)
+										{ // left
+											array_push($result[$owner][$color]['none'][$this->LEFT_DIRECTION], $formattedSpace);
+										}
+										elseif($index == 2)
+										{ // down
+											array_push($result[$owner][$color]['none'][$this->DOWN_DIRECTION], $formattedSpace);
+										}
+										elseif($index == 3)
+										{ // up
+											array_push($result[$owner][$color]['none'][$this->UP_DIRECTION], $formattedSpace);
+										}
 
-									$index++;
-							}
+										$index++;
+								}
 						}
 						else
 						{ // we are moving from a movement card
-							$getLastSaucerDistanceType = $this->getSaucerDistanceType($color); // 0, 1, 2
-							$movesForSaucer = $this->getMovesForSaucer($color, $getLastSaucerDistanceType);
-							foreach( $movesForSaucer as $cardType => $moveCard )
-							{ // go through each move card for this saucer
+								$getLastSaucerDistanceType = $this->getSaucerDistanceType($color); // 0, 1, 2
+								$movesForSaucer = $this->getMovesForSaucer($color, $getLastSaucerDistanceType);
+								foreach( $movesForSaucer as $cardType => $moveCard )
+								{ // go through each move card for this saucer
 
-									$directionsWithSpaces = $moveCard['directions'];
-									//$count = count($spacesForCard);
-									//throw new feException( "spacesForCard Count:$count" );
+										$directionsWithSpaces = $moveCard['directions'];
+										//$count = count($spacesForCard);
+										//throw new feException( "spacesForCard Count:$count" );
 
-									$result[$owner][$color][$cardType] = array(); // make an array for the list of spaces available using this card
+										$result[$owner][$color][$cardType] = array(); // make an array for the list of spaces available using this card
 
-									foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
-									{ // go through each space
+										foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
+										{ // go through each space
 
-											$result[$owner][$color][$cardType][$direction] = array(); // we need an array for the spaces we get with this card type and direction
+												$result[$owner][$color][$cardType][$direction] = array(); // we need an array for the spaces we get with this card type and direction
 
-											foreach( $directionWithSpaces as $space )
-											{ // go through each space
-													$column = $space['column'];
-													$row = $space['row'];
+												foreach( $directionWithSpaces as $space )
+												{ // go through each space
+														$column = $space['column'];
+														$row = $space['row'];
 
-													$formattedSpace = $column.'_'.$row;
+														$formattedSpace = $column.'_'.$row;
 
-													array_push($result[$owner][$color][$cardType][$direction], $formattedSpace);
-											}
-									}
-							}
+														array_push($result[$owner][$color][$cardType][$direction], $formattedSpace);
+												}
+										}
+								}
 
 						}
 
@@ -1524,21 +1524,27 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								switch($direction)
 								{
 										case $this->UP_DIRECTION:
-												return $this->getSpacesInColumnUp($startRow, $startColumn, $maxDistance);
+												$result = $this->getSpacesInColumnUp($startRow, $startColumn, $maxDistance); // add this space to the list of move destinations
+										break;
+
 										case $this->DOWN_DIRECTION:
-												return $this->getSpacesInColumnDown($startRow, $startColumn, $maxDistance);
+												$result = $this->getSpacesInColumnDown($startRow, $startColumn, $maxDistance); // add this space to the list of move destinations
 										break;
 
 										case $this->RIGHT_DIRECTION:
-												return $this->getSpacesInRowRight($startColumn, $startRow, $maxDistance);
+												$result = $this->getSpacesInRowRight($startColumn, $startRow, $maxDistance); // add this space to the list of move destinations
+										break;
+
 										case $this->LEFT_DIRECTION:
-												return $this->getSpacesInRowLeft($startColumn, $startRow, $maxDistance);
+												$result = $this->getSpacesInRowLeft($startColumn, $startRow, $maxDistance); // add this space to the list of move destinations
 										break;
 
 										default:
 											throw new feException( "Invalid direction type: $direction");
 										break;
 								}
+
+								return $result;
 
 						break;
 						case 1: // 2
@@ -4632,15 +4638,33 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$result = array();
 
-				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_x=$column AND board_y <= $startingY AND board_y >= + ($startingY - $maxDistance);" );
+				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_x=$column AND board_y < $startingY AND board_y > + ($startingY - $maxDistance) ORDER BY board_y DESC" );
+
+				// add the space the saucer is on
+				$spaceArray = array();
+				$spaceArray['row'] = $startingY;
+				$spaceArray['column'] = $column;
+				//throw new feException( "startColumn:$startColumn startRow:$startRow");
+				array_push($result, $spaceArray); // add this space to the list of move destinations
 
 				foreach( $spaces as $space )
 				{ // go through each space
+					  $x = $space['board_x'];
+						$y = $space['board_y'];
 
 						$spaceArray = array();
-						$spaceArray['row'] = $space['board_y'];
-						$spaceArray['column'] = $space['board_x'];
+						$spaceArray['row'] = $y;
+						$spaceArray['column'] = $x;
+
+						$spaceType = $this->getBoardSpaceType($x, $y);
+						//throw new feException( "x:$x y:$y");
+
 						array_push($result, $spaceArray); // add this space to the list of move destinations
+						if($spaceType == "S" || $spaceType == "D")
+						{ // accelerator or off the board
+
+									return $result;
+						}
 				}
 
 				return $result;
@@ -4650,15 +4674,34 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$result = array();
 
-				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_x=$column AND board_y >= $startingY AND board_y <= ($startingY + $maxDistance);" );
+				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_x=$column AND board_y > $startingY AND board_y < ($startingY + $maxDistance) ORDER BY board_y ASC" );
+
+				// add the space the saucer is on
+				$spaceArray = array();
+				$spaceArray['row'] = $startingY;
+				$spaceArray['column'] = $column;
+				//throw new feException( "startColumn:$startColumn startRow:$startRow");
+				array_push($result, $spaceArray); // add this space to the list of move destinations
 
 				foreach( $spaces as $space )
 				{ // go through each space
 
+						$x = $space['board_x'];
+						$y = $space['board_y'];
+
 						$spaceArray = array();
-						$spaceArray['row'] = $space['board_y'];
-						$spaceArray['column'] = $space['board_x'];
+						$spaceArray['row'] = $y;
+						$spaceArray['column'] = $x;
+
+						$spaceType = $this->getBoardSpaceType($x, $y);
+						//throw new feException( "x:$x y:$y");
+
 						array_push($result, $spaceArray); // add this space to the list of move destinations
+						if($spaceType == "S" || $spaceType == "D")
+						{ // accelerator or off the board
+
+									return $result;
+						}
 				}
 
 				return $result;
@@ -4668,16 +4711,34 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$result = array();
 
-				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_y=$row AND board_x <= $startingX AND board_x >= ($startingX - $maxDistance);" );
+				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_y=$row AND board_x < $startingX AND board_x > ($startingX - $maxDistance) ORDER BY board_x DESC" );
+
+				// add the space the saucer is on
+				$spaceArray = array();
+				$spaceArray['row'] = $row;
+				$spaceArray['column'] = $startingX;
+				//throw new feException( "startColumn:$startColumn startRow:$startRow");
+				array_push($result, $spaceArray); // add this space to the list of move destinations
 
 				foreach( $spaces as $space )
 				{ // go through each space
 
+						$x = $space['board_x'];
+						$y = $space['board_y'];
+
 						$spaceArray = array();
-						$spaceArray['row'] = $space['board_y'];
-						$spaceArray['column'] = $space['board_x'];
+						$spaceArray['row'] = $y;
+						$spaceArray['column'] = $x;
+
+						$spaceType = $this->getBoardSpaceType($x, $y);
+						//throw new feException( "x:$x y:$y");
 
 						array_push($result, $spaceArray); // add this space to the list of move destinations
+						if($spaceType == "S" || $spaceType == "D")
+						{ // accelerator or off the board
+
+									return $result;
+						}
 				}
 
 				return $result;
@@ -4687,16 +4748,34 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$result = array();
 
-				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_y=$row AND board_x >= $startingX AND board_x <= ($startingX + $maxDistance);" );
+				$spaces = self::getObjectListFromDB( "SELECT board_x, board_y FROM `board` WHERE board_y=$row AND board_x > $startingX AND board_x < ($startingX + $maxDistance) ORDER BY board_x ASC" );
+
+				// add the space the saucer is on
+				$spaceArray = array();
+				$spaceArray['row'] = $row;
+				$spaceArray['column'] = $startingX;
+				//throw new feException( "startColumn:$startColumn startRow:$startRow");
+				array_push($result, $spaceArray); // add this space to the list of move destinations
 
 				foreach( $spaces as $space )
 				{ // go through each space
 
+						$x = $space['board_x'];
+						$y = $space['board_y'];
+
 						$spaceArray = array();
-						$spaceArray['row'] = $space['board_y'];
-						$spaceArray['column'] = $space['board_x'];
+						$spaceArray['row'] = $y;
+						$spaceArray['column'] = $x;
+
+						$spaceType = $this->getBoardSpaceType($x, $y);
+						//throw new feException( "x:$x y:$y");
 
 						array_push($result, $spaceArray); // add this space to the list of move destinations
+						if($spaceType == "S" || $spaceType == "D")
+						{ // accelerator or off the board
+
+									return $result;
+						}
 				}
 
 				return $result;
