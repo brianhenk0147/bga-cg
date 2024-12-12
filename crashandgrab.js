@@ -1639,6 +1639,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                   break;
 
+
+
                   default:
 //this.unhighlightAllDirections(); // UNhighlight ALL directions
                   break;
@@ -1679,11 +1681,14 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                    this.unhighlightAllSpaces();
                }
 
+             break;
+
              case 'chooseAcceleratorDirection':
 
                if( this.isCurrentPlayerActive() )
                { // this is the active player
                   this.unhighlightAllDirections();
+                  this.unhighlightAllSpaces();
                }
 
              break;
@@ -1697,6 +1702,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                }
 
              break;
+
+
 
             case 'executeMove':
             console.log( "onLeavingState->executeMove" );

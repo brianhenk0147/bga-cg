@@ -1510,7 +1510,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$space['column'] = $column;
 								array_push($result, $space); // add this space to the list of move destinations
 
-								$maxDistance = 5;
+								$maxDistance = $this->getSaucerXValue( $saucerWhoseTurnItIs ) + 1;
+								//throw new feException( "maxDistance: $maxDistance distanceType:$distanceType");
 								if($distanceType == 3)
 								{ // max distance
 										$maxDistance = 20;
