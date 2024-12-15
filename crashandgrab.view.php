@@ -129,6 +129,8 @@
         // get the player name, color, and ID for everyone
         $players = $this->game->loadPlayersBasicInfos();
 
+        $this->tpl['UPGRADE_REFERENCE_LABEL'] = self::_("Upgrade Reference");
+
 
         global $g_user;
         $current_player_id = $g_user->get_id();

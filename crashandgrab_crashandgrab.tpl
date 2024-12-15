@@ -1127,13 +1127,6 @@
           <!-- END lost_crewmembers -->
       </div>
 
-
-
-      <div id="upgrade_deck_container">
-          <div id="upgrade_deck" class="upgrade_deck"></div>
-          <div id="upgrade_discard" class="upgrade_deck"></div>
-      </div>
-
   </div>
 
 
@@ -1174,6 +1167,11 @@
 
   </div>
 
+  <h2 id="upgrade_reference_header">{UPGRADE_REFERENCE_LABEL}</h2>
+    <div id="upgrade_list">
+
+    </div>
+
 </div><!--board_area-->
 
 
@@ -1201,6 +1199,11 @@ var jstpl_actionButtonHolder_SaucerList='<div id="saucer_action_button_holder"><
 var jstpl_tileRotateTileButtonHolder='<div id="tile_rotation_tile_button_holder"></div>';
 var jstpl_tileRotateDirectionButtonHolder='<div id="tile_rotation_direction_button_holder"></div>';
 var jstpl_tileRotateConfirmButtonHolder='<div id="tile_rotation_confirm_button_holder"></div>';
+
+var jstpl_largeUpgrade = '<div class="large_upgrade large_component_rounding" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
+                        </div>';
+var jstpl_listUpgrade = '<div class="list_upgrade_card component_rounding" id="list_equipment_${collectorNumber}" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
+                        </div>';
 
 <!--OBSOLETE-->
 <!-- match the class to the css class for the image location -->
@@ -1231,6 +1234,8 @@ var jstpl_upgradeCardHolder = '<div id="upgradeCardHolder">\
                                 </div>';
 
 var jstpl_upgradeCard = '<div class="upgrade_card component_rounding" id="upgrade_card_${databaseId}" style="background-position:-${x}px -${y}px">\
+                                            </div>';
+var jstpl_popupUpgradeCard = '<div class="upgrade_card component_rounding" id="popup_upgrade_card_${databaseId}" style="background-position:-${x}px -${y}px">\
                                             </div>';
 
 var jstpl_upgradeCardText = '<div class="upgradeCardContent">\
@@ -1301,7 +1306,7 @@ var jstpl_player_board_for_saucer = '<div id="player_board_saucer_${color}" clas
                                       </div>';
 
 var jstpl_turnOrderIndicator = '<div id="player_board_turn_order_indicator_${color}" class="turn_order_indicator" style="background-position:-${x}px -${y}px"></div>';
-var jstpl_upgradeThumbnail = '<div class="player_board_upgrade_thumbnail"></div>';
+var jstpl_upgradeThumbnail = '<div id="player_board_upgrade_thumbnail_${databaseId}" class="player_board_upgrade_thumbnail upgrade_thumbnail_${collectorNumber}" style="background-position:-${x}px -${y}px"></div>';
 
 <!--OBSOLETE-->
 var jstpl_crown = '<div id="player_board_crown"></div>';

@@ -75,6 +75,14 @@ function (dojo, declare) {
             this.movementcardwidth = 82;
             this.movementcardheight = 82;
 
+            // player board and upgrade reference cards
+            this.smallUpgradeCardWidth = 230;
+            this.smallUpgradeCardHeight = 164;
+
+            // thumbnail upgrade card
+            this.smallUpgradeCardWidth = 32;
+            this.smallUpgradeCardHeight = 23;
+
             // upgrade cards
             this.trapHand = null;
             //this.upgradecardwidth = 82;
@@ -125,6 +133,12 @@ function (dojo, declare) {
 
             // holds stocks for all saucer mat extra crewmembers
             this.saucerMatExtraCrewmemberStocks={};
+
+            // player board upgrade thumbnails
+            this.playerBoardThumbnailStocks={};
+
+            // the reference list of upgrades
+            this.upgradeList=null;
 
             // tile rotation
             this.CHOSEN_ROTATION_TILE=0;
@@ -216,6 +230,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 this.createPlayerBoardCrewmemberStock(saucer.color);
                 this.createSaucerMatExtraCrewmemberStock(saucer.color);
+
+                // create the stocks for the player boards where upgrade card thumbnails go
+                this.createPlayerBoardThumbnailStock(saucer.color);
             }
 
 
@@ -225,7 +242,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.initializeMoveCards();
 
             this.initializePlayedUpgrades();
-            this.initializeDiscards();
+
+            // initiailze the upgrade reference list
+            this.initializeUpgradeList(this.gamedatas.upgradeList);
 
 
 
@@ -3929,6 +3948,179 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
             //we might want to remove the attachment from the crewmember pickups too
         },
 
+        initializeUpgradeList : function(allUpgrades)
+       {
+
+         this.upgradeList = new ebg.stock(); // create a new set of cards for the list of all upgrades
+         this.upgradeList.create( this, $('upgrade_list'), this.upgradecardwidth, this.upgradecardheight );
+         this.upgradeList.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
+         this.upgradeList.extraClasses='component_rounding clickable'; // add a class to each item to make it look like a card
+         this.upgradeList.item_margin= 20;
+         //this.upgradeList.container_div.width = (parseFloat(this.upgradecardwidth)+10)+"px"; // enought just for 1 card
+         //this.upgradeList.autowidth = false; // this is required so it obeys the width set above
+         this.upgradeList.image_items_per_row = 4;
+         this.upgradeList.setSelectionMode(0); // don't allow items to be selected
+
+         //addItemType(type, weight, image, position)
+         this.upgradeList.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
+         this.upgradeList.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
+         this.upgradeList.addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
+         this.upgradeList.addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
+         this.upgradeList.addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
+         this.upgradeList.addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
+         this.upgradeList.addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
+         this.upgradeList.addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
+         this.upgradeList.addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
+         this.upgradeList.addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
+         this.upgradeList.addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
+         this.upgradeList.addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
+         this.upgradeList.addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
+         this.upgradeList.addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
+         this.upgradeList.addItemType( 14, 14, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 14 );
+         this.upgradeList.addItemType( 15, 15, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 15 );
+         this.upgradeList.addItemType( 16, 16, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 16 );
+         this.upgradeList.addItemType( 17, 17, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 17 );
+         this.upgradeList.addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
+         this.upgradeList.addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
+         this.upgradeList.addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
+
+         this.resetUpgradeList(allUpgrades);
+
+       },
+
+       resetUpgradeList: function (allUpgrades)
+       {
+           for( var i in allUpgrades )
+           { // go through the cards
+               var upgrade = allUpgrades[i];
+
+               var collectorNumber = upgrade['card_type_arg']; // collector number
+               var databaseId = upgrade['card_id']; // ID given to this card in the database
+               var location = upgrade['card_location']; // location
+               var locationArg = upgrade['card_location_arg']; // holder
+               var upgradeName = upgrade['upgrade_name'];
+               var upgradeEffect = upgrade['upgrade_effect'];
+
+               console.log("adding upgrade with databaseId ("+databaseId+") and collectorNumber("+collectorNumber+")");
+
+               // add this upgrade to the upgrade reference list
+               this.upgradeList.addToStockWithId( collectorNumber, databaseId );
+
+               var upgradeHtmlId = 'upgrade_list_item_'+databaseId;
+
+               // add a hoverover tooltip with a bigger version of the card
+               this.addLargeUpgradeTooltip(upgradeHtmlId, collectorNumber, upgradeName, upgradeEffect);
+
+               // each discarded card should get a black border
+               // each card held by a player should get a border matching that player color
+               // each card in the deck does not have a border
+
+               if( location == 'deck' )
+               { // this card is in the deck
+
+                  if(document.getElementById(upgradeHtmlId))
+                  { // equipment HTML node exists and they are not a spectator
+                      dojo.addClass( upgradeHtmlId, 'upgrade_reference_deck'); // give it a border to show it's still in the deck
+                  }
+               }
+               else if( location == 'discard')
+               {
+                  if(document.getElementById(upgradeHtmlId))
+                  { // equipment HTML node exists and they are not a spectator
+                   dojo.addClass( upgradeHtmlId, 'upgrade_reference_discard'); // give it a border and dim it to show it's discarded
+                  }
+               }
+               else
+               { // it's held by a saucer
+                  if(document.getElementById(upgradeHtmlId))
+                  { // equipment HTML node exists and they are not a spectator
+                     dojo.addClass( upgradeHtmlId, 'upgrade_reference_color'); // give it a border to show it is held by a specific saucer
+                     dojo.addClass( upgradeHtmlId, 'upgrade_reference_'+location); // give it a border to show it is held by a specific saucer
+
+                  }
+               }
+
+               if(document.getElementById(upgradeHtmlId))
+               {
+                  dojo.connect( $(upgradeHtmlId), 'onclick', this, 'onClickReferenceUpgradeCard' );
+                  //dojo.style( upgradeHtmlId, 'cursor', 'default' ); // remove the default stock pointer unless we want these to be clickable
+               }
+
+           }
+       },
+
+       onClickReferenceUpgradeCard: function( evt )
+        {
+            var node = evt.currentTarget.id; // upgrade_list_item_2
+            if(node)
+            { // if node is defind
+                var databaseId = node.split('_')[3];
+
+                this.showUpgradeDialog(databaseId); // show card in popup window
+            }
+        },
+
+        // Add a hoverover tooltip with a bigger version of the card.
+        addLargeUpgradeTooltip(htmlIdToAddItTo, collectorNumber, upgradeName, upgradeEffect)
+        {
+          /*
+            var html = this.format_block( 'jstpl_largeUpgrade', {
+                x: this.largeEquipmentCardWidth*(this.getEquipmentSpriteX(collectorNumber)),
+                y: this.largeEquipmentCardHeight*(this.getEquipmentSpriteY(collectorNumber)),
+                equipmentName: _(upgradeName),
+                equipmentEffect: _(upgradeEffect)
+            } ); // the HTML (image) to be displayed
+            */
+
+                var html = this.format_block( 'jstpl_largeUpgrade', {
+                    x: 0,
+                    y: 0,
+                    equipmentName: _(upgradeName.toUpperCase()),
+                    equipmentEffect: _(upgradeEffect)
+                } ); // the HTML (image) to be displayed
+            var delay = 0; // any delay before it appears
+            this.addTooltipHtml( htmlIdToAddItTo, html, delay ); // add the tooltip with the above configuration
+        },
+
+
+        showUpgradeDialog: function(databaseId)
+        {
+           var collectorNumber = this.gamedatas.databaseIdToCollectorIdMapping[databaseId];
+
+           var title = this.getUpgradeTitle(collectorNumber);
+           var effect = this.getUpgradeEffect(collectorNumber);
+           // Create the new dialog over the play zone. You should store the handler in a member variable to access it later
+           this.myDlg = new ebg.popindialog();
+           this.myDlg.create( 'thumbnailDialog' );
+           this.myDlg.setTitle( _("Ship Upgrade") );
+           //this.myDlg.setMaxWidth( this.largeEquipmentCardWidth ); // Optional
+
+           var upgradeRow = this.getUpgradeSpriteRow(collectorNumber); // get sprite row
+           var upgradeColumn = this.getUpgradeSpriteColumn(collectorNumber); // get sprite column for this upgrade
+           console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth + 'upgradeColumn:' + upgradeColumn);
+
+           // Create the HTML of my dialog.
+           // The best practice here is to use Javascript templates
+           var html = this.format_block( 'jstpl_popupUpgradeCard', {
+             x: this.upgradecardwidth * upgradeColumn,
+             y: this.upgradecardheight * upgradeRow,
+             databaseId: databaseId
+          } );
+
+           // Show the dialog
+           this.myDlg.setContent( html ); // Must be set before calling show() so that the size of the content is defined before positioning the dialog
+           this.myDlg.show();
+
+           // Add some custom HTML content INSIDE the Stock item:
+           var cardHtmlId = 'popup_upgrade_card_'+databaseId;
+           dojo.place( this.format_block( 'jstpl_upgradeCardText', {
+               title: title.toUpperCase(),
+               effect: effect
+           } ), cardHtmlId );
+
+           dojo.addClass(cardHtmlId, 'notClickable'); // remove the pointer
+        },
+
         // turnOrder: 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
         initializeTurnOrder: function(turnOrder, playerWithProbe, saucers)
         {
@@ -4061,6 +4253,44 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
         resetMovePhaseVariables: function() {
             this.ostrichChosen = false;
             this.mustSkateboard = false;
+        },
+
+        createPlayerBoardThumbnailStock: function(saucerColor)
+        {
+          var containerHtml = 'player_board_upgrade_thumbnails_'+saucerColor;
+          this.playerBoardThumbnailStocks[saucerColor] = new ebg.stock();
+          this.playerBoardThumbnailStocks[saucerColor].create( this, $(containerHtml), this.smallUpgradeCardWidth, this.smallUpgradeCardHeight );
+          this.playerBoardThumbnailStocks[saucerColor].image_items_per_row = 4; // the number of card images per row in the sprite image
+          this.playerBoardThumbnailStocks[saucerColor].onItemCreate = dojo.hitch( this, 'setupNewThumbnailCard' ); // add text to the card image
+          this.playerBoardThumbnailStocks[saucerColor].container_div.width = "32px"; // enought just for 1 card
+          this.playerBoardThumbnailStocks[saucerColor].autowidth = false; // this is required so it obeys the width set above
+          this.playerBoardThumbnailStocks[saucerColor].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
+          this.playerBoardThumbnailStocks[saucerColor].vertical_overlap = 0; // overlap percentage
+          //this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
+          this.playerBoardThumbnailStocks[saucerColor].item_margin = 4; // has to be 0 if using overlap
+          this.playerBoardThumbnailStocks[saucerColor].setSelectionMode(0); // don't allow items to be selected
+
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 0 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 1 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 2, 2, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 2 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 3, 3, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 3 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 4, 4, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 4 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 5, 5, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 5 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 6, 6, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 6 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 7, 7, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 7 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 8, 8, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 8 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 9, 9, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 9 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 10, 10, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 10 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 11, 11, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 11 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 12, 12, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 12 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 13, 13, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 13 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 14, 14, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 14 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 15, 15, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 15 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 16, 16, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 16 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 17, 17, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 17 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 18 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 19 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 20 );
         },
 
         createSaucerMatExtraCrewmemberStock: function(saucerColor)
@@ -4583,61 +4813,6 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
 */
         },
 
-        initializeDiscards: function()
-        {
-            this.upgradesDiscarded = new ebg.stock();
-            this.upgradesDiscarded.create( this, $('upgrade_discard'), this.upgradecardwidth, this.upgradecardheight );
-            this.upgradesDiscarded.image_items_per_row = 4; // the number of card images per row in the sprite image
-            this.upgradesDiscarded.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
-            this.upgradesDiscarded.extraClasses='component_rounding_no_shadow'; // add a class to each item to make it look like a card
-            this.upgradesDiscarded.container_div.width = "230px"; // enought just for 1 card
-            this.upgradesDiscarded.autowidth = false; // this is required so it obeys the width set above
-            this.upgradesDiscarded.use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
-            this.upgradesDiscarded.vertical_overlap = 100; // overlap percentage
-            //this.upgradesDiscarded.horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
-            this.upgradesDiscarded.item_margin = 0; // has to be 0 if using overlap
-            //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
-
-            this.upgradesDiscarded.addItemType( 0, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
-            this.upgradesDiscarded.addItemType( 1, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 1 );
-            this.upgradesDiscarded.addItemType( 2, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 2 );
-            this.upgradesDiscarded.addItemType( 3, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 3 );
-            this.upgradesDiscarded.addItemType( 4, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 4 );
-            this.upgradesDiscarded.addItemType( 5, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 5 );
-            this.upgradesDiscarded.addItemType( 6, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 6 );
-            this.upgradesDiscarded.addItemType( 7, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 7 );
-            this.upgradesDiscarded.addItemType( 8, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 8 );
-            this.upgradesDiscarded.addItemType( 9, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 9 );
-            this.upgradesDiscarded.addItemType( 10, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 10 );
-            this.upgradesDiscarded.addItemType( 11, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 11 );
-            this.upgradesDiscarded.addItemType( 12, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 12 );
-            this.upgradesDiscarded.addItemType( 13, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 13 );
-            this.upgradesDiscarded.addItemType( 14, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 14 );
-            this.upgradesDiscarded.addItemType( 15, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 15 );
-            this.upgradesDiscarded.addItemType( 16, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 16 );
-            this.upgradesDiscarded.addItemType( 17, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 17 );
-            this.upgradesDiscarded.addItemType( 18, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
-            this.upgradesDiscarded.addItemType( 19, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
-            this.upgradesDiscarded.addItemType( 20, 1, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
-
-
-
-            // upgrade cards in player's hands
-            for( var i in this.gamedatas.discardedUpgrades )
-            {
-                //console.log("i:"+i);
-                var card = this.gamedatas.discardedUpgrades[i];
-
-                var collectorNumber = card.card_type_arg;
-                var saucerColor = card.card_location;
-                var databaseId = card.card_id;
-                var cardOwner = card.card_location_arg;
-
-                // add to this saucer's played area
-                this.upgradesDiscarded.addToStockWithId( collectorNumber, databaseId );
-            }
-        },
-
         initializePlayedUpgrades: function()
         {
             // create a stock for each saucer in the game
@@ -4659,6 +4834,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_1.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_1.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     this.upgradesPlayed_1.extraClasses='component_rounding'; // add a class to each item to make it look like a card
+                    this.upgradesPlayed_1.setSelectionMode(0); // don't allow items to be selected
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
 
                     this.upgradesPlayed_1.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
@@ -4692,6 +4868,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_2.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_2.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     this.upgradesPlayed_2.extraClasses='component_rounding'; // add a class to each item to make it look like a card
+                    this.upgradesPlayed_2.setSelectionMode(0); // don't allow items to be selected
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
 
                     this.upgradesPlayed_2.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
@@ -4723,6 +4900,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_3.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_3.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     this.upgradesPlayed_3.extraClasses='component_rounding'; // add a class to each item to make it look like a card
+                    this.upgradesPlayed_3.setSelectionMode(0); // don't allow items to be selected
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
 
                     this.upgradesPlayed_3.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
@@ -4755,6 +4933,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_4.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_4.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     this.upgradesPlayed_4.extraClasses='component_rounding'; // add a class to each item to make it look like a card
+                    this.upgradesPlayed_4.setSelectionMode(0); // don't allow items to be selected
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
 
                     this.upgradesPlayed_4.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
@@ -4787,6 +4966,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_5.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_5.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     this.upgradesPlayed_5.extraClasses='component_rounding'; // add a class to each item to make it look like a card
+                    this.upgradesPlayed_5.setSelectionMode(0); // don't allow items to be selected
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
 
                     this.upgradesPlayed_5.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
@@ -4819,6 +4999,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_6.image_items_per_row = 4; // the number of card images per row in the sprite image
                     this.upgradesPlayed_6.onItemCreate = dojo.hitch( this, 'setupNewCard' ); // add text to the card image
                     this.upgradesPlayed_6.extraClasses='component_rounding'; // add a class to each item to make it look like a card
+                    this.upgradesPlayed_6.setSelectionMode(0); // don't allow items to be selected
                     //dojo.connect( this.upgradesPlayed_1, 'onChangeSelection', this, 'onUpgradeHandSelectionChanged' ); // when the onChangeSelection event is triggered on the HTML, call our callback function onTrapHandSelectionChanged below
 
                     this.upgradesPlayed_6.addItemType( 0, 0, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 0 );
@@ -4865,21 +5046,53 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     var databaseId = card.card_id;
                     var cardOwner = card.card_location_arg;
 
-
-                    var upgradesPlayedStock = this.getUpgradesPlayedStockForSaucerColor(saucerColor);
-
                     // add to this saucer's played area
+                    var upgradesPlayedStock = this.getUpgradesPlayedStockForSaucerColor(saucerColor);
                     upgradesPlayedStock.addToStockWithId( collectorNumber, databaseId );
 
                     // put a thumbnail for this on the player board for the saucer
+                    this.playerBoardThumbnailStocks[saucerColor].addToStockWithId( collectorNumber, databaseId );
+
+/*
+                    var upgradeRow = this.getUpgradeSpriteRow(collectorNumber); // get sprite row
+                    var upgradeColumn = this.getUpgradeSpriteColumn(collectorNumber); // get sprite column for this upgrade
 
                     dojo.place( this.format_block( 'jstpl_upgradeThumbnail', {
-                        collectorNumber: collectorNumber
+                        x: this.smallUpgradeCardWidth * upgradeRow,
+                        y: this.smallUpgradeCardHeight * upgradeColumn,
+                        collectorNumber: collectorNumber,
+                        databaseId: databaseId
                     } ), 'player_board_upgrade_thumbnails_'+saucerColor );
+                    var thumbnailUpgradeHtmlId = 'player_board_upgrade_thumbnail_'+databaseId;
 
+                    var title = this.getUpgradeTitle(collectorNumber);
+                    var effect = this.getUpgradeEffect(collectorNumber);
+                    var whatHappensWhenYouClickOnIt = '';
+
+
+                    // Add a special tooltip on the card (Maybe replace this with full image to show off the art)
+                    this.addTooltip( thumbnailUpgradeHtmlId, title.toUpperCase() + ": " + effect, whatHappensWhenYouClickOnIt );
+*/
 
                 }
             }
+        },
+
+        setupNewThumbnailCard: function( card_div, card_type_id, card_id )
+        {
+             var title = this.getUpgradeTitle(card_type_id);
+             var effect = this.getUpgradeEffect(card_type_id);
+             var whatHappensWhenYouClickOnIt = '';
+
+//             console.log('title:'+title+' effect:'+effect);
+
+             // Add a special tooltip on the card (Maybe replace this with full image to show off the art)
+             this.addTooltip( card_div.id, title.toUpperCase() + ": " + effect, whatHappensWhenYouClickOnIt );
+
+             dojo.addClass( card_div.id, 'small_component_rounding');
+             dojo.addClass( card_div.id, 'clickable');
+
+             dojo.connect( $(card_div.id), 'onclick', this, 'onClickUpgradeThumbnail' );
         },
 
         setupNewCard: function( card_div, card_type_id, card_id )
@@ -4924,6 +5137,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                   upgradesPlayedStock.addToStockWithId( collectorNumber, cardInHandDatabaseId );
               }
 
+              // put a thumbnail for this on the player board for the saucer
+              this.playerBoardThumbnailStocks[saucerColorPlayingCard].addToStockWithId( collectorNumber, cardInHandDatabaseId );
+
               // make this no longer clickable because otherwise you get an error if you try to click it while it's moving or in the played area
               this.disconnect( $(cardInAvailableUpgradesHtmlId), 'onUpgradeHandSelectionChanged');
 
@@ -4943,17 +5159,22 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
         {
 
               var cardInAvailableUpgradesHtmlId = 'upgradeCardHolder_item_'+cardInHandDatabaseId; // example: upgradeCardHolder_item_3
+              var cardInReferenceListHtmlId = 'upgrade_list_item_'+cardInHandDatabaseId; // example: upgrade_list_item_15
 //this.upgradesPlayed_1.addToStockWithId( collectorNumber, cardInHandDatabaseId );
               console.log('discarding saucerColor('+saucerColorPlayingCard+') collectorNumber('+collectorNumber+') cardInAvailableUpgradesHtmlId('+cardInAvailableUpgradesHtmlId+').');
 
               if(this.isCurrentPlayerActive())
               {
                   // move upgrade from available upgrades to discard
-                  this.upgradesDiscarded.addToStockWithId( collectorNumber, cardInHandDatabaseId, cardInAvailableUpgradesHtmlId);
+                  //this.upgradesDiscarded.addToStockWithId( collectorNumber, cardInHandDatabaseId, cardInAvailableUpgradesHtmlId);
+                  dojo.destroy(cardInAvailableUpgradesHtmlId);
+                  dojo.addClass( cardInReferenceListHtmlId, 'upgrade_reference_discard'); // give it a border and dim it to show it's discarded
+
               }
               else
               {
-                  this.upgradesDiscarded.addToStockWithId( collectorNumber, cardInHandDatabaseId);
+                  //this.upgradesDiscarded.addToStockWithId( collectorNumber, cardInHandDatabaseId);
+                  dojo.addClass( cardInReferenceListHtmlId, 'upgrade_reference_discard'); // give it a border and dim it to show it's discarded
               }
 
               // make this no longer clickable because otherwise you get an error if you try to click it while it's moving or in the played area
@@ -5826,6 +6047,15 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
             // tell the server that the user selected this crewmember
             this.sendLostCrewmemberSelection(crewmemberType, crewmemberColor);
+        },
+
+        onClickUpgradeThumbnail: function( evt )
+        {
+          var node = evt.currentTarget.id; // 'player_board_upgrade_thumbnails_01b508_item_2'
+          console.log("onClickUpgradeThumbnail:"+node);
+          var databaseId = node.split('_')[6]; // 2
+
+          this.showUpgradeDialog(databaseId);
         },
 
         onClickUpgradeCardInHand: function( evt )
@@ -7044,7 +7274,7 @@ console.log("success... onClickUpgradeCardInHand");
             // update the player board with the value of how many boosters
             this.energy_counters[saucerColorPlayingCard].setValue(energyQuantity);
 
-            var destination = 'upgrade_deck'; // send it into the upgrade deck
+            var destination = 'saucer_'+saucerColorPlayingCard; // send it into their saucer on the board
 
             // remove 2 energy cubes
             var firstEnergyInteger = +energyQuantity + +1;

@@ -207,6 +207,8 @@ class CrashAndGrab extends Table
 */
 				$result['stateName'] = $this->getStateName(); // send the state name in case the client needs it
 
+				$result['databaseIdToCollectorIdMapping'] = $this->getDatabaseIdToCollectorIdMapping();
+
 				// put the cards that are in this player's hand into the array that is returned to the UI/javascript/client layer with the key "hand"
 				$saucers = $this->getSaucersForPlayer($player_id);
 
@@ -253,7 +255,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result['playedUpgrades'] = $this->getAllPlayedUpgradesBySaucer();
 				$result['discardedUpgrades'] = $this->getAllDiscardedUpgrades();
 
-
+				$result['upgradeList'] = $this->getUpgradeList();
 
 
 				// get the board layout
@@ -5382,6 +5384,50 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 
 				return $chosenMoveCards;
+		}
+
+		function getDatabaseIdToCollectorIdMapping()
+		{
+				$mapping = array();
+
+				$sql = "SELECT * FROM upgradeCards ORDER BY card_id ASC ";
+				$equipmentListFromDb = self::getCollectionFromDb( $sql );
+
+				$index = 0;
+				foreach( $equipmentListFromDb as $card )
+				{
+						$cardId = $card['card_id'];
+						$collectorNumber = $card['card_type_arg'];
+
+						$mapping[$cardId] = $collectorNumber;
+				}
+
+				return $mapping;
+		}
+
+		function getUpgradeList()
+		{
+				$equipmentList = array();
+
+				$sql = "SELECT * FROM upgradeCards ORDER BY card_type DESC ";
+				$equipmentListFromDb = self::getCollectionFromDb( $sql );
+
+				$index = 0;
+				foreach( $equipmentListFromDb as $card )
+				{
+						$cardId = $card['card_id'];
+						$collectorNumber = $card['card_type_arg'];
+						$location = $card['card_location'];
+						$locationArg = $card['card_location_arg'];
+						$equipName = $this->getUpgradeTitleFromCollectorNumber($collectorNumber);
+						$equipEffect = $this->getUpgradeEffectFromCollectorNumber($collectorNumber);
+
+						$equipmentList[$index] = array( 'card_id' => $cardId, 'card_type_arg' => $collectorNumber, 'upgrade_name' => $equipName, 'upgrade_effect' => $equipEffect, 'card_location' => $location, 'card_location_arg' => $locationArg);
+
+						$index++;
+				}
+
+				return $equipmentList;
 		}
 
 		function getAllDiscardedUpgrades()

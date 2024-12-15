@@ -156,6 +156,17 @@ body {
     margin-left: 10px;
 }
 
+.small_component_rounding {
+    border-radius: 3px;
+    border: 1px black solid;
+
+    -moz-box-shadow: 2px 2px 2px 0px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 2px 2px 2px 0px rgba(0,0,0,0.4);
+    -o-box-shadow: 2px 2px 2px 0px rgba(0,0,0,0.4);
+    box-shadow: 2px 2px 2px 0px rgba(0,0,0,0.4);
+    filter:progid:DXImageTransform.Microsoft.Shadow(color=#656565, Direction=134, Strength=30);
+}
+
 .component_rounding {
     border-radius: 10px;
     border: 1px black solid;
@@ -1053,7 +1064,12 @@ float: left;
 
 .clickable
 {
-    cursor: pointer;
+    cursor: pointer ! important;
+}
+
+.notClickable
+{
+    cursor: default ! important;
 }
 
 .cardSelected
@@ -1428,6 +1444,10 @@ content: '';
 
 
 /***** UPGRADES *****/
+#upgrade_reference_header
+{
+    margin-top: 100px;
+}
 .upgradeCardContent
 {
     width: 230px;
@@ -1592,6 +1612,67 @@ width: 170px;
       background-position-y: -62px;
     }
 }
+
+.upgrade_reference_deck
+{
+    border-color: black;
+}
+
+.upgrade_reference_discard
+{
+    border-color: black;
+    filter: brightness(50%);
+}
+
+.upgrade_reference_color
+{
+
+}
+
+.upgrade_reference_01b508
+{
+  -webkit-box-shadow:inset 0px 0px 0px 5px #01b508;
+  -moz-box-shadow:inset 0px 0px 0px 5px #01b508;
+  box-shadow:inset 0px 0px 0px 5px #01b508;
+} /* green */
+
+.upgrade_reference_0090ff
+{
+  -webkit-box-shadow:inset 0px 0px 0px 5px #0090ff;
+  -moz-box-shadow:inset 0px 0px 0px 5px #0090ff;
+  box-shadow:inset 0px 0px 0px 5px #0090ff;
+} /* blue */
+
+.upgrade_reference_fedf3d
+{
+  -webkit-box-shadow:inset 0px 0px 0px 5px #fedf3d;
+  -moz-box-shadow:inset 0px 0px 0px 5px #fedf3d;
+  box-shadow:inset 0px 0px 0px 5px #fedf3d;
+} /* yellow */
+
+.upgrade_reference_f6033b
+{
+  -webkit-box-shadow:inset 0px 0px 0px 5px #f6033b;
+  -moz-box-shadow:inset 0px 0px 0px 5px #f6033b;
+  box-shadow:inset 0px 0px 0px 5px #f6033b;
+
+} /* red */
+
+.upgrade_reference_e77324
+{
+  -webkit-box-shadow:inset 0px 0px 0px 5px #e77324;
+  -moz-box-shadow:inset 0px 0px 0px 5px #e77324;
+  box-shadow:inset 0px 0px 0px 5px #e77324;
+
+} /* orange */
+
+.upgrade_reference_b92bba
+{
+  -webkit-box-shadow:inset 0px 0px 0px 5px #b92bba;
+  -moz-box-shadow:inset 0px 0px 0px 5px #b92bba;
+  box-shadow:inset 0px 0px 0px 5px #b92bba;
+
+} /* purple */
 
 
 /***** TRAPS *****/
@@ -2676,9 +2757,11 @@ margin-top: 6px;
 .player_board_upgrade_thumbnail
 {
   width: 32px;
-  height: 20px;
-  background-color: purple;
+  height: 23px;
   display: inline-block;
+  border-radius: 2px;
+
+  background-image: url('img/ship_upgrades_32_23.jpg');
 }
 
 .player_board_counts {
