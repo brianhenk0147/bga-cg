@@ -157,16 +157,6 @@ $machinestates = array(
     		"transitions" => array( "checkForRevealDecisions" => 38 )
     ),
 
-    13 => array(
-    		"name" => "placeCrewmemberChooseSpace",
-    		"description" => clienttranslate('${actplayer} must choose the space where the new garment will go.'),
-    		"descriptionmyturn" => clienttranslate('${you} must choose the space where the new garment will go.'),
-    		"type" => "activeplayer",
-        'args' => 'argGetValidGarmentSpawnSpaces',
-    		"possibleactions" => array( "chooseCrewmemberPlacingSpace" ),
-    		"transitions" => array( "nextMovementTurn" => 4, "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10 )
-    ),
-
     14 => array(
     		"name" => "askUseZag",
     		"description" => clienttranslate('${actplayer} is deciding whether they will zag.'),

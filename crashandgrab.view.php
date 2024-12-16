@@ -162,15 +162,14 @@
         }
 
         // GARMENTS
-        $allSaucers = $this->game->getAllSaucers();
+        $allSaucers = $this->game->getAllCrewmemberSetColors();
         $this->page->begin_block( "crashandgrab_crashandgrab", "lost_crewmembers" );
         $playerIndex = 0;
         foreach( $allSaucers as $saucer )
         {
 
                 $this->page->insert_block( "lost_crewmembers", array(
-                                                    "PLAYER_COLOR" => $saucer['ostrich_color'],
-                                                    "PLAYER_ID" => $saucer['ostrich_owner']
+                                                    "PLAYER_COLOR" => $saucer['garment_color']
                                                      ) );
                 $playerIndex++;
         }

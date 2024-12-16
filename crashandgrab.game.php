@@ -473,6 +473,28 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						$sqlGarment .= "(".$locX.",".$locY.",'".$location."','".$color."',".$type.") ";
 						self::DbQuery( $sqlGarment );
 				}
+
+				if($this->getNumberOfPlayers() < 6)
+				{ // 2-5 players
+
+						// insert an extras set of crewmembers
+						$unusedColor = $this->getUniqueSaucerColor();
+						$sqlCrewmemberPilot = "INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES ";
+						$sqlCrewmemberPilot .= "(0,0,'pile','".$unusedColor."',0) ";
+						self::DbQuery( $sqlCrewmemberPilot );
+
+						$sqlCrewmemberEngineer = "INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES ";
+						$sqlCrewmemberEngineer .= "(0,0,'pile','".$unusedColor."',1) ";
+						self::DbQuery( $sqlCrewmemberEngineer );
+
+						$sqlCrewmemberDoctor = "INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES ";
+						$sqlCrewmemberDoctor .= "(0,0,'pile','".$unusedColor."',2) ";
+						self::DbQuery( $sqlCrewmemberDoctor );
+
+						$sqlCrewmemberScientist = "INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES ";
+						$sqlCrewmemberScientist .= "(0,0,'pile','".$unusedColor."',3) ";
+						self::DbQuery( $sqlCrewmemberScientist );
+				}
 		}
 
 		function initializeStartingEnergy()
@@ -650,6 +672,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		}
 
+		// get a valid color that doesn't match one already assigned to a player
 		function getUniqueSaucerColor()
 		{
 				$possibleColors = array( "f6033b", "01b508", "0090ff", "fedf3d", "b92bba", "e77324" );
@@ -1695,6 +1718,12 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 																					 FROM ostrich ORDER BY ostrich_owner, ostrich_color" );
 		}
 
+		function getAllCrewmemberSetColors()
+		{
+				return self::getObjectListFromDB( "SELECT DISTINCT garment_color
+																				 FROM garment" );
+		}
+
 		function getAllPlayers()
 		{
 				return self::getObjectListFromDB( "SELECT *
@@ -2342,11 +2371,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result[20]['effect'] = $this->getUpgradeEffectFromCollectorNumber(20);
 
 				return $result;
-		}
-
-		function getPlayerIdRespawningGarment()
-		{
-				return $this->peekGarmentReplacementQueue();
 		}
 
 		function getGarmentsValidForRespawn()
@@ -3101,7 +3125,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$result = array();
 
-				$garmentChooser = $this->peekGarmentReplacementQueue(); // find the garment chooser
+				$garmentChooser = self::getActivePlayerId(); // find the garment chooser
 				$garmentChoosersOstriches = $this->getSaucersForPlayer($garmentChooser); // get all of the ostriches belonging to the player
 
 				// go through each crate
@@ -4832,10 +4856,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$lostCrewmembers = array();
 
 				// get the next up crewmember for each saucer
-				$allSaucers = $this->getAllSaucers();
+				$allSaucers = $this->getAllCrewmemberSetColors();
 				foreach( $allSaucers as $saucer )
 				{ // go through each saucer
-						$saucerColor = $saucer['ostrich_color'];
+						$saucerColor = $saucer['garment_color'];
 						$nextColorList = self::getObjectListFromDB( "SELECT garment_id, garment_x, garment_y, garment_location, garment_color, garment_type
 																							 FROM garment
 																							 WHERE garment_location='pile' AND garment_color='$saucerColor' ORDER BY garment_type ASC LIMIT 1" );
@@ -6028,74 +6052,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$this->discardTrapCard($trapCardToExecute['uniqueCardId'], false); // discard the trap card (and reset any other fields needed)
 		}
 
-		// I could not get the PHP queue to persist data so I'm using a database table and
-		// writing my own queue...
-		function popReplacementQueue()
-		{
-				// get all the items in our database table queue
-				$playersWhoNeedToReplace = self::getObjectListFromDB( "SELECT order_id, player, ostrich_color
-																											 FROM garmentReplacementQueue
-																											 WHERE 1" );
-
-				$playerToPop = null;
-				$orderIdToPop = 1000;
-				foreach( $playersWhoNeedToReplace as $playerInQueue )
-				{ // go through each player who needs to replace a garment
-
-						$orderId = $playerInQueue['order_id']; // get the priority order for this item
-						if($orderId < $orderIdToPop)
-						{ // this item has the lowest priority number
-
-								$playerToPop = $playerInQueue['player'];
-								$orderIdToPop = $orderId;
-						}
-        }
-
-				// delete it from the queue
-				$sql = "DELETE FROM garmentReplacementQueue WHERE order_id=$orderIdToPop";
-				self::DbQuery( $sql );
-
-				return $playerToPop;
-		}
-
-		function peekGarmentReplacementQueue()
-		{
-				// get all the items in our database table queue
-				$playersWhoNeedToReplace = self::getObjectListFromDB( "SELECT order_id, player, ostrich_color
-																											 FROM garmentReplacementQueue
-																											 WHERE 1" );
-
-				$playerToPop = null;
-				$orderIdToPop = 1000;
-				foreach( $playersWhoNeedToReplace as $playerInQueue )
-				{ // go through each player who needs to replace a garment
-
-						$orderId = $playerInQueue['order_id']; // get the priority order for this item
-						if($orderId < $orderIdToPop)
-						{ // this item has the lowest priority number
-
-								$playerToPop = $playerInQueue['player'];
-								$orderIdToPop = $orderId;
-						}
-				}
-
-				return $playerToPop;
-		}
-
-		function countGarmentReplacementQueue()
-		{
-				$countOfQueue = 0;
-				$playersWhoNeedToReplace = self::getObjectListFromDB( "SELECT order_id, player, ostrich_color
-																											 FROM garmentReplacementQueue
-																											 WHERE 1" );
-				foreach( $playersWhoNeedToReplace as $playerInQueue )
-				{ // go through each player who needs to replace a garment
-						$countOfQueue++;
-				}
-
-				return $countOfQueue;
-		}
-
 		function countTotalAcquiredGarments()
 		{
 				return self::getUniqueValueFromDb("SELECT COUNT(garment_id) FROM garment WHERE (garment_location<>'pile' AND garment_location<>'pile' AND garment_location<>'chosen')");
@@ -6678,12 +6634,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return $count;
 		}
 
-		function addToGarmentReplacementQueue($playerToAdd, $ostrichToAdd)
-		{
-				$sqlGarment = "INSERT INTO garmentReplacementQueue (player, ostrich_color) VALUES ";
-				$sqlGarment .= "(".$playerToAdd.",'".$ostrichToAdd."') ";
-				self::DbQuery( $sqlGarment );
-		}
 
 		function rotateMatrix90( $matrix )
 		{
@@ -6697,6 +6647,87 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		    return $matrix90;
 		}
+
+		// A garment has been selected for spawning.
+		function executeReplaceGarmentChooseGarment($garmentTypeString, $garmentColor)
+		{
+				self::checkAction( 'chooseLostCrewmember', false ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php) -- the false argument says don't check if we are the active player because we might be replacing a garment on another player's turn
+
+				if($this->getGarmentLocation($this->convertGarmentTypeStringToInt($garmentTypeString), $garmentColor) != 'pile')
+				{ // hey... this isn't in the garment pile
+						throw new BgaUserException( self::_("You can only choose new garments to spawn from the garment pile.") );
+				}
+/*
+				$currentPlayerId = $this->getCurrentPlayerId(); // the player who clicked on a garment during the choose garment phase
+				$playerIdSpawningGarment = $this->getPlayerIdRespawningGarment(); // the player who gets to choose a new garment
+				if($currentPlayerId != $playerIdSpawningGarment)
+				{	// the player who clicked is not the same player who is up for replacing a garment
+						throw new BgaUserException( self::_("Only the player who picked up the garment can choose a new one to place.") );
+				}
+*/
+
+				$crewmemberId = $this->getGarmentIdFromType($garmentTypeString, $garmentColor);
+				$foundUnoccupiedCrashSite = $this->randomlyPlaceCrewmember($crewmemberId);
+
+
+				if($foundUnoccupiedCrashSite)
+				{ // there is at least 1 crash site unoccupied
+
+						// see which other end of saucer turn clean-up there is to do
+						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+
+
+
+
+						// set the garment chosen to location of chosen
+						//$garmentTypeAsString = $this->convertGarmentTypeIntToString($garmentType);
+
+
+
+/*
+						//$garmentTypeString = $this->convertGarmentTypeIntToString($garmentType);
+						// send notification that this garment was chosen
+						self::notifyAllPlayers( "replacementGarmentChosen", clienttranslate( 'A garment is being replaced.' ), array(
+								'garmentColor' => $garmentColor,
+								'garmentType' => $garmentTypeString
+						) );
+*/
+				}
+				else
+				{ // all crash sites are occupied
+
+						// they get to
+						$this->gamestate->nextState( "placeCrewmemberChooseSpace" );
+				}
+		}
+
+		function executeReplaceGarmentChooseSpace($xLocation, $yLocation)
+		{
+				self::checkAction( 'chooseCrewmemberPlacingSpace', false ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php) -- the false argument says don't check if we are the active player because we might be replacing a garment on another player's turn
+
+				$currentPlayerId = $this->getCurrentPlayerId(); // the player who clicked on a space during the choose garment replacement phase
+				$playerIdSpawningGarment = $this->getPlayerIdRespawningGarment(); // the player who gets to choose a new garment
+				if($currentPlayerId != $playerIdSpawningGarment)
+				{	// the player who clicked is not the same player who is up for replacing a garment
+						throw new BgaUserException( self::_("Only the player who picked up the Crewmember can choose where it can be placed.") );
+				}
+
+				if($this->isValidGarmentSpawnLocation($xLocation, $yLocation))
+				{ // this is a valid location
+
+						$garmentId = $this->getChosenGarmentId();  // get the garment ID
+
+						$this->moveGarmentToBoard($garmentId, $xLocation, $yLocation); // update the garment type and let players know
+
+						$this->gamestate->nextState( "endSaucerTurnCleanUp" ); // DETERMINE NEXT STATE
+				}
+				else
+				{ // NOT a valid location
+						throw new BgaUserException( self::_("That is not a valid space to place a Crewmember.") );
+				}
+		}
+
+
 
 		function getSaucerIsChosen($saucerColor)
 		{
@@ -7479,8 +7510,6 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								{ // there is a crewmember here
 
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
-										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
-										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
 
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock") &&
@@ -7675,8 +7704,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								if($garmentId != 0)
 								{ // there is a garment here
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
-										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
-										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
+
 
 //throw new feException( "pre-Airlock right");
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock") &&
@@ -7862,8 +7890,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								if($garmentId != 0)
 								{ // there is a garment here
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
-										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
-										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
+
 
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock") &&
@@ -8046,8 +8073,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								if($garmentId != 0)
 								{ // there is a garment here
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
-										//$ownerOfOstrichMoving = $this->getOwnerIdOfOstrich($ostrichMoving);
-										//$this->addToGarmentReplacementQueue($ownerOfOstrichMoving, $ostrichMoving);
+
 
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock") &&
@@ -11237,89 +11263,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 			) );
 		}
 
-		// A garment has been selected for spawning.
-		function executeReplaceGarmentChooseGarment($garmentTypeString, $garmentColor)
-		{
-				self::checkAction( 'chooseLostCrewmember', false ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php) -- the false argument says don't check if we are the active player because we might be replacing a garment on another player's turn
-
-				if($this->getGarmentLocation($this->convertGarmentTypeStringToInt($garmentTypeString), $garmentColor) != 'pile')
-				{ // hey... this isn't in the garment pile
-						throw new BgaUserException( self::_("You can only choose new garments to spawn from the garment pile.") );
-				}
-/*
-				$currentPlayerId = $this->getCurrentPlayerId(); // the player who clicked on a garment during the choose garment phase
-				$playerIdSpawningGarment = $this->getPlayerIdRespawningGarment(); // the player who gets to choose a new garment
-				if($currentPlayerId != $playerIdSpawningGarment)
-				{	// the player who clicked is not the same player who is up for replacing a garment
-						throw new BgaUserException( self::_("Only the player who picked up the garment can choose a new one to place.") );
-				}
-*/
-
-				$crewmemberId = $this->getGarmentIdFromType($garmentTypeString, $garmentColor);
-				$foundUnoccupiedCrashSite = $this->randomlyPlaceCrewmember($crewmemberId);
-
-
-				if($foundUnoccupiedCrashSite)
-				{ // there is at least 1 crash site unoccupied
-
-						// see which other end of saucer turn clean-up there is to do
-						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
-
-
-
-
-						// set the garment chosen to location of chosen
-						//$garmentTypeAsString = $this->convertGarmentTypeIntToString($garmentType);
-
-
-
-/*
-						//$garmentTypeString = $this->convertGarmentTypeIntToString($garmentType);
-						// send notification that this garment was chosen
-						self::notifyAllPlayers( "replacementGarmentChosen", clienttranslate( 'A garment is being replaced.' ), array(
-								'garmentColor' => $garmentColor,
-								'garmentType' => $garmentTypeString
-						) );
-*/
-				}
-				else
-				{ // all crash sites are occupied
-
-						// they get to
-						$this->gamestate->nextState( "placeCrewmemberChooseSpace" );
-				}
-		}
-
-		function executeReplaceGarmentChooseSpace($xLocation, $yLocation)
-		{
-				self::checkAction( 'chooseCrewmemberPlacingSpace', false ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php) -- the false argument says don't check if we are the active player because we might be replacing a garment on another player's turn
-
-				$currentPlayerId = $this->getCurrentPlayerId(); // the player who clicked on a space during the choose garment replacement phase
-				$playerIdSpawningGarment = $this->getPlayerIdRespawningGarment(); // the player who gets to choose a new garment
-				if($currentPlayerId != $playerIdSpawningGarment)
-				{	// the player who clicked is not the same player who is up for replacing a garment
-						throw new BgaUserException( self::_("Only the player who picked up the garment can choose where it can be placed.") );
-				}
-
-				if($this->isValidGarmentSpawnLocation($xLocation, $yLocation))
-				{ // this is a valid location
-
-						$garmentId = $this->getChosenGarmentId();  // get the garment ID
-
-						$this->moveGarmentToBoard($garmentId, $xLocation, $yLocation); // update the garment type and let players know
-
-						$playerRemoved = $this->popReplacementQueue(); // remove this from the garment replacement queue
-						//$queueCount = $this->countGarmentReplacementQueue();
-						//echo "array count after is $queueCount <br>";
-
-						$this->gamestate->nextState( "endSaucerTurnCleanUp" ); // DETERMINE NEXT STATE
-				}
-				else
-				{ // NOT a valid location
-						throw new BgaUserException( self::_("That is not a valid space to place a garment.") );
-				}
-		}
-
 		function isValidSpaceForUpgrade($xLocation, $yLocation, $saucerColor, $upgradeName)
 		{
 				$validSpaces = $this->getValidSpacesForUpgrade($saucerColor, $upgradeName);
@@ -11336,6 +11279,15 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				}
 
 				return false;
+		}
+
+		function argGetValidGarmentSpawnSpaces()
+		{
+				return array(
+						'validGarmentSpawnSpaces' => self::getValidGarmentSpawnSpaces(),
+						'playerIdRespawningGarment' => self::getPlayerIdRespawningGarment(),
+						'playerNameRespawningGarment' => self::getPlayerNameById(self::getPlayerIdRespawningGarment())
+				);
 		}
 
 		function executeChooseUpgradeSpace($xLocation, $yLocation)
@@ -13711,15 +13663,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 				return array(
 						'discardableGarments' => self::getDiscardableGarments()
-				);
-		}
-
-		function argGetValidGarmentSpawnSpaces()
-		{
-				return array(
-						'validGarmentSpawnSpaces' => self::getValidGarmentSpawnSpaces(),
-						'playerIdRespawningGarment' => self::getPlayerIdRespawningGarment(),
-						'playerNameRespawningGarment' => self::getPlayerNameById(self::getPlayerIdRespawningGarment())
 				);
 		}
 

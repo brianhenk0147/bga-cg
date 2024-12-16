@@ -135,13 +135,6 @@ CREATE TABLE IF NOT EXISTS `garment` (
   PRIMARY KEY (`garment_id`)
 ) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS `garmentReplacementQueue` (
-  `order_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `ostrich_color` varchar(16) NOT NULL,
-  `player` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`order_id`)
-) ENGINE=InnoDB;
-
 -- Example 2: add a custom field to the standard "player" table
  ALTER TABLE `player` ADD `player_turns_taken_this_round` INT UNSIGNED NOT NULL DEFAULT '0';
  ALTER TABLE `player` ADD `player_custom_turn_order` INT UNSIGNED NOT NULL DEFAULT '0';
