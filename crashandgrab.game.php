@@ -4142,17 +4142,17 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$tileSpaceValues = array(
 									array("B","1","B","S"),
 									array("B","B","3","B"),
-									array("S","B","B","B"),
-									array("2","B","B","B")
+									array("2","B","B","B"),
+									array("S","B","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","2","B"),
-									array("1","S","B","B"),
-									array("B","B","B","S"),
-									array("B","B","B","3")
+									array("S","2","B","B"),
+									array("B","B","1","B"),
+									array("B","B","B","3"),
+									array("B","B","B","S")
 								);
 							}
 						break;
@@ -4160,19 +4160,19 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("4","B","S","B"),
+									array("B","B","S","B"),
 									array("B","B","B","5"),
-									array("B","S","B","B"),
-									array("B","6","B","B")
+									array("4","S","B","B"),
+									array("B","B","6","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("4","B","B","B"),
-									array("S","B","B","B"),
-									array("B","B","5","B"),
-									array("B","6","B","S")
+									array("B","4","B","B"),
+									array("B","B","S","B"),
+									array("6","B","B","S"),
+									array("B","B","5","B")
 								);
 							}
 						break;
@@ -4180,18 +4180,18 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("S","B","B","B"),
-									array("B","S","B","7"),
+									array("B","7","B","B"),
 									array("B","B","9","B"),
-									array("8","B","B","B")
+									array("S","B","B","8"),
+									array("B","S","B","B")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("8","S","B","B"),
-									array("B","B","B","9"),
 									array("B","B","S","B"),
+									array("B","8","B","B"),
+									array("S","B","B","9"),
 									array("B","B","7","B")
 								);
 							}
@@ -4200,19 +4200,19 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							if($useSideA == 1)
 							{ // USE SIDE A
 								$tileSpaceValues = array(
-									array("B","B","10","B"),
-									array("B","B","B","S"),
-									array("S","11","B","B"),
-									array("B","B","B","12")
+									array("B","B","11","B"),
+									array("10","B","B","B"),
+									array("B","B","S","B"),
+									array("B","12","B","S")
 								);
 							}
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","10","B","B"),
-									array("B","B","S","B"),
-									array("B","S","B","12"),
-									array("B","B","11","B")
+									array("B","B","10","B"),
+									array("12","S","B","B"),
+									array("B","B","B","11"),
+									array("B","B","B","S")
 								);
 							}
 						break;
@@ -4298,8 +4298,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","B","B"),
-									array("B","S","B","B")
+									array("B","B","B","S"),
+									array("B","B","B","B")
 								);
 							}
 						break;
@@ -4314,8 +4314,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","B","B"),
-									array("B","B","B","S")
+									array("B","S","B","B"),
+									array("B","B","B","B")
 								);
 							}
 						break;
@@ -4330,8 +4330,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","S","B","B"),
-									array("B","B","B","B")
+									array("B","B","B","B"),
+									array("B","B","B","S")
 								);
 							}
 						break;
@@ -4346,8 +4346,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							else
 							{ // USE SIDE B
 								$tileSpaceValues = array(
-									array("B","B","B","S"),
-									array("B","B","B","B")
+									array("B","B","B","B"),
+									array("B","S","B","B")
 								);
 							}
 						break;
