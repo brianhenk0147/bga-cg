@@ -4147,6 +4147,11 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     y: 0,
                     color: saucer.color
                 } ) , turnOrderHolder );
+
+                // add hover overs to tell them what this is
+                var probeHtmlId = 'player_board_turn_order_indicator_'+saucer.color;
+                this.addTooltip(probeHtmlId, _('<b>Probe:</b> The player with the Probe takes the first turn in the round. You will not know which direction it will go from them until after moves are chosen.'), '');
+
             }
         },
 
@@ -4667,10 +4672,19 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
             this.energy_counters[color]=new ebg.counter();
             this.energy_counters[color].create('player_board_energy_count_value_'+color);
 
+            // add hover overs to tell them what energy is
+            var energyHolderHtmlId = 'player_board_energy_count_holder_'+color;
+            this.addTooltip(energyHolderHtmlId, _('<b>Energy:</b> Collect 2 Energy to get a Ship Upgrade.'), '');
+
 
             // create a booster counter on the player board for this saucer
             this.booster_counters[color]=new ebg.counter();
             this.booster_counters[color].create('player_board_booster_count_value_'+color);
+
+            // add hover overs to tell them what boosters are
+            var boosterHolderHtmlId = 'player_board_booster_count_holder_'+color;
+            this.addTooltip(boosterHolderHtmlId, _('<b>Boosters:</b> After your movement ends, you may use a Booster to go the distance you chose in any direction.'), '');
+
 
         },
 
