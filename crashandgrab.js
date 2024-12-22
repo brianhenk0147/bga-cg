@@ -3729,6 +3729,8 @@ console.log("comparing moveCardKey " + moveCardKey + " to moveCardSelected " + m
                                 { // this is the move card currently selected
 
                                     const directionKeys = Object.keys(playerSaucerMoves[playerKey][saucerKey][moveCardKey]);
+console.log("directionKeys:");
+console.log(directionKeys);
                                     for (const directionKey of directionKeys)
                                     { // go through each direction for this move card
 

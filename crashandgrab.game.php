@@ -407,7 +407,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 5),
 						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 1),
+						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 5),
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
@@ -1449,13 +1449,23 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						$result[$owner][$color] = array(); // every ostrich needs an array of values
 
+
 						$movesForSaucer = $this->getMovesForSaucer($color);
+						//$count = count($movesForSaucer);
+						//throw new feException( "movesForSaucer Count:$count" );
+
+						//foreach(array_keys($movesForSaucer) as $paramName)
+						//{
+						   //echo($paramName);
+						   //echo("<br>");
+						//}
+
 						foreach( $movesForSaucer as $cardType => $moveCard )
 						{ // go through each move card for this saucer
 
 								$directionsWithSpaces = $moveCard['directions'];
-								//$count = count($spacesForCard);
-								//throw new feException( "spacesForCard Count:$count" );
+								//$count = count($directionsWithSpaces);
+								//throw new feException( "directionsWithSpaces Count:$count" );
 
 								$result[$owner][$color][$cardType] = array(); // make an array for the list of spaces available using this card
 
@@ -1493,7 +1503,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				foreach( $availableMoveCards as $distanceType )
 				{ // 0, 1, 2
 						if($specificMoveCard == '' || $distanceType == $specificMoveCard)
-						{ // we are only looking for the moves for a specific distance (because this is for an Accelerator or Booster)
+						{ // we are only looking for all moves or this specific distance (because this is for an Accelerator or Booster)
+//throw new feException( "specificMoveCard:$specificMoveCard" );
 								$result[$distanceType] = array(); // this saucer, this card
 
 								$result[$distanceType]['directions'] = array(); // list of spaces for this saucer, this card
@@ -1501,13 +1512,14 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$saucerX = $this->getSaucerXLocation($color); // this saucer's starting column
 								$saucerY = $this->getSaucerYLocation($color); // this saucer's starting row
 
-								if($specificMoveCard == '')
-										$distanceType = 3; // go max distance
-
 								$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'sun'); // destinations for this saucer, this card, in the sun direction
 								$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
 								$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'meteor'); // destinations for this saucer, this card, in the meteor direction
 								$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'constellation'); // destinations for this saucer, this card, in the constellation direction
+
+								//$countSun = count($result[$distanceType]['directions']['sun']);
+								//throw new feException( "countSun:$countSun" );
+
 						}
 				}
 
@@ -6428,7 +6440,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		function resetXValueChoices()
 		{
-				$sql = "UPDATE ostrich SET ostrich_chosen_x_value=10" ;
+				$sql = "UPDATE ostrich SET ostrich_chosen_x_value=5" ;
 				self::DbQuery( $sql );
 		}
 
@@ -7305,7 +7317,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				while( $saucerRecord = mysql_fetch_assoc( $dbres ) )
 				{ // get our ostrich
 
-						if($saucerRecord['ostrich_chosen_x_value'] == 10)
+						if($saucerRecord['ostrich_chosen_x_value'] == 5)
 						{ // X has not been selected
 								return false;
 						}
