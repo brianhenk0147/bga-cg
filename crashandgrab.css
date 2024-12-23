@@ -2161,6 +2161,27 @@ width: 170px;
 
 }
 
+/***** OVERRIDE TOKEN *****/
+.override_token {
+    width: 30px;
+    height: 30px;
+
+    background-image: url('img/booster_30.png');
+
+    position: absolute;
+    display: inline-block;
+
+    top: 28px;
+    left: 28px;
+
+    z-index: 20;
+
+    filter: drop-shadow(1px 1px 1px #222);
+
+    /* make it white */
+    box-shadow: inset 0 0 0 99999px rgba(255, 255, 255, 0.5);
+}
+
 /***** BOOSTERS *****/
 #booster_pile {
     width: 110px;
@@ -2834,6 +2855,9 @@ margin-top: 6px;
     margin-left: 40px;
     width: 100px;
     height: 80px;
+
+    /* needed so override tokens can be positioned absolutely */
+    position: absolute;
 }
 
 /* FLOAT */

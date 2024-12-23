@@ -376,9 +376,10 @@ $machinestates = array(
 
     41 => array(
         "name" => "chooseTimeMachineDirection",
-        "description" => clienttranslate('${actplayer} is using their Time Machine.'),
-        "descriptionmyturn" => clienttranslate('${you} must choose a Direction for your move because of your Time Machine.'),
+        "description" => clienttranslate('${saucerColor} is choosing their direction.'),
+        "descriptionmyturn" => clienttranslate('${you} can choose any Direction for your move.'),
         "type" => "activeplayer",
+        'args' => 'argGetSaucerColor',
         "possibleactions" => array( "clickDirection" ),
         "transitions" => array( "checkForRevealDecisions" => 38  )
     ),

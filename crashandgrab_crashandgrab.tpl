@@ -1189,6 +1189,8 @@ var jstpl_energy='<div class="energy_cube" id="energy_${location}_${position}"><
 var jstpl_booster='<div class="booster_token" id="booster_${location}_${position}"></div>';
 var jstpl_boosterLabel = '<span id="saucer_mat_booster_count_value_${color}" class="saucer_mat_booster_count text_shadow">${qty}</span>';
 
+var jstpl_overrideToken='<div class="override_token" id="override_${saucerColor}"></div>';
+
 var jstpl_garment='<div class="${size} crewmember_${small}${garment_type}_${color}" id="crewmember_${garment_type}_${color}"></div>';
 var jstpl_garment_message_log='<div class="${size} crewmember_${small}${garment_type}_${color}" id="crewmember_message_${garment_type}_${color}"></div>';
 

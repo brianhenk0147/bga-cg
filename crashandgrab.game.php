@@ -264,7 +264,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
                                                        WHERE board_space_type IS NOT NULL" );
 
   			// get the ostrich positions
-				$result['ostrich'] = self::getObjectListFromDB( "SELECT ostrich_x x,ostrich_y y, ostrich_color color, ostrich_owner owner, ostrich_last_direction last_direction, ostrich_has_zag has_zag, ostrich_has_crown, booster_quantity, energy_quantity
+				$result['ostrich'] = self::getObjectListFromDB( "SELECT ostrich_x x,ostrich_y y, ostrich_color color, ostrich_owner owner, ostrich_last_direction last_direction, ostrich_has_zag has_zag, ostrich_has_crown, booster_quantity, energy_quantity, has_override_token
 				                                               FROM ostrich
 				                                               WHERE 1 ORDER BY ostrich_owner, ostrich_color" );
 
@@ -1000,6 +1000,54 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result['makeRed'] = false;
 
 				return $result;
+		}
+
+		function getSaucerGoingLast()
+		{
+				$saucerWithProbe = $this->getSaucerWithProbe();
+				$playerWithProbe = $this->getOwnerIdOfOstrich($saucerWithProbe);
+
+				$playerGoingLast = $this->getPlayerAfter($playerWithProbe);
+
+				$clockwise = $this->isTurnOrderClockwise(); // true or false
+				if($clockwise)
+				{
+						$playerGoingLast = $this->getPlayerBefore($playerWithProbe);
+				}
+
+				$saucersForPlayer = $this->getSaucersForPlayer($playerGoingLast);
+				foreach( $saucersForPlayer as $saucer )
+				{ // go through each saucer owned by this player
+
+						// they will only have 1 so just return the first one
+						return $saucer['ostrich_color'];
+				}
+		}
+
+		function getSaucerGoingSecondToLast()
+		{
+				$saucerWithProbe = $this->getSaucerWithProbe();
+				$playerWithProbe = $this->getOwnerIdOfOstrich($saucerWithProbe);
+
+				// go back 2
+				$playerGoingSecondToLast = $this->getPlayerAfter($playerWithProbe);
+				$playerGoingSecondToLast = $this->getPlayerAfter($playerGoingSecondToLast);
+
+				$clockwise = $this->isTurnOrderClockwise(); // true or false
+				if($clockwise)
+				{
+						// go back 2
+						$playerGoingSecondToLast = $this->getPlayerBefore($playerWithProbe);
+						$playerGoingSecondToLast = $this->getPlayerBefore($playerGoingSecondToLast);
+				}
+
+				$saucersForPlayer = $this->getSaucersForPlayer($playerGoingSecondToLast);
+				foreach( $saucersForPlayer as $saucer )
+				{ // go through each saucer owned by this player
+
+						// they will only have 1 so just return the first one
+						return $saucer['ostrich_color'];
+				}
 		}
 
 		function getSaucerToGoSecond()
@@ -2257,7 +2305,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						// Landing Legs
 						case 17:
-								return clienttranslate( 'At the end of your turn, move one space in any direction.');
+								return clienttranslate( 'At the end of your turn, move 1 space in any direction.');
 
 						// Quake Maker
 						case 18:
@@ -5289,6 +5337,27 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 				$sql = "UPDATE ostrich SET crash_penalty_rendered=1 WHERE ";
 				$sql .= "ostrich_color='".$crashedSaucerColor."'";
+				self::DbQuery( $sql );
+		}
+
+		function hasOverrideToken($saucerColor)
+		{
+				$overrideTokenValue = self::getUniqueValueFromDb("SELECT has_override_token FROM ostrich WHERE ostrich_color='$saucerColor'");
+
+				if($overrideTokenValue == 1 || $overrideTokenValue == '1')
+				{
+						return true;
+				}
+				else
+				{
+						return false;
+				}
+		}
+
+		function setHasOverrideToken($saucerColor, $value)
+		{
+				$sql = "UPDATE ostrich SET has_override_token=$value WHERE ";
+				$sql .= "ostrich_color='".$saucerColor."'";
 				self::DbQuery( $sql );
 		}
 
@@ -11523,6 +11592,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 								// set the turn order and go to playerTurnStart state
 								$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
+
+								// award override tokens
+								$this->giveOverrideTokens();
+
 								$this->gamestate->nextState( "playerTurnStart" ); // start the PLAYER turn (not the SAUCER turn)
 						}
 
@@ -11860,6 +11933,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$nameOfPlayerWhoseTurnItWas = $this->getPlayerNameFromPlayerId($playerWhoseTurnItWas);
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 				$highlightedSaucerColor = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+
+				// reset their override token setting in case they had one
+				$this->setHasOverrideToken($saucerWhoseTurnItIs, 0);
 
 //throw new feException( "incrementing stat for $playerWhoseTurnItWas" );
 
@@ -12797,10 +12873,31 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				else
 				{ // they did NOT play an X or has already chosen its value
 
-						if($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Time Machine") &&
-						$this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Time Machine") < 1 &&
-						$this->isUpgradePlayable($saucerWhoseTurnItIs, 'Time Machine'))
-						{ // saucer has Time Machine active and has not yet chosen its value
+						if($this->hasOverrideToken($saucerWhoseTurnItIs) ||
+							 ($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Time Machine") &&
+							 $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Time Machine") < 1 &&
+							 $this->isUpgradePlayable($saucerWhoseTurnItIs, 'Time Machine')))
+						{ // saucer has an override token or a Time Machine and has not yet chosen its value
+
+									$saucerHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+
+									if($this->hasOverrideToken($saucerWhoseTurnItIs))
+									{ // from Override Token
+
+											// notify players AND destroy the override token
+											self::notifyAllPlayers( "useOverrideToken", clienttranslate( '${saucer_color_highlighted} is using their Override Token.' ), array(
+													'saucer_color_highlighted' => $saucerHighlightedText
+											) );
+
+											// tell the game we've used it so we don't ask again
+											$this->setHasOverrideToken($saucerWhoseTurnItIs, 0);
+									}
+									else
+									{
+											self::notifyAllPlayers( "useTimeMachine", clienttranslate( '${saucer_color_highlighted} is using their Time Machine.' ), array(
+													'saucer_color_highlighted' => $saucerHighlightedText
+											) );
+									}
 
 									$this->gamestate->nextState( "chooseTimeMachineDirection" );
 						}
@@ -13048,6 +13145,42 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$this->updateTurnOrder(false); // hide the turn direction arrows
 */
 
+		}
+
+		function giveOverrideTokens()
+		{
+//			throw new feException( "giveOverrideTokens");
+				$numberOfPlayers = $this->getNumberOfPlayers();
+				$saucerWithProbe = $this->getSaucerWithProbe();
+				$playerWithProbe = $this->getOwnerIdOfOstrich($saucerWithProbe);
+
+				if($numberOfPlayers > 4)
+				{ // 5 or 6 player game
+
+						// give the last player in turn order
+						$saucerGoingLast = $this->getSaucerGoingLast();
+						$this->setHasOverrideToken($saucerGoingLast, 1);
+
+						$saucerGoingLastHighlightedText = $this->convertColorToHighlightedText($saucerGoingLast);
+						self::notifyAllPlayers( "giveOverrideToken", clienttranslate( '${saucer_color_highlighted} is going last so they will get to move in any direction.' ), array(
+								'saucer_color' => $saucerGoingLast,
+								'saucer_color_highlighted' => $saucerGoingLastHighlightedText
+						) );
+				}
+
+				if($numberOfPlayers > 5)
+				{ // 6-player game
+
+						// also give an override token to the player who is going second-to-last
+						$saucerGoingSecondToLast = $this->getSaucerGoingSecondToLast();
+						$this->setHasOverrideToken($saucerGoingSecondToLast, 1);
+
+						$saucerGoingSecondToLastHighlightedText = $this->convertColorToHighlightedText($saucerGoingSecondToLast);
+						self::notifyAllPlayers( "giveOverrideToken", clienttranslate( '${saucer_color_highlighted} is going second to last so they will get to move in any direction.' ), array(
+								'saucer_color' => $saucerGoingSecondToLast,
+								'saucer_color_highlighted' => $saucerGoingLastHighlightedText
+						) );
+				}
 		}
 
 		function moveTheProbe()

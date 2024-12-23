@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
   `spaces_moved` smallint(5) unsigned NOT NULL DEFAULT '0',
   `pushed_direction` varchar(16) NOT NULL DEFAULT '0',
   `pushed_distance` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `has_override_token` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`ostrich_color`)
 ) ENGINE=InnoDB;
 

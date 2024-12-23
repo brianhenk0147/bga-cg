@@ -233,6 +233,14 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 // create the stocks for the player boards where upgrade card thumbnails go
                 this.createPlayerBoardThumbnailStock(saucer.color);
+
+                // place an override token if this ostrich has it
+                if(saucer.has_override_token == 1 || saucer.has_override_token == '1')
+                { // they have an override token
+
+                    // put it on its movement card
+                    this.placeOverrideToken(saucer.color);
+                }
             }
 
 
@@ -2848,6 +2856,7 @@ console.log("return false");
 
         moveCrewmemberFromBoardToSaucerMatExtras: function(sourceSaucerColor, destinationSaucerColor, crewmemberColor, crewmemberType)
         {
+console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmemberType);
             var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType); // this is the unique id for the stock
             var crewmemberHtmlId = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
             if(sourceSaucerColor != 'board' && sourceSaucerColor != 'pile')
@@ -3825,6 +3834,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     var crewmemberColor = nextEvent['crewmember_color']; // ff0000
 
                     crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
+console.log('crewmemberPickupExtras crewmemberType:'+crewmemberType);
 /*
                     source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
@@ -3852,6 +3862,8 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     var crewmemberColor = nextEvent['crewmember_color']; // ff0000
 
                     crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
+
+                    console.log('crewmemberPickupMoveToExtras crewmemberType:'+crewmemberType);
 /*
                     source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
@@ -3868,7 +3880,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     // do not animate this
                     skipAnimation = true;
 
-                    this.moveCrewmemberFromBoardToSaucerMatExtras(saucerColor, crewmemberColor, crewmemberType);
+                    this.moveCrewmemberFromBoardToSaucerMatExtras(saucerColor, saucerColor, crewmemberColor, crewmemberType);
 
                     // add it to the stock on the player board
                     this.addCrewmemberToPlayerBoard(saucerColor, crewmemberColor, crewmemberType);
@@ -5218,6 +5230,17 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
         {
             // use gamedatas list of upgrades to pull the correct one based on the id
             return this.gamedatas.upgradeCardContent[collectorNumber]['effect'];
+        },
+
+        placeOverrideToken: function(saucerColor)
+        {
+            // html container where a move card goes
+            var moveCardContainerHtmlId = 'played_move_card_container_'+saucerColor;
+
+            // show the override token on the move card of the saucer who acquired it
+            dojo.place( this.format_block( 'jstpl_overrideToken', {
+                 saucerColor: saucerColor
+            } ) , moveCardContainerHtmlId);
         },
 
         placeBoard: function(numberOfPlayers)
@@ -6924,7 +6947,8 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'reshuffleUpgrades', this, "notif_reshuffleUpgrades");
             dojo.subscribe( 'moveCrewmemberToSaucerPrimary', this, "notif_moveCrewmemberToSaucerPrimary");
             dojo.subscribe( 'moveCrewmemberToSaucerExtras', this, "notif_moveCrewmemberToSaucerExtras");
-
+            dojo.subscribe( 'giveOverrideToken', this, "notif_giveOverrideToken");
+            dojo.subscribe( 'useOverrideToken', this, "notif_useOverrideToken");
 
 
         },
@@ -7257,6 +7281,29 @@ console.log("success... onClickUpgradeCardInHand");
                  qty: boosterPosition
             } ) , destination);
 */
+        },
+
+        notif_giveOverrideToken: function( notif )
+        {
+            console.log('notif_giveOverrideToken');
+            var saucerColor = notif.args.saucer_color;
+
+            this.placeOverrideToken(saucerColor);
+        },
+
+        notif_useOverrideToken: function( notif )
+        {
+            console.log('notif_useOverrideToken');
+            var saucerColor = notif.args.saucer_color;
+
+            var overrideTokenHtmlId = 'override_'+saucerColor;
+
+            console.log('trying to destroy:'+overrideTokenHtmlId);
+
+            if($(overrideTokenHtmlId))
+            {
+                dojo.destroy(overrideTokenHtmlId);
+            }
         },
 
         notif_moveCardChange: function( notif )
