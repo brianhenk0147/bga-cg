@@ -1481,6 +1481,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 break;
            */
+                  case 'endSaucerTurnCleanUp':
+                        // remove any LEFT, TOP, etc. for all saucers
+                        this.resetAllSaucerPositions();
+                  break;
                   case 'endRoundCleanup':
                   case 'playerTurnStart':
                   this.unhighlightAllSpaces();
@@ -5476,6 +5480,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             });
             animationId.play();
 
+            // remove any LEFT, TOP, etc. for all saucers
+            this.resetAllSaucerPositions();
+
             if(spaceType == "D")
             { // this ostrich fell off a cliff
 
@@ -6208,6 +6215,30 @@ console.log("success... onClickUpgradeCardInHand");
             }
 
             return cardsDiscarded;
+        },
+
+        resetAllSaucerPositions: function()
+        {
+            // There are times, like if you go 5 but bump a saucer after 4 spaces, that a saucer will appear to be
+            // on a different space than they are currently on. This seems to be because something like TOP is set to a
+            // value of some kind. So after movement is done animation, let's just reset all saucers.
+            for( var i in this.gamedatas.ostrich )
+            { // go through each saucer
+                var saucer = this.gamedatas.ostrich[i];
+                var htmlIdOfSaucer = 'saucer_'+saucer.color;
+
+                console.log('attempting to reset position of '+htmlIdOfSaucer);
+
+                // reset its position
+                if($(htmlIdOfSaucer))
+                { // this saucer exists
+                    console.log('resetting position of '+htmlIdOfSaucer);
+                    $(htmlIdOfSaucer).style.removeProperty('top'); // remove top property
+                    $(htmlIdOfSaucer).style.removeProperty('left'); // remove left property
+                    $(htmlIdOfSaucer).style.removeProperty('bottom'); // remove bottom property
+                    $(htmlIdOfSaucer).style.removeProperty('right'); // remove right property
+                }
+            }
         },
 
 
@@ -7968,6 +7999,8 @@ console.log("notif_cardChosen ()"+'move_card_back_'+saucerChoosing+') is being r
 
             // return cards to hand (mine) or destroy them (opponents)
             this.returnMoveCardToHandOfSaucer(saucerColor);
+
+            this.resetAllSaucerPositions();
         },
 
         notif_animateMovement: function(notif)
@@ -7976,25 +8009,6 @@ console.log("notif_cardChosen ()"+'move_card_back_'+saucerChoosing+') is being r
 
 
             this.animateEvents(eventStack);
-
-
-            // There are times, like if you go 5 but bump a saucer after 4 spaces, that a saucer will appear to be
-            // on a different space than they are currently on. This seems to be because something like TOP is set to a
-            // value of some kind. So after movement is done animation, let's just reset all saucers.
-            for( var i in this.gamedatas.ostrich )
-            { // go through each saucer
-                var saucerColor = this.gamedatas.ostrich[i];
-                var htmlIdOfSaucer = 'saucer_'+saucerColor;
-
-                // reset its position
-                if($(htmlIdOfSaucer))
-                { // this saucer exists
-                    $(htmlIdOfSaucer).style.removeProperty('top'); // remove top property
-                    $(htmlIdOfSaucer).style.removeProperty('left'); // remove left property
-                    $(htmlIdOfSaucer).style.removeProperty('bottom'); // remove bottom property
-                    $(htmlIdOfSaucer).style.removeProperty('right'); // remove right property
-                }
-            }
         },
 
         notif_counter: function(notif) {
