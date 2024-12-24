@@ -1338,12 +1338,20 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
 										{ // go through each space
 
+
+
 												$result[$owner][$color][$cardType][$direction] = array(); // we need an array for the spaces we get with this card type and direction
 
 												foreach( $directionWithSpaces as $space )
 												{ // go through each space
+
 														$column = $space['column'];
 														$row = $space['row'];
+
+														/*
+														echo("[$owner][$color][$cardType][$direction]:($row,$column)");
+														echo("<br>");
+														*/
 
 														$formattedSpace = $column.'_'.$row;
 
@@ -1499,15 +1507,20 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 
 						$movesForSaucer = $this->getMovesForSaucer($color);
+
+/*
+if($color == '0090ff')
+{
 						//$count = count($movesForSaucer);
 						//throw new feException( "movesForSaucer Count:$count" );
 
-						//foreach(array_keys($movesForSaucer) as $paramName)
-						//{
-						   //echo($paramName);
-						   //echo("<br>");
-						//}
-
+						foreach(array_keys($movesForSaucer) as $paramName)
+						{
+						   echo($paramName);
+						   echo("<br>");
+						}
+}
+*/
 						foreach( $movesForSaucer as $cardType => $moveCard )
 						{ // go through each move card for this saucer
 
@@ -1541,7 +1554,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		function getMovesForSaucer($color, $specificMoveCard='')
 		{
 				$result = array();
-
+				if($color == '0090ff')
+				{
+//throw new feException( "b92bba specificMoveCard:$specificMoveCard" );
+				}
 				$availableMoveCards = $this->getAvailableMoveCardsForSaucer($color);
 
 				//$availableMoveCardsCount = count($availableMoveCards);
@@ -1560,10 +1576,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$saucerX = $this->getSaucerXLocation($color); // this saucer's starting column
 								$saucerY = $this->getSaucerYLocation($color); // this saucer's starting row
 
-								$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'sun'); // destinations for this saucer, this card, in the sun direction
-								$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
-								$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'meteor'); // destinations for this saucer, this card, in the meteor direction
-								$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($saucerX, $saucerY, $distanceType, 'constellation'); // destinations for this saucer, this card, in the constellation direction
+								$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'sun'); // destinations for this saucer, this card, in the sun direction
+								$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
+								$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'meteor'); // destinations for this saucer, this card, in the meteor direction
+								$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'constellation'); // destinations for this saucer, this card, in the constellation direction
 
 								//$countSun = count($result[$distanceType]['directions']['sun']);
 								//throw new feException( "countSun:$countSun" );
@@ -1577,11 +1593,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				return $result;
 		}
 
-		function getMoveDestinationsInDirection($startColumn, $startRow, $distanceType, $direction)
+		function getMoveDestinationsInDirection($saucerColor, $startColumn, $startRow, $distanceType, $direction)
 		{
 				$result = array();
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-
+//throw new feException( "distanceType: $distanceType direction: $direction");
 				switch($distanceType)
 				{ // 0=X, 1=2, 2=3, 3=max
 						case 3: // max
@@ -1595,13 +1610,13 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$space['column'] = $column;
 								array_push($result, $space); // add this space to the list of move destinations
 
-								$maxDistance = $this->getSaucerXValue( $saucerWhoseTurnItIs ) + 1;
+								$maxDistance = $this->getSaucerXValue( $saucerColor ) + 1;
 								//throw new feException( "maxDistance: $maxDistance distanceType:$distanceType");
 								if($distanceType == 3)
 								{ // max distance
 										$maxDistance = 20;
 								}
-								elseif($this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Hyperdrive") > 0)
+								elseif($this->getUpgradeTimesActivatedThisRound($saucerColor, "Hyperdrive") > 0)
 								{ // this player activated hyperdrive this round
 										$maxDistance = $maxDistance * 2;
 								}
@@ -1639,7 +1654,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								if($distanceType == 2)
 										$offset = 3;
 
-								if($this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Hyperdrive") > 0)
+								if($this->getUpgradeTimesActivatedThisRound($saucerColor, "Hyperdrive") > 0)
 								{ // this player activated hyperdrive this round
 										$offset = $offset * 2;
 								}
@@ -1647,47 +1662,122 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								switch($direction)
 								{
 										case 'sun':
-										$row = $startRow - $offset;
-										if($row < 0)
-										{ // went off the board
-												$row = 0;
-										}
+												$row = $startRow - $offset; // default
+												for ($x = $startRow; $x <= ($startRow - $offset); $x--) {
+												  	$spaceType = $this->getBoardSpaceType($startColumn, $x);
+														if($spaceType == "S")
+														{ // found an accelerator
 
-										$column = $startColumn;
+																// stop at the accelerator
+																$row = $x;
+														}
+												}
+
+												$spaceTypeAfter = $this->getBoardSpaceType($startColumn, $row);
+												if($spaceTypeAfter != "S" && $row < 0)
+												{ // went off the board
+														$row = 0;
+												}
+
+												$column = $startColumn;
 
 										break;
 
 										case 'asteroids':
-										$row = $startRow;
 
-										$column = $startColumn + $offset;
-										$maxColumns = $this->getMaxColumns();
-										if($column > $maxColumns)
-										{
-												$column = $maxColumns;
-										}
+												$row = $startRow;
+
+												$column = $startColumn + $offset; // default
+												//throw new feException( "saucerColor:$saucerColor row:$row column:$column");
+												for ($y = $startColumn; $y >= ($startColumn + $offset); $y++) {
+														$spaceType = $this->getBoardSpaceType($y, $startRow);
+//if($saucerColor == 'b92bba' && $spaceType == 'S')
+/*
+if($saucerColor == '01b508')
+{
+echo("($startRow,$y):$spaceType");
+echo("<br>");
+}
+*/
+//if($spaceType == 'S')
+//{
+//throw new feException( "saucerColor:$saucerColor spaceType:$spaceType row:$row column:$column");
+//}
+														if($spaceType == "S")
+														{ // found an accelerator
+//throw new feException( "saucerColor:$saucerColor row:$row column:$column");
+																// stop at the accelerator
+																$column = $y;
+														}
+												}
+
+												$maxColumns = $this->getMaxColumns();
+												$spaceTypeAfter = $this->getBoardSpaceType($column, $startRow);
+												if($spaceTypeAfter != "S" && $column > $maxColumns)
+												{ // went off the board
+
+														$column = $maxColumns;
+												}
 										break;
 
 										case 'meteor':
-										$row = $startRow + $offset;
-
-										$maxRows = $this->getMaxRows();
-										if($row > $maxRows)
+										if($saucerColor == 'f6033b')
 										{
-												$row = $maxRows;
+											//throw new feException( "saucerColor:$saucerColor startRow:$startRow startColumn:$startColumn offset:$offset");
 										}
+												$row = $startRow + $offset;
+												$limit = $startRow + $offset;
+												for ($x = $startRow; $x >= 7; $x++) {
+														$spaceType = $this->getBoardSpaceType($startColumn, $x);
+														//if($saucerColor == 'f6033b')
+														//{
+														//throw new feException( "saucerColor:$saucerColor x:$x startColumn:$startColumn spaceType:$spaceType");
+														//}
+														//if($saucerColor == 'f6033b')
+														//{
+														//echo("($startColumn,$x):$spaceType");
+														//echo("<br>");
+														//}
 
-										$column = $startColumn;
+														if($spaceType == "S")
+														{ // found an accelerator
+
+																// stop at the accelerator
+																$row = $x;
+														}
+												}
+
+												$maxRows = $this->getMaxRows();
+												$spaceTypeAfter = $this->getBoardSpaceType($startColumn, $row);
+												if($spaceTypeAfter != "S" && $row > $maxRows)
+												{ // went off the board
+
+														$row = $maxRows;
+												}
+
+												$column = $startColumn;
 										break;
 
 										case 'constellation':
-										$row = $startRow;
+												$row = $startRow;
 
-										$column = $startColumn - $offset;
-										if($column < 0)
-										{ // went off the board
-												$column = 0;
-										}
+												$column = $startColumn - $offset;
+												for ($y = $startColumn; $y <= ($startColumn - $offset); $y--) {
+														$spaceType = $this->getBoardSpaceType($y, $startRow);
+														if($spaceType == "S")
+														{ // found an accelerator
+
+																// stop at the accelerator
+																$column = $y;
+														}
+												}
+
+												$spaceTypeAfter = $this->getBoardSpaceType($column, $startRow);
+												if($spaceTypeAfter != "S" && $column < 0)
+												{ // went off the board
+
+														$column = 0;
+												}
 										break;
 
 										default:
@@ -4745,7 +4835,11 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 						$spaceType = $this->getBoardSpaceType($x, $y);
 						//throw new feException( "x:$x y:$y");
-
+						//if($startingY == 9)
+						//{
+						//echo("($x,$y):$spaceType");
+						//echo("<br>");
+						//}
 						array_push($result, $spaceArray); // add this space to the list of move destinations
 						if($spaceType == "S" || $spaceType == "D")
 						{ // accelerator or off the board
