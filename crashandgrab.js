@@ -5844,6 +5844,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         sendXValue: function(value)
         {
+            console.log('sendXValue:'+value);
             this.ajaxcall( "/crashandgrab/crashandgrab/actSelectXValue.html", { xValue: value, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },

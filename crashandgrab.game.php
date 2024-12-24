@@ -6603,7 +6603,7 @@ echo("<br>");
 
 		function resetXValueChoices()
 		{
-				$sql = "UPDATE ostrich SET ostrich_chosen_x_value=5" ;
+				$sql = "UPDATE ostrich SET ostrich_chosen_x_value=6" ;
 				self::DbQuery( $sql );
 		}
 
@@ -7480,7 +7480,7 @@ echo("<br>");
 				while( $saucerRecord = mysql_fetch_assoc( $dbres ) )
 				{ // get our ostrich
 
-						if($saucerRecord['ostrich_chosen_x_value'] == 5)
+						if($saucerRecord['ostrich_chosen_x_value'] == 6)
 						{ // X has not been selected
 								return false;
 						}
@@ -12960,6 +12960,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				if($distanceType == 0 && !$this->hasSaucerChosenX($saucerWhoseTurnItIs))
 				{ // saucer played an X and has not yet chosen its value
+
+						//throw new feException( "distanceType:$distanceType saucerWhoseTurnItIs:$saucerWhoseTurnItIs");
 
 						// ask them to choose distance 0-5
 						$this->gamestate->nextState( "chooseDistanceDuringMoveReveal" );
