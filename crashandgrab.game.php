@@ -1336,7 +1336,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 										$result[$owner][$color][$cardType] = array(); // make an array for the list of spaces available using this card
 
 										foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
-										{ // go through each space
+										{ // go through each direction
 
 
 
@@ -1348,10 +1348,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 														$column = $space['column'];
 														$row = $space['row'];
 
-														/*
-														echo("[$owner][$color][$cardType][$direction]:($row,$column)");
-														echo("<br>");
-														*/
+														
+														//echo("[$owner][$color][$cardType][$direction]:($row,$column)");
+														//echo("<br>");
+														
 
 														$formattedSpace = $column.'_'.$row;
 
@@ -1663,7 +1663,8 @@ if($color == '0090ff')
 								{
 										case 'sun':
 												$row = $startRow - $offset; // default
-												for ($x = $startRow; $x <= ($startRow - $offset); $x--) {
+												for ($x = ($startRow - 1); $x >= ($startRow - $offset); $x--) 
+												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
 												  	$spaceType = $this->getBoardSpaceType($startColumn, $x);
 														if($spaceType == "S")
 														{ // found an accelerator
@@ -1689,7 +1690,8 @@ if($color == '0090ff')
 
 												$column = $startColumn + $offset; // default
 												//throw new feException( "saucerColor:$saucerColor row:$row column:$column");
-												for ($y = $startColumn; $y >= ($startColumn + $offset); $y++) {
+												for ($y = ($startColumn + 1); $y <= ($startColumn + $offset); $y++) 
+												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
 														$spaceType = $this->getBoardSpaceType($y, $startRow);
 //if($saucerColor == 'b92bba' && $spaceType == 'S')
 /*
@@ -1726,8 +1728,8 @@ echo("<br>");
 											//throw new feException( "saucerColor:$saucerColor startRow:$startRow startColumn:$startColumn offset:$offset");
 										}
 												$row = $startRow + $offset;
-												$limit = $startRow + $offset;
-												for ($x = $startRow; $x >= 7; $x++) {
+												for ($x = ($startRow + 1); $x <= ($startRow + $offset); $x++) 
+												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
 														$spaceType = $this->getBoardSpaceType($startColumn, $x);
 														//if($saucerColor == 'f6033b')
 														//{
@@ -1762,8 +1764,16 @@ echo("<br>");
 												$row = $startRow;
 
 												$column = $startColumn - $offset;
-												for ($y = $startColumn; $y <= ($startColumn - $offset); $y--) {
-														$spaceType = $this->getBoardSpaceType($y, $startRow);
+												//throw new feException( "saucerColor:$saucerColor row:$row column:$column startColumn:$startColumn offset:$offset");
+												for ($y = ($startColumn - 1); $y >= ($startColumn - $offset); $y--) 
+												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
+													//throw new feException( "y:$y");
+													$spaceType = $this->getBoardSpaceType($y, $startRow);
+													
+													//echo("($y,$startRow):$spaceType");
+													//echo("<br>");
+														
+														
 														if($spaceType == "S")
 														{ // found an accelerator
 
@@ -9766,6 +9776,9 @@ echo("<br>");
 				$this->setState_AfterMovementEvents($saucerWhoseTurnItIs, $moveType); // set to true because we're already passed the boosting if we're taking so that is safest
 		}
 
+		// Coming from using either: 
+		//    Regeneration Gateway: When your Saucer is placed, you choose the Crash Site.
+		//    Saucer Teleporter: At the end of your turn, if you have not crashed, move to any empty Crash Site.
 		function executeChooseCrashSite( $crashSiteNumber )
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -9778,11 +9791,17 @@ echo("<br>");
 
 				$currentState = $this->getStateName();
 				if($currentState == 'chooseCrashSiteSaucerTeleporter')
-				{
+				{ // we are choosing a Crash Site from Saucer Teleporter
 						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
 				elseif($currentState == 'chooseCrashSiteRegenerationGateway')
-				{
+				{ // we are choosing a Crash Site from Regeneration Gateway
+					
+					$stateUsedIn = $this->getUpgradeValue5($saucerWhoseTurnItIs, "Regeneration Gateway");
+
+					if($stateUsedIn == "BEFORE_TURN")
+					{ // this is being used before the player's turn
+
 						if($this->getSaucersPerPlayer() == 1)
 						{ // players are only controlling a single saucer
 		//throw new feException( "1 saucer per player." );
@@ -9803,6 +9822,13 @@ echo("<br>");
 										$this->gamestate->nextState( "saucerTurnStart" ); // their saucer can just go
 								}
 						}
+					}
+					else
+					{ // this is being used at the end of the round
+
+						// continue the end round clean-up
+						$this->gamestate->nextState( "endRoundCleanUp");
+					}
 				}
 
 		}
@@ -12784,6 +12810,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						$this->isUpgradePlayable($saucerWhoseTurnItIs, 'Regeneration Gateway'))
 						{ // Regeneration Gateway active for player
 
+								// save the state this was played in
+								$cardId = $this->getUpgradeCardId($saucerWhoseTurnItIs, "Regeneration Gateway");
+								$this->setUpgradeValue5($cardId, "BEFORE_TURN");
+
 								$this->gamestate->nextState( "chooseCrashSiteRegenerationGateway" );
 						}
 						else
@@ -13144,7 +13174,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						$this->isUpgradePlayable($crashedSaucer, 'Regeneration Gateway'))
 						{ // Regeneration Gateway active for player
 
-								$this->gamestate->nextState( "chooseCrashSiteRegenerationGateway" );
+							// save which state this was used in
+							$cardId = $this->getUpgradeCardId($crashedSaucer, "Regeneration Gateway");
+							$this->setUpgradeValue5($cardId, "AFTER_ROUND");
+
+							$this->gamestate->nextState( "chooseCrashSiteRegenerationGateway" );
 						}
 						else
 						{ // player does NOT have Regeneration Gateway active

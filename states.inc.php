@@ -371,7 +371,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
         "possibleactions" => array( "clickCrashSite" ),
-        "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50  )
+        "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50, "endRoundCleanUp" => 5  )
     ),
 
     41 => array(

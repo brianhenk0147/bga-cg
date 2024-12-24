@@ -7976,6 +7976,25 @@ console.log("notif_cardChosen ()"+'move_card_back_'+saucerChoosing+') is being r
 
 
             this.animateEvents(eventStack);
+
+
+            // There are times, like if you go 5 but bump a saucer after 4 spaces, that a saucer will appear to be
+            // on a different space than they are currently on. This seems to be because something like TOP is set to a
+            // value of some kind. So after movement is done animation, let's just reset all saucers.
+            for( var i in this.gamedatas.ostrich )
+            { // go through each saucer
+                var saucerColor = this.gamedatas.ostrich[i];
+                var htmlIdOfSaucer = 'saucer_'+saucerColor;
+
+                // reset its position
+                if($(htmlIdOfSaucer))
+                { // this saucer exists
+                    $(htmlIdOfSaucer).style.removeProperty('top'); // remove top property
+                    $(htmlIdOfSaucer).style.removeProperty('left'); // remove left property
+                    $(htmlIdOfSaucer).style.removeProperty('bottom'); // remove bottom property
+                    $(htmlIdOfSaucer).style.removeProperty('right'); // remove right property
+                }
+            }
         },
 
         notif_counter: function(notif) {
