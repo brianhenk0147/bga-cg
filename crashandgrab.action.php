@@ -416,6 +416,16 @@
         self::ajaxResponse( );
     }
 
+    public function actClickedUndoConfirmMove()
+    {
+        self::setAjaxMode();
+        $saucer1Color = self::getArg( "saucer1Color", AT_alphanum, true ); // ff0000, 0000ff, etc.
+        $saucer2Color = self::getArg( "saucer2Color", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeClickedUndoConfirmMove($saucer1Color, $saucer2Color);
+        self::ajaxResponse( );
+    }
+
     public function actClickedConfirmMove()
     {
         self::setAjaxMode();

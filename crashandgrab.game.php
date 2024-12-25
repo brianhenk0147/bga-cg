@@ -1215,9 +1215,35 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		}
 
+		function notifyPlayersOfUndoCardSelection($cardOwnerId, $saucerColor)
+		{
+				$otherPlayers = $this->getAllPlayersExcept($cardOwnerId);
+
+				foreach( $otherPlayers as $player )
+				{ // go through each saucer
+
+						$playerId = $player['player_id'];
+
+						self::notifyPlayer( $playerId, 'cardUnchosen', '', array(
+							'saucer_choosing' => $saucerColor
+						 ) );
+
+				}
+
+		}
+
 		function getCardChosenState($cardId)
 		{
 				return self::getUniqueValueFromDb("SELECT card_chosen_state FROM movementCards WHERE card_id=$cardId");
+		}
+
+		function unchooseCardsForSaucer($saucerColor)
+		{
+			$sqlUpdate = "UPDATE movementCards SET ";
+			$sqlUpdate .= "card_chosen_state='unchosen' ";
+			$sqlUpdate .= "WHERE card_location='$saucerColor'";
+
+			self::DbQuery( $sqlUpdate );
 		}
 
 		function setCardChosenState($saucer1CardId, $newValue)
@@ -10275,11 +10301,40 @@ echo("<br>");
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
+		function executeClickedUndoConfirmMove( $saucer1Color, $saucer2Color )
+    	{
+				// Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
+        		self::checkAction( 'undoConfirmMove', false );
+//throw new feException( "Clicked confirm move saucer1Distance=$saucer1Distance and saucer1Direction=$saucer1Direction.");
+				$playerUndoing = $this->getOwnerIdOfOstrich($saucer1Color);
+
+				// update the database so we know this card is unchosen
+				$this->unchooseCardsForSaucer($saucer1Color);
+
+				// tell everyone this is chosen so the card back can be placed on this saucer mat
+				$this->notifyPlayersOfUndoCardSelection($playerUndoing, $saucer1Color);
+
+				if($saucer2Color != '')
+				{ // we have a second saucer
+
+						// update the database so we know this card is unchosen
+						$this->unchooseCardsForSaucer($saucer2Color);
+
+						// tell everyone this is chosen so the card back can be placed on this saucer mat
+						$this->notifyPlayersOfUndoCardSelection($playerUndoing, $saucer2Color);
+				}
+
+				// set this player back to active in the multiactive state
+				$players = array();
+				array_push($players, $playerUndoing);
+				$this->gamestate->setPlayersMultiactive( $players, '', false);
+		}
+
 		// A player selected their move card(s) and clicked Confirm.
 		function executeClickedConfirmMove( $saucer1Color, $saucer1Distance, $saucer1Direction, $saucer2Color, $saucer2Distance, $saucer2Direction )
-    {
+    	{
 				// Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
-        self::checkAction( 'confirmMove' );
+        		self::checkAction( 'confirmMove' );
 //throw new feException( "Clicked confirm move saucer1Distance=$saucer1Distance and saucer1Direction=$saucer1Direction.");
 
 				!$this->isValidMove($saucer1Color, $saucer1Distance, $saucer1Direction, $saucer2Color, $saucer2Distance, $saucer2Direction, true); // validate the move in different ways and throw an error if any failures
@@ -10321,9 +10376,9 @@ echo("<br>");
 		}
 
 		function executeClickedMoveCard( $distance, $color )
-    {
+    	{
 				// Check that this is the player's turn and that it is a "possible action" at this game state (see states.inc.php)
-        self::checkAction( 'clickDistance' );
+        		self::checkAction( 'clickDistance' );
 
 				if(is_null($distance))
 				{
