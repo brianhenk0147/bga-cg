@@ -405,9 +405,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				$cardsList = array(
 						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 5),
+						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 5),
+						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
@@ -416,7 +416,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						array( 'type' => 'Scavenger Bot', 'type_arg' => 10, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Distress Signaler', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 5),
+						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
 						//array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
@@ -10096,7 +10096,7 @@ echo("<br>");
 				$saucerReceiving = $this->getOstrichWhoseTurnItIs();
 				$saucerReceivingHighlightedText = $this->convertColorToHighlightedText($saucerReceiving);
 				$saucerGiving = $this->getSaucerThatCrashed();
-				$saucerGivingHighlightedText = $this->convertColorToHighlightedText($saucerGiving);
+				
 //throw new feException( "saucerReceiving:$saucerReceiving");
 				if($areWePassing)
 				{ // we are passing a crewmember from one of our saucers to the other one
@@ -10109,6 +10109,7 @@ echo("<br>");
 						$saucerGiving = $this->getPlayersOtherSaucer($saucerReceiving);
 				}
 
+				$saucerGivingHighlightedText = $this->convertColorToHighlightedText($saucerGiving);
 				self::notifyAllPlayers( "stealing", clienttranslate( '${saucerReceivingHighlightedText} is taking a Crewmember from ${saucerGivingHighlightedText}.' ), array(
 					'saucerGivingHighlightedText' => $saucerGivingHighlightedText,
 					'saucerReceivingHighlightedText' => $saucerReceivingHighlightedText
