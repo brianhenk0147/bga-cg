@@ -908,13 +908,13 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                         console.log( "We are not the current active player." );
                         return;
                     }
-
+/*
                     if(this.MOVE_CARD_SELECTED == htmlIdOfCard)
                     {
                         console.log( "This move card is already selected." );
                         return;
                     }
-
+*/
                     if( !this.checkPossibleActions('clickDistance') )
                     { // we are not allowed to select cards based on our current state
                         console.log( "The current state does not allow this card to be clicked." );
@@ -3423,8 +3423,11 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
         {
             console.log('selectSpecificDirection directionAsHtmlId:'+directionAsHtmlId);
             this.unselectAllDirections();
-            dojo.removeClass( directionAsHtmlId, 'directionHighlighted' ); // unhighlight it
-            dojo.addClass( directionAsHtmlId, 'directionSelected' ); // select it
+            if($(directionAsHtmlId))
+            {
+                dojo.removeClass( directionAsHtmlId, 'directionHighlighted' ); // unhighlight it
+                dojo.addClass( directionAsHtmlId, 'directionSelected' ); // select it
+            }
         },
 
         unselectAllDirections: function()
