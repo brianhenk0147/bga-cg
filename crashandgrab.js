@@ -1916,7 +1916,7 @@ this.unhighlightAllGarments();
                       if ( this.isCurrentPlayerActive() )
                       { // we are the active player
 
-                          this.addRotationalStabilizerSaucerButtons(args.saucerButtons);
+                          this.addRotationalStabilizerSaucerButtons(args.saucerOrder);
                       }
 
                   break;
@@ -2636,6 +2636,7 @@ this.unhighlightAllGarments();
 
                   case 'chooseDistanceDuringMoveReveal':
                       console.log( "onUpdateActionButtons for chooseDistanceDuringMoveReveal" );
+                      console.log(args.playerSaucerMoves);
 
                       if( this.isCurrentPlayerActive() )
                       { // this is the active player so we need to execute their move
@@ -4257,7 +4258,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 // add hover overs to tell them what this is
                 var probeHtmlId = 'player_board_turn_order_indicator_'+saucer.color;
-                this.addTooltip(probeHtmlId, _('<b>Probe:</b> The player with the Probe takes the first turn in the round. You will not know which direction it will go from them until after moves are chosen.'), '');
+                this.addTooltip(probeHtmlId, _('<b>Probe:</b> The player with the Probe takes the first turn in the round. You will not know which direction it will go from them until after moves are chosen.<BR/><BR/> The player with the least seated Crewmembers gets the Probe each round with the tie-breaker being who went later in turn order the previous round.'), '');
 
             }
         },
@@ -5878,26 +5879,34 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         addRotationalStabilizerSaucerButtons: function(saucerButtonList)
         {
-            console.log("go first saucers:");
+            console.log("turn orders:");
             console.log(saucerButtonList);
 
+
             // CLOCKWISE
-            var color = saucerButtonList['clockwise']['saucerColor'];
-            var buttonLabel = saucerButtonList['clockwise']['buttonLabel'];
-            var isDisabled = saucerButtonList['clockwise']['isDisabled'];
-            var hoverOverText = saucerButtonList['clockwise']['hoverOverText']; // hover over text or '' if we don't want a hover over
-            var actionName = saucerButtonList['clockwise']['actionName']; // selectSaucerToGoFirst
-            var makeRed = saucerButtonList['clockwise']['makeRed'];
-            this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_clockwise', null, null, 'gray');
+            var saucerHtml = '<div>';
+            saucerButtonList['clockwise'].forEach((saucer) => {
+                if(saucerHtml != '<div>')
+                { // it's not the first one
+                    saucerHtml += '<div class="saucer_in_button_list">-></div>'; // add an arrow to the front
+                }
+                saucerHtml += '<div class="saucer saucer_button saucer_color_'+saucer+' saucer_in_button_list"></div>'
+              });
+            saucerHtml += '</div>';
+            this.addActionButton( 'saucer_button_clockwise', saucerHtml, 'onClick_clockwise', null, null, 'gray');
 
             // COUNTER-CLOCKWISE
-            color = saucerButtonList['counterclockwise']['saucerColor'];
-            buttonLabel = saucerButtonList['counterclockwise']['buttonLabel'];
-            isDisabled = saucerButtonList['counterclockwise']['isDisabled'];
-            hoverOverText = saucerButtonList['counterclockwise']['hoverOverText']; // hover over text or '' if we don't want a hover over
-            actionName = saucerButtonList['counterclockwise']['actionName']; // selectSaucerToGoFirst
-            makeRed = saucerButtonList['counterclockwise']['makeRed'];
-            this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_counter', null, null, 'gray');
+            var saucerHtml = '<div>';
+            saucerButtonList['counterClockwise'].forEach((saucer) => {
+                if(saucerHtml != '<div>')
+                { // it's not the first one
+                    saucerHtml += '<div class="saucer_in_button_list">-></div>'; // add an arrow to the front
+                }
+
+                saucerHtml += '<div class="saucer saucer_button saucer_color_'+saucer+' saucer_in_button_list"></div>'
+              });
+            saucerHtml += '</div>';
+            this.addActionButton( 'saucer_button_counterClockwise', saucerHtml, 'onClick_counter', null, null, 'gray');
 
           //this.addActionButton( 'clockwise_button', '<div class="player_board_arrow" style="background-position-x:0px"></div>', 'onClick_clockwise', null, null, 'gray');
 

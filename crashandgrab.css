@@ -1114,6 +1114,12 @@ float: left;
     border-radius: 100%;
 }
 
+.saucer_in_button_list
+{
+  display: table-cell;
+  vertical-align: middle;
+}
+
 .clockwise
 {
   width: 30px;
@@ -2570,8 +2576,8 @@ margin-top: 6px;
     width: 47px;
     height: 47px;
 
-    margin-left: 1px;
-    margin-top: 5px;
+    margin-left: 5px;
+    margin-top: 6px;
 }
 
 .engineer_container

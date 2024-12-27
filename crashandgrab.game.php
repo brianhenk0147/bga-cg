@@ -530,7 +530,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								if($saucerColor == '')
 								{ // this is their first Saucer
 										$saucerColor = $saucer['ostrich_color'];
-										$this->giveProbe($saucerColor); // saucer of player going first gets the Probe
+										$this->giveProbe($saucerColor, "Starting"); // saucer of player going first gets the Probe
 
 										$this->gamestate->changeActivePlayer( $playerIdGoingFirst ); // make probe owner go first in turn order
 								}
@@ -567,7 +567,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 								$saucerColor = $saucer['ostrich_color'];
 
 								//$this->locatePilot($saucerColor); // locate this Saucer's Pilot Crewmember = $saucer['ostrich_color'];
-								$this->giveProbe($saucerColor); // saucer of player going first gets the Probe
+								$this->giveProbe($saucerColor, "Starting"); // saucer of player going first gets the Probe
 
 								$this->gamestate->changeActivePlayer( $playerIdGoingFirst ); // make probe owner go first in turn order
 						}
@@ -1048,6 +1048,56 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						// they will only have 1 so just return the first one
 						return $saucer['ostrich_color'];
 				}
+		}
+
+		// get a list of what the turn order would be if it were Clockwise versus Counterclockwise.
+		function getClockwiseCounterTurnOrders()
+		{
+			$orderOptions = array();
+
+			$saucerWithProbe = $this->getSaucerWithProbe();
+			$playerWithProbe = $this->getOwnerIdOfOstrich($saucerWithProbe);
+
+			$orderOptions['clockwise'] = array();
+			$orderOptions['counterClockwise'] = array();
+
+			// CLOCKWISE
+			array_push($orderOptions['clockwise'], $saucerWithProbe);
+			$playerCount = 1;
+			$max = 10;
+			$currentPlayer = $this->getPlayerAfter($playerWithProbe);
+			while ($currentPlayer != $playerWithProbe && $playerCount < $max) {
+
+				$saucersForPlayer = $this->getSaucersForPlayer($currentPlayer);
+				foreach( $saucersForPlayer as $saucer )
+				{ // go through each saucer owned by this player (should just be 1)
+					
+						$color = $saucer['ostrich_color']; // get the color this player was assigned
+						array_push($orderOptions['clockwise'], $color);
+				}
+
+				$currentPlayer = $this->getPlayerAfter($currentPlayer);
+				$playerCount += 1;
+			}
+
+			// COUNTER-CLOCKWISE
+			array_push($orderOptions['counterClockwise'], $saucerWithProbe);
+			$currentPlayer = $this->getPlayerBefore($playerWithProbe);
+			while ($currentPlayer != $playerWithProbe && $playerCount < $max) {
+
+				$saucersForPlayer = $this->getSaucersForPlayer($currentPlayer);
+				foreach( $saucersForPlayer as $saucer )
+				{ // go through each saucer owned by this player (should just be 1)
+					
+						$color = $saucer['ostrich_color']; // get the color this player was assigned
+						array_push($orderOptions['counterClockwise'], $color);
+				}
+
+				$currentPlayer = $this->getPlayerBefore($currentPlayer);
+				$playerCount += 1;
+			}
+
+			return $orderOptions;
 		}
 
 		function getSaucerToGoSecond()
@@ -1637,7 +1687,14 @@ if($color == '0090ff')
 								array_push($result, $space); // add this space to the list of move destinations
 
 								$maxDistance = $this->getSaucerXValue( $saucerColor ) + 1;
+								
+
+								if($maxDistance == 12)
+								{ // we haven't chosen X yet
+									$maxDistance = 6; // 5 distance max plus your starting space
+								}
 								//throw new feException( "maxDistance: $maxDistance distanceType:$distanceType");
+
 								if($distanceType == 3)
 								{ // max distance
 										$maxDistance = 20;
@@ -3105,8 +3162,8 @@ echo("<br>");
 				$saucerColorFriendlyCrashed = $this->convertColorToHighlightedText($crashedSaucer);
 				$saucerColorFriendlyStealer = $this->convertColorToHighlightedText($stealerSaucer);
 
-				$totalCrewmembersOfStealer = $this->getTotalCrewmembersForSaucer($stealerSaucer);
-				$totalCrewmembersOfCrashed = $this->getTotalCrewmembersForSaucer($crashedSaucer);
+				$totalCrewmembersOfStealer = $this->getSeatedCrewmembersForSaucer($stealerSaucer);
+				$totalCrewmembersOfCrashed = $this->getSeatedCrewmembersForSaucer($crashedSaucer);
 				if($totalCrewmembersOfStealer > $totalCrewmembersOfCrashed)
 				{ // stealer has more Crewmembers than the crashed saucer
 						// notify all players that stealer may not steal from crashed because they have more crewmembers
@@ -6273,6 +6330,15 @@ echo("<br>");
 				return self::getUniqueValueFromDb("SELECT COUNT(garment_id) FROM garment WHERE garment_location='$saucerColor'");
 		}
 
+		function getSeatedCrewmembersForSaucer($saucerColor)
+		{
+				$distinctCrewmemberTypes = self::getObjectListFromDB("SELECT DISTINCT(garment_type) FROM garment WHERE garment_location='$saucerColor'");
+
+				$count = count($distinctCrewmemberTypes);
+
+				return $count;
+		}
+
 		function getUpgradesInDeck()
 		{
 				return self::getObjectListFromDB("SELECT * FROM upgradeCards WHERE card_location='deck'");
@@ -8550,7 +8616,7 @@ echo("<br>");
 				$this->moveCrewmemberToBoard($crewmemberId, $locX, $locY);
 		}
 
-		function giveProbe($newSaucerGettingProbe)
+		function giveProbe($newSaucerGettingProbe, $reason)
 		{
 				$currentSaucerWithProbe = $this->getSaucerWithProbe();
 
@@ -8561,17 +8627,21 @@ echo("<br>");
 				// get the colored version and friendly name of the hex color
 				$saucerColorFriendly = $this->convertColorToHighlightedText($newSaucerGettingProbe);
 
-				if($newSaucerGettingProbe == $currentSaucerWithProbe)
-				{ // the same saucer gets the probe twice in a row
-						self::notifyAllPlayers( "saucerGivenProbe", clienttranslate( '${ostrichName} already has the Probe.' ), array(
-								'ostrichName' => $saucerColorFriendly,
-								'player_name' => $playerName,
-								'color' => $newSaucerGettingProbe,
-								'owner' => $ownerOfNewSaucerWithProbe
-						) );
-				}
-				else
+				$message = clienttranslate( '${ostrichName} gets the Probe and will go first this round!' ); // default
+				switch($reason)
 				{
+					case "Starting":
+						$message = clienttranslate( '${ostrichName} has been randomly chosen to start with the Probe and will go first this round.' );
+						break;
+					case "Least":
+						$message = clienttranslate( '${ostrichName} gets the Probe because they have the least seated Crewmembers.' );
+						break;
+					case "TiedWentLast":
+						$message = clienttranslate( '${ostrichName} gets the Probe because they are tied for the least seated Crewmembers and won the tie-breaker of going later in the previous round.' );
+						break;
+				}
+				
+
 						// set all ostriches to not have the crown
 						$sqlAll = "UPDATE ostrich SET ostrich_has_crown=0" ;
 						self::DbQuery( $sqlAll );
@@ -8583,13 +8653,13 @@ echo("<br>");
 
 
 
-						self::notifyAllPlayers( "saucerGivenProbe", clienttranslate( '${ostrichName} has the Probe and will go first this round!' ), array(
+						self::notifyAllPlayers( "saucerGivenProbe", $message, array(
 								'ostrichName' => $saucerColorFriendly,
 								'player_name' => $playerName,
 								'color' => $newSaucerGettingProbe,
 								'owner' => $ownerOfNewSaucerWithProbe
 						) );
-				}
+				
 
 				// count how many times this saucer has gotten the probe
 				self::incStat( 1, 'rounds_started', $ownerOfNewSaucerWithProbe );
@@ -11431,16 +11501,41 @@ echo("<br>");
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
+		// A player revealed a 0-5 and chose the distance they will travel with it.
 		function executeSelectXValue($xValue)
 		{
-				$ostrich = $this->getOstrichWhoseTurnItIs();
-				$this->saveSaucerLastDistance($ostrich, $xValue);
-				$this->saveOstrichXValue($ostrich, $xValue);
+				$saucer = $this->getOstrichWhoseTurnItIs();
 
-				$this->notifyPlayersOfXSelection($ostrich, $xValue);
+				$isValid = $this->isValidXSelection($saucer, $xValue);
+				if(!$isValid)
+				{
+					throw new BgaUserException( self::_("That is not a valid space.") );
+				}
+
+				$this->saveSaucerLastDistance($saucer, $xValue);
+				$this->saveOstrichXValue($saucer, $xValue);
+
+				$this->notifyPlayersOfXSelection($saucer, $xValue);
 
 				$this->gamestate->nextState( "checkForRevealDecisions" );
 				//$this->setState_PreMovement(); // set the player's phase based on what that player has available to them
+		}
+
+		function isValidXSelection($saucerColor, $xValue)
+		{
+			$maxDistance = 5;
+
+			if($this->getUpgradeTimesActivatedThisRound($saucerColor, "Hyperdrive") > 0)
+			{ // this player activated hyperdrive this round
+				$maxDistance = $maxDistance * 2;
+			}
+
+			if($xValue > $maxDistance)
+			{ // they are trying to go further than their max distance allows
+				return false;
+			}
+			
+			return true;
 		}
 
 		function executeDiscardTrap($trapCardId)
@@ -13376,7 +13471,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				$allPlayers = $this->getAllPlayers();
 				foreach( $allPlayers as $player )
-				{
+				{ // go through each player
 						$playerId = $player['player_id'];
 						$playersDictionary[$playerId] = array();
 						$playersDictionary[$playerId]['crewmemberCount'] = 0;
@@ -13388,7 +13483,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						{ // go through each saucer owned by this player
 
 								$saucerColor = $saucer['ostrich_color'];
-								$totalCrewmembersOfSaucer = $this->getTotalCrewmembersForSaucer($saucerColor);
+								$totalCrewmembersOfSaucer = $this->getSeatedCrewmembersForSaucer($saucerColor);
 								$playersDictionary[$playerId]['saucerColor'] = $saucerColor;
 
 								$playersDictionary[$playerId]['crewmemberCount'] += $totalCrewmembersOfSaucer;
@@ -13428,7 +13523,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 										$saucerColor = $saucer['ostrich_color'];
 
 										// they get the probe
-										$this->giveProbe($saucerColor);
+										$this->giveProbe($saucerColor, "Least");
 								}
 
 								// make them go first in turn order
@@ -13475,7 +13570,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 															$saucerColor = $saucer['ostrich_color'];
 
 
-															$this->giveProbe($saucerColor);
+															$this->giveProbe($saucerColor, "TiedWentLast");
 													}
 
 													// make them go first in turn order
@@ -13752,7 +13847,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 //throw new feException( "saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerToCrash: $saucerToCrash" );
 				return array(
 						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
-						'saucerButtons' => self::getSaucerToGoSecond()
+						'saucerOrder' => self::getClockwiseCounterTurnOrders()
 				);
 		}
 
