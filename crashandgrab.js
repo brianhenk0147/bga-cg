@@ -1391,8 +1391,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                                             // (most of the time: nothing)
 
                         } );
-
-
                     }
                     else if (this.checkPossibleActions( 'chooseSaucerSpace', true ))
                     { // we are choosing a space to place a Saucer
@@ -1728,92 +1726,96 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             switch( stateName )
             {
 
-            /* Example:
+                /* Example:
 
-            case 'myGameState':
+                case 'myGameState':
 
-                // Hide the HTML block we are displaying only during this game state
-                dojo.style( 'my_html_block_id', 'display', 'none' );
+                    // Hide the HTML block we are displaying only during this game state
+                    dojo.style( 'my_html_block_id', 'display', 'none' );
+
+                    break;
+            */
+                case 'chooseMoveCard':
+                if( this.isCurrentPlayerActive() )
+                { // this is the active player
+                    this.unselectAllSaucers();
+                    this.unhighlightAllSaucers();
+
+                    //this.unselectAllMoveCards();
+                    this.unhighlightAllMoveCards();
+
+                    this.unselectAllDirections();
+                    this.unhighlightAllDirections();
+
+                    this.unhighlightAllSpaces();
+                }
 
                 break;
-           */
-             case 'chooseMoveCard':
-               if( this.isCurrentPlayerActive() )
-               { // this is the active player
-                   this.unselectAllSaucers();
-                   this.unhighlightAllSaucers();
 
-                   //this.unselectAllMoveCards();
-                   this.unhighlightAllMoveCards();
+                case 'chooseAcceleratorDirection':
 
-                   this.unselectAllDirections();
-                   this.unhighlightAllDirections();
+                if( this.isCurrentPlayerActive() )
+                { // this is the active player
+                    this.unhighlightAllDirections();
+                    this.unhighlightAllSpaces();
+                }
 
-                   this.unhighlightAllSpaces();
-               }
+                break;
 
-             break;
+                case 'chooseIfYouWillUseBooster':
 
-             case 'chooseAcceleratorDirection':
+                if( this.isCurrentPlayerActive() )
+                { // this is the active player
+                    this.unhighlightAllDirections();
+                    this.unhighlightAllSpaces();
+                }
 
-               if( this.isCurrentPlayerActive() )
-               { // this is the active player
-                  this.unhighlightAllDirections();
-                  this.unhighlightAllSpaces();
-               }
-
-             break;
-
-             case 'chooseIfYouWillUseBooster':
-
-               if( this.isCurrentPlayerActive() )
-               { // this is the active player
-                  this.unhighlightAllDirections();
-                  this.unhighlightAllSpaces();
-               }
-
-             break;
+                break;
 
 
 
-            case 'executeMove':
-            console.log( "onLeavingState->executeMove" );
+                case 'executeMove':
+                console.log( "onLeavingState->executeMove" );
 
-            //this.ostrichChosen = false; // true when the player selects which ostrich they will move this turn
-            break;
+                //this.ostrichChosen = false; // true when the player selects which ostrich they will move this turn
+                break;
 
-            case 'placeCrewmemberChooseCrewmember':
-            console.log( "onLeavingState->placeCrewmemberChooseCrewmember" );
-this.unhighlightAllGarments();
-            break;
+                case 'placeCrewmemberChooseCrewmember':
+                console.log( "onLeavingState->placeCrewmemberChooseCrewmember" );
+    this.unhighlightAllGarments();
+                break;
 
-            case 'replaceGarmentChooseSpace':
-            console.log( "onLeavingState->replaceGarmentChooseGarment" );
+                case 'replaceGarmentChooseSpace':
+                console.log( "onLeavingState->replaceGarmentChooseGarment" );
 
-            this.unhighlightAllSpaces();
-            break;
+                this.unhighlightAllSpaces();
+                break;
 
-            case 'askWhichGarmentToSteal':
-                console.log( "onLeavingState->askWhichGarmentToSteal" );
-                this.unhighlightAllGarments();
-            break;
+                case 'askWhichGarmentToSteal':
+                    console.log( "onLeavingState->askWhichGarmentToSteal" );
+                    this.unhighlightAllGarments();
+                break;
 
-            case 'askWhichGarmentToDiscard':
-                console.log( "onLeavingState->askWhichGarmentToDiscard" );
-                this.unhighlightAllGarments();
-            break;
+                case 'askWhichGarmentToDiscard':
+                    console.log( "onLeavingState->askWhichGarmentToDiscard" );
+                    this.unhighlightAllGarments();
+                break;
 
-            case 'chooseBlastOffThrusterSpace':
-            case 'chooseLandingLegsSpace':
-            case 'chooseAfterburnerSpace':
-            case 'askWhichUpgradeToPlay':
-            case 'placeCrewmemberChooseCrewmember':
-              this.unhighlightAllSpaces();
-              break;
+                case 'chooseBlastOffThrusterSpace':
+                case 'chooseLandingLegsSpace':
+                case 'chooseAfterburnerSpace':
+                case 'askWhichUpgradeToPlay':
+                case 'placeCrewmemberChooseCrewmember':
+                    this.unhighlightAllSpaces();
+                break;
 
-              case 'chooseDirectionAfterPlacement':
-              this.removeClickableFromAllDirectionTokens(); // remove the pointer hoverover from all direction tokens
-              break;
+                case 'chooseDirectionAfterPlacement':
+                    this.removeClickableFromAllDirectionTokens(); // remove the pointer hoverover from all direction tokens
+                break;
+                case 'chooseCrashSiteRegenerationGateway':
+                case 'chooseCrashSiteSaucerTeleporter':
+                    this.unhighlightAllSpaces();
+                break;
             }
         },
 
@@ -2535,6 +2537,7 @@ this.unhighlightAllGarments();
                         console.log('emptyCrashSites:');
                         console.log(args.emptyCrashSites);
                         this.showEmptyCrashSiteButtons(args.emptyCrashSites);
+                        this.highlightCrashSiteSpaces(args.emptyCrashSites);
                     }
                   break;
 
@@ -2554,6 +2557,8 @@ this.unhighlightAllGarments();
                         var skipActivateUpgradeMakeRed = true;
                         //this.addButtonToActionBar(skipActivateUpgradeButtonLabel, skipActivateUpgradeIsDisabled, skipActivateUpgradeHoverOverText, skipActivateUpgradeActionName, skipActivateUpgradeMakeRed);
                         this.addActionButton( 'skipButton_6', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
+
+                        this.highlightCrashSiteSpaces(args.emptyCrashSites);
 
                     }
                   break;
@@ -4153,6 +4158,9 @@ console.log('crewmemberPickupExtras crewmemberType:'+crewmemberType);
 
        resetUpgradeList: function (allUpgrades)
        {
+           // remove all cards from reference list in case this is being called after a reshuffle
+           this.upgradeList.removeAll();
+
            for( var i in allUpgrades )
            { // go through the cards
                var upgrade = allUpgrades[i];
@@ -5924,7 +5932,8 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             for (const crashSiteIndex of emptyCrashSitesKeys)
             { // go through each crash site
 
-                var crashSiteNumber = emptyCrashSites[crashSiteIndex];
+                var crashSite = emptyCrashSites[crashSiteIndex]; // (number, x, y)
+                var crashSiteNumber = crashSite['number'];
                 console.log("crash site number:"+crashSiteNumber);
 
                 //var htmlOfSpace = 'square_'+space; // square_6_5
@@ -5934,6 +5943,25 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 // show an image button:
                 //this.addActionButton( 'crashSite_'+crashSiteNumber+'_button', '<div id="button_crash_site_'+crashSiteNumber+'" class="crashSite"></div>', 'onClickCrashSite', null, null, 'gray');
                 this.addActionButton( 'crashSite_'+crashSiteNumber+'_button', _(crashSiteNumber), 'onClickCrashSite' ); // show text button for now
+            }
+        },
+
+        highlightCrashSiteSpaces: function(emptyCrashSites)
+        {
+            const emptyCrashSitesKeys = Object.keys(emptyCrashSites);
+//            console.log('keys:');
+//            console.log(emptyCrashSitesKeys);
+            for (const crashSiteIndex of emptyCrashSitesKeys)
+            { // go through each crash site
+
+                var crashSite = emptyCrashSites[crashSiteIndex]; // (number, x, y)
+                var x = crashSite['x'];
+                var y = crashSite['y'];
+                console.log("crash site (x,y): ("+x+","+y+")");
+
+                var htmlOfSpace = 'square_'+x+'_'+y; // square_6_5
+                //console.log("highlighting space: " + htmlOfSpace);
+                this.highlightSpace(htmlOfSpace);
             }
         },
 
@@ -7142,6 +7170,7 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'moveCrewmemberToSaucerExtras', this, "notif_moveCrewmemberToSaucerExtras");
             dojo.subscribe( 'giveOverrideToken', this, "notif_giveOverrideToken");
             dojo.subscribe( 'useOverrideToken', this, "notif_useOverrideToken");
+            dojo.subscribe( 'upgradeDeckReshuffled', this, "notif_upgradeDeckReshuffled" );
 
 
         },
@@ -8188,7 +8217,15 @@ console.log("success... onClickUpgradeCardInHand");
 
         notif_counter: function(notif) {
             this.updateCounters(notif.args.counters);
-        }
+        },
+
+        notif_upgradeDeckReshuffled: function( notif )
+        {
+
+            var allUpgrades = notif.args.allUpgrades;
+
+            this.resetUpgradeList(allUpgrades);
+        },
 
    });
 });

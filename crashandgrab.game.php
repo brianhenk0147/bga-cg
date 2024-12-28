@@ -61,6 +61,7 @@ class CrashAndGrab extends Table
         $this->upgradeCards->init( "upgradeCards" );
 				$this->upgradeCards->autoreshuffle_custom = array('upgradeCardDeck' => 'discard');
 				$this->upgradeCards->autoreshuffle = true; // automatically reshuffle when you run out of cards
+				$this->upgradeCards->autoreshuffle_trigger = array('obj' => $this, 'method' => 'deckAutoReshuffle'); // add a callback method so we know when the deck has been reshuffled
 
 				$this->UP_DIRECTION = 'sun';
 				$this->DOWN_DIRECTION = 'meteor';
@@ -313,6 +314,15 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
         In this space, you can put any utility methods useful for your game logic
     */
 
+	function deckAutoReshuffle()
+	{
+		$this->resetEquipmentDeckAfterReshuffle();
+
+		self::notifyAllPlayers( "upgradeDeckReshuffled", clienttranslate( 'The Upgrade deck has been reshuffled.' ), array(
+			'allUpgrades' => $this->getUpgradeList()
+		) );
+	}	
+	
 		function initializeStats()
 		{
 				// TABLE STATS
@@ -1472,8 +1482,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						}
 						else
 						{ // this crash site is unoccupied
-
-								$result[$crashSiteIndex] = $this->getBoardSpaceType($locX, $locY); // 1, 2, 3
+							$result[$crashSiteIndex] = array();
+							$result[$crashSiteIndex]['x'] = $locX; // 1, 2, 3
+							$result[$crashSiteIndex]['y'] = $locY; // 1, 2, 3
+							$result[$crashSiteIndex]['number'] = $this->getBoardSpaceType($locX, $locY); // 1, 2, 3
 						}
 				}
 
@@ -1754,6 +1766,7 @@ if($color == '0090ff')
 
 																// stop at the accelerator
 																$row = $x;
+																break; // exit the loop
 														}
 												}
 
@@ -1793,6 +1806,7 @@ echo("<br>");
 //throw new feException( "saucerColor:$saucerColor row:$row column:$column");
 																// stop at the accelerator
 																$column = $y;
+																break; // exit the loop
 														}
 												}
 
@@ -1818,17 +1832,19 @@ echo("<br>");
 														//{
 														//throw new feException( "saucerColor:$saucerColor x:$x startColumn:$startColumn spaceType:$spaceType");
 														//}
-														//if($saucerColor == 'f6033b')
-														//{
-														//echo("($startColumn,$x):$spaceType");
-														//echo("<br>");
-														//}
-
+														/*
+														if($saucerColor == '01b508')
+														{
+														echo("($startColumn,$x):$spaceType");
+														echo("<br>");
+														}
+														*/
 														if($spaceType == "S")
 														{ // found an accelerator
 
 																// stop at the accelerator
 																$row = $x;
+																break; // exit the loop
 														}
 												}
 
@@ -1862,6 +1878,7 @@ echo("<br>");
 
 																// stop at the accelerator
 																$column = $y;
+																break; // exit the loop
 														}
 												}
 
@@ -3167,7 +3184,7 @@ echo("<br>");
 				if($totalCrewmembersOfStealer > $totalCrewmembersOfCrashed)
 				{ // stealer has more Crewmembers than the crashed saucer
 						// notify all players that stealer may not steal from crashed because they have more crewmembers
-						self::notifyAllPlayers( "cannotSteal", clienttranslate( '${stealer_color} has more Crewmembers than ${stealee_color} so they may not steal any from them.' ), array(
+						self::notifyAllPlayers( "cannotSteal", clienttranslate( '${stealer_color} has more seated Crewmembers than ${stealee_color} so they may not steal any from them.' ), array(
 								'stealer_color' => $saucerColorFriendlyStealer,
 								'stealee_color' => $saucerColorFriendlyCrashed
 						) );
@@ -11705,6 +11722,22 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 						// since we're not moving traditionally, we need to specify the next state
 						//$this->setState_AfterMovementEvents($saucerColor, "Landing Legs");
+				}
+				elseif($currentState == "chooseCrashSiteSaucerTeleporter")
+				{ // choosing en empty crash site
+					$cardId = $this->getUpgradeCardId($saucerColor, "Saucer Teleporter");
+					$upgradeName = $this->getUpgradeTitleFromCollectorNumber(6);
+
+					$crashSiteNumber = $this->getBoardSpaceType($xLocation, $yLocation);
+					$this->executeChooseCrashSite($crashSiteNumber);
+				}
+				elseif($currentState == "chooseCrashSiteRegenerationGateway")
+				{ // choosing en empty crash site
+					$cardId = $this->getUpgradeCardId($saucerColor, "Regeneration Gateway");
+					$upgradeName = $this->getUpgradeTitleFromCollectorNumber(13);
+
+					$crashSiteNumber = $this->getBoardSpaceType($xLocation, $yLocation);
+					$this->executeChooseCrashSite($crashSiteNumber);
 				}
 
 				// notify the player so they can rotate the card on the UI

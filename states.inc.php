@@ -370,7 +370,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('${you} must choose where to place your Saucer with your Regeneration Gateway.'),
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
-        "possibleactions" => array( "clickCrashSite" ),
+        "possibleactions" => array( "clickCrashSite", "chooseUpgradeSpace" ),
         "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50, "endRoundCleanUp" => 5  )
     ),
 
@@ -489,7 +489,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Choose a teleportation destination for ${saucerColor}.'),
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
-        "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
+        "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade", "chooseUpgradeSpace" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
     ),
 
