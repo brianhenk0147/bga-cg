@@ -762,7 +762,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				{
 						case "0":
 						case 0:
-						return "X";
+						return "0-5";
 
 						case "1":
 						case 1:

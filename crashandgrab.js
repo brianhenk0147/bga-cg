@@ -39,6 +39,8 @@ function (dojo, declare) {
             this.PURPLECOLOR = "b92bba";
             this.ORANGECOLOR = "e77324";
 
+            this.NUMBER_OF_PLAYERS = 0;
+
 
             // directions
             this.UP_DIRECTION = 'sun';
@@ -173,6 +175,7 @@ function (dojo, declare) {
 
               numberOfPlayers++; // count number of players to use later
             }
+            this.NUMBER_OF_PLAYERS = numberOfPlayers; // save this globally because we will reference it a lot
 
 
             for( var i in gamedatas.ostrich )
@@ -1112,6 +1115,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     console.log( "A saucer button was clicked during move card selection with node "+htmlIdOfButton+"." );
                     var saucerColor = htmlIdOfButton.split('_')[1]; // b92bba
                     this.selectSaucer(saucerColor);
+
+                    this.checkConfirmEnableDisable(); // see if we need to enable the Confirm button
                 },
 
                 onClick_saucerDuringMoveCardSelection: function( evt )
@@ -1120,6 +1125,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     console.log( "A saucer was clicked during move card selection with node "+htmlIdOfSaucer+"." );
                     var saucerColor = htmlIdOfSaucer.split('_')[1]; // b92bba
                     this.selectSaucer(saucerColor);
+
+                    this.checkConfirmEnableDisable(); // see if we need to enable the Confirm button
                 },
 
                 selectSaucer: function( saucerColor )
@@ -1974,6 +1981,7 @@ this.unhighlightAllGarments();
                                   // highlight the move cards
                                   //this.unhighlightAllMoveCards();
                                   //this.highlightAllMoveCardsForSaucer(this.SAUCER_SELECTED);
+
                               }
                               else
                               { // a move card is chosen for the selected saucer
@@ -1989,7 +1997,7 @@ this.unhighlightAllGarments();
                           }
 
                           var buttonLabel = "Confirm";
-                          var isDisabled = false; // TODO: Update this to be disabled until moves are selected
+                          var isDisabled = true;
                           var hoverOverText = "Confirm your moves."; // hover over text or '' if we don't want a hover over
                           var actionName = "confirmMove"; // shoot, useEquipment
                           var makeRed = false;
@@ -3228,7 +3236,10 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
             var htmlIdOfSaucerButton = 'saucer_'+color+'_button'; // saucer_01b508_button
             if($(htmlIdOfSaucerButton))
             {
-                dojo.addClass( htmlIdOfSaucerButton, 'saucerSelected' ); // select it
+                if(this.NUMBER_OF_PLAYERS < 3)
+                { // only select it in 2-player games 
+                    dojo.addClass( htmlIdOfSaucerButton, 'saucerSelected' ); // select it
+                }
             }
         },
 
@@ -3339,77 +3350,121 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
             } );
         },
 
+        checkConfirmEnableDisable: function()
+        {
+            console.log("checkConfirmEnableDisable");
+
+            if(this.NUMBER_OF_PLAYERS == 2)
+            { // each player has 2 saucers
+
+                if(this.CHOSEN_MOVE_CARD_SAUCER_1 != '' && 
+                this.CHOSEN_MOVE_CARD_SAUCER_2 != '' && 
+                this.CHOSEN_DIRECTION_SAUCER_1 != '' && 
+                this.CHOSEN_DIRECTION_SAUCER_2 != '')
+                { // both distances and directions are chosen
+                    dojo.removeClass( 'button_Confirm', 'disabled' );
+
+                    console.log("2 players everything chosen");
+                }
+                else
+                { // something isn't chosen
+                    dojo.addClass('button_Confirm', 'disabled');
+
+                    console.log("2 player something isn't chosen");
+                }
+
+            }
+            else
+            { // each player has 1 saucer
+                if(this.CHOSEN_MOVE_CARD_SAUCER_1 != '' && 
+                this.CHOSEN_DIRECTION_SAUCER_1 != '')
+                { // distance and direction is chosen
+                    dojo.removeClass( 'button_Confirm', 'disabled' );
+
+                    console.log("1 player everything chosen");
+                }
+                else
+                { // something isn't chosen
+                    dojo.addClass('button_Confirm', 'disabled');
+
+                    console.log("1 player something isn't chosen");
+                }
+            }
+        },
+
         chooseMoveCardDirection: function(direction, saucerNumber)
         {
-          var htmlIdOfDirectionToken = 'direction_'+direction;
-          var htmlIdOfDirectionButton = direction+'_'+saucerNumber+'_button'; // asteroids_1_button
-          if(this.SAUCER_SELECTED == '')
-          { // no saucer is selected so it doesn't make sense to select a directions
-              console.log("no saucer is selected");
-              return;
-          }
+            var htmlIdOfDirectionToken = 'direction_'+direction;
+            var htmlIdOfDirectionButton = direction+'_'+saucerNumber+'_button'; // asteroids_1_button
+            if(this.SAUCER_SELECTED == '')
+            { // no saucer is selected so it doesn't make sense to select a directions
+                console.log("no saucer is selected");
+                return;
+            }
 
-/*
-          if(this.MOVE_CARD_SELECTED == '')
-          { // no move card is selected so it doesn't make sense to select a directions
-              console.log("no move card is selected");
-              return;
-          }
-*/
-          var saucerColor = this.gamedatas.saucer1;
-          if(saucerNumber == 2)
-          {
-              saucerColor = this.gamedatas.saucer2;
-          }
+    /*
+            if(this.MOVE_CARD_SELECTED == '')
+            { // no move card is selected so it doesn't make sense to select a directions
+                console.log("no move card is selected");
+                return;
+            }
+    */
+            var saucerColor = this.gamedatas.saucer1;
+            if(saucerNumber == 2)
+            {
+                saucerColor = this.gamedatas.saucer2;
+            }
 
-          if(saucerColor != this.SAUCER_SELECTED)
-          { // no saucer is selected or a different saucer is selected
-//                        console.log( "The saucer belonging to this card is not selected." );
-//                        return;
+            if(saucerColor != this.SAUCER_SELECTED)
+            { // no saucer is selected or a different saucer is selected
+    //                        console.log( "The saucer belonging to this card is not selected." );
+    //                        return;
 
-                // select this saucer instead
-                this.selectSaucer(saucerColor);
-          }
+                    // select this saucer instead
+                    this.selectSaucer(saucerColor);
+            }
 
-          this.saveDirectionSelection(this.SAUCER_SELECTED, htmlIdOfDirectionToken);
+            this.saveDirectionSelection(this.SAUCER_SELECTED, htmlIdOfDirectionToken);
 
-          //this.highlightAllDirections(); // highlight all the directions because people can still change them
-          this.unhighlightAllDirections(); // UNhighlight ALL directions
-          this.selectSpecificDirection(htmlIdOfDirectionToken); // select this token
+            //this.highlightAllDirections(); // highlight all the directions because people can still change them
+            this.unhighlightAllDirections(); // UNhighlight ALL directions
+            this.selectSpecificDirection(htmlIdOfDirectionToken); // select this token
 
-          this.highlightPlayerSaucersWhoHaveNotChosen(); // highlight this player's saucers that haven't chosen yet
+            this.highlightPlayerSaucersWhoHaveNotChosen(); // highlight this player's saucers that haven't chosen yet
 
-          // set the available spaces (use the existing method with a new optional paramter for direction)
-          var moveCardSelectedDistance = this.MOVE_CARD_SELECTED.split('_')[2]; // 0, 1, 2
-          this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, moveCardSelectedDistance, direction); // highlight possible destinations on board
+            // set the available spaces (use the existing method with a new optional paramter for direction)
+            var moveCardSelectedDistance = this.MOVE_CARD_SELECTED.split('_')[2]; // 0, 1, 2
+            this.highlightPossibleMoveSelections(this.playerSaucerMoves, this.player_id, this.SAUCER_SELECTED, moveCardSelectedDistance, direction); // highlight possible destinations on board
 
-          if(saucerNumber == '1')
-          {
-              //this.CHOSEN_DIRECTION_SAUCER_1 = 'direction_'+this.LEFT_DIRECTION;
+            if(saucerNumber == '1')
+            {
+                //this.CHOSEN_DIRECTION_SAUCER_1 = 'direction_'+this.LEFT_DIRECTION;
 
-              // remove all distance button highlights
-              dojo.query( '.saucer1DirectionButtonSelected' ).removeClass( 'saucer1DirectionButtonSelected' );
+                // remove all distance button highlights
+                dojo.query( '.saucer1DirectionButtonSelected' ).removeClass( 'saucer1DirectionButtonSelected' );
 
-              // highlight this distance button
-              dojo.addClass( htmlIdOfDirectionButton, 'saucer1DirectionButtonSelected' );
-          }
-          else
-          {
-              //this.CHOSEN_DIRECTION_SAUCER_2 = 'direction_'+this.LEFT_DIRECTION;
+                // highlight this distance button
+                dojo.addClass( htmlIdOfDirectionButton, 'saucer1DirectionButtonSelected' );
+            }
+            else
+            {
+                //this.CHOSEN_DIRECTION_SAUCER_2 = 'direction_'+this.LEFT_DIRECTION;
 
-              // remove all distance button highlights
-              dojo.query( '.saucer2DirectionButtonSelected' ).removeClass( 'saucer2DirectionButtonSelected' );
+                // remove all distance button highlights
+                dojo.query( '.saucer2DirectionButtonSelected' ).removeClass( 'saucer2DirectionButtonSelected' );
 
-              // highlight this distance button
-              dojo.addClass( htmlIdOfDirectionButton, 'saucer2DirectionButtonSelected' );
-          }
+                // highlight this distance button
+                dojo.addClass( htmlIdOfDirectionButton, 'saucer2DirectionButtonSelected' );
+            }
 
 
-          // move the selected move card to its spot on the ship mat if it's not already there
-          if( $(this.MOVE_CARD_SELECTED) )
-          { // this card exists
-              this.placeMoveCard(this.SAUCER_SELECTED, moveCardSelectedDistance, direction, true);
-          }
+            // move the selected move card to its spot on the ship mat if it's not already there
+            if( $(this.MOVE_CARD_SELECTED) )
+            { // this card exists
+                this.placeMoveCard(this.SAUCER_SELECTED, moveCardSelectedDistance, direction, true);
+            }
+
+            this.checkConfirmEnableDisable(); // see if we need to enable the Confirm button
         },
 
         unhighlightAllSpaceClicks: function()
@@ -4418,6 +4473,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].autowidth = false; // this is required so it obeys the width set above
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].vertical_overlap = 0; // overlap percentage
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].setSelectionMode(0); // don't allow items to be selected
             //this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].item_margin = 0; // has to be 0 if using overlap
 
@@ -4494,6 +4550,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.playerBoardCrewmemberStocks[saucerColor]['pilot'].autowidth = false; // this is required so it obeys the width set above
             this.playerBoardCrewmemberStocks[saucerColor]['pilot'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
             this.playerBoardCrewmemberStocks[saucerColor]['pilot'].vertical_overlap = 75; // overlap percentage
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].setSelectionMode(0); // don't allow items to be selected
             //this.playerBoardCrewmemberStocks[saucerColor]['pilot'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
             this.playerBoardCrewmemberStocks[saucerColor]['pilot'].item_margin = 0; // has to be 0 if using overlap
 
@@ -4514,6 +4571,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.playerBoardCrewmemberStocks[saucerColor]['engineer'].autowidth = false; // this is required so it obeys the width set above
             this.playerBoardCrewmemberStocks[saucerColor]['engineer'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
             this.playerBoardCrewmemberStocks[saucerColor]['engineer'].vertical_overlap = 75; // overlap percentage
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].setSelectionMode(0); // don't allow items to be selected
             //this.playerBoardCrewmemberStocks[saucerColor]['engineer'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
             this.playerBoardCrewmemberStocks[saucerColor]['engineer'].item_margin = 0; // has to be 0 if using overlap
 
@@ -4535,6 +4593,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.playerBoardCrewmemberStocks[saucerColor]['doctor'].autowidth = false; // this is required so it obeys the width set above
             this.playerBoardCrewmemberStocks[saucerColor]['doctor'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
             this.playerBoardCrewmemberStocks[saucerColor]['doctor'].vertical_overlap = 75; // overlap percentage
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].setSelectionMode(0); // don't allow items to be selected
             //this.playerBoardCrewmemberStocks[saucerColor]['doctor'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
             this.playerBoardCrewmemberStocks[saucerColor]['doctor'].item_margin = 0; // has to be 0 if using overlap
 
@@ -4555,6 +4614,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.playerBoardCrewmemberStocks[saucerColor]['scientist'].autowidth = false; // this is required so it obeys the width set above
             this.playerBoardCrewmemberStocks[saucerColor]['scientist'].use_vertical_overlap_as_offset = false; // this is to use normal vertical_overlap
             this.playerBoardCrewmemberStocks[saucerColor]['scientist'].vertical_overlap = 75; // overlap percentage
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].setSelectionMode(0); // don't allow items to be selected
             //this.playerBoardCrewmemberStocks[saucerColor]['scientist'].horizontal_overlap  = -1; // current bug in stock - this is needed to enable z-index on overlapping items
             this.playerBoardCrewmemberStocks[saucerColor]['scientist'].item_margin = 0; // has to be 0 if using overlap
 
@@ -5521,7 +5581,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                                 color: saucerColor
                     } ), 'played_move_card_container_'+saucerColor );
 
-                    this.rotateTo( 'move_card_back_'+saucerColor, 45 );
+                    //this.rotateTo( 'move_card_back_'+saucerColor, 45 );
                 }
             }
         },
@@ -6032,6 +6092,8 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             }
 
             this.selectMoveCard(distanceType, color, saucerNumber);
+
+            this.checkConfirmEnableDisable(); // see if we need to enable the Confirm button
         },
 
         sendDirectionClick: function( chosenDirection )
@@ -8026,8 +8088,8 @@ console.log("success... onClickUpgradeCardInHand");
 
             // Move card from player panel
             //this.placeOnObject( 'cardontable_'+player_id, 'overall_player_board_'+player_id );
-console.log("notif_cardChosen ()"+'move_card_back_'+saucerChoosing+') is being rotated 45 degrees');
-            this.rotateTo( 'move_card_back_'+saucerChoosing, 45 );
+//console.log("notif_cardChosen ("+'move_card_back_'+saucerChoosing+') is being rotated 45 degrees');
+            //this.rotateTo( 'move_card_back_'+saucerChoosing, 45 );
         },
 
         notif_cardUnchosen: function(notif)

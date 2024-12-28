@@ -1315,7 +1315,7 @@ var jstpl_crown = '<div id="player_board_crown"></div>';
 var jstpl_arrow = '<div id="player_board_arrow_${id}" class="player_board_arrow" style="background-position-x:-${x}px"></div>';
 
 var jstpl_moveCard = '<div id="move_card_${distance}_${color}" class="move_card component_rounding" style="background-position:-${x}px -${y}px"></div>';
-var jstpl_moveCardBack = '<div id="move_card_back_${color}" class="move_card_back component_rounding" style="background-position:-${x}px -${y}px"></div>';
+var jstpl_moveCardBack = '<div id="move_card_back_${color}" class="move_card_back component_rounding" style="rotate:45deg;background-position:-${x}px -${y}px;"></div>';
 
 
 </script>

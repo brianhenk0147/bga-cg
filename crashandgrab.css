@@ -2757,6 +2757,8 @@ margin-top: 6px;
   grid-template-rows: auto auto;
   justify-content: space-evenly;
   margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px dashed gray;
 }
 
 .player_board_turn_order {
