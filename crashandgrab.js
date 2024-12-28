@@ -1596,10 +1596,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                       console.log( "onEnteringState->chooseZigPhase" );
                   break;
 
-                  case 'executeMove':
-                      console.log( "onEnteringState->executeMove" );
-
-                      console.log( "entering args.args.isDizzy="+args.args.isDizzy );
+                  case 'executingMove':
+                      console.log( "onEnteringState->executingMove" );
 
 
                   break;
@@ -1774,10 +1772,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
 
 
-                case 'executeMove':
-                console.log( "onLeavingState->executeMove" );
+                case 'executingMove':
+                console.log( "onLeavingState->executingMove" );
+                this.unhighlightAllSpaces();
 
-                //this.ostrichChosen = false; // true when the player selects which ostrich they will move this turn
                 break;
 
                 case 'placeCrewmemberChooseCrewmember':
@@ -2666,24 +2664,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                   break;
 
-                  case 'executeMove':
-                      console.log( "onUpdateActionButtons for executeMove with isDizzy " + args.isDizzy );
-                      console.log( "update args.isDizzy="+args.isDizzy );
-
-                      if( this.isCurrentPlayerActive() )
-                      { // this is the active player so we need to execute their move
-
-                          if(args.isDizzy == 1)
-                          { // we are dizzy
-                            //this.showDirectionChoiceButtons();
-                          }
-                          else
-                          {
-                            this.showMoveButton();
-                          }
-                      }
-                  break;
-
                   case 'askToRespawn':
                       console.log( "onUpdateActionButtons for askToRespawn" );
                       if( this.isCurrentPlayerActive() )
@@ -2956,7 +2936,8 @@ console.log("return false");
         {
 console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmemberType);
             var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType); // this is the unique id for the stock
-            var crewmemberHtmlId = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
+            var crewmemberHtmlId = 'crewmember_'+crewmemberType+'_'+crewmemberColor; // html ID of crewmember if it is on the board
+            var crewmemberHtmlIdExtras = 'extra_crewmembers_container_'+sourceSaucerColor+'_item_1'; // html ID of crewmember if it is on another saucer's extras
             if(sourceSaucerColor != 'board' && sourceSaucerColor != 'pile')
             { // it's coming from a saucer
                 console.log("moveCrewmemberFromBoardToSaucerMatExtras for sourceSaucerColor " + sourceSaucerColor + " with crewmemberType " + crewmemberType + " has uniqueId " + uniqueId + " has stock:");
@@ -2969,8 +2950,17 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
             if($(crewmemberHtmlId))
             { // the crewmember exists on the board somewhere
 
-                // we'll move it there
+                // we'll slide it there
                 this.saucerMatExtraCrewmemberStocks[destinationSaucerColor]['primary'].addToStockWithId( uniqueId, uniqueId, crewmemberHtmlId );
+            }
+            else if($(crewmemberHtmlIdExtras))
+            { // the crewmember exists in the extras of another saucer
+
+                // we'll slide it there
+                this.saucerMatExtraCrewmemberStocks[destinationSaucerColor]['primary'].addToStockWithId( uniqueId, uniqueId, crewmemberHtmlIdExtras );
+
+                // remove it from the extras of the previous owner saucer
+                dojo.destroy(crewmemberHtmlIdExtras);
             }
             else
             { // the crewmember doesn't exist
@@ -5310,6 +5300,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
         playUpgradeCard: function( saucerColorPlayingCard, playerPlayingCard, collectorNumber, cardInHandDatabaseId )
         {
               var cardInAvailableUpgradesHtmlId = 'upgradeCardHolder_item_'+cardInHandDatabaseId; // example: upgradeCardHolder_item_3
+              var cardInReferenceListHtmlId = 'upgrade_list_item_'+cardInHandDatabaseId; // example: upgrade_list_item_15
 //this.upgradesPlayed_1.addToStockWithId( collectorNumber, cardInHandDatabaseId );
               console.log('saucerColor('+saucerColorPlayingCard+') collectorNumber('+collectorNumber+') cardInAvailableUpgradesHtmlId('+cardInAvailableUpgradesHtmlId+').');
 
@@ -5332,6 +5323,8 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
               // make this no longer clickable because otherwise you get an error if you try to click it while it's moving or in the played area
               this.disconnect( $(cardInAvailableUpgradesHtmlId), 'onUpgradeHandSelectionChanged');
+
+              dojo.addClass( cardInReferenceListHtmlId, 'upgrade_reference_'+saucerColorPlayingCard); // give it a border and dim it to show it's discarded
 
              // Add a special tooltip on the card (Maybe replace this with full image to show off the art)
              //this.addTooltip( card_div.id, title.toUpperCase() + ": " + effect, whatHappensWhenYouClickOnIt );
@@ -7165,12 +7158,12 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'cardRevealed', this, "notif_cardRevealed");
             dojo.subscribe( 'confirmedMovement', this, "notif_confirmedMovement");
             dojo.subscribe( 'resetSaucerPosition', this, "notif_resetSaucerPosition");
-            dojo.subscribe( 'reshuffleUpgrades', this, "notif_reshuffleUpgrades");
+            //dojo.subscribe( 'reshuffleUpgrades', this, "notif_reshuffleUpgrades");
             dojo.subscribe( 'moveCrewmemberToSaucerPrimary', this, "notif_moveCrewmemberToSaucerPrimary");
             dojo.subscribe( 'moveCrewmemberToSaucerExtras', this, "notif_moveCrewmemberToSaucerExtras");
             dojo.subscribe( 'giveOverrideToken', this, "notif_giveOverrideToken");
             dojo.subscribe( 'useOverrideToken', this, "notif_useOverrideToken");
-            dojo.subscribe( 'upgradeDeckReshuffled', this, "notif_upgradeDeckReshuffled" );
+            dojo.subscribe( 'upgradeDeckReshuffled', this, "notif_upgradeDeckReshuffled" ); // called when deck needs to be reshuffled
 
 
         },
@@ -7540,11 +7533,13 @@ console.log("success... onClickUpgradeCardInHand");
             this.placeMoveCard(saucerColor, newDistanceType, newDirection, revealed);
         },
 
-        notif_reshuffleUpgrades: function( notif )
+/*        notif_reshuffleUpgrades: function( notif )
         {
-            this.upgradesDiscarded.removeAll();
-        },
+            this.upgradeList.removeAll();
 
+            this.resetUpgradeList(allUpgrades);
+        },
+*/
         notif_upgradePlayed: function( notif )
         {
             console.log("Entered notif_upgradePlayed.");
@@ -7674,7 +7669,6 @@ console.log("success... onClickUpgradeCardInHand");
 
             console.log("notif_moveCrewmemberToSaucerExtras crewmemberType:"+crewmemberType+" crewmemberColor:"+crewmemberColor+" sourceSaucerColor:"+sourceSaucerColor + " destinationSaucerColor:" + destinationSaucerColor);
 
-            // TODO: MAKE THIS WORK NOT JUST FROM BOARD TO EXTRAS BUT ANYWHERE TO EXTRAS
             this.moveCrewmemberFromBoardToSaucerMatExtras(sourceSaucerColor, destinationSaucerColor, crewmemberColor, crewmemberType);
 
             // add it to the stock on the player board

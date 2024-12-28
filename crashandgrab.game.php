@@ -314,9 +314,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
         In this space, you can put any utility methods useful for your game logic
     */
 
+	// called when the Upgrade deck runs out of cards
 	function deckAutoReshuffle()
 	{
-		$this->resetEquipmentDeckAfterReshuffle();
+		//$this->resetEquipmentDeckAfterReshuffle();
 
 		self::notifyAllPlayers( "upgradeDeckReshuffled", clienttranslate( 'The Upgrade deck has been reshuffled.' ), array(
 			'allUpgrades' => $this->getUpgradeList()
@@ -1564,7 +1565,10 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						if($saucerColor != $sourceSaucer && (
 							$sourceSaucerX == $saucerX || $sourceSaucerY == $saucerY))
 						{ // this is not our source saucer but it is in the same row or column
-								return true;
+								if(!$this->isSaucerCrashed($saucerColor))
+								{ // the saucer isn't crashed (if they are crashed they aren't really in their row or column anymore)
+									return true;
+								}
 						}
 				}
 
@@ -3106,14 +3110,16 @@ echo("<br>");
 				$drawnCardsCount = $this->countDrawnCards();
 				$upgradesInDeck = $this->getUpgradesInDeck();
 
+				/*
 				if(count($upgradesInDeck) < 2)
 				{ // we will be exhausting the deck
 
 						// notify all players to reshuffle
 						self::notifyAllPlayers( "reshuffleUpgrades", clienttranslate( 'Reshuffling the Upgrades Deck.' ), array(
-		            'upgrades_in_deck' => $upgradesInDeck
+		            'upgrades_in_deck' => $this->getAllUpgrades();
 		        ));
 				}
+				*/
 
 				// draw 2 upgrades
 				if($drawnCardsCount < 2)
@@ -10064,7 +10070,7 @@ echo("<br>");
 				$isPrimary = $this->isPrimaryCrewmember($crewmemberId);
 
 				if($isPrimary)
-				{ // this crewmember will be going ot the saucer mat for this crewmember type
+				{ // this crewmember will be going to the saucer mat for this crewmember type
 //throw new feException( "currentPrimaryCrewmemberId:$currentPrimaryCrewmemberId crewmemberId:$crewmemberId");
 						if($currentPrimaryCrewmemberId !== '' &&
 							 $crewmemberId !== $currentPrimaryCrewmemberId)
@@ -10202,7 +10208,7 @@ echo("<br>");
 					'saucerReceivingHighlightedText' => $saucerReceivingHighlightedText
 				) );
 
-				// give the crewmember to the saucer int he DB and notify the UI
+				// give the crewmember to the saucer in the DB and notify the UI
 				$this->moveCrewmemberToSaucerMat($saucerReceiving, $stolenTypeText, $stolenColor);
 
 				// mark that the reward for this crash has been acquired so we don't let them have multiple rewards
