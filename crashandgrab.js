@@ -2428,6 +2428,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                       { // this player is active
 
                           this.showDirectionButtons();
+
+                          this.highlightAllTheseSpaces(args.currentSpaceOptions);
                       }
                   break;
 
@@ -2575,6 +2577,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     { // we are the active player
 
                         this.showDirectionButtons();
+
+                        this.highlightAllTheseSpaces(args.currentSpaceOptions);
                     }
 
                   break;
@@ -2598,10 +2602,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                           var undoMakeRed = true;
                           this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
 
-                            console.log("currentSpaceOptions:");
-                            console.log(args.currentSpaceOptions);
+                          console.log("currentSpaceOptions:");
+                          console.log(args.currentSpaceOptions);
 
-                            this.highlightAllTheseSpaces(args.currentSpaceOptions);
+                          this.highlightAllTheseSpaces(args.currentSpaceOptions);
 
                       }
                   break;

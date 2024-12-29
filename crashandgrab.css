@@ -616,13 +616,13 @@ body {
   background-image: url('img/1x1.jpg');
 }
 
-.board_tile_image_9_9_A_0
+.board_tile_image_9_9_A_0, .board_tile_image_9_9_A_1, .board_tile_image_9_9_A_2, .board_tile_image_9_9_A_3
 {
 
   background-position: 0px 0px;
 }
 
-.board_tile_image_9_9_B_0
+.board_tile_image_9_9_B_0, .board_tile_image_9_9_B_1, .board_tile_image_9_9_B_2, .board_tile_image_9_9_B_3
 {
 
   background-position: 0px -55px;
