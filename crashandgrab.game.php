@@ -7705,6 +7705,8 @@ echo("<br>");
 		// the other saucer on their team in a 2-player game.
 		function checkIfPassedByOtherSaucer($saucerMoving, $saucerMovingX, $saucerMovingY)
 		{
+			//echo "Checking saucer $saucerMoving when they are at space ($saucerMovingX, $saucerMovingY).";
+
 				if($this->getNumberOfPlayers() != 2)
 				{ // each player only has 1 saucer each
 
@@ -7746,6 +7748,7 @@ echo("<br>");
 										{
 											$crewmemberId = $crewmember['crewmemberId'];
 											//throw new feException("setting crewmemberId $crewmemberId to passable");
+											//echo "Setting Crewmember $crewmemberId to passable.";
 											$this->setCrewmemberPassable($crewmemberId, 1);
 										}
 
@@ -7753,6 +7756,7 @@ echo("<br>");
 										{
 											$crewmemberId = $crewmember['crewmemberId'];
 											//throw new feException("setting crewmemberId $crewmemberId to passable");
+											//echo "Setting Crewmember $crewmemberId to passable.";
 											$this->setCrewmemberPassable($crewmemberId, 1);
 										}
 								}
@@ -7781,6 +7785,7 @@ echo("<br>");
 										{
 											$crewmemberId = $crewmember['crewmemberId'];
 											//throw new feException("setting crewmemberId $crewmemberId to passable");
+											//echo "Setting Crewmember $crewmemberId to passable.";
 											$this->setCrewmemberPassable($crewmemberId, 1);
 										}
 
@@ -7788,6 +7793,7 @@ echo("<br>");
 										{
 											$crewmemberId = $crewmember['crewmemberId'];
 											//throw new feException("setting crewmemberId $crewmemberId to passable");
+											//echo "Setting Crewmember $crewmemberId to passable.";
 											$this->setCrewmemberPassable($crewmemberId, 1);
 										}
 								}
@@ -7813,7 +7819,7 @@ echo("<br>");
 				$playerMoving = $this->getOwnerIdOfOstrich($saucerMoving);
 
 				// see if we are within 1 space of our other saucer
-				$this->checkIfPassedByOtherSaucer($saucerMoving, $currentX, $currentY);
+				//$this->checkIfPassedByOtherSaucer($saucerMoving, $currentX, $currentY);
 
 				// get the type of movement we're doing
 				$moveType = $this->getMoveTypeWeAreExecuting();
@@ -7826,7 +7832,7 @@ echo("<br>");
 								$thisX = $currentX-$x; // move one space
 								$boardValue = $this->getBoardSpaceType($thisX, $currentY); // which type of space did we move onto
 
-								// see if we are within 1 space of our other saucer
+								// see if we are within 1 space of our other saucer and set any crewmembers we're next to to be passable
 								$this->checkIfPassedByOtherSaucer($saucerMoving, $thisX, $currentY);
 
 								//echo "The value at ($thisX, $currentY) is: $boardValue <br>";
@@ -9564,11 +9570,11 @@ echo("<br>");
 						}
 						$this->gamestate->nextState( "chooseCrewmemberToAirlock" );
 				}
-				else if($this->canSaucerPassCrewmembers($saucerWhoseTurnItIs))
+				else if($this->canSaucerPassCrewmembers($saucerWhoseTurnItIs) && $moveType != "Blast Off Thrusters")
 				{ // they passed by their own Saucer and can pass them a Crewmember
 						$this->gamestate->nextState( "chooseCrewmembersToPass" ); // need to ask the player if they want to use a zag, and if so, which direction they want to travel
 				}
-				else if($this->canSaucerTakeCrewmembers($saucerWhoseTurnItIs))
+				else if($this->canSaucerTakeCrewmembers($saucerWhoseTurnItIs) && $moveType != "Blast Off Thrusters")
 				{ // they passed by their other Saucer and can take from them
 						$this->gamestate->nextState( "chooseCrewmembersToTake" ); // need to ask the player if they want to use a zag, and if so, which direction they want to travel
 				}
@@ -13999,14 +14005,25 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$saucerGivingText = $this->convertColorToHighlightedText($saucerColorGiving);
 				$saucerReceivingText = $this->convertColorToHighlightedText($saucerColorReceiving);
 
-//$count = count($this->getPassableCrewmembersFromSaucer($saucerColorGiving));
-//throw new feException( "count passable: ".$count );
+				$eligibleToPass = array();
+
+				// get crewmember types that are eligible to be passed
+				$passable = $this->getPassableCrewmembersFromSaucer($saucerColorGiving);
+
+				foreach($passable as $crewmember)
+				{ // go through each crewmember on this saucer that matches the saucer on their team
+					$isPassable = $crewmember['isPassable']; 
+					if($isPassable == 1)
+					{ // this crewmember was on board when they passed by their friendly saucer
+						array_push($eligibleToPass, $crewmember);
+					}
+				}
 
 				// return both the location of all the
 				return array(
 						'saucerColorGiving' => $saucerGivingText,
 						'saucerColorReceiving' => $saucerReceivingText,
-						'passableCrewmembers' => self::getPassableCrewmembersFromSaucer($saucerColorGiving)
+						'passableCrewmembers' => $eligibleToPass
 				);
 		}
 
@@ -14017,14 +14034,25 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$saucerGivingText = $this->convertColorToHighlightedText($saucerColorGiving);
 				$saucerReceivingText = $this->convertColorToHighlightedText($saucerColorReceiving);
 
-//$count = count($this->getPassableCrewmembersFromSaucer($saucerColorGiving));
-//throw new feException( "count takeable: ".$count );
+				$eligibleToPass = array();
+
+				// get crewmember types that are eligible to be passed
+				$passable = $this->getPassableCrewmembersFromSaucer($saucerColorGiving);
+
+				foreach($passable as $crewmember)
+				{ // go through each crewmember on this saucer that matches the saucer on their team
+					$isPassable = $crewmember['isPassable']; 
+					if($isPassable == 1)
+					{ // this crewmember was on board when they passed by their friendly saucer
+						array_push($eligibleToPass, $crewmember);
+					}
+				}
 
 				// return both the location of all the
 				return array(
 						'saucerColorGiving' => $saucerGivingText,
 						'saucerColorReceiving' => $saucerReceivingText,
-						'takeableCrewmembers' => self::getPassableCrewmembersFromSaucer($saucerColorGiving)
+						'takeableCrewmembers' => $eligibleToPass
 				);
 		}
 

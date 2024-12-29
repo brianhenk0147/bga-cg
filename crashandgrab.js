@@ -4040,6 +4040,9 @@ console.log('crewmemberPickupExtras crewmemberType:'+crewmemberType);
 
                     // TODO: add a sparkle or pulse or something when it goes over it
 
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(source, destination);
+
                     // do not animate this
                     skipAnimation = true;
                 }
@@ -4047,6 +4050,9 @@ console.log('crewmemberPickupExtras crewmemberType:'+crewmemberType);
                 { // the saucer
 
                     // TODO: add a sparkle or pulse or something when it goes over it
+
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(source, destination);
 
                     // do not animate this
                     skipAnimation = true;
@@ -4085,6 +4091,7 @@ console.log('crewmemberPickupExtras crewmemberType:'+crewmemberType);
                             // in 2-player games, we must adjust the location of crewmembers because
                             // they get pushed down by the number of upgrades their teammat has
                             this.adjustCrewmemberLocationBasedOnUpgrades(saucerColor, crewmemberType);
+
                         }
                         else if(eventType == 'saucerMove')
                         { // the saucer picked up a crewmember
@@ -4099,6 +4106,13 @@ console.log('crewmemberPickupExtras crewmemberType:'+crewmemberType);
                 }
 
 
+            }
+            else
+            { // there is no next event to animate
+
+                // this should work if we ignored it when ending on an Accelerator but it takes 1 second for the animation to end and for it to snap back
+                // without adding the boardspacetype to this method call, it breaks accelerator usage and might break pushing saucers
+                this.resetAllSaucerPositions(); 
             }
 
             //TODO: ask for x and y location of all saucers and attach them to the correct space...
@@ -5563,6 +5577,11 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 if(revealed == 'revealed')
                 { // the card is revealed
 
+                    if($(sourceHtmlId))
+                    { // this move back already exists
+                        dojo.destroy(sourceHtmlId);
+                    }
+
                     // place the front
                     dojo.place( this.format_block( 'jstpl_moveCard', {
                         x: distanceType * this.movementcardwidth,
@@ -5573,6 +5592,12 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 }
                 else
                 { // it is still hidden
+
+                    var moveCardBackHtmlId = 'move_card_back_'+saucerColor;
+                    if($(moveCardBackHtmlId))
+                    { // this move back already exists
+                        dojo.destroy(moveCardBackHtmlId);
+                    }
 
                     // place the back
                     dojo.place(
@@ -8101,6 +8126,12 @@ console.log("success... onClickUpgradeCardInHand");
             console.log("Entered notif_cardChosen.");
 
             var saucerChoosing = notif.args.saucer_choosing;
+            var cardHtmlId = 'move_card_back_'+saucerChoosing;
+
+            if($(cardHtmlId))
+            { // this move back already exists
+                dojo.destroy(cardHtmlId);
+            }
 
             dojo.place(
                     this.format_block( 'jstpl_moveCardBack', {
@@ -8167,8 +8198,12 @@ console.log("success... onClickUpgradeCardInHand");
             else
             { // this is an opponent saucer
 
-                // place the card
+                if($(moveCardFrontHtmlId))
+                { // this move card already exists
+                    dojo.destroy(moveCardFrontHtmlId);
+                }
 
+                // place the card
                 dojo.place( this.format_block( 'jstpl_moveCard', {
                     x: distanceType * this.movementcardwidth,
                     y: 0,

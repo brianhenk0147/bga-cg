@@ -387,7 +387,7 @@ $machinestates = array(
     42 => array(
         "name" => "askWhichStartOfTurnUpgradeToUse",
         "description" => clienttranslate('${actplayer} is deciding if they will use an Upgrade.'),
-        "descriptionmyturn" => clienttranslate('${you} must decide if you will use an Upgrade.'),
+        "descriptionmyturn" => clienttranslate('You must decide if you will activate an Upgrade.'),
         "type" => "activeplayer",
         'args' => 'argGetStartOfTurnUpgradesToActivate',
         "possibleactions" => array( "skipActivateUpgrade", "activateUpgrade" ),
@@ -466,7 +466,7 @@ $machinestates = array(
     53 => array(
         "name" => "askWhichEndOfTurnUpgradeToUse",
         "description" => clienttranslate('${saucerColor} is deciding if they will activate an Upgrade.'),
-        "descriptionmyturn" => clienttranslate('${you} must decide if you will activate an Upgrade.'),
+        "descriptionmyturn" => clienttranslate('You must decide if you will activate an Upgrade.'),
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
         "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
@@ -530,7 +530,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetLandingLegSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "executingMove" => 70  )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "executingMove" => 70, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57  )
     ),
 
     60 => array(
@@ -550,7 +550,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAfterburnerSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
     ),
 
     62 => array(
