@@ -2937,7 +2937,7 @@ console.log("return false");
 console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmemberType);
             var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType); // this is the unique id for the stock
             var crewmemberHtmlId = 'crewmember_'+crewmemberType+'_'+crewmemberColor; // html ID of crewmember if it is on the board
-            var crewmemberHtmlIdExtras = 'extra_crewmembers_container_'+sourceSaucerColor+'_item_1'; // html ID of crewmember if it is on another saucer's extras
+            var crewmemberHtmlIdExtras = 'extra_crewmembers_container_'+sourceSaucerColor+'_item_'+uniqueId; // html ID of crewmember if it is on another saucer's extras
             if(sourceSaucerColor != 'board' && sourceSaucerColor != 'pile')
             { // it's coming from a saucer
                 console.log("moveCrewmemberFromBoardToSaucerMatExtras for sourceSaucerColor " + sourceSaucerColor + " with crewmemberType " + crewmemberType + " has uniqueId " + uniqueId + " has stock:");
