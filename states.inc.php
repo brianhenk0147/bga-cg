@@ -420,6 +420,7 @@ $machinestates = array(
         "description" => clienttranslate('${actplayer} deciding if they will use their Hyperdrive.'),
         "descriptionmyturn" => clienttranslate('${you} must choose whether you will use Hyperdrive to double your movement.'),
         "type" => "activeplayer",
+        'args' => 'argGetHyperdriveHighlights',
         "possibleactions" => array( "clickDirection" ),
         "transitions" => array( "checkForRevealDecisions" => 38  )
     ),

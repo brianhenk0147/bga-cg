@@ -1643,7 +1643,7 @@ if($color == '0090ff')
 				return $result;
 		}
 
-		function getMovesForSaucer($color, $specificMoveCard='')
+		function getMovesForSaucer($color, $specificMoveCard='', $specificDirection='')
 		{
 				$result = array();
 				if($color == '0090ff')
@@ -1668,10 +1668,17 @@ if($color == '0090ff')
 								$saucerX = $this->getSaucerXLocation($color); // this saucer's starting column
 								$saucerY = $this->getSaucerYLocation($color); // this saucer's starting row
 
-								$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'sun'); // destinations for this saucer, this card, in the sun direction
-								$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
-								$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'meteor'); // destinations for this saucer, this card, in the meteor direction
-								$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'constellation'); // destinations for this saucer, this card, in the constellation direction
+								if($specificDirection == '' || $specificDirection == 'sun')
+									$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'sun'); // destinations for this saucer, this card, in the sun direction
+
+								if($specificDirection == '' || $specificDirection == 'asteroids')
+									$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
+
+								if($specificDirection == '' || $specificDirection == 'meteor')
+									$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'meteor'); // destinations for this saucer, this card, in the meteor direction
+
+								if($specificDirection == '' || $specificDirection == 'constellation')
+									$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'constellation'); // destinations for this saucer, this card, in the constellation direction
 
 								//$countSun = count($result[$distanceType]['directions']['sun']);
 								//throw new feException( "countSun:$countSun" );
@@ -3394,6 +3401,35 @@ echo("<br>");
 								//throw new feException( "currentSaucerX:$currentSaucerX yMinusOne:$yMinusOne" );
 								array_push($validSpaces, $currentSaucerX.'_'.$yMinusOne);
 						break;
+
+						case "Hyperdrive":
+							$directionSelected = $this->getSaucerDirection($saucerColor);
+							$distanceSelected = $this->getSaucerDistanceType($saucerColor);
+							$movesForSaucer = $this->getMovesForSaucer($saucerColor, $distanceSelected, $directionSelected);
+
+							foreach( $movesForSaucer as $cardType => $moveCard )
+							{ // go through each move card for this saucer
+
+									$directionsWithSpaces = $moveCard['directions'];
+									//$count = count($spacesForCard);
+									//throw new feException( "spacesForCard Count:$count" );
+
+									foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
+									{ // go through each direction
+
+											foreach( $directionWithSpaces as $space )
+											{ // go through each space
+
+													$column = $space['column'];
+													$row = $space['row'];
+
+													$formattedSpace = $column.'_'.$row;
+													array_push($validSpaces, $formattedSpace);
+											}
+									}
+							}
+
+					break;
 				}
 
 				return $validSpaces;
@@ -14125,6 +14161,20 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						'startingXLocation' => $startingXLocation,
 						'startingYLocation' => $startingYLocation
 				);
+		}
+
+		// get the space we want to highlight when someone is choosing whether to use Hyperdrive
+		function argGetHyperdriveHighlights()
+		{
+			$saucerColor = $this->getSaucerWhoseTurnItIs();
+//			$moves = $this->getSaucerEligibleSpaces($saucerColor);
+			$moves = $this->getValidSpacesForUpgrade($saucerColor, "Hyperdrive");
+
+			//throw new feException( "saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerToCrash: $saucerToCrash" );
+
+			return array(
+					'currentSpaceOptions' => $moves
+			);
 		}
 
 		function argGetSaucerAcceleratorAndBoosterMoves()

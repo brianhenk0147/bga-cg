@@ -2598,6 +2598,11 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                           var undoMakeRed = true;
                           this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
 
+                            console.log("currentSpaceOptions:");
+                            console.log(args.currentSpaceOptions);
+
+                            this.highlightAllTheseSpaces(args.currentSpaceOptions);
+
                       }
                   break;
 
