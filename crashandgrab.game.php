@@ -10055,7 +10055,9 @@ echo("<br>");
 						if($this->getSaucersPerPlayer() == 1)
 						{ // players are only controlling a single saucer
 		//throw new feException( "1 saucer per player." );
-								$this->gamestate->nextState( "saucerTurnStart" ); // their saucer can just go
+		
+							// now this saucer can choose any direction
+							$this->gamestate->nextState( "chooseDirectionAfterPlacement" );
 						}
 						else
 						{ // players are controlling 2 saucers each
