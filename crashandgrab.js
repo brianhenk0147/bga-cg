@@ -2215,7 +2215,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                             var validSpaces = args.validSpaces;
                             this.highlightAllTheseSpaces(validSpaces);
 
-                            this.addActionButton( 'skipButton_3', _('Skip'), 'onClick_skipActivateSpecificStartOfTurnUpgrade', null, false, 'red' );
+                            this.addActionButton( 'skipButton_3', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
                       }
 
                   break;
