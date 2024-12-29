@@ -3143,6 +3143,9 @@ echo("<br>");
 				return $upgradeList;
 		}
 
+		// Crewmembers in one saucer that match the color of their friendly saucer in a 2-player game.
+		// NOTE: These crewmembers don't necessarily have is_passible set (meaning the saucers passed by 
+		// one another with it on board).
 		function getPassableCrewmembersFromSaucer($saucerGiving)
 		{
 				$result = array();
@@ -3153,7 +3156,7 @@ echo("<br>");
 				$saucerColorFriendlyReceiver = $this->convertColorToHighlightedText($saucerReceiving);
 
 
-				$allPassableCrewmembersFromCrashedSaucer = self::getObjectListFromDB( "SELECT garment_id, garment_color, garment_type
+				$allPassableCrewmembersFromCrashedSaucer = self::getObjectListFromDB( "SELECT garment_id, garment_color, garment_type, is_passable
 																									FROM garment
 																									WHERE garment_location='$saucerGiving' AND garment_color='$saucerReceiving'" );
 //$countFound = count($allPassableCrewmembersFromCrashedSaucer);
@@ -3164,10 +3167,14 @@ echo("<br>");
 
 						$crewmemberColor = $crewmember['garment_color'];
 						$crewmemberType = $this->convertGarmentTypeIntToString($crewmember['garment_type']);
+						$crewmemberId = $crewmember['garment_id'];
+						$isPassable = $crewmember['is_passable'];
 
 						$result[$crewmemberIndex] = array();
 						$result[$crewmemberIndex]['crewmemberType'] = $crewmemberType;
 						$result[$crewmemberIndex]['crewmemberColor'] = $crewmemberColor;
+						$result[$crewmemberIndex]['crewmemberId'] = $crewmemberId;
+						$result[$crewmemberIndex]['isPassable'] = $isPassable;
 						$crewmemberIndex++;
 				}
 				//$countReturning = count($result);
@@ -3207,10 +3214,12 @@ echo("<br>");
 
 						$crewmemberColor = $crewmember['garment_color'];
 						$crewmemberType = $this->convertGarmentTypeIntToString($crewmember['garment_type']);
+						$crewmemberId = $crewmember['garment_id'];
 
 						$result[$crewmemberIndex] = array();
 						$result[$crewmemberIndex]['crewmemberType'] = $crewmemberType;
 						$result[$crewmemberIndex]['crewmemberColor'] = $crewmemberColor;
+						$result[$crewmemberIndex]['crewmemberId'] = $crewmemberId;
 						$crewmemberIndex++;
 				}
 
@@ -3243,11 +3252,15 @@ echo("<br>");
 
 							$garmentColor = $garment['garment_color'];
 							$garmentType = $this->convertGarmentTypeIntToString($garment['garment_type']);
+							$crewmemberId = $garment['garment_id'];
+
 							if($garmentColor != $ostrich)
 							{ // we found an off-colored garment
 									$result[$garmentIndex] = array();
 									$result[$garmentIndex]['garmentType'] = $garmentType;
 									$result[$garmentIndex]['garmentColor'] = $garmentColor;
+									$result[$garmentIndex]['crewmemberId'] = $crewmemberId;
+									
 									$garmentIndex++;
 							}
 						}
@@ -3555,22 +3568,24 @@ echo("<br>");
 						return false;
 				}
 
-				$passedByOtherSaucer = $this->getPassedByOtherSaucer($saucerAsking);
-				if($passedByOtherSaucer != 1)
-				{ // they did not pass by their other saucer this turn
-//throw new feException( "did not pass");
-						return false;
-				}
-
-				$numberOfPassableCrewmembers = count($this->getPassableCrewmembersFromSaucer($saucerAsking));
+				$passableCrewmembers = $this->getPassableCrewmembersFromSaucer($saucerAsking);
+				$numberOfPassableCrewmembers = count($passableCrewmembers);
 				if($numberOfPassableCrewmembers < 1)
-				{ // they do not have crewmembers to pass
+				{ // they do not have crewmembers that are of the color of their friendly saucer
 //throw new feException( "no passable");
 						return false;
 				}
 
-				// if we didn't find a reason not to allow them to pass, they can
-				return true;
+				foreach($passableCrewmembers as $crewmember)
+				{ // go through each crewmember on this saucer that matches the saucer on their team
+					$isPassable = $crewmember['isPassable']; 
+					if($isPassable == 1)
+					{ // this crewmember was on board when they passed by their friendly saucer
+						return true;
+					}
+				}
+
+				return false; // if we get here, then the two saucers never passed each other with the crewmember on board
 		}
 
 		function canSaucerTakeCrewmembers($saucerAsking)
@@ -3593,33 +3608,31 @@ echo("<br>");
 						return false;
 				}
 
-				$passedByOtherSaucer = $this->didThisSaucerPassByOtherSaucer($saucerAsking);
-				if($passedByOtherSaucer == false)
-				{ // they did not pass by their other saucer this turn
-
-
-//								throw new feException( "did not pass");
-
-						return false;
-				}
-
 				$otherSaucerOfPlayer = $this->getPlayersOtherSaucer($saucerAsking);
-				$numberOfTakeableCrewmembers = count($this->getPassableCrewmembersFromSaucer($otherSaucerOfPlayer));
+				$takeableCrewmembers = $this->getPassableCrewmembersFromSaucer($otherSaucerOfPlayer);
+				$numberOfTakeableCrewmembers = count($takeableCrewmembers);
 				//throw new feException( "numberOfTakeableCrewmembers: $numberOfTakeableCrewmembers");
 				if($numberOfTakeableCrewmembers < 1)
 				{ // they do not have crewmembers to take
 
 
-//								throw new feException( "no one to take");
+								//throw new feException( "no one to take");
 
 						return false;
 				}
 
 
-//								throw new feException( "can take");
-
-				// if we didn't find a reason not to allow them to take, they can
-				return true;
+								//throw new feException( "can take");
+				foreach($takeableCrewmembers as $crewmember)
+				{ // go through each crewmember on this saucer that matches the saucer on their team
+					$isPassable = $crewmember['isPassable']; 
+					if($isPassable == 1)
+					{ // this crewmember was on board when they passed by their friendly saucer
+						return true;
+					}
+				}
+				//throw new feException( "no ispassible");
+				return false; // if we return here, then the two saucers never passed next to one another with the crewmember on board
 		}
 
 		function didThisSaucerPassByOtherSaucer($saucerAsking)
@@ -5626,6 +5639,13 @@ echo("<br>");
 				self::DbQuery( $sql );
 		}
 
+		function setCrewmemberPassable($crewmemberId, $value)
+		{
+			$sql = "UPDATE garment SET is_passable=$value WHERE ";
+				$sql .= "garment_id=$crewmemberId";
+				self::DbQuery( $sql );
+		}
+
 		function setAskedToActivateForAllStartOfTurnSaucerUpgrades($saucerColor)
 		{
 			//throw new feException( "setAskedToActivateForAllSaucerUpgrades for saucer:$saucerColor");
@@ -6773,7 +6793,7 @@ echo("<br>");
 
 		function resetCrewmembers()
 		{
-				$sql = "UPDATE garment SET airlock_exchangeable=0, taken_with_distress=0" ;
+				$sql = "UPDATE garment SET airlock_exchangeable=0, taken_with_distress=0, is_passable=0" ;
 				self::DbQuery( $sql );
 		}
 
@@ -7681,6 +7701,8 @@ echo("<br>");
 				return 0; // if we don't find a garment here, return 0
 		}
 
+		// This sets any Crewmembers that were on board one saucer when it passed next to
+		// the other saucer on their team in a 2-player game.
 		function checkIfPassedByOtherSaucer($saucerMoving, $saucerMovingX, $saucerMovingY)
 		{
 				if($this->getNumberOfPlayers() != 2)
@@ -7719,7 +7741,20 @@ echo("<br>");
 											//if($saucerMovingX == 2 && $saucerMovingY == 5)
 											//		throw new feException("subtract:$subtract absSubtract:$absSubtract");
 
-										$this->setPassedByOtherSaucer($saucerMoving, 1);
+										//$this->setPassedByOtherSaucer($saucerMoving, 1);
+										foreach($passableCrewmembers as $crewmember)
+										{
+											$crewmemberId = $crewmember['crewmemberId'];
+											//throw new feException("setting crewmemberId $crewmemberId to passable");
+											$this->setCrewmemberPassable($crewmemberId, 1);
+										}
+
+										foreach($receivableCrewmembers as $crewmember)
+										{
+											$crewmemberId = $crewmember['crewmemberId'];
+											//throw new feException("setting crewmemberId $crewmemberId to passable");
+											$this->setCrewmemberPassable($crewmemberId, 1);
+										}
 								}
 						}
 				}
@@ -7740,7 +7775,21 @@ echo("<br>");
 									//if($saucerMovingX == 2 && $saucerMovingY == 5)
 									//		throw new feException("subtract:$subtract absSubtract:$absSubtract");
 
-										$this->setPassedByOtherSaucer($saucerMoving, 1);
+										//$this->setPassedByOtherSaucer($saucerMoving, 1);
+
+										foreach($passableCrewmembers as $crewmember)
+										{
+											$crewmemberId = $crewmember['crewmemberId'];
+											//throw new feException("setting crewmemberId $crewmemberId to passable");
+											$this->setCrewmemberPassable($crewmemberId, 1);
+										}
+
+										foreach($receivableCrewmembers as $crewmember)
+										{
+											$crewmemberId = $crewmember['crewmemberId'];
+											//throw new feException("setting crewmemberId $crewmemberId to passable");
+											$this->setCrewmemberPassable($crewmemberId, 1);
+										}
 								}
 						}
 				}
@@ -9481,6 +9530,14 @@ echo("<br>");
 			//throw new feException("Getting board space type after move events for saucer ($saucerMoving).");
 				$boardValue = $this->getBoardSpaceTypeForOstrich($saucerWhoseTurnItIs); // get the type of space of the ostrich who just moved
 
+				if($boardValue != "S")
+				{
+					// since saucers don't get moved in the DOM while moving, we need to put them in the right spot
+					// before any special cases happen post-move... but we don't want to reset them if we're on an 
+					// accelerator because then the saucer won't be on the accelerator
+					$this->resetSaucersInDOM();
+				}
+
 				// count crewmembers they can exchange with Airlock if they have it
 				$airlockExchangeableCrewmembers = $this->getAirlockExchangeableCrewmembers();
 
@@ -10386,7 +10443,7 @@ echo("<br>");
 				// before anything gets spawned to avoid a saucer being in the same space as a crewmember or another saucer
 				$this->resetSaucersInDOM();
 
-
+				
 				// notify all players that this move is finished so the card can be returned to hand
 				self::notifyAllPlayers( "confirmedMovement", '', array(
             'saucer_color' => $saucerWhoseTurnItIs
@@ -10779,6 +10836,10 @@ echo("<br>");
 				$saucerX = $this->getSaucerXLocation($saucerMoving);
 				$saucerY = $this->getSaucerYLocation($saucerMoving);
 //throw new feException( "moveType:$moveType saucerX:$saucerX saucerY:$saucerY saucerMoving:$saucerMoving");
+
+				// since saucers don't get moved in the DOM while moving, we need to put them in the right spot
+				// before we go into any special phases after movement
+				//$this->resetSaucersInDOM();
 
 				$spaceType = $this->getBoardSpaceType($saucerX, $saucerY);
 

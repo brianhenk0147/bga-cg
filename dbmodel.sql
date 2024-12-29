@@ -133,6 +133,7 @@ CREATE TABLE IF NOT EXISTS `garment` (
   `airlock_exchangeable` smallint(5) unsigned NOT NULL DEFAULT '0',
   `taken_with_distress` smallint(5) unsigned NOT NULL DEFAULT '0',
   `is_primary` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `is_passable` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`garment_id`)
 ) ENGINE=InnoDB;
 
