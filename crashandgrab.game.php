@@ -8015,7 +8015,7 @@ echo("<br>");
 										if($wasPushed)
 										{ // the saucer moving was pushed onto this accelerator
 
-												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance));
+												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 												$pushedOntoAcceleratorEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerMoving, $wasPushed);
 												return array_merge($moveEventList, $pushedOntoAcceleratorEventList); // add the pushed event to the original and return so we don't go any further
@@ -8023,7 +8023,7 @@ echo("<br>");
 										else
 										{ // the saucer moving moved onto the accelerator on their turn
 
-												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving));
+												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 												return $moveEventList; // don't go any further
 										}
@@ -8033,7 +8033,7 @@ echo("<br>");
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
-										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving));
+										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 										return $moveEventList; // don't go any further
 								}
@@ -8210,7 +8210,7 @@ echo("<br>");
 										if($wasPushed)
 										{ // the saucer moving was pushed onto this accelerator
 //throw new feException( "waspushed");
-												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance));
+												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 												$pushedOntoAcceleratorEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerMoving, $wasPushed);
 												return array_merge($moveEventList, $pushedOntoAcceleratorEventList); // add the pushed event to the original and return so we don't go any further
@@ -8218,7 +8218,7 @@ echo("<br>");
 										else
 										{ // the saucer moving moved onto the accelerator on their turn
 
-												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving));
+												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 												return $moveEventList; // don't go any further
 										}
@@ -8228,7 +8228,7 @@ echo("<br>");
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
-										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving));
+										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 										return $moveEventList; // return so we don't go any further
 								}
@@ -8396,7 +8396,7 @@ echo("<br>");
 										if($wasPushed)
 										{ // the saucer moving was pushed onto this accelerator
 
-												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance));
+												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
 												$pushedOntoAcceleratorEventList = $this->getEventsWhileExecutingMove($currentX, $thisY, $distance, $direction, $saucerMoving, $wasPushed);
 												return array_merge($moveEventList, $pushedOntoAcceleratorEventList); // add the pushed event to the original and return so we don't go any further
@@ -8404,7 +8404,7 @@ echo("<br>");
 										else
 										{ // the saucer moving moved onto the accelerator on their turn
 
-												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving));
+												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
 												return $moveEventList; // don't go any further
 										}
@@ -8414,7 +8414,7 @@ echo("<br>");
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
-										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving));
+										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
 										return $moveEventList;
 								}
@@ -8578,7 +8578,7 @@ echo("<br>");
 										if($wasPushed)
 										{ // the saucer moving was pushed onto this accelerator
 
-												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance));
+												array_push($moveEventList, array( 'event_type' => 'pushedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'spaces_pushed' => $distance, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
 												$pushedOntoAcceleratorEventList = $this->getEventsWhileExecutingMove($currentX, $thisY, $distance, $direction, $saucerMoving, $wasPushed);
 												return array_merge($moveEventList, $pushedOntoAcceleratorEventList); // add the pushed event to the original and return so we don't go any further
@@ -8586,7 +8586,7 @@ echo("<br>");
 										else
 										{ // the saucer moving moved onto the accelerator on their turn
 
-												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving));
+												array_push($moveEventList, array( 'event_type' => 'movedOntoAccelerator', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
 												return $moveEventList; // don't go any further
 										}
@@ -8596,7 +8596,7 @@ echo("<br>");
 
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
-										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving));
+										array_push($moveEventList, array( 'event_type' => 'saucerCrashed', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
 										return $moveEventList;
 								}

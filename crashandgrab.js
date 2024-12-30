@@ -4057,6 +4057,18 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 else if(eventType == 'saucerCrashed')
                 { // the saucer crashed
 
+                    // TODO: turn into a broken saucer or something
+
+                    var saucerMoving = nextEvent['saucer_moving']; // ff0000
+                    var destinationX = nextEvent['destination_X']; // 5
+                    var destinationY = nextEvent['destination_Y']; // 7
+
+                    source = 'saucer_'+saucerMoving;
+                    destination = 'square_'+destinationX+'_'+destinationY;
+
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(source, destination);
+
                     // do not animate this
                     skipAnimation = true;
                 }
@@ -4064,6 +4076,13 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 { // the saucer moved onto an accelerator
 
                     // TODO: add a sparkle or pulse or something when it goes over it
+
+                    var saucerMoving = nextEvent['saucer_moving']; // ff0000
+                    var destinationX = nextEvent['destination_X']; // 5
+                    var destinationY = nextEvent['destination_Y']; // 7
+
+                    source = 'saucer_'+saucerMoving;
+                    destination = 'square_'+destinationX+'_'+destinationY;
 
                     // give it a new parent so it's no longer on the space
                     this.attachToNewParent(source, destination);
@@ -4073,6 +4092,13 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 }
                 else if(eventType == 'pushedOntoAccelerator')
                 { // the saucer
+
+                    var saucerMoving = nextEvent['saucer_moving']; // ff0000
+                    var destinationX = nextEvent['destination_X']; // 5
+                    var destinationY = nextEvent['destination_Y']; // 7
+
+                    source = 'saucer_'+saucerMoving;
+                    destination = 'square_'+destinationX+'_'+destinationY;
 
                     // TODO: add a sparkle or pulse or something when it goes over it
 
