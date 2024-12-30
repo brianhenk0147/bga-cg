@@ -417,9 +417,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
             }
 
-
-
             this.initializeTurnOrder(this.gamedatas.turnOrder, this.gamedatas.probePlayer, gamedatas.ostrich);
+            this.updateTurnOrder(this.gamedatas.turnOrder, this.gamedatas.probePlayer, this.gamedatas.turnOrderArray);
 
 
 

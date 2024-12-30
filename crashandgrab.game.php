@@ -277,6 +277,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 				$result['turnOrder'] = $this->getGameStateValue("TURN_ORDER"); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 				$result['probePlayer'] = $this->getStartPlayer(); // get the owner of the saucer with the probe
+				$result['turnOrderFriendly'] = $this->convertTurnOrderIntToText($result['turnOrder']);
+				$result['turnOrderArray'] = $this->createTurnOrderArray($result['probePlayer'], $result['turnOrder']);
 
         return $result;
     }
