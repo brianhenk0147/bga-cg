@@ -357,6 +357,13 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                           size: "crewmember",
                           small: ""
                     } ) , 'square_'+x+'_'+y );
+
+                    var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color;
+                    if($(crewmemberHtmlId))
+                    {
+                            // make it wiggle
+                            dojo.addClass(crewmemberHtmlId, "wiggle");
+                    }
                 }
                 else if(location == "pile")
                 { // this garment is in the garment pile
@@ -2938,6 +2945,9 @@ console.log("return false");
 
             // give it a played class so it's rotated correctly
             dojo.addClass(source, 'played_'+crewmemberType);
+
+            // remove its wiggling
+            dojo.removeClass(source, "wiggle");
         },
 
         moveCrewmemberFromBoardToSaucerMatExtras: function(sourceSaucerColor, destinationSaucerColor, crewmemberColor, crewmemberType)
@@ -2960,6 +2970,9 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
 
                 // we'll slide it there
                 this.saucerMatExtraCrewmemberStocks[destinationSaucerColor]['primary'].addToStockWithId( uniqueId, uniqueId, crewmemberHtmlId );
+
+                // remove its wiggling
+                dojo.removeClass(crewmemberHtmlId, "wiggle");
             }
             else if($(crewmemberHtmlIdExtras))
             { // the crewmember exists in the extras of another saucer
@@ -3974,6 +3987,9 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     // give it a played class so it's rotated correctly
                     dojo.addClass(source, 'played_'+crewmemberType);
 
+                    // remove its wiggling
+                    dojo.removeClass(source, "wiggle");
+
                     animationSpeed = this.ANIMATION_SPEED_CREWMEMBER_PICKUP;
 
                     // add it to the stock on the player board
@@ -3986,7 +4002,8 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     var crewmemberColor = nextEvent['crewmember_color']; // ff0000
 
                     crewmemberType = nextEvent['crewmember_type']; // pilot, engineer
-console.log('crewmemberPickupExtras crewmemberType:'+crewmemberType);
+                    console.log('crewmemberPickupExtras crewmemberType:'+crewmemberType);
+
 /*
                     source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
@@ -6455,6 +6472,31 @@ console.log("success... onClickUpgradeCardInHand");
             }
         },
 
+        resetWiggling: function()
+        {
+            // remove all wiggling
+            dojo.query( '.crewmember' ).removeClass( 'wiggle' );
+
+            for( var i in this.gamedatas.garment )
+            {
+                var garment = this.gamedatas.garment[i];
+                var color = garment.garment_color; // the color of the crewmember
+                var location = garment.garment_location; // the color of the player who has this
+                var typeInt = garment.garment_type;
+                var typeString = this.convertCrewmemberType(typeInt);
+
+                if(location == "board")
+                {
+                    var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color;
+                    if($(crewmemberHtmlId))
+                    {
+                        // make them wiggle
+                        dojo.addClass(crewmemberHtmlId, "wiggle");
+                    }
+                }
+            }
+        },
+
 
         ///////////////////////////////////////////////////
         //// Player's action
@@ -7197,7 +7239,7 @@ console.log("success... onClickUpgradeCardInHand");
             dojo.subscribe( 'giveOverrideToken', this, "notif_giveOverrideToken");
             dojo.subscribe( 'useOverrideToken', this, "notif_useOverrideToken");
             dojo.subscribe( 'upgradeDeckReshuffled', this, "notif_upgradeDeckReshuffled" ); // called when deck needs to be reshuffled
-
+            dojo.subscribe( 'endTurn', this, "notif_endTurn"); // called at the very end of a saucer's turn, after clean-up
 
         },
 
@@ -7740,6 +7782,8 @@ console.log("success... onClickUpgradeCardInHand");
                       size: "crewmember",
                       small: ""
                 } ) , sourceStackHtmlId );
+
+                dojo.removeClass(source, "wiggle");
             }
 
 
@@ -7889,6 +7933,12 @@ console.log("success... onClickUpgradeCardInHand");
                             size: "crewmember",
                             small: ""
                         } ) , spaceHtmlId );
+            }
+
+            if($(garmentHtmlId))
+            {
+                // make it wiggle
+                dojo.addClass(garmentHtmlId, "wiggle");
             }
         },
 
@@ -8262,6 +8312,14 @@ console.log("success... onClickUpgradeCardInHand");
             var allUpgrades = notif.args.allUpgrades;
 
             this.resetUpgradeList(allUpgrades);
+        },
+
+        notif_endTurn: function( notif )
+        {
+
+            var allUpgrades = notif.args.allUpgrades;
+
+            this.resetWiggling();
         },
 
    });

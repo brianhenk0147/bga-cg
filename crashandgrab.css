@@ -2887,3 +2887,20 @@ margin-top: 6px;
 	transform: translatey(0px);
 	animation: float 6s ease-in-out infinite;
 }
+
+/* WIGGLE */
+@keyframes wiggle {
+  0% { transform: rotate(0deg); }
+ 80% { transform: rotate(0deg); }
+ 85% { transform: rotate(10deg); }
+ 95% { transform: rotate(-10deg); }
+100% { transform: rotate(0deg); }
+}
+
+div.wiggle {
+animation: wiggle 2.5s infinite;
+}
+
+div.wiggle:hover {
+animation: none;
+}
