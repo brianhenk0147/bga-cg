@@ -2900,7 +2900,3 @@ margin-top: 6px;
 div.wiggle {
 animation: wiggle 2.5s infinite;
 }
-
-div.wiggle:hover {
-animation: none;
-}

@@ -9730,7 +9730,7 @@ echo("<br>");
 
 		function executeWormholeSelectSaucer($saucerColor)
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
 				$mySaucerX = $this->getSaucerXLocation($saucerWhoseTurnItIs);
 				$mySaucerY = $this->getSaucerYLocation($saucerWhoseTurnItIs);
 
@@ -10067,23 +10067,31 @@ echo("<br>");
 		//    Saucer Teleporter: At the end of your turn, if you have not crashed, move to any empty Crash Site.
 		function executeChooseCrashSite( $crashSiteNumber )
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-				$playerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+				$saucerToPlace = $this->getSaucerWhoseTurnItIs();
+				$playerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerToPlace);
 
 				$crashSiteX = $this->getXOfCrashSite($crashSiteNumber);
 				$crashSiteY = $this->getYOfCrashSite($crashSiteNumber);
 
-				$this->placeSaucerOnSpace($saucerWhoseTurnItIs, $crashSiteX, $crashSiteY);
+				
 
 				$currentState = $this->getStateName();
 				if($currentState == 'chooseCrashSiteSaucerTeleporter')
 				{ // we are choosing a Crash Site from Saucer Teleporter
-						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+
+					// place the saucer whose turn it is
+					$this->placeSaucerOnSpace($saucerToPlace, $crashSiteX, $crashSiteY);
+
+					$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
 				elseif($currentState == 'chooseCrashSiteRegenerationGateway')
 				{ // we are choosing a Crash Site from Regeneration Gateway
 					
-					$stateUsedIn = $this->getUpgradeValue5($saucerWhoseTurnItIs, "Regeneration Gateway");
+					$saucerToPlace = $this->getLocationOfUpgradeCard("Regeneration Gateway");
+
+					$stateUsedIn = $this->getUpgradeValue5($saucerToPlace, "Regeneration Gateway");
+
+					$this->placeSaucerOnSpace($saucerToPlace, $crashSiteX, $crashSiteY);
 
 					if($stateUsedIn == "BEFORE_TURN")
 					{ // this is being used before the player's turn
@@ -12692,6 +12700,121 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				//throw new feException( "false saucerColor:$saucerColor upgradeName:$upgradeName" );
 					return false;
 			}
+		}
+
+		function getLocationOfUpgradeCard($upgradeName)
+		{
+			$sql = "SELECT card_location FROM upgradeCards WHERE ";
+
+			switch($upgradeName)
+			{
+					case "Blast Off Thrusters":
+					case 1:
+							$sql .= " card_type_arg=1";
+							break;
+
+					case "Wormhole Generator":
+					case 2:
+							$sql .= " card_type_arg=2";
+							break;
+
+					case "Afterburner":
+					case 3:
+							$sql .= " card_type_arg=3";
+							break;
+
+					case "Pulse Cannon":
+					case 4:
+							$sql .= " card_type_arg=4";
+							break;
+
+					case "Tractor Beam":
+					case 5:
+							$sql .= " card_type_arg=5";
+							break;
+
+					case "Saucer Teleporter":
+					case 6:
+							$sql .= " card_type_arg=6";
+							break;
+
+					case "Cloaking Device":
+					case 7:
+							$sql .= " card_type_arg=7";
+							break;
+
+					case "Waste Accelerator":
+					case 8:
+							$sql .= " card_type_arg=8";
+							break;
+
+					 case "Hyperdrive":
+					case 9:
+							$sql .= " card_type_arg=9";
+							break;
+
+					case "Scavenger Bot":
+					case 10:
+							$sql .= " card_type_arg=10";
+							break;
+
+					case "Distress Signaler":
+					case 11:
+							$sql .= " card_type_arg=11";
+							break;
+
+					case "Time Machine":
+					case 12:
+							$sql .= " card_type_arg=12";
+							break;
+
+					case "Regeneration Gateway":
+					case 13:
+							$sql .= " card_type_arg=13";
+							break;
+
+					case "Phase Shifter":
+					case 14:
+							$sql .= " card_type_arg=14";
+							break;
+
+					case "Cargo Hold":
+					case 15:
+							$sql .= " card_type_arg=15";
+							break;
+
+					case "Proximity Mines":
+					case 16:
+							$sql .= " card_type_arg=16";
+							break;
+
+					case "Landing Legs":
+					case 17:
+							$sql .= " card_type_arg=17";
+							break;
+
+					case "Quake Maker":
+					case 18:
+							$sql .= " card_type_arg=18";
+							break;
+
+					case "Rotational Stabilizer":
+					case 19:
+							$sql .= " card_type_arg=19";
+							break;
+
+					case "Airlock":
+					case 20:
+							$sql .= " card_type_arg=20";
+							break;
+			}
+
+			// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
+			$sql .= " LIMIT 1";
+
+			$location = self::getUniqueValueFromDb($sql);
+
+			return $location;
 		}
 
 		// Returns 1 if the saucer has this upgrade in play (but hasn't necessarily chosen to activate it this round).
