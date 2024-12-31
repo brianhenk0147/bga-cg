@@ -4108,6 +4108,22 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     // do not animate this
                     skipAnimation = true;
                 }
+                else if(eventType == 'midMoveQuestion')
+                { // they were asked a question while moving, like if they want to use their Waste Accelerator
+                    var saucerMoving = nextEvent['saucer_moving']; // ff0000
+                    var destinationX = nextEvent['destination_X']; // 5
+                    var destinationY = nextEvent['destination_Y']; // 7
+
+                    source = 'saucer_'+saucerMoving;
+                    destination = 'square_'+destinationX+'_'+destinationY;
+
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(source, destination);
+
+                    // do not animate this
+                    skipAnimation = true;
+
+                }
                 else if(eventType == 'saucerPush')
                 { // the saucer
 
@@ -7808,9 +7824,9 @@ console.log("success... onClickUpgradeCardInHand");
                       size: "crewmember",
                       small: ""
                 } ) , sourceStackHtmlId );
-
-                dojo.removeClass(source, "wiggle");
             }
+
+            dojo.removeClass(source, "wiggle"); // remove the wiggle
 
 
                     console.log('crewmemberType:'+crewmemberType);

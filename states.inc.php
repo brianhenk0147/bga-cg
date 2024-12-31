@@ -568,7 +568,7 @@ $machinestates = array(
     63 => array(
         "name" => "chooseCrewmemberToAirlock",
         "description" => clienttranslate('${saucerColor} is using their ${upgradeName}.'),
-        "descriptionmyturn" => clienttranslate('Airlock: You may exchange the ${crewmemberTakenColor} ${crewmemberTakenTypeString} you just picked up for one of these if you wish.'),
+        "descriptionmyturn" => clienttranslate('Airlock: You may exchange the ${crewmemberTakenColor} ${crewmemberTakenTypeString} you just picked up for one of these on the board if you wish.'),
         "type" => "activeplayer",
         'args' => 'argGetAirlockCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
@@ -611,7 +611,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argAskToProximityMine',
         "possibleactions" => array( "choosePhaseShift" ),
-        "transitions" => array(  "executingMove" => 70 )
+        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "endGame" => 99 )
     ),
 
     68 => array(

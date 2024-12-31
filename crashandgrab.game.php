@@ -3203,6 +3203,15 @@ echo("<br>");
 
 				$totalCrewmembersOfStealer = $this->getSeatedCrewmembersForSaucer($stealerSaucer);
 				$totalCrewmembersOfCrashed = $this->getSeatedCrewmembersForSaucer($crashedSaucer);
+
+				// get offcolored crewmembers
+				$allStealableCrewmembersFromCrashedSaucer = self::getObjectListFromDB( "SELECT garment_id, garment_color, garment_type
+																									FROM garment
+																									WHERE garment_location='$crashedSaucer' AND garment_color<>'$crashedSaucer'" );
+
+				
+
+				
 				if($totalCrewmembersOfStealer > $totalCrewmembersOfCrashed)
 				{ // stealer has more Crewmembers than the crashed saucer
 						// notify all players that stealer may not steal from crashed because they have more crewmembers
@@ -3212,11 +3221,16 @@ echo("<br>");
 						) );
 						return $result;
 				}
+				elseif(count($allStealableCrewmembersFromCrashedSaucer) == 0)
+				{ // they have nothing to steal
+					self::notifyAllPlayers( "nothingToSteal", clienttranslate( '${stealer_color} has nothing for ${stealee_color} to steal.' ), array(
+							'stealer_color' => $saucerColorFriendlyStealer,
+							'stealee_color' => $saucerColorFriendlyCrashed
+					) );
+					return $result;
+				}
 
-				$allStealableCrewmembersFromCrashedSaucer = self::getObjectListFromDB( "SELECT garment_id, garment_color, garment_type
-																									FROM garment
-																									WHERE garment_location='$crashedSaucer' AND garment_color<>'$crashedSaucer'" );
-
+				
 				$crewmemberIndex = 0;
 				foreach( $allStealableCrewmembersFromCrashedSaucer as $crewmember )
 				{ // go through all this saucer's off-colored crewmembers
@@ -8003,6 +8017,8 @@ echo("<br>");
 											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator'))
 										{ // they have Waste Accelerator played and they haven't used it yet this round
 
+											array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
 											// do not move any further because they will need to answer a question
 											return $moveEventList;
 										}
@@ -8054,6 +8070,8 @@ echo("<br>");
 												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')))
 												{ // this saucer has phase shifter or proximity mines played
 
+													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
 														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collide with it
 														// we'll clear these out if they choose not to phase shift
 														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
@@ -8070,7 +8088,7 @@ echo("<br>");
 								if($saucerWeCollideWith != "")
 								{	// there is a saucer here
 
-//throw new feException("colliding with:$saucerWeCollideWith");
+		//throw new feException("colliding with:$saucerWeCollideWith");
 										array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 
 										$pushedEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerWeCollideWith, true);
@@ -8197,6 +8215,8 @@ echo("<br>");
 											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator'))
 										{ // they have Waste Accelerator played and they haven't used it yet this round
 
+											array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
 											// do not move any further because they will need to answer a question
 											return $moveEventList;
 										}
@@ -8248,6 +8268,8 @@ echo("<br>");
 												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')))
 												{ // this saucer has phase shifter or proximity mines played
+
+													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
 														// we'll clear these out if they choose not to phase shift
@@ -8383,6 +8405,8 @@ echo("<br>");
 											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator'))
 										{ // they have Waste Accelerator played and they haven't used it yet this round
 
+											array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
 											// do not move any further because they will need to answer a question
 											return $moveEventList;
 										}
@@ -8434,6 +8458,9 @@ echo("<br>");
 												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')))
 												{ // this saucer has phase shifter or proximity mines played
+
+													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
 
 														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
 														// we'll clear these out if they choose not to phase shift
@@ -8566,6 +8593,8 @@ echo("<br>");
 											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator'))
 										{ // they have Waste Accelerator played and they haven't used it yet this round
 
+											array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
 											// do not move any further because they will need to answer a question
 											return $moveEventList;
 										}
@@ -8617,6 +8646,9 @@ echo("<br>");
 												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')))
 												{ // this saucer has phase shifter or proximity mines played
 
+													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
+													
 														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
 														// we'll clear these out if they choose not to phase shift
 														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
@@ -8630,7 +8662,7 @@ echo("<br>");
 								}
 
 								if($saucerWeCollideWith != "")
-								{	// there is an ostrich here
+								{	// there is another saucer here
 
 									array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 
@@ -9939,8 +9971,10 @@ echo("<br>");
 
 				//throw new feException( "executeSkipPhaseShifter");
 
-				// finish any movement that still remains
-				$this->gamestate->nextState( "executingMove" );
+				// figure out which type of move this is
+				$moveType = $this->getMoveTypeWeAreExecuting();
+
+				$this->setState_AfterMovementEvents($saucerWhoseTurnItIs, $moveType);
 		}
 
 		function executeSkipProximityMines()
@@ -10936,7 +10970,7 @@ echo("<br>");
 
 						$this->gamestate->nextState( "askToPhaseShift" );
 				}
-				elseif(count($airlockExchangeableCrewmembers) > 0)
+				elseif(count($airlockExchangeableCrewmembers) > 0 && $spaceType != "S" && $saucerWeCollideWith == "")
 				{ // there is at least one crewmember that can be exchanged
 
 						// get the ID of the highest crewmember available for exchange (in case they picked up 2 on the same turn)
@@ -14076,16 +14110,27 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetStealableCrewmembers()
 		{
+				//$currentPlayer = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				$activePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 				$saucerStealing = $this->getOstrichWhoseTurnItIs();
+				$ownerOfSaucerStealing = $this->getOwnerIdOfOstrich($saucerStealing);
 				$crashedSaucer = $this->nextPendingCrashReward($saucerStealing);
 				$crashedSaucerText = $this->convertColorToHighlightedText($crashedSaucer);
 				$saucerStealingText = $this->convertColorToHighlightedText($saucerStealing);
+
+				$stealableCrewmembers = array();
+
+				if($activePlayer == $ownerOfSaucerStealing)
+				{ // this is the player stealing (we don't want to get this for all players or we'll get duplicate message logs about stealing)
+					$stealableCrewmembers = self::getStealableCrewmembersFromSaucer($crashedSaucer);
+				}
+
 				// return both the location of all the
 				return array(
 						'saucerWhoCrashed' => $crashedSaucer,
 						'saucerWhoCrashedText' => $crashedSaucerText,
 						'saucerWhoIsStealingText' => $saucerStealingText,
-						'stealableCrewmembers' => self::getStealableCrewmembersFromSaucer($crashedSaucer)
+						'stealableCrewmembers' => $stealableCrewmembers
 				);
 		}
 
