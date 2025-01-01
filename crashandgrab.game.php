@@ -5197,7 +5197,7 @@ echo("<br>");
 		function getHighestAirlockExchangeableId()
 		{
 				$highestValue = $this->getHighestAirlockExchangeableMax();
-				return self::getUniqueValueFromDb("SELECT garment_id FROM garment WHERE airlock_exchangeable=$highestValue");
+				return self::getUniqueValueFromDb("SELECT garment_id FROM garment WHERE airlock_exchangeable=$highestValue LIMIT 1");
 		}
 
 		function getHighestAirlockExchangeableMax()
@@ -9643,7 +9643,8 @@ echo("<br>");
 					// since saucers don't get moved in the DOM while moving, we need to put them in the right spot
 					// before any special cases happen post-move... but we don't want to reset them if we're on an 
 					// accelerator because then the saucer won't be on the accelerator
-					$this->resetSaucersInDOM();
+					// THIS DIDN'T WORK BECAUSE IT MADE ANIMATIONS VERY JUMPY AND TOO QUICK IN MANY PLACES
+					//$this->resetSaucersInDOM();
 				}
 
 				// count crewmembers they can exchange with Airlock if they have it
@@ -10335,6 +10336,11 @@ echo("<br>");
 					'saucerColorHighlightedText' => $saucerColorHighlightedText
 				) );
 
+				$crewmemberTypeId = $this->convertGarmentTypeStringToInt($crewmemberType);
+				$crewmemberOnBoardId = $this->getCrewmemberIdFromColorAndType($crewmemberColor, $crewmemberTypeId);
+				$crashSiteX = $this->getGarmentXLocation($crewmemberOnBoardId);
+				$crashSiteY = $this->getGarmentYLocation($crewmemberOnBoardId);
+
 				// give the crewmember to the saucer int he DB and notify the UI
 				$this->moveCrewmemberToSaucerMat($saucerWhoseTurnItIs, $crewmemberType, $crewmemberColor);
 
@@ -10347,7 +10353,7 @@ echo("<br>");
 				$this->removeAirlockExchangeableForCrewmember($crewmemberIdTaken);
 
 				// place the Crewmember they originally took
-				$this->randomlyPlaceCrewmember($crewmemberIdTaken);
+				$this->placeCrewmemberOnSpace($crewmemberIdTaken, $crashSiteX, $crashSiteY);
 
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
@@ -10355,8 +10361,20 @@ echo("<br>");
 				}
 				else
 				{
-						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+					// allow them to undo if they wish
+					$this->gamestate->nextState( "finalizeMove" );
 				}
+		}
+
+		function executeSkipAirlock()
+		{
+			$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
+
+			// do not ask if this player wants to airlock their crewmembers again
+			$this->removeAirlockExchangeableForAll($saucerWhoseTurnItIs);
+
+			// allow them to undo if they wish
+			$this->gamestate->nextState( "finalizeMove" );
 		}
 
 		function executeStealCrewmember( $stolenTypeText, $stolenColor, $areWePassing, $areWeTaking )
@@ -10958,7 +10976,11 @@ echo("<br>");
 
 				// since saucers don't get moved in the DOM while moving, we need to put them in the right spot
 				// before we go into any special phases after movement
-				//$this->resetSaucersInDOM();
+				// DIDN'T WORK BECAUSE YOU LOSE ANIMATION...THEY SNAP TO THE FINAL SPACE INSTEAD OF ANIMATING
+				//if($spacesLeft == 0)
+				//{
+				//	$this->resetSaucersInDOM();
+				//}
 
 				$spaceType = $this->getBoardSpaceType($saucerX, $saucerY);
 
@@ -11163,6 +11185,51 @@ echo("<br>");
 			return false;
 		}
 
+		function insertDoneMovings($eventList)
+		{
+			$newList = array();
+			
+			$currentSaucerMoving = '';
+			foreach($eventList as $event)
+			{
+
+					$eventType = $event['event_type'];
+					
+					
+					if($eventType == 'saucerMove')
+					{
+						$saucerForEvent = $event['saucer_moving'];
+						if($currentSaucerMoving == '')
+						{ // this is the first saucer move event
+
+							// save it so we know when we've moved onto a new saucer
+							$currentSaucerMoving = $saucerForEvent;
+						}
+						elseif($currentSaucerMoving != $saucerForEvent)
+						{ // this is a different saucer moving (there must have been a saucerPush event in there)
+
+							// the previous one is done moving so let's add a doneMoving event for them
+							$lastSaucerMovingX = $this->getSaucerXLocation($currentSaucerMoving); // 7
+							$lastSaucerMovingY = $this->getSaucerYLocation($currentSaucerMoving); // 5
+							array_push($newList, array( 'event_type' => 'doneMoving', 'saucer_moving' => $currentSaucerMoving, 'destination_X' => $lastSaucerMovingX, 'destination_Y' => $lastSaucerMovingY));
+
+							// save it so we know when we've moved onto a new saucer
+							$currentSaucerMoving = $saucerForEvent;
+						}
+					}
+
+					// add this event to the list we will be returning
+					array_push($newList, $event);
+			}
+
+			// add a doneMoving event for the final saucer as well
+			$finalX = $this->getSaucerXLocation($currentSaucerMoving); // 7
+			$finalY = $this->getSaucerYLocation($currentSaucerMoving); // 5
+			array_push($newList, array( 'event_type' => 'doneMoving', 'saucer_moving' => $currentSaucerMoving, 'destination_X' => $finalX, 'destination_Y' => $finalY));
+
+			return $newList;
+		}
+
 		function updateGameLogForEvents($saucerMoving, $eventList)
 		{
 				$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerMoving);
@@ -11323,6 +11390,9 @@ echo("<br>");
 
 				//$eventCount = count($allEvents);
 				//throw new feException( "event count: $eventCount");
+
+				// at each point a saucer is done moving, we need to add an event to tell the front end that
+				$allEvents = $this->insertDoneMovings($allEvents);
 
 				return $allEvents;
 		}
@@ -11504,14 +11574,7 @@ echo("<br>");
 
 				$this->setAskedToActivateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, $collectorNumber);
 //throw new feException( "executeSkipActivateSpecificEndOfTurnUpgrade");
-				switch($collectorNumber)
-				{
-						case 20: // Airlock
-//throw new feException( "Airlock");
-								// do not ask if this player wants to airlock their crewmembers again
-								$this->removeAirlockExchangeableForAll($saucerWhoseTurnItIs);
-						break;
-				}
+				
 
 				if($this->doesPlayerHaveAnyEndOfTurnUpgradesToActivate($saucerWhoseTurnItIs))
 				{ // see if they want to use any end of turn upgrades
@@ -12443,6 +12506,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$nameOfPlayerWhoseTurnItWas = $this->getPlayerNameFromPlayerId($playerWhoseTurnItWas);
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 				$highlightedSaucerColor = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+
+				// reset crewmember properties
+				$this->resetCrewmembers();
 
 				// reset their override token setting in case they had one
 				$this->setHasOverrideToken($saucerWhoseTurnItIs, 0);
@@ -13405,7 +13471,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 								//throw new feException( "We found a good spot at X=".$locX." and Y=".$locY." we have saucerHere=".$saucerHere." and crewmemberHere=".$crewmemberHere);
 
-								// put the saucer on this crash site
+								// put the Crewmember on this crash site
 								$this->placeCrewmemberOnSpace($crewmemberId, $locX, $locY);
 
 								return true; // we found an unoccupied crash site
@@ -13714,9 +13780,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				// reset value for who murdered a saucer
 				$this->resetAllCliffPushers();
-
-				// reset crewmember properties
-				$this->resetCrewmembers();
 
 				// make all turn-related saucer values 0
 				$this->resetSaucers();

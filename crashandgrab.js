@@ -408,6 +408,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                         dojo.addClass( crewmemberHtmlId, 'played_'+typeString);
 
+                        // remove the wiggle from it
+                        dojo.removeClass(crewmemberHtmlId, "wiggle");
+
                         // in 2-player games, we must adjust the location of crewmembers because
                         // they get pushed down by the number of upgrades their teammat has
                         this.adjustCrewmemberLocationBasedOnUpgrades(location, typeString);
@@ -2284,7 +2287,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                             console.log(args.validCrewmembers);
 
                             // add a skip button in case they do not want to for some reason
-                            this.addActionButton( 'skipButton_20', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
+                            this.addActionButton( 'skipButton_20', _('Skip'), 'onClick_skipActivateAirlock', null, false, 'red' );
                       }
 
                   break;
@@ -4088,7 +4091,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     this.attachToNewParent(source, destination);
 
                     // do not animate this
-                    skipAnimation = true;
+                    //skipAnimation = true;
                 }
                 else if(eventType == 'pushedOntoAccelerator')
                 { // the saucer
@@ -4106,7 +4109,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     this.attachToNewParent(source, destination);
 
                     // do not animate this
-                    skipAnimation = true;
+                    //skipAnimation = true;
                 }
                 else if(eventType == 'midMoveQuestion')
                 { // they were asked a question while moving, like if they want to use their Waste Accelerator
@@ -4126,6 +4129,23 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                 }
                 else if(eventType == 'saucerPush')
                 { // the saucer
+
+                    // do not animate this
+                    skipAnimation = true;
+                }
+                else if(eventType == 'doneMoving')
+                {
+                    var saucerMoving = nextEvent['saucer_moving']; // ff0000
+                    var destinationX = nextEvent['destination_X']; // 5
+                    var destinationY = nextEvent['destination_Y']; // 7
+
+                    source = 'saucer_'+saucerMoving;
+                    destination = 'square_'+destinationX+'_'+destinationY;
+
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(source, destination);
+
+                    this.resetAllSaucerPositions();
 
                     // do not animate this
                     skipAnimation = true;
@@ -4179,7 +4199,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
 
                 // this should work if we ignored it when ending on an Accelerator but it takes 1 second for the animation to end and for it to snap back
                 // without adding the boardspacetype to this method call, it breaks accelerator usage and might break pushing saucers
-                this.resetAllSaucerPositions(); 
+                //this.resetAllSaucerPositions(); 
             }
 
             //TODO: ask for x and y location of all saucers and attach them to the correct space...
@@ -6742,6 +6762,12 @@ console.log("success... onClickUpgradeCardInHand");
             }, function( is_error) { } );
         },
 
+        onClick_skipActivateAirlock: function(evt)
+        {
+            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipActivateAirlock.html", { lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
         onClick_activateUpgrade: function( evt )
         {
             var node = evt.currentTarget.id; // upgradeButton_2
@@ -7413,6 +7439,8 @@ console.log("success... onClickUpgradeCardInHand");
             var saucerHtmlId = 'saucer_'+color;
             var space = 'square_'+x+'_'+y;
             this.attachToNewParent( saucerHtmlId, space );
+
+            this.resetAllSaucerPositions();
         },
 
         notif_iChoseDirection: function( notif )
@@ -7825,10 +7853,6 @@ console.log("success... onClickUpgradeCardInHand");
                       small: ""
                 } ) , sourceStackHtmlId );
             }
-
-            dojo.removeClass(source, "wiggle"); // remove the wiggle
-
-
                     console.log('crewmemberType:'+crewmemberType);
                     console.log('destinationSaucerColor:'+destinationSaucerColor);
                     var destination = crewmemberType+'_container_'+destinationSaucerColor; // pilot_container_f6033b
@@ -7840,6 +7864,9 @@ console.log("success... onClickUpgradeCardInHand");
 
                     // give it a played class so it's rotated correctly
                     dojo.addClass(source, 'played_'+crewmemberType);
+
+                    // remove the wiggle
+                    dojo.removeClass(source, "wiggle"); // remove the wiggle
 
                     // add it to the stock on the player board
                     this.addCrewmemberToPlayerBoard(destinationSaucerColor, crewmemberColor, crewmemberType);
@@ -7934,6 +7961,9 @@ console.log("success... onClickUpgradeCardInHand");
 
                 var rotatingClass = 'played_'+garmentType;
                 dojo.removeClass( source, rotatingClass ); // remove transform property because otherwise it will be rotated as it would be on ship mat
+
+                // make it wiggle
+                dojo.addClass(source, "wiggle");
             });
             animationId.play();
 

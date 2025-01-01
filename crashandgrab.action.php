@@ -311,6 +311,13 @@
         self::ajaxResponse( );
     }
 
+    public function actSkipActivateAirlock()
+    {
+        self::setAjaxMode();
+        $this->game->executeSkipAirlock();
+        self::ajaxResponse( );
+    }
+
     public function actExecuteStealCrewmember()
     {
         self::setAjaxMode();
