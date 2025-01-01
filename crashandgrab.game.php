@@ -12196,14 +12196,17 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				$turnOrder = $this->createTurnOrderArray($playerWithProbe, $turnOrderInt);
 
-				// notify players of the direction (send clockwise/counter)
-				self::notifyAllPlayers( 'updateTurnOrder', clienttranslate( 'The turn direction this round is ${turnOrderFriendly}.' ), array(
-								'i18n' => array('turnOrderFriendly'),
-								'turnOrderFriendly' => $turnOrderFriendly,
-								'turnOrder' => $turnOrderInt,
-								'probePlayer' => $playerWithProbe,
-								'turnOrderArray' => $turnOrder
-				) );
+				if($this->getNumberOfPlayers() > 2)
+				{
+					// notify players of the direction (send clockwise/counter)
+					self::notifyAllPlayers( 'updateTurnOrder', clienttranslate( 'The turn direction this round is ${turnOrderFriendly}.' ), array(
+									'i18n' => array('turnOrderFriendly'),
+									'turnOrderFriendly' => $turnOrderFriendly,
+									'turnOrder' => $turnOrderInt,
+									'probePlayer' => $playerWithProbe,
+									'turnOrderArray' => $turnOrder
+					) );
+				}
 		}
 
 		function createTurnOrderArray($playerWithProbe, $turnOrderInt)
