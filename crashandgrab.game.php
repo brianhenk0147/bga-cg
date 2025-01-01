@@ -295,14 +295,18 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
     */
     function getGameProgression()
     {
-				$players = self::loadPlayersBasicInfos();
+		$numberOfPlayers = $this->getNumberOfPlayers();
+		if($numberOfPlayers == 2)
+		{
+			$numberOfPlayers = 4; // since they each control 2 saucers, we need to treat them like a 4-player game for purposes of counting
+		}				
+		$maxCrewmembersNeededToWin = ($numberOfPlayers * 3) + 1; // get the maximum number of garments that can be acquired before someone wins
 
-				$maxGarments = ($this->getNumberOfPlayers() * 3) + 1; // get the maximum number of garments that can be acquired before winning
-				$numberOfGarmentsAcquired = $this->countTotalAcquiredGarments();
+		$numberOfSeatedCrewmembers = $this->countTotalSeatedCrewmembers();
 
-				$percentageCompleted = intval(100 * ($numberOfGarmentsAcquired / $maxGarments)); // divide current by max and multiply by 100 to get an integer between 1-100
+		$percentageCompleted = intval(100 * ($numberOfSeatedCrewmembers / $maxCrewmembersNeededToWin)); // divide current by max and multiply by 100 to get an integer between 1-100
 
-				//throw new feException( "PROGRESSION number of garments acquired " . $numberOfGarmentsAcquired . " and max garments " . $maxGarments . " and percentageCompleted " . $percentageCompleted);
+		//throw new feException( "PROGRESSION number of garments acquired " . $numberOfGarmentsAcquired . " and max garments " . $maxGarments . " and percentageCompleted " . $percentageCompleted);
 
         return $percentageCompleted;
     }
@@ -6448,12 +6452,12 @@ echo("<br>");
 				$this->discardTrapCard($trapCardToExecute['uniqueCardId'], false); // discard the trap card (and reset any other fields needed)
 		}
 
-		function countTotalAcquiredGarments()
+		function countTotalSeatedCrewmembers()
 		{
-				return self::getUniqueValueFromDb("SELECT COUNT(garment_id) FROM garment WHERE (garment_location<>'pile' AND garment_location<>'pile' AND garment_location<>'chosen')");
+				return self::getUniqueValueFromDb("SELECT COUNT(garment_id) FROM garment WHERE garment_location<>'board' AND garment_location<>'pile' AND garment_location<>'chosen' AND is_primary=1");
 		}
 
-		function getTotalCrewmembersForSaucer($saucerColor)
+		function countTotalCrewmembersForSaucer($saucerColor)
 		{
 				return self::getUniqueValueFromDb("SELECT COUNT(garment_id) FROM garment WHERE garment_location='$saucerColor'");
 		}
