@@ -10384,7 +10384,6 @@ echo("<br>");
 		function executeStealCrewmember( $stolenTypeText, $stolenColor, $areWePassing, $areWeTaking )
 		{
 				$saucerReceiving = $this->getOstrichWhoseTurnItIs();
-				$saucerReceivingHighlightedText = $this->convertColorToHighlightedText($saucerReceiving);
 				$saucerGiving = $this->getSaucerThatCrashed();
 				
 //throw new feException( "saucerReceiving:$saucerReceiving");
@@ -10399,6 +10398,7 @@ echo("<br>");
 						$saucerGiving = $this->getPlayersOtherSaucer($saucerReceiving);
 				}
 
+				$saucerReceivingHighlightedText = $this->convertColorToHighlightedText($saucerReceiving);
 				$saucerGivingHighlightedText = $this->convertColorToHighlightedText($saucerGiving);
 				self::notifyAllPlayers( "stealing", clienttranslate( '${saucerReceivingHighlightedText} is taking a Crewmember from ${saucerGivingHighlightedText}.' ), array(
 					'saucerGivingHighlightedText' => $saucerGivingHighlightedText,
