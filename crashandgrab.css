@@ -300,6 +300,11 @@ body {
     margin-bottom: 15px;
 }
 
+/***** Holds buttons like directional buttons when boosting/accelerating *****/
+#general_action_button_holder {
+    margin-top: 1px;
+}
+
 /***** SECTIONS *****/
 
 

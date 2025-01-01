@@ -1194,7 +1194,9 @@ var jstpl_overrideToken='<div class="override_token" id="override_${saucerColor}
 var jstpl_garment='<div class="${size} crewmember_${small}${garment_type}_${color}" id="crewmember_${garment_type}_${color}"></div>';
 var jstpl_garment_message_log='<div class="${size} crewmember_${small}${garment_type}_${color}" id="crewmember_message_${garment_type}_${color}"></div>';
 
+
 var jstpl_actionButtonHolder='<div id="saucer_${saucerNumber}_action_button_holder"></div>';
+var jstpl_actionButtonHolder_General='<div id="general_action_button_holder"></div>';
 var jstpl_actionButtonHolder_CrewmemberList='<div id="crewmember_action_button_holder"></div>';
 var jstpl_actionButtonHolder_SaucerList='<div id="saucer_action_button_holder"></div>';
 
