@@ -11027,7 +11027,6 @@ echo("<br>");
 				}
 				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") &&
 					  ($this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1) &&
-					  ($this->getAskedToActivateUpgrade($saucerMoving, "Waste Accelerator") == false) &&
 					  $this->isUpgradePlayable($saucerMoving, 'Waste Accelerator') &&
 					  $this->isCrashSite($spaceType) &&
 					  $wasAPushEvent == false &&
