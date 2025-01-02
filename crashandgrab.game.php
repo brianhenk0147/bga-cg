@@ -300,7 +300,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		{
 			$numberOfPlayers = 4; // since they each control 2 saucers, we need to treat them like a 4-player game for purposes of counting
 		}				
-		$maxCrewmembersNeededToWin = ($numberOfPlayers * 3) + 1; // get the maximum number of garments that can be acquired before someone wins
+		$maxCrewmembersNeededToWin = ($numberOfPlayers * 4); // get the maximum number of garments that can be acquired before someone wins
 
 		$numberOfSeatedCrewmembers = $this->countTotalSeatedCrewmembers();
 
