@@ -3655,7 +3655,7 @@ echo("<br>");
 				if($this->getNumberOfPlayers() != 2)
 				{ // this is not a 2-player game
 
-//						throw new feException( "not 2 player");
+//throw new feException( "not 2 player");
 
 						return false;
 				}
@@ -3664,7 +3664,7 @@ echo("<br>");
 				{ // they already skipped taking this round
 
 
-//								throw new feException( "skipped taking");
+//throw new feException( "skipped taking");
 
 						return false;
 				}
@@ -3677,7 +3677,7 @@ echo("<br>");
 				{ // they do not have crewmembers to take
 
 
-								//throw new feException( "no one to take");
+//throw new feException( "no one to take");
 
 						return false;
 				}
@@ -3692,7 +3692,8 @@ echo("<br>");
 						return true;
 					}
 				}
-				//throw new feException( "no ispassible");
+				
+//throw new feException( "no ispassible");
 				return false; // if we return here, then the two saucers never passed next to one another with the crewmember on board
 		}
 
@@ -9653,7 +9654,7 @@ echo("<br>");
 				// reset pushed setting so we don't think a saucer was pushed when we do our next move
 				$this->resetPushedForAllSaucers();
 
-			//throw new feException("Getting board space type after move events for saucer ($saucerMoving).");
+//throw new feException("setState_AfterMovementEvents with saucerWhoseTurnItIs ($saucerWhoseTurnItIs) saucerMoving ($saucerMoving) moveType ($moveType) wasPushed ($wasPushed).");
 				$boardValue = $this->getBoardSpaceTypeForOstrich($saucerWhoseTurnItIs); // get the type of space of the ostrich who just moved
 
 				if($boardValue != "S")
@@ -9667,6 +9668,8 @@ echo("<br>");
 
 				// count crewmembers they can exchange with Airlock if they have it
 				$airlockExchangeableCrewmembers = $this->getAirlockExchangeableCrewmembers();
+				//$count = count($airlockExchangeableCrewmembers);
+				//throw new feException("airlockExchangeableCrewmembers count ($count).");
 
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
@@ -9701,6 +9704,7 @@ echo("<br>");
 				}
 				else if($currentState == "crashPenaltyAskWhichToSteal")
 				{ // they were just asked which penalty they wanted for crashing someone
+//throw new feException("crashPenaltyAskWhichToSteal ($currentState).");
 						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
 				else
@@ -9713,7 +9717,7 @@ echo("<br>");
 
 								// reset the upgrade value_1 _2 _3 _4 for all saucers so we know movement for Landing Legs is complete
 								$this->resetAllUpgradeValues();
-
+//throw new feException("moveType ($moveType).");
 								// we don't want them to be able to undo their turn to skip finalizeMove
 								$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 						}
@@ -10399,6 +10403,8 @@ echo("<br>");
 		{
 				$saucerReceiving = $this->getOstrichWhoseTurnItIs();
 				$saucerGiving = $this->getSaucerThatCrashed();
+
+				$moveType = $this->getMoveTypeWeAreExecuting();
 				
 //throw new feException( "saucerReceiving:$saucerReceiving");
 				if($areWePassing)
@@ -10441,12 +10447,13 @@ echo("<br>");
 				}
 				elseif($areWePassing)
 				{ // we are passing a Crewmember to our other Saucer
-						$this->setState_AfterMovementEvents($saucerGiving, true); // set to true because we're already passed the boosting if we're passing so that is safest
+					
+					$this->setState_AfterMovementEvents($saucerGiving, $moveType, true); // set to true because we're already passed the boosting if we're passing so that is safest
 
 				}
 				elseif($areWeTaking)
 				{
-						$this->setState_AfterMovementEvents($saucerReceiving, true); // set to true because we're already passed the boosting if we're taking so that is safest
+					$this->setState_AfterMovementEvents($saucerReceiving, $moveType, true); // set to true because we're already passed the boosting if we're taking so that is safest
 				}
 				else
 				{ // this is a standard steal, not passing between saucers
