@@ -1067,7 +1067,11 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                             this.CHOSEN_ROTATION_TIMES--;
                         }
 
-                        this.rotateTo( 'board_tile_'+this.CHOSEN_ROTATION_TILE, this.CHOSEN_ROTATION_TIMES*90 );
+                        var tileHtmlId = 'board_tile_'+this.CHOSEN_ROTATION_TILE;
+                        if($(tileHtmlId))
+                        {
+                            this.rotateTo( tileHtmlId, this.CHOSEN_ROTATION_TIMES*90 );
+                        }
                 },
 
                 onConfirmTileToRotate: function(evt)
