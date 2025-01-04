@@ -7994,8 +7994,22 @@ console.log("success... onClickUpgradeCardInHand");
             if(slide == true)
             {
                 console.log('moving ' + garmentHtmlId + ' to ' + spaceHtmlId);
-                this.slideToObject( garmentHtmlId, spaceHtmlId).play();
-                this.slideToObject( garmentHtmlId, spaceHtmlId).play(); // it flies off the screen if we don't do this twice... we could place it first but would need the original x/y passed in
+                //this.slideToObject( garmentHtmlId, spaceHtmlId).play();
+                //this.slideToObject( garmentHtmlId, spaceHtmlId).play(); // it flies off the screen if we don't do this twice... we could place it first but would need the original x/y passed in
+
+                var animationId = this.slideToObject( garmentHtmlId, spaceHtmlId, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
+                dojo.connect(animationId, 'onEnd', () => {
+
+                    // after sliding, the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
+                    //$(source).style.removeProperty('left'); // remove left property
+                    //$(source).style.removeProperty('top'); // remove top property
+
+                    // give it a new parent so it's no longer on the space
+                    this.attachToNewParent(garmentHtmlId, spaceHtmlId);
+
+                });
+                animationId.play();
+
             }
             else
             { // we don't want them to slide there, we just want to place them there

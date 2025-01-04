@@ -2470,11 +2470,11 @@ echo("<br>");
 
 						// Pulse Cannon
 						case 4:
-								return clienttranslate( 'At the start and end of your turn, push any Saucers in your row or column 1 space away from you.');
+								return clienttranslate( 'At the end of your turn, push a Saucer in your row or column 1 space away from you.');
 
 						// Tractor Beam
 						case 5:
-								return clienttranslate( 'At the end of your turn, pick up 1 Crewmember up to 2 spaces away from you.');
+								return clienttranslate( 'At the end of your turn, pick up a Crewmember up to 2 spaces away from you.');
 
 						// Saucer Teleporter
 						case 6:
@@ -2892,30 +2892,6 @@ echo("<br>");
 								$result[$index]['makeRed'] = false;
 
 								$index++;
-						}
-				}
-
-				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon') &&
-						$this->getUpgradeTimesActivatedThisRound($saucerColor, 'Pulse Cannon') < 1 &&
-						$this->isUpgradePlayable($saucerColor, 'Pulse Cannon'))
-				{ // they have played Pulse Cannon but they have not yet activated it this round
-
-						if(!$this->isSaucerCrashed($saucerColor))
-						{ // they are not crashed
-
-								if($this->isSaucerInRowOrColumnOfSaucer($saucerColor))
-								{ // there is another saucer in the row or column of our saucer
-
-										$result[$index] = array();
-										$result[$index]['buttonId'] = 'upgradeButton_4';
-										$result[$index]['buttonLabel'] = $this->getUpgradeTitleFromCollectorNumber(4);
-										$result[$index]['hoverOverText'] = '';
-										$result[$index]['actionName'] = 'activateUpgrade';
-										$result[$index]['isDisabled'] = false;
-										$result[$index]['makeRed'] = false;
-
-										$index++;
-								}
 						}
 				}
 
@@ -5893,16 +5869,6 @@ echo("<br>");
 						array_push($result, $upgradeArray);
 				}
 
-				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon'))
-				{
-					//throw new feException( "Pulse Cannon ");
-						$upgradeArray = array();
-						$upgradeArray['collectorNumber'] = 4;
-						$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(4);
-
-						array_push($result, $upgradeArray);
-				}
-
 				return $result;
 		}
 
@@ -5925,27 +5891,6 @@ echo("<br>");
 								$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(1);
 
 								array_push($result, $upgradeArray);
-						}
-				}
-
-				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon') &&
-				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Pulse Cannon') < 1 &&
-					 $this->getAskedToActivateUpgrade($saucerColor, 'Pulse Cannon') == false &&
-					 $this->isUpgradePlayable($saucerColor, 'Pulse Cannon'))
-				{ // they have played this upgrade but they have not yet activated it
-
-						if($this->isSaucerInRowOrColumnOfSaucer($saucerColor))
-						{ // there is another saucer in the row or column of our saucer
-							//throw new feException( "true dat");
-
-								if(!$this->isSaucerCrashed($saucerColor))
-								{ // they are not crashed
-										$upgradeArray = array();
-										$upgradeArray['collectorNumber'] = 4;
-										$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(4);
-
-										array_push($result, $upgradeArray);
-								}
 						}
 				}
 
@@ -8000,6 +7945,7 @@ echo("<br>");
 								if($wasPushed)
 								{
 									self::incStat( 1, 'distance_you_were_pushed', $playerMoving );
+									self::incStat( 1, 'distance_moved', $playerMoving );
 								}
 								else
 								{
@@ -8198,6 +8144,7 @@ echo("<br>");
 								if($wasPushed)
 								{
 									self::incStat( 1, 'distance_you_were_pushed', $playerMoving );
+									self::incStat( 1, 'distance_moved', $playerMoving );
 								}
 								else
 								{
@@ -8388,6 +8335,7 @@ echo("<br>");
 								if($wasPushed)
 								{
 									self::incStat( 1, 'distance_you_were_pushed', $playerMoving );
+									self::incStat( 1, 'distance_moved', $playerMoving );
 								}
 								else
 								{
@@ -8576,6 +8524,7 @@ echo("<br>");
 								if($wasPushed)
 								{
 									self::incStat( 1, 'distance_you_were_pushed', $playerMoving );
+									self::incStat( 1, 'distance_moved', $playerMoving );
 								}
 								else
 								{
