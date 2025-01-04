@@ -69,13 +69,13 @@ class CrashAndGrab extends Table
 				$this->RIGHT_DIRECTION = 'asteroids';
 
 				// colors
-				$this->REDCOLOR = "f6033b";
-				$this->YELLOWCOLOR = "fedf3d";
-				$this->BLUECOLOR = "0090ff";
-				$this->GREENCOLOR = "01b508";
-				$this->PURPLECOLOR = "b92bba";
+				$this->REDCOLOR = "b83a4b";
+				$this->YELLOWCOLOR = "f8e946";
+				$this->BLUECOLOR = "009add";
+				$this->GREENCOLOR = "228848";
+				$this->PURPLECOLOR = "753bbd";
 				//$this->GRAYCOLOR = "c9d2db";
-				$this->ORANGECOLOR = "e77324";
+				$this->PINKCOLOR = "ff3eb5";
 
 
 				$this->LAST_MOVED_OSTRICH = "";
@@ -469,7 +469,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						$sqlGarment = "INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES ";
 						$sqlGarment .= "(".$locX.",".$locY.",'".$location."','".$color."',".$type.") ";
 						//echo "locX ($locX) locY ($locY) location($location) color ($color) type ($type) <br>";
-						//self::DbQUery("INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES (0,0,'pile','f6033b',0)");
+						//self::DbQUery("INSERT INTO garment (garment_x,garment_y,garment_location,garment_color,garment_type) VALUES (0,0,'pile','b83a4b',0)");
 						self::DbQuery( $sqlGarment );
 
 						// BODY
@@ -692,7 +692,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 		// get a valid color that doesn't match one already assigned to a player
 		function getUniqueSaucerColor()
 		{
-				$possibleColors = array( "f6033b", "01b508", "0090ff", "fedf3d", "b92bba", "e77324" );
+				$possibleColors = array( "b83a4b", "228848", "009add", "f8e946", "753bbd", "ff3eb5" );
 
 				// remove colors that belong to a player
 				$sqlGetPlayerColors = "SELECT player_color ";
@@ -815,8 +815,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							return clienttranslate('GREEN');
 						case $this->PURPLECOLOR:
 							return clienttranslate('PURPLE');
-						case $this->ORANGECOLOR:
-							return clienttranslate('ORANGE');
+						case $this->PINKCOLOR:
+							return clienttranslate('PINK');
 				}
 
 				return clienttranslate('UNKNOWN');
@@ -836,8 +836,8 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							return $this->GREENCOLOR;
 						case "PURPLE":
 							return $this->PURPLECOLOR;
-						case "ORANGE":
-							return $this->ORANGECOLOR;
+						case "PINK":
+							return $this->PINKCOLOR;
 				}
 
 				return "";
@@ -1607,7 +1607,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						$movesForSaucer = $this->getMovesForSaucer($color);
 
 /*
-if($color == '0090ff')
+if($color == '009add')
 {
 						//$count = count($movesForSaucer);
 						//throw new feException( "movesForSaucer Count:$count" );
@@ -1652,9 +1652,9 @@ if($color == '0090ff')
 		function getMovesForSaucer($color, $specificMoveCard='', $specificDirection='')
 		{
 				$result = array();
-				if($color == '0090ff')
+				if($color == '009add')
 				{
-//throw new feException( "b92bba specificMoveCard:$specificMoveCard" );
+//throw new feException( "753bbd specificMoveCard:$specificMoveCard" );
 				}
 				$availableMoveCards = $this->getAvailableMoveCardsForSaucer($color);
 
@@ -1806,9 +1806,9 @@ if($color == '0090ff')
 												for ($y = ($startColumn + 1); $y <= ($startColumn + $offset); $y++) 
 												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
 														$spaceType = $this->getBoardSpaceType($y, $startRow);
-//if($saucerColor == 'b92bba' && $spaceType == 'S')
+//if($saucerColor == '753bbd' && $spaceType == 'S')
 /*
-if($saucerColor == '01b508')
+if($saucerColor == '228848')
 {
 echo("($startRow,$y):$spaceType");
 echo("<br>");
@@ -1837,7 +1837,7 @@ echo("<br>");
 										break;
 
 										case 'meteor':
-										if($saucerColor == 'f6033b')
+										if($saucerColor == 'b83a4b')
 										{
 											//throw new feException( "saucerColor:$saucerColor startRow:$startRow startColumn:$startColumn offset:$offset");
 										}
@@ -1845,12 +1845,12 @@ echo("<br>");
 												for ($x = ($startRow + 1); $x <= ($startRow + $offset); $x++) 
 												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
 														$spaceType = $this->getBoardSpaceType($startColumn, $x);
-														//if($saucerColor == 'f6033b')
+														//if($saucerColor == 'b83a4b')
 														//{
 														//throw new feException( "saucerColor:$saucerColor x:$x startColumn:$startColumn spaceType:$spaceType");
 														//}
 														/*
-														if($saucerColor == '01b508')
+														if($saucerColor == '228848')
 														{
 														echo("($startColumn,$x):$spaceType");
 														echo("<br>");
@@ -5449,12 +5449,12 @@ echo("<br>");
 		// whether each is the primary or extra.
 		function setCrewmemberPrimaryAndExtras($saucerColor, $crewmemberTypeAsInt)
 		{
-			if($saucerColor == 'f6033b')
+			if($saucerColor == 'b83a4b')
 			{
 				//throw new feException( "saucerColor:$saucerColor");
 			}
 
-			if($saucerColor == 'b92bba')
+			if($saucerColor == '753bbd')
 			{
 				//throw new feException( "saucerColor:$saucerColor");
 			}
@@ -6660,8 +6660,37 @@ echo("<br>");
 							elseif($numberOfTimesClockwise == 2)
 							{
 										// rotate 180
-										$newGarmentX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentGarmentY)+1; //newX=(xOffset+yOffset+4)-oldY+1
-										$newGarmentY = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentGarmentX)+1; //newY=(yOffset+xOffset+4)-oldX+1
+										//$newGarmentX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentGarmentY)+1; //newX=(xOffset+yOffset+4)-oldY+1
+										//$newGarmentY = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentGarmentX)+1; //newY=(yOffset+xOffset+4)-oldX+1
+
+										//$newGarmentX = (($xOffsetOfTile+$yOffsetOfTile+5)-$currentGarmentX); //newX=(xOffset+yOffset+4)-oldY+1
+										//$newGarmentY = (($xOffsetOfTile+$yOffsetOfTile+5)-$currentGarmentY); //newY=(yOffset+xOffset+4)-oldX+1
+
+										// convert to 1-based matrices
+										$currentCrewmemberX1 = $currentGarmentX - $xOffsetOfTile; // 1-4
+										$currentCrewmemberY1 = $currentGarmentY - $yOffsetOfTile; // 1-4
+
+										// rotate it as if it had no offsets
+										$newCrewmemberX1 = 5 - $currentCrewmemberX1; // 1-4
+										$newCrewmemberY1 = 5 - $currentCrewmemberY1; // 1-4
+
+										// add in the offsets
+										$newGarmentX = $newCrewmemberX1 + $xOffsetOfTile;
+										$newGarmentY = $newCrewmemberY1 + $yOffsetOfTile;
+
+
+/*
+										echo "xOffsetOfTile:$xOffsetOfTile <br>";
+										echo "yOffsetOfTile:$yOffsetOfTile <br>";
+										echo "currentGarmentX:$currentGarmentX <br>";
+										echo "currentGarmentY:$currentGarmentY <br>";
+										echo "currentCrewmemberX1:$currentCrewmemberX1 <br>";
+										echo "currentCrewmemberY1:$currentCrewmemberY1 <br>";
+										echo "newCrewmemberX1:$newCrewmemberX1 <br>";
+										echo "newCrewmemberY1:$newCrewmemberY1 <br>";
+										echo "newGarmentX:$newGarmentX <br>";
+										echo "newGarmentY:$newGarmentY <br>";
+*/
 
 							}
 							elseif($numberOfTimesClockwise == 3)
@@ -6776,8 +6805,44 @@ echo("<br>");
 								elseif($numberOfTimesClockwise == 2)
 								{
 										// rotate 180
-										$newOstrichX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichY)+1; //newX=(xOffset+yOffset+4)-oldY+1
-										$newOstrichY = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichX)+1; //newY=(yOffset+xOffset+4)-oldX+1
+										//$newOstrichX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichY)+1; //newX=(xOffset+yOffset+4)-oldY+1
+										//$newOstrichY = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichX)+1; //newY=(yOffset+xOffset+4)-oldX+1
+										//$newOstrichX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichY)+1; //newX=(xOffset+yOffset+4)-oldY+1
+										//$newOstrichY = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichX)+1; //newY=(yOffset+xOffset+4)-oldX+1
+										//$newOstrichX = (($xOffsetOfTile+$yOffsetOfTile+5)-$currentOstrichX); //newX=(xOffset+yOffset+4)-oldY+1
+										//$newOstrichY = (($xOffsetOfTile+$yOffsetOfTile+5)-$currentOstrichY); //newY=(yOffset+xOffset+4)-oldX+1
+
+										// rotate 90 once
+										//$newOstrichX = (($xOffsetOfTile+$yOffsetOfTile+4)-$currentOstrichY)+1; //newX=(xOffset+yOffset+4)-oldY+1
+										//$newOstrichY = $currentOstrichX+($yOffsetOfTile-$xOffsetOfTile); //newY=oldX+(yOffset-xOffset)
+
+										// rotate 90 again
+										//$newOstrichX = (($xOffsetOfTile+$yOffsetOfTile+4)-$newOstrichY)+1; //newX=(xOffset+yOffset+4)-oldY+1
+										//$newOstrichY = $newOstrichX+($yOffsetOfTile-$xOffsetOfTile)-1; //newY=oldX+(yOffset-xOffset)
+
+										// convert to 1-based matrices
+										$currentSaucerX1 = $currentOstrichX - $xOffsetOfTile; // 1-4
+										$currentSaucerY1 = $currentOstrichY - $yOffsetOfTile; // 1-4
+
+										// rotate it as if it had no offsets
+										$newSaucerX1 = 5 - $currentSaucerX1; // 1-4
+										$newSaucerY1 = 5 - $currentSaucerY1; // 1-4
+
+										// add in the offsets
+										$newOstrichX = $newSaucerX1 + $xOffsetOfTile;
+										$newOstrichY = $newSaucerY1 + $yOffsetOfTile;
+/*
+										echo "xOffsetOfTile:$xOffsetOfTile <br>";
+										echo "yOffsetOfTile:$yOffsetOfTile <br>";
+										echo "currentOstrichX:$currentOstrichX <br>";
+										echo "currentOstrichY:$currentOstrichY <br>";
+										echo "currentSaucerX1:$currentSaucerX1 <br>";
+										echo "currentSaucerY1:$currentSaucerY1 <br>";
+										echo "newSaucerX1:$newSaucerX1 <br>";
+										echo "newSaucerY1:$newSaucerY1 <br>";
+										echo "newOstrichX:$newOstrichX <br>";
+										echo "newOstrichY:$newOstrichY <br>";
+*/
 
 								}
 								elseif($numberOfTimesClockwise == 3)
@@ -9429,23 +9494,23 @@ echo("<br>");
 		{
 				switch($ostrichColor)
 				{
-						case "f6033b":
+						case "b83a4b":
 							return "RED";
 
-						case "fedf3d":
+						case "f8e946":
 							return "YELLOW";
 
-            case "0090ff":
+            case "009add":
 							return "BLUE";
 
-            case "01b508":
+            case "228848":
 							return "GREEN";
 
-						case "b92bba":
+						case "753bbd":
 							return "PURPLE";
 
-						case "e77324":
-							return "ORANGE";
+						case "ff3eb5":
+							return "PINK";
 				}
 
 				return "unknown";
@@ -10162,7 +10227,7 @@ echo("<br>");
 
 		// Called when a player chooses a Distress Signaler crewmember to TAKE.
 		// We need to move a Crewmember from a target saucer to the Distress Signaler's saucer.
-		// The arguments are the crewmember type ("pilot") and color ("f6033b") being taken.
+		// The arguments are the crewmember type ("pilot") and color ("b83a4b") being taken.
 		function executeDistressSignalerTakeCrewmember($crewmemberType, $crewmemberColor)
 		{
 			//throw new feException( "crewmemberType:$crewmemberType crewmemberColor:$crewmemberColor");
@@ -13733,7 +13798,30 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 //throw new feException( "endRoundCleanup");
 
-			$this->removeSummoningSickness();
+				// allow upgrades that were played this round to be used
+				$this->removeSummoningSickness();
+
+				// erase all choices players made for their X value
+				$this->resetXValueChoices();
+
+				// mark all crash penalties to 0
+				$this->resetCrashPenalties();
+
+				// reset value for who murdered a saucer
+				$this->resetAllCliffPushers();
+
+				// make all turn-related saucer values 0
+				$this->resetSaucers();
+
+				// set all card to the unchosen state
+				$this->resetAllCardChosenState();
+
+				// mark all upgrades as not having been activated yet in the round
+				$this->resetAllUpgradesActivatedThisRound();
+
+				// reset all choices for who goes first
+				$this->resetOstrichChosen(); // mark all ostriches as not yet chosen
+			
 
 				// starting with Probe player and going clockwise, check each Saucer to see if one crashed
 				$crashedSaucer = $this->getSaucerThatCrashed();
@@ -13761,7 +13849,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						{ // player does NOT have Regeneration Gateway active
 
 								// randomly place Saucer
-								$this->gamestate->nextState( "endRoundPlaceCrashedSaucer" );
+								$this->executeClickedSaucerToPlace($crashedSaucer);
+								//$this->gamestate->nextState( "endRoundPlaceCrashedSaucer" );
+								$this->gamestate->nextState( "endRoundCleanUp" );
 						}
 				}
 				else
@@ -13777,78 +13867,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				  	$this->gamestate->nextState( "newRound" ); // use the newRound transition to go to the plan phase
 
 				}
-
-				// erase all choices players made for their X value
-				$this->resetXValueChoices();
-
-				// mark all crash penalties to 0
-				$this->resetCrashPenalties();
-
-				// reset value for who murdered a saucer
-				$this->resetAllCliffPushers();
-
-				// make all turn-related saucer values 0
-				$this->resetSaucers();
-
-				// set all card to the unchosen state
-				$this->resetAllCardChosenState();
-
-				// mark all upgrades as not having been activated yet in the round
-				$this->resetAllUpgradesActivatedThisRound();
-
-				// reset all choices for who goes first
-				$this->resetOstrichChosen(); // mark all ostriches as not yet chosen
-
-/*
-				$this->gamestate->setAllPlayersMultiactive(); // set all players to active
-
-				$this->resetTrapsDrawnThisRound();
-				$this->resetDizziness(); // make all ostriches not dizzy
-				$this->resetOstrichChosen(); // mark all ostriches as not yet chosen
-				$this->resetAllOstrichZigs(); // reset ostrich zig values
-
-
-				// discard all cards played this rounds
-				$playedCards = $this->movementCards->getCardsInLocation( 'played' ); // get all the cards that have been played this round
-				foreach( $playedCards as $card )
-        { // go through all the cards that were played
-					  $card_id = $card['id'];
-						$player_id = $card['location_arg'];
-						$this->movementCards->moveCard( $card_id, 'discard', $player_id ); // move the card to the discard pile
-
-						self::notifyAllPlayers( 'discardPlayedZig', "", array(
-                'player_id' => $player_id
-            ) );
-				}
-
-				$this->resetDiscardedZigs(); // then any cards that are discarded need to be reset to factory default
-
-
-				// DRAW NEW CARD
-				$players = self::loadPlayersBasicInfos();
-
-				global $g_user;
-				$current_player_id = $g_user->get_id();
-
-				foreach( $players as $player_id => $player )
-		    {
-						$cardsInPlayerHand = $this->movementCards->getCardsInLocation( 'hand', $player_id ); // get the Zigs in this player's hand
-
-						if(count($cardsInPlayerHand) < 4)
-						{ // they have under the hand limit
-				        $cards = $this->movementCards->pickCards( 1, 'movementCardDeck', $player_id );
-								$this->updateZigDrawStats($cards, $player_id); // update the statistics about zig cards being drawn
-
-				        // Notify player about their cards
-				        self::notifyPlayer( $player_id, 'drawZigs', '', array(
-				            'cards' => $cards
-				         ) );
-					 }
-		    }
-
-				$this->updateTurnOrder(false); // hide the turn direction arrows
-*/
-
 		}
 
 		function giveOverrideTokens()

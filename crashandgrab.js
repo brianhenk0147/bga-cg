@@ -32,12 +32,12 @@ function (dojo, declare) {
             // this.myGlobalValue = 0;
 
             // colors
-            this.REDCOLOR = "f6033b";
-            this.YELLOWCOLOR = "fedf3d";
-            this.BLUECOLOR = "0090ff";
-            this.GREENCOLOR = "01b508";
-            this.PURPLECOLOR = "b92bba";
-            this.ORANGECOLOR = "e77324";
+            this.REDCOLOR = "b83a4b";
+            this.YELLOWCOLOR = "f8e946";
+            this.BLUECOLOR = "009add";
+            this.GREENCOLOR = "228848";
+            this.PURPLECOLOR = "753bbd";
+            this.PINKCOLOR = "ff3eb5";
 
             this.NUMBER_OF_PLAYERS = 0;
 
@@ -388,13 +388,13 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 else
                 { // this crewmember has been claimed by a player
                     // var matLocationHtmlId = 'mat_'+typeString+"_"+wearingOrBackpack+"_"+currentTypeLocationCount+"_"+location;
-                    //location = '0090ff';
+                    //location = '009add';
                     console.log('isPrimary:'+isPrimary);
                     if(isPrimary == 1)
                     { // this goes directly on the mat
 
-                        var matLocationHtmlId = typeString+'_container_'+location; // example: pilot_container_f6033b
-                        var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color; // example: crewmember_pilot_01b508
+                        var matLocationHtmlId = typeString+'_container_'+location; // example: pilot_container_b83a4b
+                        var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color; // example: crewmember_pilot_228848
 
                         console.log('matLocationHtmlId:'+matLocationHtmlId+' crewmemberHtmlId:'+crewmemberHtmlId);
 
@@ -820,8 +820,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 {
                     console.log( "Clicked undo when waiting for other players to confirm." );
 
-                    var saucer1Color = this.gamedatas.saucer1; // 01b508
-                    var saucer2Color = this.gamedatas.saucer2; // 01b508
+                    var saucer1Color = this.gamedatas.saucer1; // 228848
+                    var saucer2Color = this.gamedatas.saucer2; // 228848
                     this.ajaxcall( "/crashandgrab/crashandgrab/actClickedUndoConfirmMove.html", {
                         saucer1Color: saucer1Color,
                         saucer2Color: saucer2Color,
@@ -850,8 +850,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     if(this.isCurrentPlayerActive() && this.checkAction( 'confirmMove', true ))
                     { // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
 
-                        var saucer1Color = this.gamedatas.saucer1; // 01b508
-                        var saucer1Distance = this.CHOSEN_MOVE_CARD_SAUCER_1; // move_card_1_01b508
+                        var saucer1Color = this.gamedatas.saucer1; // 228848
+                        var saucer1Distance = this.CHOSEN_MOVE_CARD_SAUCER_1; // move_card_1_228848
                         if(saucer1Distance != '')
                           saucer1Distance = saucer1Distance.split('_')[2]; // 0, 1, 2
 
@@ -859,7 +859,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                         if(saucer1Direction != '')
                           saucer1Direction = saucer1Direction.split('_')[1]; // asteroids
 
-                        var saucer2Color = this.gamedatas.saucer2; // 01b508
+                        var saucer2Color = this.gamedatas.saucer2; // 228848
                         var saucer2Distance = this.CHOSEN_MOVE_CARD_SAUCER_2;
                         if(saucer2Distance != '')
                           saucer2Distance = saucer2Distance.split('_')[2]; // 0, 1, 2
@@ -898,9 +898,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 //     A) They are choosing the move card they will play this round.
                 onClick_moveCard: function( evt )
                 {
-                    var htmlIdOfCard = evt.currentTarget.id; // move_card_2_f6033b
+                    var htmlIdOfCard = evt.currentTarget.id; // move_card_2_b83a4b
                     console.log( "A move card was clicked with node "+htmlIdOfCard+"." );
-                    var color = htmlIdOfCard.split('_')[3]; // 0090ff
+                    var color = htmlIdOfCard.split('_')[3]; // 009add
                     var distanceType = htmlIdOfCard.split('_')[2]; // 0,1,2
                     var saucerNumber = 2;
                     if(color == this.gamedatas.saucer1)
@@ -913,7 +913,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 selectMoveCard: function (distanceType, color, saucerNumber)
                 {
-                    var htmlIdOfCard = 'move_card_'+distanceType+'_'+color; // move_card_2_f6033b
+                    var htmlIdOfCard = 'move_card_'+distanceType+'_'+color; // move_card_2_b83a4b
                     var htmlIdOfButton = 'moveCard_'+saucerNumber+'_distance_'+distanceType+'_button'; // moveCard_1_distance_2_button
                     if(!this.isCurrentPlayerActive())
                     {
@@ -1101,9 +1101,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 onClick_saucerButtonClick: function (evt)
                 {
-                    var htmlIdOfButton = evt.currentTarget.id; // wormhole_saucer_button_01b508
+                    var htmlIdOfButton = evt.currentTarget.id; // wormhole_saucer_button_228848
                     var type = htmlIdOfButton.split('_')[0]; // wormhole
-                    var saucerColor = htmlIdOfButton.split('_')[3]; // b92bba
+                    var saucerColor = htmlIdOfButton.split('_')[3]; // 753bbd
                     console.log( "A saucer button was clicked during wormhole generation or pulse cannon activation with node "+htmlIdOfButton+"." );
 
                     switch(type)
@@ -1120,9 +1120,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 onClick_SaucerButton: function(evt)
                 {
-                    var htmlIdOfButton = evt.currentTarget.id; // saucer_f6033b_button
+                    var htmlIdOfButton = evt.currentTarget.id; // saucer_b83a4b_button
                     console.log( "A saucer button was clicked during move card selection with node "+htmlIdOfButton+"." );
-                    var saucerColor = htmlIdOfButton.split('_')[1]; // b92bba
+                    var saucerColor = htmlIdOfButton.split('_')[1]; // 753bbd
                     this.selectSaucer(saucerColor);
 
                     this.checkConfirmEnableDisable(); // see if we need to enable the Confirm button
@@ -1132,7 +1132,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 {
                     var htmlIdOfSaucer = evt.currentTarget.id;
                     console.log( "A saucer was clicked during move card selection with node "+htmlIdOfSaucer+"." );
-                    var saucerColor = htmlIdOfSaucer.split('_')[1]; // b92bba
+                    var saucerColor = htmlIdOfSaucer.split('_')[1]; // 753bbd
                     this.selectSaucer(saucerColor);
 
                     this.checkConfirmEnableDisable(); // see if we need to enable the Confirm button
@@ -1140,7 +1140,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 selectSaucer: function( saucerColor )
                 {
-                    var htmlIdOfSaucer = 'saucer_'+saucerColor; // saucer_f6033b
+                    var htmlIdOfSaucer = 'saucer_'+saucerColor; // saucer_b83a4b
                     if(!this.isCurrentPlayerActive())
                     {
                         console.log( "We are not the current active player." );
@@ -1155,7 +1155,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                     if(this.MOVE_CARD_SELECTED != '')
                     {
-                        var moveCardColor = this.MOVE_CARD_SELECTED.split('_')[3]; // 0090ff
+                        var moveCardColor = this.MOVE_CARD_SELECTED.split('_')[3]; // 009add
                         if(moveCardColor != saucerColor)
                         { // a different saucer's move card is currently selected
                             this.unselectSpecificMoveCard(this.MOVE_CARD_SELECTED);
@@ -1245,7 +1245,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 clickDistance: function( node )
                 {
                     var distance = node.split('_')[2]; // 0, 1, 2
-                    var color = node.split('_')[3]; // fedf3d
+                    var color = node.split('_')[3]; // f8e946
 
                     this.ajaxcall( "/crashandgrab/crashandgrab/actClickedMoveCard.html", {
                                                                                 distance: distance,
@@ -1273,22 +1273,22 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     switch(saucerColor)
                     {
 
-                        case "f6033b":
+                        case "b83a4b":
                             return 0;
 
-                        case "fedf3d":
+                        case "f8e946":
                             return 2*this.movementcardwidth;
 
-                        case "0090ff":
+                        case "009add":
                             return this.movementcardwidth;
 
-                        case "01b508":
+                        case "228848":
                             return 0;
 
-                        case "b92bba":
+                        case "753bbd":
                             return 2*this.movementcardwidth;
 
-                        case "e77324":
+                        case "ff3eb5":
                             return this.movementcardwidth;
 
                         default:
@@ -1301,22 +1301,22 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     switch(saucerColor)
                     {
 
-                        case "f6033b":
+                        case "b83a4b":
                             return this.movementcardheight;
 
-                        case "fedf3d":
+                        case "f8e946":
                             return 0;
 
-                        case "0090ff":
+                        case "009add":
                             return 0;
 
-                        case "01b508":
+                        case "228848":
                             return 0;
 
-                        case "b92bba":
+                        case "753bbd":
                             return this.movementcardheight;
 
-                        case "e77324":
+                        case "ff3eb5":
                             return this.movementcardheight;
 
                         default:
@@ -1938,7 +1938,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                   break;
 
                   case 'chooseMoveCard':
-                    console.log('pre CHOSEN_MOVE_CARD_SAUCER_1:'+this.CHOSEN_MOVE_CARD_SAUCER_1); // move_card_2_e77324
+                    console.log('pre CHOSEN_MOVE_CARD_SAUCER_1:'+this.CHOSEN_MOVE_CARD_SAUCER_1); // move_card_2_ff3eb5
                     console.log('pre CHOSEN_DIRECTION_SAUCER_1:'+this.CHOSEN_DIRECTION_SAUCER_1); // direction_meteor
                     
 
@@ -2022,7 +2022,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                         //this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
 
-                        console.log('post CHOSEN_MOVE_CARD_SAUCER_1:'+this.CHOSEN_MOVE_CARD_SAUCER_1); // move_card_2_e77324
+                        console.log('post CHOSEN_MOVE_CARD_SAUCER_1:'+this.CHOSEN_MOVE_CARD_SAUCER_1); // move_card_2_ff3eb5
                         console.log('post CHOSEN_DIRECTION_SAUCER_1:'+this.CHOSEN_DIRECTION_SAUCER_1); // direction_meteor
                         
                         var saucer1DistanceSelected = '0';
@@ -2428,7 +2428,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                           var makeRed = saucerButton['makeRed'];
 
                           //this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
-                          this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_'+actionName, null, null, 'gray');
+                          this.addActionButton( 'saucer_button_'+color, '<div class="saucer saucer_button saucer_color_'+color+'"></div>', 'onClick_'+actionName, null, null, 'gray'); // onClick_selectSaucerToPlace
                       }
                   break;
 
@@ -2633,8 +2633,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                           for( var ostrich in myOstriches )
                           {
                               console.log("my ostrich:" + myOstriches[ostrich]);
-                              var ostrichColor = myOstriches[ostrich]; // get color signifier like f6033b
-                              var ostrichName = this.getOstrichName(ostrichColor); // convert f6033b into RED
+                              var ostrichColor = myOstriches[ostrich]; // get color signifier like b83a4b
+                              var ostrichName = this.getOstrichName(ostrichColor); // convert b83a4b into RED
 
                               var methodName = 'onDiscard3Claim'+ostrichName;
                               var buttonId = 'discard3Claim'+ostrichName+'_button';
@@ -2809,7 +2809,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
         getTokenDiv : function(key, args)
         {
-            var token_id = args[key]; // CREWMEMBERIMAGE_engineer_f6033b
+            var token_id = args[key]; // CREWMEMBERIMAGE_engineer_b83a4b
             if(!token_id)
               return '';
 
@@ -2819,7 +2819,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             switch (key) {
                 case 'CREWMEMBERIMAGE':
                     var crewmemberType = token_id.split('_')[1]; // engineer
-                    var crewmemberColor = token_id.split('_')[2]; // f6033b
+                    var crewmemberColor = token_id.split('_')[2]; // b83a4b
 
                     var tokenDiv = this.format_block('jstpl_garment_message_log', {
                         "garment_type" : crewmemberType,
@@ -2896,7 +2896,7 @@ console.log("return false");
 
         adjustCrewmemberLocationBasedOnUpgrades: function(matColor, crewmemberTypeString)
         {
-            var matLocationHtmlId = crewmemberTypeString+'_container_'+matColor; // example: pilot_container_f6033b
+            var matLocationHtmlId = crewmemberTypeString+'_container_'+matColor; // example: pilot_container_b83a4b
             console.log("ADJUSTING");
             if(this.gamedatas.saucer2 != '')
             { // each player controls two saucers
@@ -2941,7 +2941,7 @@ console.log("return false");
             var source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
             var convertedType = this.convertCrewmemberType(crewmemberType); // temp until i fix this weird issue switching these
-            var destination = convertedType+'_container_'+saucerColor; // pilot_container_f6033b
+            var destination = convertedType+'_container_'+saucerColor; // pilot_container_b83a4b
 
             // give it a new parent so it's no longer on the space
             this.attachToNewParent(source, destination);
@@ -3058,7 +3058,7 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
                   return 2;
                 case this.REDCOLOR:
                   return 3;
-                case this.ORANGECOLOR:
+                case this.PINKCOLOR:
                   return 4;
                 case this.PURPLECOLOR:
                   return 5;
@@ -3085,7 +3085,7 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
                           return 2;
                         case this.REDCOLOR:
                           return 3;
-                        case this.ORANGECOLOR:
+                        case this.PINKCOLOR:
                           return 4;
                         case this.PURPLECOLOR:
                           return 5;
@@ -3103,7 +3103,7 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
                               return 8;
                             case this.REDCOLOR:
                               return 9;
-                            case this.ORANGECOLOR:
+                            case this.PINKCOLOR:
                               return 10;
                             case this.PURPLECOLOR:
                               return 11;
@@ -3121,7 +3121,7 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
                               return 14;
                             case this.REDCOLOR:
                               return 15;
-                            case this.ORANGECOLOR:
+                            case this.PINKCOLOR:
                               return 16;
                             case this.PURPLECOLOR:
                               return 17;
@@ -3139,7 +3139,7 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
                               return 20;
                             case this.REDCOLOR:
                               return 21;
-                            case this.ORANGECOLOR:
+                            case this.PINKCOLOR:
                               return 22;
                             case this.PURPLECOLOR:
                               return 23;
@@ -3186,18 +3186,18 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
         {
             switch( ostrich )
             {
-                  case "f6033b":
+                  case "b83a4b":
                       return "RED";
-                  case "fedf3d":
+                  case "f8e946":
                       return "YELLOW";
-                  case "0090ff":
+                  case "009add":
                       return "BLUE";
-                  case "01b508":
+                  case "228848":
                       return "GREEN";
-                  case "b92bba":
+                  case "753bbd":
                       return "PURPLE";
-                  case "e77324":
-                      return "ORANGE";
+                  case "ff3eb5":
+                      return "PINK";
             }
 
             return "";
@@ -3252,7 +3252,7 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
                 dojo.addClass( htmlIdSaucer, 'saucerSelected' ); // select it
             }
 
-            var htmlIdOfSaucerButton = 'saucer_'+color+'_button'; // saucer_01b508_button
+            var htmlIdOfSaucerButton = 'saucer_'+color+'_button'; // saucer_228848_button
             if($(htmlIdOfSaucerButton))
             {
                 if(this.NUMBER_OF_PLAYERS < 3)
@@ -3982,7 +3982,7 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                     source = 'crewmember_'+crewmemberType+'_'+crewmemberColor;
 
                     var convertedType = this.convertCrewmemberType(crewmemberType); // temp until i fix this weird issue switching these
-                    destination = convertedType+'_container_'+saucerColor; // pilot_container_f6033b
+                    destination = convertedType+'_container_'+saucerColor; // pilot_container_b83a4b
 
                     // give it a new parent so it's no longer on the space
                     this.attachToNewParent(source, destination);
@@ -4580,25 +4580,25 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 1, 1, g_gamethemeurl+'img/crewmembers.png', 1 ); // blue pilot
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 2, 2, g_gamethemeurl+'img/crewmembers.png', 2 ); // yellow pilot
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 3, 3, g_gamethemeurl+'img/crewmembers.png', 3 ); // red pilot
-            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 4, 4, g_gamethemeurl+'img/crewmembers.png', 4 ); // orange pilot
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 4, 4, g_gamethemeurl+'img/crewmembers.png', 4 ); // PINK pilot
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 5, 5, g_gamethemeurl+'img/crewmembers.png', 5 ); // purple pilot
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 6, 6, g_gamethemeurl+'img/crewmembers.png', 6 ); // green engineer
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 7, 7, g_gamethemeurl+'img/crewmembers.png', 7 ); // blue engineer
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 8, 8, g_gamethemeurl+'img/crewmembers.png', 8 ); // yellow engineer
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 9, 9, g_gamethemeurl+'img/crewmembers.png', 9 ); // red engineer
-            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 10, 10, g_gamethemeurl+'img/crewmembers.png', 10 ); // orange engineer
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 10, 10, g_gamethemeurl+'img/crewmembers.png', 10 ); // PINK engineer
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 11, 11, g_gamethemeurl+'img/crewmembers.png', 11 ); // purple engineer
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 12, 12, g_gamethemeurl+'img/crewmembers.png', 12 ); // green doctor
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 13, 13, g_gamethemeurl+'img/crewmembers.png', 13 ); // blue doctor
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 14, 14, g_gamethemeurl+'img/crewmembers.png', 14 ); // yellow doctor
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 15, 15, g_gamethemeurl+'img/crewmembers.png', 15 ); // red doctor
-            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 16, 16, g_gamethemeurl+'img/crewmembers.png', 16 ); // orange doctor
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 16, 16, g_gamethemeurl+'img/crewmembers.png', 16 ); // PINK doctor
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 17, 17, g_gamethemeurl+'img/crewmembers.png', 17 ); // purple doctor
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 18, 18, g_gamethemeurl+'img/crewmembers.png', 18 ); // green scientist
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 19, 19, g_gamethemeurl+'img/crewmembers.png', 19 ); // blue scientist
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 20, 20, g_gamethemeurl+'img/crewmembers.png', 20 ); // yellow scientist
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 21, 21, g_gamethemeurl+'img/crewmembers.png', 21 ); // red scientist
-            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 22, 22, g_gamethemeurl+'img/crewmembers.png', 22 ); // orange scientist
+            this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 22, 22, g_gamethemeurl+'img/crewmembers.png', 22 ); // PINK scientist
             this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].addItemType( 23, 23, g_gamethemeurl+'img/crewmembers.png', 23 ); // purple scientist
 //this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].updateDisplay(); // re-layout
         },
@@ -4612,7 +4612,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             var blueWeight = 0;
             var yellowWeight = 0;
             var redWeight = 0;
-            var orangeWeight = 0;
+            var pinkWeight = 0;
             var purpleWeight = 0;
 
             if(saucerColor == this.GREENCOLOR)
@@ -4631,9 +4631,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             {
                 redWeight = 10;
             }
-            else if(saucerColor == this.ORANGECOLOR)
+            else if(saucerColor == this.PINKCOLOR)
             {
-                orangeWeight = 10;
+                pinkWeight = 10;
             }
             else if(saucerColor == this.PURPLECOLOR)
             {
@@ -4657,7 +4657,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 1, 1, g_gamethemeurl+'img/crewmembers.png', 1 ); // blue pilot
             this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 2, 2, g_gamethemeurl+'img/crewmembers.png', 2 ); // yellow pilot
             this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 3, 3, g_gamethemeurl+'img/crewmembers.png', 3 ); // red pilot
-            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 4, 4, g_gamethemeurl+'img/crewmembers.png', 4 ); // orange pilot
+            this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 4, 4, g_gamethemeurl+'img/crewmembers.png', 4 ); // PINK pilot
             this.playerBoardCrewmemberStocks[saucerColor]['pilot'].addItemType( 5, 5, g_gamethemeurl+'img/crewmembers.png', 5 ); // purple pilot
 //this.playerBoardCrewmemberStocks[saucerColor]['pilot'].updateDisplay(); // re-layout
 
@@ -4678,7 +4678,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 7, 7, g_gamethemeurl+'img/crewmembers.png', 7 ); // blue engineer
             this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 8, 8, g_gamethemeurl+'img/crewmembers.png', 8 ); // yellow engineer
             this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 9, 9, g_gamethemeurl+'img/crewmembers.png', 9 ); // red engineer
-            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 10, 10, g_gamethemeurl+'img/crewmembers.png', 10 ); // orange engineer
+            this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 10, 10, g_gamethemeurl+'img/crewmembers.png', 10 ); // PINK engineer
             this.playerBoardCrewmemberStocks[saucerColor]['engineer'].addItemType( 11, 11, g_gamethemeurl+'img/crewmembers.png', 11 ); // purple engineer
 
 
@@ -4700,7 +4700,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 13, 13, g_gamethemeurl+'img/crewmembers.png', 13 ); // blue doctor
             this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 14, 14, g_gamethemeurl+'img/crewmembers.png', 14 ); // yellow doctor
             this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 15, 15, g_gamethemeurl+'img/crewmembers.png', 15 ); // red doctor
-            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 16, 16, g_gamethemeurl+'img/crewmembers.png', 16 ); // orange doctor
+            this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 16, 16, g_gamethemeurl+'img/crewmembers.png', 16 ); // PINK doctor
             this.playerBoardCrewmemberStocks[saucerColor]['doctor'].addItemType( 17, 17, g_gamethemeurl+'img/crewmembers.png', 17 ); // purple doctor
 
 
@@ -4721,7 +4721,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 19, 19, g_gamethemeurl+'img/crewmembers.png', 19 ); // blue scientist
             this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 20, 20, g_gamethemeurl+'img/crewmembers.png', 20 ); // yellow scientist
             this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 21, 21, g_gamethemeurl+'img/crewmembers.png', 21 ); // red scientist
-            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 22, 22, g_gamethemeurl+'img/crewmembers.png', 22 ); // orange scientist
+            this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 22, 22, g_gamethemeurl+'img/crewmembers.png', 22 ); // PINK scientist
             this.playerBoardCrewmemberStocks[saucerColor]['scientist'].addItemType( 23, 23, g_gamethemeurl+'img/crewmembers.png', 23 ); // purple scientist
 
 
@@ -4735,28 +4735,28 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 1, blueWeight, g_gamethemeurl+'img/crewmembers.png', 1 ); // blue pilot
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 2, yellowWeight, g_gamethemeurl+'img/crewmembers.png', 2 ); // yellow pilot
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 3, redWeight, g_gamethemeurl+'img/crewmembers.png', 3 ); // red pilot
-            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 4, orangeWeight, g_gamethemeurl+'img/crewmembers.png', 4 ); // orange pilot
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 4, pinkWeight, g_gamethemeurl+'img/crewmembers.png', 4 ); // PINK pilot
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 5, purpleWeight, g_gamethemeurl+'img/crewmembers.png', 5 ); // purple pilot
 
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 6, greenWeight, g_gamethemeurl+'img/crewmembers.png', 6 ); // green engineer
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 7, blueWeight, g_gamethemeurl+'img/crewmembers.png', 7 ); // blue engineer
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 8, yellowWeight, g_gamethemeurl+'img/crewmembers.png', 8 ); // yellow engineer
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 9, redWeight, g_gamethemeurl+'img/crewmembers.png', 9 ); // red engineer
-            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 10, orangeWeight, g_gamethemeurl+'img/crewmembers.png', 10 ); // orange engineer
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 10, pinkWeight, g_gamethemeurl+'img/crewmembers.png', 10 ); // PINK engineer
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 11, purpleWeight, g_gamethemeurl+'img/crewmembers.png', 11 ); // purple engineer
 
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 12, greenWeight, g_gamethemeurl+'img/crewmembers.png', 12 ); // green doctor
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 13, blueWeight, g_gamethemeurl+'img/crewmembers.png', 13 ); // blue doctor
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 14, yellowWeight, g_gamethemeurl+'img/crewmembers.png', 14 ); // yellow doctor
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 15, redWeight, g_gamethemeurl+'img/crewmembers.png', 15 ); // red doctor
-            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 16, orangeWeight, g_gamethemeurl+'img/crewmembers.png', 16 ); // orange doctor
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 16, pinkWeight, g_gamethemeurl+'img/crewmembers.png', 16 ); // PINK doctor
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 17, purpleWeight, g_gamethemeurl+'img/crewmembers.png', 17 ); // purple doctor
 
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 18, greenWeight, g_gamethemeurl+'img/crewmembers.png', 18 ); // green scientist
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 19, blueWeight, g_gamethemeurl+'img/crewmembers.png', 19 ); // blue scientist
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 20, yellowWeight, g_gamethemeurl+'img/crewmembers.png', 20 ); // yellow scientist
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 21, redWeight, g_gamethemeurl+'img/crewmembers.png', 21 ); // red scientist
-            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 22, orangeWeight, g_gamethemeurl+'img/crewmembers.png', 22 ); // orange scientist
+            this.playerBoardCrewmemberStocks[saucerColor].addItemType( 22, pinkWeight, g_gamethemeurl+'img/crewmembers.png', 22 ); // PINK scientist
             this.playerBoardCrewmemberStocks[saucerColor].addItemType( 23, purpleWeight, g_gamethemeurl+'img/crewmembers.png', 23 ); // purple scientist
             */
 
@@ -5019,7 +5019,7 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
             {
                 console.log( "card in hand: " + i );
                 var card = this.gamedatas.hand[i];
-                var color = card.location; // saucer color like f6033b
+                var color = card.location; // saucer color like b83a4b
                 var distance = card.type_arg; // 0, 1, 2
                 var used = card.type; // unused or used
                 var usedInt = this.convertUsedStringToInt(used); // 0 or 1
@@ -5060,7 +5060,7 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
                 var turnOrder = card.turn; // clockwise or counterclockwise
                 var distance = card.distance; // 0, 1, 2, 3
                 var player_id = card.player; // player number like 2342823
-                var color = card.color; // ostrich color like f6033b
+                var color = card.color; // ostrich color like b83a4b
                 var degreesRotated = this.getDegreesRotated(card.ostrich_last_direction); // the number of degrees rotated based on direction
 
                 console.log( "Loading a played card with turn order " + turnOrder + " distance " + distance + " player " + player_id + " and color " + color + " and degrees rotated " + degreesRotated + "." );
@@ -5073,7 +5073,7 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
             for( i in this.gamedatas.zigChosen )
             {
                 var card = this.gamedatas.zigChosen[i];
-                var ostrichGettingZig = card.color; // ostrich color like f6033b
+                var ostrichGettingZig = card.color; // ostrich color like b83a4b
                 var card_id = card.id; // card ID
                 var player_id = card.player; // player number like 2342823
                 var clockwise = card.turn; // clockwise or counterclockwise
@@ -6260,10 +6260,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickStealableCrewmember: function( evt )
         {
-            var node = evt.currentTarget.id; // stealableCrewmember_01b508_pilot_button
+            var node = evt.currentTarget.id; // stealableCrewmember_228848_pilot_button
             console.log("onClickStealableCrewmember node:"+node);
             var crewmemberType = node.split('_')[2]; // pilot
-            var crewmemberColor = node.split('_')[1]; // 01b508
+            var crewmemberColor = node.split('_')[1]; // 228848
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteStealCrewmember.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
@@ -6271,10 +6271,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickTractorBeamCrewmember: function( evt )
         {
-            var node = evt.currentTarget.id; // tractorBeamCrewmember_01b508_pilot_button
+            var node = evt.currentTarget.id; // tractorBeamCrewmember_228848_pilot_button
             console.log("onClickTractorBeamCrewmember node:"+node);
             var crewmemberType = node.split('_')[2]; // pilot
-            var crewmemberColor = node.split('_')[1]; // 01b508
+            var crewmemberColor = node.split('_')[1]; // 228848
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteTractorBeamCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
@@ -6282,10 +6282,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickDistressSignalerTakeCrewmember: function( evt )
         {
-            var node = evt.currentTarget.id; // tractorBeamCrewmember_01b508_pilot_button
+            var node = evt.currentTarget.id; // tractorBeamCrewmember_228848_pilot_button
             console.log("onClickDistressSignalerCrewmember node:"+node);
             var crewmemberType = node.split('_')[2]; // pilot
-            var crewmemberColor = node.split('_')[1]; // 01b508
+            var crewmemberColor = node.split('_')[1]; // 228848
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDistressSignalerTakeCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
@@ -6293,10 +6293,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickDistressSignalerGiveCrewmember: function( evt )
         {
-            var node = evt.currentTarget.id; // tractorBeamCrewmember_01b508_pilot_button
+            var node = evt.currentTarget.id; // tractorBeamCrewmember_228848_pilot_button
             console.log("onClickDistressSignalerCrewmember node:"+node);
             var crewmemberType = node.split('_')[2]; // pilot
-            var crewmemberColor = node.split('_')[1]; // 01b508
+            var crewmemberColor = node.split('_')[1]; // 228848
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDistressSignalerGiveCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
@@ -6304,10 +6304,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickAirlockCrewmember: function( evt )
         {
-            var node = evt.currentTarget.id; // tractorBeamCrewmember_01b508_pilot_button
+            var node = evt.currentTarget.id; // tractorBeamCrewmember_228848_pilot_button
             console.log("onClickAirlockCrewmember node:"+node);
             var crewmemberType = node.split('_')[2]; // pilot
-            var crewmemberColor = node.split('_')[1]; // 01b508
+            var crewmemberColor = node.split('_')[1]; // 228848
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteAirlockCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
@@ -6315,10 +6315,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickPassableCrewmember: function( evt )
         {
-            var node = evt.currentTarget.id; // passableCrewmember_01b508_pilot_button
+            var node = evt.currentTarget.id; // passableCrewmember_228848_pilot_button
             console.log("onClickPassableCrewmember node:"+node);
             var crewmemberType = node.split('_')[2]; // pilot
-            var crewmemberColor = node.split('_')[1]; // 01b508
+            var crewmemberColor = node.split('_')[1]; // 228848
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecutePassCrewmember.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
@@ -6326,10 +6326,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickTakeableCrewmember: function( evt )
         {
-            var node = evt.currentTarget.id; // takeableCrewmember_01b508_pilot_button
+            var node = evt.currentTarget.id; // takeableCrewmember_228848_pilot_button
             console.log("onClickTakeableCrewmember node:"+node);
             var crewmemberType = node.split('_')[2]; // pilot
-            var crewmemberColor = node.split('_')[1]; // 01b508
+            var crewmemberColor = node.split('_')[1]; // 228848
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteTakeCrewmember.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
@@ -6337,10 +6337,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickGiveAwayCrewmember: function( evt )
         {
-            var node = evt.currentTarget.id; // stealableCrewmember_01b508_pilot_button
+            var node = evt.currentTarget.id; // stealableCrewmember_228848_pilot_button
             console.log("onClickGiveAwayCrewmember node:"+node);
             var crewmemberType = node.split('_')[2]; // pilot
-            var crewmemberColor = node.split('_')[1]; // 01b508
+            var crewmemberColor = node.split('_')[1]; // 228848
 
             this.GIVE_AWAY_TYPE = crewmemberType;
             this.GIVE_AWAY_COLOR = crewmemberColor;
@@ -6362,9 +6362,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickGiveAwayToSaucer: function( evt )
         {
-            var node = evt.currentTarget.id; // stealableCrewmember_01b508_pilot_button
+            var node = evt.currentTarget.id; // stealableCrewmember_228848_pilot_button
             console.log("onClickGiveAwayToSaucer node:"+node);
-            var saucerColor = node.split('_')[1]; // 01b508
+            var saucerColor = node.split('_')[1]; // 228848
 
             this.GIVE_AWAY_SAUCER = saucerColor;
 
@@ -6383,9 +6383,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickLostCrewmember: function( evt )
         {
-            var node = evt.currentTarget.id; // 'lostCrewmember_01b508_pilot_button'
+            var node = evt.currentTarget.id; // 'lostCrewmember_228848_pilot_button'
             console.log("onClickLostCrewmember:"+node);
-            var crewmemberColor = node.split('_')[1]; // 01b508
+            var crewmemberColor = node.split('_')[1]; // 228848
             var crewmemberType = node.split('_')[2]; // pilot
 
             // tell the server that the user selected this crewmember
@@ -6394,7 +6394,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
         onClickUpgradeThumbnail: function( evt )
         {
-          var node = evt.currentTarget.id; // 'player_board_upgrade_thumbnails_01b508_item_2'
+          var node = evt.currentTarget.id; // 'player_board_upgrade_thumbnails_228848_item_2'
           console.log("onClickUpgradeThumbnail:"+node);
           var databaseId = node.split('_')[6]; // 2
 
@@ -6904,7 +6904,7 @@ console.log("success... onClickUpgradeCardInHand");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("f6033b", cardId);
+            this.sendZigChoice("b83a4b", cardId);
         },
 
         onOstrichZigChoice_BLUE: function()
@@ -6917,7 +6917,7 @@ console.log("success... onClickUpgradeCardInHand");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("0090ff", cardId);
+            this.sendZigChoice("009add", cardId);
         },
 
         onOstrichZigChoice_GREEN: function()
@@ -6930,7 +6930,7 @@ console.log("success... onClickUpgradeCardInHand");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("01b508", cardId);
+            this.sendZigChoice("228848", cardId);
         },
 
         onOstrichZigChoice_YELLOW: function()
@@ -6943,7 +6943,7 @@ console.log("success... onClickUpgradeCardInHand");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("fedf3d", cardId);
+            this.sendZigChoice("f8e946", cardId);
         },
 
         onOstrichZigChoice_PURPLE: function()
@@ -6956,10 +6956,10 @@ console.log("success... onClickUpgradeCardInHand");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("b92bba", cardId);
+            this.sendZigChoice("753bbd", cardId);
         },
 
-        onOstrichZigChoice_ORANGE: function()
+        onOstrichZigChoice_PINK: function()
         {
             var selectedCards = this.playerHand.getSelectedItems(); // get the cards that were selected
 
@@ -6969,43 +6969,43 @@ console.log("success... onClickUpgradeCardInHand");
                 cardId = selectedCards[i].id;
             }
 
-            this.sendZigChoice("e77324", cardId);
+            this.sendZigChoice("ff3eb5", cardId);
         },
 
         onOstrichMoveChoiceRed: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("f6033b");
+            this.sendExecuteMove("b83a4b");
         },
 
         onOstrichMoveChoiceBlue: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("0090ff");
+            this.sendExecuteMove("009add");
         },
 
         onOstrichMoveChoiceGreen: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("01b508");
+            this.sendExecuteMove("228848");
         },
 
         onOstrichMoveChoiceYellow: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("fedf3d");
+            this.sendExecuteMove("f8e946");
         },
 
         onOstrichMoveChoicePurple: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("b92bba");
+            this.sendExecuteMove("753bbd");
         },
 
-        onOstrichMoveChoiceOrange: function()
+        onOstrichMoveChoicePink: function()
         {
             this.ostrichChosen = true;
-            this.sendExecuteMove("e77324");
+            this.sendExecuteMove("ff3eb5");
         },
 
         onMoveClick: function()
@@ -7231,7 +7231,7 @@ console.log("success... onClickUpgradeCardInHand");
                           x: this.upgradecardwidth*(rowId),
                           y: this.upgradecardheight*(columnId),
                           player_id: playerWhoGetsIt
-                } ), 'upgrade_hand_f6033b' );
+                } ), 'upgrade_hand_b83a4b' );
             }
         },
 
@@ -7776,7 +7776,7 @@ console.log("success... onClickUpgradeCardInHand");
 
             console.log('crewmemberType:'+crewmemberType);
             console.log('saucerColorStealing:'+saucerColorStealing);
-            var destination = crewmemberType+'_container_'+saucerColorStealing; // pilot_container_f6033b
+            var destination = crewmemberType+'_container_'+saucerColorStealing; // pilot_container_b83a4b
 
             console.log("source:"+source+" destination:"+destination);
 
@@ -7858,7 +7858,7 @@ console.log("success... onClickUpgradeCardInHand");
             }
                     console.log('crewmemberType:'+crewmemberType);
                     console.log('destinationSaucerColor:'+destinationSaucerColor);
-                    var destination = crewmemberType+'_container_'+destinationSaucerColor; // pilot_container_f6033b
+                    var destination = crewmemberType+'_container_'+destinationSaucerColor; // pilot_container_b83a4b
 
                     console.log("source:"+source+" destination:"+destination);
 
@@ -8127,7 +8127,7 @@ console.log("success... onClickUpgradeCardInHand");
         notif_otherPlayerTrapSet: function( notif )
         {
             console.log("Entered notif_otherPlayerTrapSet.");
-            var ostrichTargeted = notif.args.ostrichTargeted; // color of the ostrich targeted (f6033b)
+            var ostrichTargeted = notif.args.ostrichTargeted; // color of the ostrich targeted (b83a4b)
             var nameOfOstrichTargeted = notif.args.nameOfOstrichTargeted; // the friendly name of the ostrich targted (red)
             var playerWhoPlayedTrap = notif.args.playerWhoPlayed; // the player who played the trap
             var player_name = notif.args.player_name; // the name of the player who played the trap on the ostrich
@@ -8147,7 +8147,7 @@ console.log("success... onClickUpgradeCardInHand");
         notif_myTrapSet: function( notif )
         {
             console.log("Entered notif_myTrapSet.");
-            var ostrichTargeted = notif.args.ostrichTargeted; // color of the ostrich targeted (f6033b)
+            var ostrichTargeted = notif.args.ostrichTargeted; // color of the ostrich targeted (b83a4b)
             var nameOfOstrichTargeted = notif.args.nameOfOstrichTargeted; // the friendly name of the ostrich targted (red)
             var cardId = notif.args.cardId; // the id of the card used
             var player_name = notif.args.player_name; // the name of the player who played the trap on the ostrich

@@ -93,7 +93,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "endRoundCleanup",
         "updateGameProgression" => true,
-        "transitions" => array( "newRound" => 2, "endRoundPlaceCrashedSaucer" => 37, "chooseCrashSiteRegenerationGateway" => 40 )
+        "transitions" => array( "newRound" => 2, "endRoundPlaceCrashedSaucer" => 37, "chooseCrashSiteRegenerationGateway" => 40, "endRoundCleanUp" => 5 )
     ),
 
     // END PLAN PHASE - ENTER TRAP PHASE
@@ -372,7 +372,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
         "possibleactions" => array( "clickCrashSite", "chooseUpgradeSpace" ),
-        "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50, "endRoundCleanUp" => 5, "chooseDirectionAfterPlacement" => 31  )
+        "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50, "endRoundCleanUp" => 5, "chooseDirectionAfterPlacement" => 31, "chooseWhichSaucerGoesFirst" => 26  )
     ),
 
     41 => array(
