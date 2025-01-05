@@ -2486,7 +2486,7 @@ echo("<br>");
 
 						// Waste Accelerator
 						case 8:
-							return clienttranslate( 'Once per turn, use an empty Crash Site as an Accelerator.');
+							return clienttranslate( 'Once on your turn, use an empty Crash Site as an Accelerator.');
 
 						// Hyperdrive
 						case 9:
@@ -3195,7 +3195,7 @@ echo("<br>");
 				if($totalCrewmembersOfStealer > $totalCrewmembersOfCrashed)
 				{ // stealer has more Crewmembers than the crashed saucer
 						// notify all players that stealer may not steal from crashed because they have more crewmembers
-						self::notifyAllPlayers( "cannotSteal", clienttranslate( '${stealer_color} has more seated Crewmembers than ${stealee_color} so they may not steal any from them.' ), array(
+						self::notifyAllPlayers( "cannotSteal", clienttranslate( '${stealer_color} has more stationed Crewmembers than ${stealee_color} so they may not steal any from them.' ), array(
 								'stealer_color' => $saucerColorFriendlyStealer,
 								'stealee_color' => $saucerColorFriendlyCrashed
 						) );
@@ -8833,10 +8833,10 @@ echo("<br>");
 						$message = clienttranslate( '${ostrichName} has been randomly chosen to start with the Probe and will go first this round.' );
 						break;
 					case "Least":
-						$message = clienttranslate( '${ostrichName} gets the Probe because they have the least seated Crewmembers.' );
+						$message = clienttranslate( '${ostrichName} gets the Probe because they have the least stationed Crewmembers.' );
 						break;
 					case "TiedWentLast":
-						$message = clienttranslate( '${ostrichName} gets the Probe because they are tied for the least seated Crewmembers and won the tie-breaker of going later in the previous round.' );
+						$message = clienttranslate( '${ostrichName} gets the Probe because they are tied for the least stationed Crewmembers and won the tie-breaker of going later in the previous round.' );
 						break;
 				}
 				

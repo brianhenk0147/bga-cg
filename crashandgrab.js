@@ -4416,7 +4416,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 // add hover overs to tell them what this is
                 var probeHtmlId = 'player_board_turn_order_indicator_'+saucer.color;
-                this.addTooltip(probeHtmlId, _('<b>Probe:</b> The player with the Probe takes the first turn in the round. You will not know which direction it will go from them until after moves are chosen.<BR/><BR/> The player with the least seated Crewmembers gets the Probe each round with the tie-breaker being who went later in turn order the previous round.'), '');
+                this.addTooltip(probeHtmlId, _('<b>Probe:</b> The player with the Probe takes the first turn in the round. You will not know which direction it will go from them until after moves are chosen.<BR/><BR/> The player with the least stationed Crewmembers gets the Probe each round with the tie-breaker being who went later in turn order the previous round.'), '');
 
             }
         },
