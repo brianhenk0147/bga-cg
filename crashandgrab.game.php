@@ -9997,6 +9997,19 @@ echo("<br>");
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
+				$distance = $this->getSaucerDistance($saucerWhoseTurnItIs);
+				$spacesMoved = $this->getSpacesMoved($saucerWhoseTurnItIs);
+				$spacesLeft = $distance - $spacesMoved;
+
+				//echo "spacesLeft:$spacesLeft";
+
+				if($spacesLeft == 0)
+				{ // this saucer is done moving
+					//throw new feException( "skipping");
+					// set asked_to_activate_this_round to 1 so we don't ask again... only needed if they end their movement on a Crash Site
+					$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Waste Accelerator");
+				}
+
 				// finish any movement that still remains
 				$this->gamestate->nextState( "executingMove" );
 		}
@@ -11081,6 +11094,7 @@ echo("<br>");
 				}
 				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") &&
 					  ($this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1) &&
+					  $this->getAskedToActivateUpgrade($saucerMoving, "Waste Accelerator") == false &&
 					  $this->isUpgradePlayable($saucerMoving, 'Waste Accelerator') &&
 					  $this->isCrashSite($spaceType) &&
 					  $wasAPushEvent == false &&
@@ -11088,8 +11102,9 @@ echo("<br>");
 				{ // this saucer has Waste Accelerator played and unused, we are on a Crash Site, they did not collide with someone here, and they did not just pick up a crewmember here
 					//throw new feException( "saucerWeCollideWith:$saucerWeCollideWith");
 
+					
 					// make that we have already asked so we don't ask over and over again
-					$this->setAskedToActivateUpgrade($saucerMoving, "Waste Accelerator");
+					//$this->setAskedToActivateUpgrade($saucerMoving, "Waste Accelerator");
 
 
 					$this->gamestate->nextState( "askToWasteAccelerate" );
