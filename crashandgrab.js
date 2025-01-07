@@ -2225,7 +2225,11 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                       if( this.isCurrentPlayerActive() )
                       { // this player is active
+
                             var validSpaces = args.validSpaces;
+                            console.log('validSpaces:');
+                            console.log(validSpaces);
+                            
                             this.highlightAllTheseSpaces(validSpaces);
 
                             this.addActionButton( 'skipButton_3', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
@@ -2522,6 +2526,25 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     if( this.isCurrentPlayerActive() )
                     { // this player is active
                         var saucerButtonList = args.saucerButtons;
+                        var moves = args.saucerMoves;
+
+                        console.log('moves:');
+                        console.log(moves);
+
+                        const moveKeys = Object.keys(moves);
+                        for (const index of moveKeys)
+                        { // go through each button
+                            var singleSaucerMoves = args.saucerMoves[index];
+
+                            console.log('singleSaucerMoves:');
+                            console.log(singleSaucerMoves);
+
+                            // highlight all spaces available
+                            //this.highlightPossibleAcceleratorOrBoostMoveSelections(singleSaucerMoves);
+
+                        }
+
+                        this.highlightPossibleAcceleratorOrBoostMoveSelections(moves);
 
                         const saucerButtonKeys = Object.keys(saucerButtonList);
                         for (const buttonKey of saucerButtonKeys)
@@ -3859,16 +3882,29 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                                             var spaces = playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey]; // array of spaces like 8_7, 3_4
 console.log("spaces:");
 console.log(spaces);
-                                            for (const space of spaces)
-                                            { // go through each direction for this move card
+                                            const spaceKeys = Object.keys(spaces);
+                                            
 
-                                                console.log("for player " + playerKey+" saucer " + saucerKey + " move card " + moveCardKey + " direction " + directionKey + " we found a valid space of " + space);
-                                                var htmlOfSpace = 'square_'+space; // square_6_5
+                                               
+                                            
+                                                for (const spaceKey of spaceKeys)
+                                                { // go through each direction for this move card
+                                                    var x = playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey][spaceKey]['row'];
+                                                    var y = playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey][spaceKey]['column'];
+                                                    console.log('x:'+x);
+                                                    console.log('y:'+y);
 
-                                                this.addDirectionToSpace(htmlOfSpace, directionKey);
-                                                this.highlightSpace(htmlOfSpace);
+                                                    var htmlOfSpace = 'square_'+playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey][spaceKey]; // square_6_5
+                                                    if(x !== undefined)
+                                                    {
+                                                        htmlOfSpace = 'square_'+y+'_'+x; // square_6_5
+                                                    }
 
-                                            }
+                                                    this.addDirectionToSpace(htmlOfSpace, directionKey);
+                                                    this.highlightSpace(htmlOfSpace);
+                                                }
+
+                                            
                                         }
                                     }
 

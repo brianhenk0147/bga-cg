@@ -1355,20 +1355,23 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 		// Gets only the moves for a specific saucer's last move to use to show the available
 		// moves when landing on an Accelerator or using a Booster.
-		function getSaucerAcceleratorAndBoosterMoves($moveType='regular')
+		function getSaucerAcceleratorAndBoosterMoves($moveType='regular', $saucerColor='')
 		{
 				$result = array();
+				if($saucerColor == '')
+				{
+					$saucerColor = $this->getOstrichWhoseTurnItIs();
+				}
 
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
 				//throw new feException( "saucer whose turn it is:$saucerWhoseTurnItIs player whose turn it is:$playerWhoseTurnItIs" );
 
-				$saucerWhoseTurnItIsDetails = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner
-																					 FROM ostrich WHERE ostrich_color='$saucerWhoseTurnItIs' ORDER BY ostrich_owner" );
+				$saucerDetails = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner
+																					 FROM ostrich WHERE ostrich_color='$saucerColor' ORDER BY ostrich_owner" );
 //$allSaucersCount = count($allSaucers);
 //throw new feException( "allSaucers Count:$allSaucersCount" );
 				$currentPlayerId = 0;
-				foreach( $saucerWhoseTurnItIsDetails as $saucer )
+				foreach( $saucerDetails as $saucer )
 				{
 						$owner = $saucer['ostrich_owner'];
 						$color = $saucer['ostrich_color'];
@@ -1651,6 +1654,7 @@ if($color == '009add')
 
 		function getMovesForSaucer($color, $specificMoveCard='', $specificDirection='')
 		{
+			//throw new feException( "getMovesForSaucer color:$color specificMoveCard:$specificMoveCard specificDirection:$specificDirection" );
 				$result = array();
 				if($color == '009add')
 				{
@@ -1777,7 +1781,11 @@ if($color == '009add')
 												$row = $startRow - $offset; // default
 												for ($x = ($startRow - 1); $x >= ($startRow - $offset); $x--) 
 												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
+
+													
 												  	$spaceType = $this->getBoardSpaceType($startColumn, $x);
+													  //echo("($startColumn,$x):$spaceType");
+													  //echo("<br>");
 														if($spaceType == "S")
 														{ // found an accelerator
 
@@ -3342,41 +3350,10 @@ echo("<br>");
 						break;
 
 						case "Afterburner":
-								// get moves with max distance
-								$movesForSaucer = $this->getMovesForSaucer($saucerColor);
-								foreach( $movesForSaucer as $cardType => $moveCard )
-								{ // go through each move card for this saucer
+							$afterburnerMoves = $this->getAfterburnerMoves($saucerColor, $currentSaucerX, $currentSaucerY);
 
-										$directionsWithSpaces = $moveCard['directions'];
-										//$count = count($spacesForCard);
-										//throw new feException( "spacesForCard Count:$count" );
-
-										foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
-										{ // go through each direction
-
-												foreach( $directionWithSpaces as $space )
-												{ // go through each space
-
-														$column = $space['column'];
-														$row = $space['row'];
-
-														$formattedSpace = $column.'_'.$row;
-
-														$spaceType = $this->getBoardSpaceType($column, $row);
-														if($spaceType != "S" && $spaceType != "D")
-														{ // empty space
-																	$saucerHere = $this->getSaucerAt($column, $row, $saucerColor);
-																	$crewmemberId = $this->getGarmentIdAt($column, $row);
-
-																	if($saucerHere == "" && $crewmemberId == 0)
-																	{	// there is no Saucer and no Crewmember here
-																			array_push($validSpaces, $formattedSpace);
-																	}
-														}
-												}
-										}
-								}
-
+							//$validSpace = array_merge($validSpaces, $afterburnerMoves);
+							return $afterburnerMoves;
 						break;
 
 						case "Landing Legs":
@@ -3458,6 +3435,45 @@ echo("<br>");
 				}
 
 				return $validSpaces;
+		}
+
+		function getAfterburnerMoves($saucerColor, $xLocation, $yLocation)
+		{
+			$moveList = array();
+
+			// get all non-accelerator, non-crash-site spaces in our row or column
+			$spacesInRowCol = self::getObjectListFromDB( "SELECT *
+														  FROM board
+														  WHERE board_space_type = 'B' AND (board_x=$xLocation OR board_y=$yLocation)" );
+
+
+			$countSpaces = count($spacesInRowCol);
+			foreach($spacesInRowCol as $space)
+			{ // go through each non-accelerator, non-crash-site spaces in our row or column
+
+					$spaceX = $space['board_x'];
+					$spaceY = $space['board_y'];
+
+					// see if there is a Saucer here
+					$saucerWeCollideWith = $this->getSaucerAt($spaceX, $spaceY, $saucerColor);
+					
+					// see if there is a Crewmember here
+					$crewmemberId = $this->getGarmentIdAt($spaceX, $spaceY);
+
+					if($saucerWeCollideWith == '' && $crewmemberId == 0)
+					{ // there is no crewmember nor saucer here
+
+						$column = $spaceX;
+						$row = $spaceY;
+
+						$formattedSpace = $column.'_'.$row;
+
+						array_push($moveList, $formattedSpace);
+					}
+					
+			}
+
+			return $moveList;
 		}
 
 		// any crate not in the row or column of any of the garment chooser's ostriches is valid
@@ -14514,9 +14530,26 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetSaucerGoFirstButtons()
 		{
-				return array(
-						'saucerButtons' => self::getSaucerGoFirstButtons()
-				);
+			$activePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+			//throw new feException( "activePlayer: $activePlayer" );
+			$saucersForPlayer = $this->getSaucersForPlayer($activePlayer);
+
+			$allSaucerMoves = array();
+			foreach($saucersForPlayer as $saucer)
+			{
+				$saucerColor = $saucer['ostrich_color'];
+				//$moves = $this->getSaucerAcceleratorAndBoosterMoves('regular', $color);
+				$directionSelected = $this->getSaucerDirection($saucerColor);
+				$distanceSelected = $this->getSaucerDistanceType($saucerColor);
+				$movesForSaucer = $this->getMovesForSaucer($saucerColor, $distanceSelected, $directionSelected);
+	
+				array_push($allSaucerMoves, $movesForSaucer);
+			}
+
+			return array(
+						'saucerButtons' => self::getSaucerGoFirstButtons(),
+						'saucerMoves' => $allSaucerMoves
+			);
 		}
 
 		function argGetPlayersWithOstriches()
