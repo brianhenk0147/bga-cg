@@ -3038,7 +3038,7 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
             var uniqueId = this.getCrewmemberUniqueId(crewmemberColor, crewmemberType);
 
             console.log("removeExtraCrewmemberFromSaucerMat removing crewmemberType " + crewmemberType + " from saucer " + saucerColor + " using uniqueId " + uniqueId + " stock contains:");
-            if(uniqueId != null && uniqueId != '' && this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'] != null)
+            if(this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'] != null)
             {
                 this.saucerMatExtraCrewmemberStocks[saucerColor]['primary'].removeFromStockById( uniqueId );
             }

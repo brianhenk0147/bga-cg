@@ -2352,6 +2352,12 @@ echo("<br>");
 						}
 				}
 
+
+				//$isPlayed = $this->doesSaucerHaveUpgradePlayed($saucerColor, 'Distress Signaler');
+				//$timesActivated = $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Distress Signaler');
+				//$askedToActivate =  $this->getAskedToActivateUpgrade($saucerColor, 'Distress Signaler');
+				//$isPlayable = $this->isUpgradePlayable($saucerColor, 'Distress Signaler');
+				//throw new feException( "isPlayed:$isPlayed timesActivated:$timesActivated askedToActivate:$askedToActivate isPlayable:$isPlayable");
 				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Distress Signaler') &&
 				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Distress Signaler') < 1 &&
 					 $this->getAskedToActivateUpgrade($saucerColor, 'Distress Signaler') == false &&
@@ -2359,6 +2365,8 @@ echo("<br>");
 				{ // they have played this upgrade, they have not yet activated it, and they have not yet indicated whether they want to activate it
 //throw new feException( "distress");
 						$distressSignalableCrewmembers = $this->getDistressSignalableTakeCrewmembers($saucerColor);
+						//$distressCount = count($distressSignalableCrewmembers);
+						//throw new feException( "distressCount:$distressCount");
 						if(count($distressSignalableCrewmembers) > 0)
 						{
 								return true;
@@ -2807,6 +2815,8 @@ echo("<br>");
 						}
 				}
 
+
+
 				return $distressSignalableCrewmembers;
 		}
 
@@ -3039,12 +3049,19 @@ echo("<br>");
 						}
 				}
 
+				//$isPlayed = $this->doesSaucerHaveUpgradePlayed($saucerColor, 'Distress Signaler');
+				//$timesActivated = $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Distress Signaler');
+				//$isPlayable = $this->isUpgradePlayable($saucerColor, 'Distress Signaler');
+				//throw new feException( "isPlayed:$isPlayed timesActivated:$timesActivated isPlayable:$isPlayable");
 				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Distress Signaler') &&
 						$this->getUpgradeTimesActivatedThisRound($saucerColor, 'Distress Signaler') < 1 &&
 						$this->isUpgradePlayable($saucerColor, 'Distress Signaler'))
 				{ // they have played Distress Signaler but they have not yet activated it this round
 
 						$distressSignalableCrewmembers = $this->getDistressSignalableTakeCrewmembers($saucerColor);
+						//$countDistress = count($distressSignalableCrewmembers);
+
+						//throw new feException( "countDistress:$countDistress");
 						if(count($distressSignalableCrewmembers) > 0)
 						{
 								$result[$index] = array();
