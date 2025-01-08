@@ -644,7 +644,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     console.log( "Clicked activate proximity mines button." );
 
                     var htmlIdOfButton = evt.currentTarget.id;
-                    console.log( "Clicked saucer to go first with node "+htmlIdOfButton+"." );
+                    console.log( "Clicked saucer with node "+htmlIdOfButton+"." );
                     var saucerWhoCrashed = htmlIdOfButton.split('_')[1]; // ff00ff
 
                     this.ajaxcall( "/crashandgrab/crashandgrab/actActivateProximityMines.html", {
