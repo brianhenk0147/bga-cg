@@ -5932,17 +5932,20 @@ echo("<br>");
 		}
 
 		// Activated means the player has chosen to use it this round.
-		function activateUpgrade($saucerColor, $upgradeName)
+		function activateUpgrade($saucerColor, $upgradeName, $notify=true)
 		{
 				$collectorNumber = $this->convertUpgradeNameToCollectorNumber($upgradeName);
 				$this->activateUpgradeWithCollectorNumber($saucerColor, $collectorNumber);
 				$saucerColorFriendly = $this->convertColorToHighlightedText($saucerColor);
 
-				self::notifyAllPlayers( "activateUpgrade", clienttranslate( '${saucer_color_friendly} activated ${upgrade_name}.' ), array(
-						'saucer_color_friendly' => $saucerColorFriendly,
-						'upgrade_name' => $upgradeName,
-						'color' => $saucerColor
-				) );
+				if($notify)
+				{ // we want to add a note about this in the message log
+					self::notifyAllPlayers( "activateUpgrade", clienttranslate( '${saucer_color_friendly} activated ${upgrade_name}.' ), array(
+							'saucer_color_friendly' => $saucerColorFriendly,
+							'upgrade_name' => $upgradeName,
+							'color' => $saucerColor
+					) );
+				}
 		}
 
 		function activateUpgradeWithCollectorNumber($saucerColor, $collectorNumber)
@@ -11527,7 +11530,7 @@ echo("<br>");
 						$this->saveSaucerMoveCardDirection($saucerWhoseTurnItIs, $direction); // save the direction so we have it in case we are pushed before our turn comes up
 
 						// specify that we have already set the direction this round so we don't ask again
-						$this->activateUpgrade($saucerWhoseTurnItIs, "Time Machine");
+						$this->activateUpgrade($saucerWhoseTurnItIs, "Time Machine", false);
 
 						// set asked_to_activate_this_round to 1 so we don't ask again
 						$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Time Machine");
