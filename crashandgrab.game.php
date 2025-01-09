@@ -3461,7 +3461,7 @@ echo("<br>");
 			// get all non-accelerator, non-crash-site spaces in our row or column
 			$spacesInRowCol = self::getObjectListFromDB( "SELECT *
 														  FROM board
-														  WHERE board_space_type = 'B' AND (board_x=$xLocation OR board_y=$yLocation)" );
+														  WHERE board_space_type <> 'S' AND (board_x=$xLocation OR board_y=$yLocation)" );
 
 
 			$countSpaces = count($spacesInRowCol);

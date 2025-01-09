@@ -288,16 +288,6 @@ $machinestates = array(
         "transitions" => array( "chooseWhichSaucerGoesFirst" => 26, "saucerTurnStart" => 27 )
     ),
 
-    31 => array(
-    		"name" => "chooseDirectionAfterPlacement",
-    		"description" => clienttranslate('${actplayer} is placing their Saucer.'),
-    		"descriptionmyturn" => clienttranslate('You must choose the direction in which your Saucer will travel.'),
-    		"type" => "activeplayer",
-            'args' => 'argGetDirectionHighlights',
-            "possibleactions" => array( "clickDirection", "chooseUpgradeSpace" ),
-    		"transitions" => array(  "saucerTurnStart" => 27 )
-    ),
-
     32 => array(
     		"name" => "chooseIfYouWillUseBooster",
     		"description" => clienttranslate('${saucerColor} is deciding if they will boost.'),
@@ -362,7 +352,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetAllCrashSitesOccupiedDetails',
         "possibleactions" => array( "chooseSaucerSpace" ),
-    		"transitions" => array( "chooseDirectionAfterPlacement" => 31 )
+    		"transitions" => array( "saucerTurnStart" => 27 )
     ),
 
     40 => array(
@@ -372,7 +362,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
         "possibleactions" => array( "clickCrashSite", "chooseUpgradeSpace" ),
-        "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50, "endRoundCleanUp" => 5, "chooseDirectionAfterPlacement" => 31, "chooseWhichSaucerGoesFirst" => 26  )
+        "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50, "endRoundCleanUp" => 5, "chooseWhichSaucerGoesFirst" => 26  )
     ),
 
     41 => array(
@@ -402,7 +392,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerToPlaceButton',
         "possibleactions" => array( "clickSaucer" ),
-    		"transitions" => array(  "chooseDirectionAfterPlacement" => 31, "allCrashSitesOccupiedChooseSpacePreTurn" => 39, "beginTurn" => 44 )
+    		"transitions" => array(  "allCrashSitesOccupiedChooseSpacePreTurn" => 39, "beginTurn" => 44 )
     ),
 
     44 => array(
