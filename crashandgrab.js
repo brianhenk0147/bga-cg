@@ -5670,6 +5670,8 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var sourceHtmlId = 'move_card_'+distance+'_'+saucerColor;
             console.log('placeMoveCard sourceHtmlId:'+sourceHtmlId);
 
+            //this.destroyOverrideToken(saucerColor); // destroy the override token on it if it exists
+
             // if it is unchosen, do nothing -- we shouldn't be calling this so skip this check
             // if chosen:
             //   if it is our card or it is revealed, show the distance and direction
@@ -5720,11 +5722,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 else
                 { // it is still hidden
 
-                    var moveCardBackHtmlId = 'move_card_back_'+saucerColor;
-                    if($(moveCardBackHtmlId))
-                    { // this move back already exists
-                        dojo.destroy(moveCardBackHtmlId);
-                    }
+                    this.destroyMoveCardBack(saucerColor); // destroy move card back if it already exists so we don't get 2 of them
 
                     // place the back
                     dojo.place(
@@ -5736,6 +5734,24 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
                     //this.rotateTo( 'move_card_back_'+saucerColor, 45 );
                 }
+            }
+        },
+
+        destroyOverrideToken: function(saucerColor)
+        {
+            var overrideTokenHtml = 'override_'+saucerColor;
+            if($(overrideTokenHtml ))
+            {
+                dojo.destroy(overrideTokenHtml);
+            }
+        },
+
+        destroyMoveCardBack(saucerColor)
+        {
+            var moveCardBackHtml = 'move_card_back_'+saucerColor;
+            if($(moveCardBackHtml ))
+            {
+                dojo.destroy(moveCardBackHtml);
             }
         },
 
@@ -8313,12 +8329,8 @@ console.log("success... onClickUpgradeCardInHand");
             console.log("Entered notif_cardChosen.");
 
             var saucerChoosing = notif.args.saucer_choosing;
-            var cardHtmlId = 'move_card_back_'+saucerChoosing;
 
-            if($(cardHtmlId))
-            { // this move back already exists
-                dojo.destroy(cardHtmlId);
-            }
+            this.destroyMoveCardBack(saucerChoosing); // destroy move card back if it already exists so we don't get 2 of them
 
             dojo.place(
                     this.format_block( 'jstpl_moveCardBack', {
@@ -8339,12 +8351,7 @@ console.log("success... onClickUpgradeCardInHand");
 
             var saucerChoosing = notif.args.saucer_choosing;
 
-            var htmlOfBack = 'move_card_back_'+saucerChoosing;
-
-            if($(htmlOfBack))
-            {
-                dojo.destroy(htmlOfBack);
-            }
+            this.destroyMoveCardBack(saucerChoosing); // destroy move card back if it already exists
         },
 
         notif_cardRevealed: function(notif)
@@ -8355,16 +8362,8 @@ console.log("success... onClickUpgradeCardInHand");
             var distanceType = notif.args.distance_type;
             var direction = notif.args.direction;
 
-
-
-
-            var moveCardBackHtmlId = 'move_card_back_'+saucerColor;
-            if(document.getElementById(moveCardBackHtmlId))
-            { // the move card back is there right now
-
-                // destroy it
-                dojo.destroy(moveCardBackHtmlId);
-            }
+            this.destroyMoveCardBack(saucerColor); // destroy move card back if it already exists
+            this.destroyOverrideToken(saucerColor); // destroy the override token on it if it exists
 
             var destinationHtmlId = 'played_move_card_container_'+saucerColor;
             var moveCardFrontHtmlId = 'move_card_'+distanceType+'_'+saucerColor;
@@ -8400,8 +8399,6 @@ console.log("success... onClickUpgradeCardInHand");
 
                 // Move card from player panel
                 //this.placeOnObject( 'cardontable_'+player_id, 'overall_player_board_'+player_id );
-
-
 
             }
 
