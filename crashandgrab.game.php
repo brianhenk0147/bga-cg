@@ -6861,13 +6861,6 @@ echo("<br>");
 				self::DbQuery( $sql );
 		}
 
-		// Make all ostriches not dizzy.
-		function resetDizziness()
-		{
-			$sql = "UPDATE ostrich SET ostrich_is_dizzy=0";
-			self::DbQuery( $sql );
-		}
-
 		function resetAllOstrichZigs()
 		{
 				$sql = "UPDATE ostrich SET ostrich_zig_distance=20, ostrich_zig_direction=''" ;
@@ -10170,7 +10163,8 @@ echo("<br>");
 		//throw new feException( "1 saucer per player." );
 		
 							// now this saucer can choose any direction
-							$this->gamestate->nextState( "chooseDirectionAfterPlacement" );
+							$this->setCanChooseDirection($saucerToPlace, 1);
+							$this->gamestate->nextState( "beginTurn" );
 						}
 						else
 						{ // players are controlling 2 saucers each
@@ -10583,8 +10577,9 @@ echo("<br>");
 						elseif($currentState == "askPreTurnToPlaceCrashedSaucer")
 						{ // we are placing a crashed saucer before a player's turn
 
-								// now this saucer can choose any direction
-								$this->gamestate->nextState( "chooseDirectionAfterPlacement" );
+								// go to begin turn and they will be asked their direction before they move
+								$this->setCanChooseDirection($colorAsHex, 1);
+								$this->gamestate->nextState( "beginTurn" );
 						}
 				}
 				else
@@ -10618,7 +10613,7 @@ echo("<br>");
 
 		function executeClickedBeginTurn()
 		{
-				$this->gamestate->nextState( "checkStartOfTurnUpgrades" );
+			$this->gamestate->nextState( "checkStartOfTurnUpgrades" );
 		}
 
 		// The player has just moved their saucer but decided to undo it.
@@ -11537,6 +11532,9 @@ echo("<br>");
 						// set asked_to_activate_this_round to 1 so we don't ask again
 						$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Time Machine");
 
+						// this saucer can no longer choose their direction from being crashed
+						$this->setCanChooseDirection($saucerWhoseTurnItIs, 0);
+
 
 
 						// notify the player so they can rotate the card on the UI
@@ -12069,7 +12067,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 					$this->executeDirectionClick($direction);
 				}
-				elseif($currentState == "chooseDirectionAfterPlacement")
+				elseif($currentState == "chooseTimeMachineDirection")
 				{ // choosing a direction after they were crashed before their turn
 
 					$skipNotify = true;
@@ -12097,7 +12095,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				$allValidSpaces = $this->getAllSpacesNotInCrewmemberRowColumn();
 				foreach( $allValidSpaces as $space )
-				{ // go through each player who needs to replace a garment
+				{ // go through each valid space
 						//echo "playerID is " + $player['player_id'];
 
 
@@ -12109,16 +12107,16 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$this->placeSaucerOnSpace($saucerColor, $xLocation, $yLocation);
 
 								$currentState = $this->getStateName();
-								$saucerToPlace = "unknown";
 								if($currentState == "allCrashSitesOccupiedChooseSpaceEndRound")
 								{ // we are placing a crashed saucer at the end of a round
 										$this->gamestate->nextState( "endRoundCleanUp" ); // back to end round clean-up to see if we need to place any others
 								}
 								elseif($currentState == "allCrashSitesOccupiedChooseSpacePreTurn")
 								{ // we are placing a crashed saucer before a player's turn
-										$this->gamestate->nextState( "chooseDirectionAfterPlacement" ); // let them choose direction
-								}
 
+									$this->setCanChooseDirection($saucerColor, 1);
+									$this->gamestate->nextState( "beginTurn" ); // let them choose direction
+								}
 
 								return true;
 						}
@@ -13644,7 +13642,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				else
 				{ // they did NOT play an X or has already chosen its value
 
-						if($this->hasOverrideToken($saucerWhoseTurnItIs) ||
+						if($this->hasOverrideToken($saucerWhoseTurnItIs) || 
+						  $this->canSaucerChooseDirection($saucerWhoseTurnItIs) || 
 							 ($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Time Machine") &&
 							 $this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Time Machine") < 1 &&
 							 $this->isUpgradePlayable($saucerWhoseTurnItIs, 'Time Machine')))
@@ -13662,6 +13661,12 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 											// tell the game we've used it so we don't ask again
 											$this->setHasOverrideToken($saucerWhoseTurnItIs, 0);
+									}
+									else if($this->canSaucerChooseDirection($saucerWhoseTurnItIs))
+									{
+										self::notifyAllPlayers( "wasCrashed", clienttranslate( '${saucer_color_highlighted} crashed before their turn so they are choosing their direction.' ), array(
+											'saucer_color_highlighted' => $saucerHighlightedText
+										) );
 									}
 									else
 									{
@@ -13815,6 +13820,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				// make all turn-related saucer values 0
 				$this->resetSaucers();
+
+				// reset any saucers who got to choose their direction
+				$this->resetAllSaucerChooseDirection();
 
 				// set all card to the unchosen state
 				$this->resetAllCardChosenState();
@@ -14609,6 +14617,33 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				return array(
 						'discardableGarments' => self::getDiscardableGarments()
 				);
+		}
+
+		function resetAllSaucerChooseDirection()
+		{
+			$sql = "UPDATE ostrich SET ostrich_is_dizzy=0";
+			self::DbQuery( $sql );
+		}
+		
+		function setCanChooseDirection($saucerColor, $value)
+		{
+			$sql = "UPDATE ostrich SET ostrich_is_dizzy=$value WHERE ";
+				$sql .= "ostrich_color='$saucerColor'";
+				self::DbQuery( $sql );
+		}
+
+		function canSaucerChooseDirection($saucerColor)
+		{
+			$canChoose = self::getUniqueValueFromDb("SELECT ostrich_is_dizzy FROM ostrich WHERE ostrich_color='$saucerColor'");
+
+			if($canChoose == 0)
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
 		}
 
 		function incrementSpacesMoved($saucerColor)

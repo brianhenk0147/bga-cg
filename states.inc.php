@@ -402,7 +402,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerToPlaceButton',
         "possibleactions" => array( "clickSaucer" ),
-    		"transitions" => array(  "chooseDirectionAfterPlacement" => 31, "allCrashSitesOccupiedChooseSpacePreTurn" => 39 )
+    		"transitions" => array(  "chooseDirectionAfterPlacement" => 31, "allCrashSitesOccupiedChooseSpacePreTurn" => 39, "beginTurn" => 44 )
     ),
 
     44 => array(
