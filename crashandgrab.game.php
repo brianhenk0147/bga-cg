@@ -3199,6 +3199,9 @@ echo("<br>");
 
 		function getStealableCrewmembersFromSaucer($crashedSaucer)
 		{
+				$currentPlayer = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				//$activePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+				
 				$result = array();
 				$stealerSaucer = $this->getOstrichWhoseTurnItIs(); // the only time you can steal garments is if it's your turn so it's always this ostrich who gets to steal
 				$stealerOwner = $this->getOwnerIdOfOstrich($stealerSaucer);
@@ -3216,23 +3219,34 @@ echo("<br>");
 
 				
 
-				
-				if($totalCrewmembersOfStealer > $totalCrewmembersOfCrashed)
-				{ // stealer has more Crewmembers than the crashed saucer
-						// notify all players that stealer may not steal from crashed because they have more crewmembers
-						self::notifyAllPlayers( "cannotSteal", clienttranslate( '${stealer_color} has more stationed Crewmembers than ${stealee_color} so they may not steal any from them.' ), array(
-								'stealer_color' => $saucerColorFriendlyStealer,
-								'stealee_color' => $saucerColorFriendlyCrashed
-						) );
-						return $result;
-				}
-				elseif(count($allStealableCrewmembersFromCrashedSaucer) == 0)
-				{ // they have nothing to steal
-					self::notifyAllPlayers( "nothingToSteal", clienttranslate( '${stealer_color} has nothing for ${stealee_color} to steal.' ), array(
+				if($this->getNotifiedOfStealingOutcome($currentPlayer) == 0)
+				{ // we have not yet sent this notification (since this is in an arg for a state, we will get multiple notifications if we do not do this)
+					
+					if($totalCrewmembersOfStealer > $totalCrewmembersOfCrashed)
+					{ // stealer has more Crewmembers than the crashed saucer
+							// notify this player (notify all will result in multiple message logs because this happens in args to a state) that stealer may not steal from crashed because they have more crewmembers
+							self::notifyPlayer( $currentPlayer, "cannotSteal", clienttranslate( '${stealer_color} has more stationed Crewmembers than ${stealee_color} so they may not steal any from them.' ), array(
+									'stealer_color' => $saucerColorFriendlyStealer,
+									'stealee_color' => $saucerColorFriendlyCrashed
+							) );
+
+							$this->setNotifiedOfStealingOutcome($currentPlayer, 1);
+
+							return $result;
+					}
+					elseif(count($allStealableCrewmembersFromCrashedSaucer) == 0)
+					{ // they have nothing to steal
+
+						// this player (notify all will result in multiple message logs because this happens in args to a state) 
+						self::notifyPlayer( $currentPlayer, "nothingToSteal", clienttranslate( '${stealer_color} has nothing for ${stealee_color} to steal.' ), array(
 							'stealer_color' => $saucerColorFriendlyStealer,
 							'stealee_color' => $saucerColorFriendlyCrashed
-					) );
-					return $result;
+						) );
+
+						$this->setNotifiedOfStealingOutcome($currentPlayer, 1);
+
+						return $result;
+					}
 				}
 
 				
@@ -4824,6 +4838,17 @@ echo("<br>");
 		{
 				$sql = "UPDATE player SET player_custom_turn_order=$turnOrder WHERE player_id=$player";
 				self::DbQuery( $sql );
+		}
+
+		function setNotifiedOfStealingOutcome($playerId, $newValue)
+		{
+			$sql = "UPDATE player SET notified_of_stealing_outcome=$newValue WHERE player_id=$playerId";
+			self::DbQuery( $sql );
+		}
+
+		function getNotifiedOfStealingOutcome($playerId)
+		{
+			return self::getUniqueValueFromDb("SELECT notified_of_stealing_outcome FROM player WHERE player_id=$playerId");
 		}
 
 		// Returns the number of saucers each player controls.
@@ -6588,7 +6613,7 @@ echo("<br>");
 
 						return $numberUniqueGarments;
 		}
-
+		
 		function getTrapsDrawnThisRound($playerid)
 		{
 				return self::getUniqueValueFromDb("SELECT player_traps_drawn_this_round FROM player WHERE player_id=$playerid");
@@ -14392,8 +14417,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetStealableCrewmembers()
 		{
-				//$currentPlayer = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
-				$activePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 				$saucerStealing = $this->getOstrichWhoseTurnItIs();
 				$ownerOfSaucerStealing = $this->getOwnerIdOfOstrich($saucerStealing);
 				$crashedSaucer = $this->nextPendingCrashReward($saucerStealing);
@@ -14402,10 +14425,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				$stealableCrewmembers = array();
 
-				if($activePlayer == $ownerOfSaucerStealing)
-				{ // this is the player stealing (we don't want to get this for all players or we'll get duplicate message logs about stealing)
-					$stealableCrewmembers = self::getStealableCrewmembersFromSaucer($crashedSaucer);
-				}
+				
+				$stealableCrewmembers = self::getStealableCrewmembersFromSaucer($crashedSaucer);
+				
 
 				// return both the location of all the
 				return array(

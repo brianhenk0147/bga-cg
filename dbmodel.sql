@@ -141,3 +141,4 @@ CREATE TABLE IF NOT EXISTS `garment` (
  ALTER TABLE `player` ADD `player_turns_taken_this_round` INT UNSIGNED NOT NULL DEFAULT '0';
  ALTER TABLE `player` ADD `player_custom_turn_order` INT UNSIGNED NOT NULL DEFAULT '0';
  ALTER TABLE `player` ADD `player_traps_drawn_this_round` INT UNSIGNED NOT NULL DEFAULT '0';
+  ALTER TABLE `player` ADD `notified_of_stealing_outcome` INT UNSIGNED NOT NULL DEFAULT '0';
