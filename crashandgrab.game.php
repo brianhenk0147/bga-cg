@@ -5411,7 +5411,24 @@ echo("<br>");
 						return false;
 				}
 
+				// see if the saucer is crashed
 				$saucerCrashed = $this->isSaucerCrashed($saucer);
+				if($this->getNumberOfPlayers() == 2)
+				{ // 2-player game
+
+					// see if either of their saucers crashed in case they crashed their own saucer
+					$saucerOwner = $this->getOwnerIdOfOstrich($saucer);
+					$saucersForPlayer = $this->getSaucersForPlayer($saucerOwner);
+					foreach($saucersForPlayer as $saucerOfPlayer)
+					{
+						$colorOfSaucer = $saucerOfPlayer['ostrich_color'];
+						if($this->isSaucerCrashed($colorOfSaucer))
+						{ // this saucer crashed
+							$saucerCrashed = true;
+						}
+					}
+				}
+
 				$saucerCrashDetails = $this->getSaucerCrashDetailsForSaucer($saucer);
 
 				foreach($saucerCrashDetails as $saucerDetail)
@@ -5639,8 +5656,13 @@ echo("<br>");
 								if($ownerOfSaucerColor == $ownerOfSaucerWhoseTurnItIs)
 								{ // the player crashed their own saucer
 
-										self::notifyAllPlayers( "crashedOwnSaucer", clienttranslate( 'No crash reward is given because both Saucers are owned by the same player.' ), array(
-										) );
+										$crasherFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+										$crasheeFriendly = $this->convertColorToHighlightedText($saucerColor);
+										
+										self::notifyAllPlayers( "crashedOwnSaucer", clienttranslate( '${crasherFriendly} must suffer a crash penalty because they crashed their partner, ${crasheeFriendly}.' ), array(
+											'crasherFriendly' => $crasherFriendly,
+											'crasheeFriendly' => $crasheeFriendly
+									) );
 
 								}
 								else
