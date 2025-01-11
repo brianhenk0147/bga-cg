@@ -5403,18 +5403,8 @@ echo("<br>");
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
-				$timesActivatedCloakingDevice = $this->getUpgradeTimesActivatedThisRound($saucer, "Cloaking Device");
-				if($timesActivatedCloakingDevice > 0)
-				{	// the used Cloaking Device to remove themself from the board
-
-						// do not penalize them for "crashing"
-						return false;
-				}
-
-				// see if the saucer is crashed
-				$saucerCrashed = $this->isSaucerCrashed($saucer);
 				if($this->getNumberOfPlayers() == 2)
-				{ // 2-player game
+				{ // each player has 2 saucers so we must check for crashes of either saucer
 
 					// see if either of their saucers crashed in case they crashed their own saucer
 					$saucerOwner = $this->getOwnerIdOfOstrich($saucer);
@@ -5422,41 +5412,86 @@ echo("<br>");
 					foreach($saucersForPlayer as $saucerOfPlayer)
 					{
 						$colorOfSaucer = $saucerOfPlayer['ostrich_color'];
-						if($this->isSaucerCrashed($colorOfSaucer))
-						{ // this saucer crashed
-							$saucerCrashed = true;
+						
+						// see if the saucer is crashed
+						$saucerCrashed = $this->isSaucerCrashed($colorOfSaucer);	
+
+						$timesActivatedCloakingDevice = $this->getUpgradeTimesActivatedThisRound($colorOfSaucer, "Cloaking Device");
+						if($timesActivatedCloakingDevice > 0)
+						{	// the used Cloaking Device to remove themself from the board
+
+								// do not penalize them for "crashing"
+								$saucerCrashed = false;
+						}
+
+						// get details on that saucer
+						$saucerCrashDetails = $this->getSaucerCrashDetailsForSaucer($colorOfSaucer);
+
+						foreach($saucerCrashDetails as $saucerDetail)
+						{ // should just be one but it's a list of records
+
+								$crashPenaltyRendered = $saucerDetail['crash_penalty_rendered'];
+
+								//throw new feException( "saucerCrashed:$saucerCrashed saucerWhoseTurnItIs:$saucerWhoseTurnItIs saucer: $saucer crashPenaltyRendered: $crashPenaltyRendered");
+
+								if($saucerCrashed == true &&
+									$saucerWhoseTurnItIs == $colorOfSaucer &&
+									$crashPenaltyRendered == false)
+								{ // this saucer crashed on their turn and they have not yet paid the penalty
+
+										if($this->doesSaucerHaveOffColoredCrewmember($colorOfSaucer))
+										{ // saucer has an off-colored crewmember
+
+												return true;
+										}
+								}
 						}
 					}
 				}
+				else
+				{ // each player only has 1 saucer
 
-				$saucerCrashDetails = $this->getSaucerCrashDetailsForSaucer($saucer);
+					$timesActivatedCloakingDevice = $this->getUpgradeTimesActivatedThisRound($saucer, "Cloaking Device");
+					if($timesActivatedCloakingDevice > 0)
+					{	// the used Cloaking Device to remove themself from the board
 
-				foreach($saucerCrashDetails as $saucerDetail)
-				{ // should just be one but it's a list of records
+							// do not penalize them for "crashing"
+							return false;
+					}
 
-						$crashPenaltyRendered = $saucerDetail['crash_penalty_rendered'];
+					// see if the saucer is crashed
+					$saucerCrashed = $this->isSaucerCrashed($saucer);	
 
-						//throw new feException( "saucerCrashed:$saucerCrashed saucerWhoseTurnItIs:$saucerWhoseTurnItIs saucer: $saucer crashPenaltyRendered: $crashPenaltyRendered");
+					// get details on that saucer
+					$saucerCrashDetails = $this->getSaucerCrashDetailsForSaucer($saucer);
 
-						if($saucerCrashed == true &&
-							 $saucerWhoseTurnItIs == $saucer &&
-							 $crashPenaltyRendered == false)
-						{ // this saucer crashed on their turn and they have not yet paid the penalty
+					foreach($saucerCrashDetails as $saucerDetail)
+					{ // should just be one but it's a list of records
 
-								if($this->doesSaucerHaveOffColoredCrewmember($saucer))
-								{ // saucer has an off-colored crewmember
+							$crashPenaltyRendered = $saucerDetail['crash_penalty_rendered'];
 
-										return true;
-								}
-								else
-								{ // saucer does NOT have an off-colored crewmember
+							//throw new feException( "saucerCrashed:$saucerCrashed saucerWhoseTurnItIs:$saucerWhoseTurnItIs saucer: $saucer crashPenaltyRendered: $crashPenaltyRendered");
 
-										return false;
-								}
-						}
+							if($saucerCrashed == true &&
+								$saucerWhoseTurnItIs == $saucer &&
+								$crashPenaltyRendered == false)
+							{ // this saucer crashed on their turn and they have not yet paid the penalty
+
+									if($this->doesSaucerHaveOffColoredCrewmember($saucer))
+									{ // saucer has an off-colored crewmember
+
+											return true;
+									}
+									else
+									{ // saucer does NOT have an off-colored crewmember
+
+											return false;
+									}
+							}
+					}
 				}
 
-				return false;
+				return false; // if we haven't returned true yet, we do not have a pending penalty
 		}
 
 		function setCrewmemberPrimaryAndExtrasForAllSaucers()
