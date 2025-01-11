@@ -12596,7 +12596,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				self::notifyAllPlayers( "endTurn", clienttranslate( '${saucer_color_highlighted} has ended their turn.' ), array(
 								'player_name' => $nameOfPlayerWhoseTurnItWas,
-								'saucer_color_highlighted' => $highlightedSaucerColor
+								'saucer_color_highlighted' => $highlightedSaucerColor,
+								'allCrewmembers' => $this->getAllCrewmembers()
 						) );
 
 				if($this->isTurnOrderClockwise())

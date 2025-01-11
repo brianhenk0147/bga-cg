@@ -1561,6 +1561,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                   break;
 
+
+
                   case 'chooseAcceleratorDirection':
                     if( this.isCurrentPlayerActive() )
                     { // this is the active player
@@ -1783,7 +1785,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 break;
 
-
+                case 'saucerTurnStart':
+                    this.unhighlightAllSpaces();
+                break;
 
                 case 'executingMove':
                 console.log( "onLeavingState->executingMove" );
@@ -3489,8 +3493,11 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
                 // remove all distance button highlights
                 dojo.query( '.saucer1DirectionButtonSelected' ).removeClass( 'saucer1DirectionButtonSelected' );
 
-                // highlight this distance button
-                dojo.addClass( htmlIdOfDirectionButton, 'saucer1DirectionButtonSelected' );
+                if($(htmlIdOfDirectionButton))
+                {
+                    // highlight this distance button
+                    dojo.addClass( htmlIdOfDirectionButton, 'saucer1DirectionButtonSelected' );
+                }
             }
             else
             {
@@ -3499,8 +3506,11 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
                 // remove all distance button highlights
                 dojo.query( '.saucer2DirectionButtonSelected' ).removeClass( 'saucer2DirectionButtonSelected' );
 
-                // highlight this distance button
-                dojo.addClass( htmlIdOfDirectionButton, 'saucer2DirectionButtonSelected' );
+                if($(htmlIdOfDirectionButton))
+                {
+                    // highlight this distance button
+                    dojo.addClass( htmlIdOfDirectionButton, 'saucer2DirectionButtonSelected' );
+                }
             }
 
 
@@ -6593,12 +6603,12 @@ console.log("success... onClickUpgradeCardInHand");
             }
         },
 
-        resetWiggling: function()
+        resetWiggling: function(allBoardCrewmembers)
         {
             // remove all wiggling
             dojo.query( '.crewmember' ).removeClass( 'wiggle' );
 
-            for( var i in this.gamedatas.garment )
+            for( var i in allBoardCrewmembers )
             {
                 var garment = this.gamedatas.garment[i];
                 var color = garment.garment_color; // the color of the crewmember
@@ -6606,13 +6616,22 @@ console.log("success... onClickUpgradeCardInHand");
                 var typeInt = garment.garment_type;
                 var typeString = this.convertCrewmemberType(typeInt);
 
+                var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color;
+
                 if(location == "board")
                 {
-                    var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color;
                     if($(crewmemberHtmlId))
                     {
                         // make them wiggle
                         dojo.addClass(crewmemberHtmlId, "wiggle");
+                    }
+                }
+                else
+                {
+                    if($(crewmemberHtmlId))
+                    {
+                            // remove the wiggle from it
+                          dojo.removeClass(crewmemberHtmlId, "wiggle");
                     }
                 }
             }
@@ -8443,9 +8462,9 @@ console.log("success... onClickUpgradeCardInHand");
         notif_endTurn: function( notif )
         {
 
-            var allUpgrades = notif.args.allUpgrades;
+            var allCrewmembers = notif.args.allCrewmembers;
 
-            this.resetWiggling();
+            this.resetWiggling(allCrewmembers);
         },
 
    });
