@@ -428,7 +428,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             }
 
             this.initializeTurnOrder(this.gamedatas.turnOrder, this.gamedatas.probePlayer, gamedatas.ostrich);
-            this.updateTurnOrder(this.gamedatas.turnOrder, this.gamedatas.probePlayer, this.gamedatas.turnOrderArray);
+            this.updateTurnOrder(this.gamedatas.turnOrder, this.gamedatas.probePlayer, this.gamedatas.turnOrderArray, true);
 
 
 
@@ -4499,7 +4499,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
         // Set the turn order indicator for all saucers.
         // turnOrder: 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
-        updateTurnOrder: function(turnOrder, playerWithProbe, turnOrderArray)
+        updateTurnOrder: function(turnOrder, playerWithProbe, turnOrderArray, hideTurnOrder=false)
         {
 
             for( var i in turnOrderArray )
@@ -4507,6 +4507,16 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 var saucerTurnInfo = turnOrderArray[i];
                 var saucerColor = saucerTurnInfo[1];
                 var turnOrderInt = saucerTurnInfo[0];
+
+                if(hideTurnOrder == true)
+                { // we do not want to show turn order because it hasn't been set yet
+
+                    if(turnOrderInt > 1)
+                    { // they do not have the probe
+
+                        turnOrderInt = 0; // set to questin mark
+                    }
+                }
 
                 console.log('saucerColor:'+saucerColor+' turnOrderInt:'+turnOrderInt);
 
