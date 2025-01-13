@@ -12346,8 +12346,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$playerWithProbe = $this->getStartPlayer(); // get the owner of the saucer with the probe
 
 				$turnOrder = $this->createTurnOrderArray($playerWithProbe, $turnOrderInt);
-
-
+				
 					// notify players of the direction (send clockwise/counter)
 					self::notifyAllPlayers( 'updateTurnOrder', clienttranslate( 'The turn direction this round is ${turnOrderFriendly}.' ), array(
 									'i18n' => array('turnOrderFriendly'),
@@ -12410,25 +12409,35 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						{ // go through each saucer of this player
 								$saucerColor = $saucer['ostrich_color'];
 
-								if($numberOfPlayers == 2)
-								{ // this is a 2 player game
+								$currentState = $this->getStateName();
+								if($this->isPreTurnOrderState($currentState) && $turnIndex > 1)
+								{ // turn order has not yet been chosen this round
 
-										if($this->hasPlayerChosen($nextPlayer))
-										{ // this player has chosen which of its saucers will go first (and it's not the probe player so they are going second and fourth)
+									$turnOrder = 0; // we do not know turn order yet
+								}
+								else
+								{ // turn order has been chosen this round
 
-												$thisSaucerIsChosen = $this->getSaucerIsChosen($saucerColor);
-												if($thisSaucerIsChosen)
-												{
-														$turnOrder = 2; // they will go second
-												}
-												else { // this saucer was NOT the one chosen
-														$turnOrder = 4; // they will go fourth because this player does not have the probe
-												}
-										}
-										else
-										{ // this player has not chosen
-												$turnOrder = 0; // we don't know their order yet
-										}
+									if($numberOfPlayers == 2)
+									{ // this is a 2 player game
+
+											if($this->hasPlayerChosen($nextPlayer))
+											{ // this player has chosen which of its saucers will go first (and it's not the probe player so they are going second and fourth)
+
+													$thisSaucerIsChosen = $this->getSaucerIsChosen($saucerColor);
+													if($thisSaucerIsChosen)
+													{
+															$turnOrder = 2; // they will go second
+													}
+													else { // this saucer was NOT the one chosen
+															$turnOrder = 4; // they will go fourth because this player does not have the probe
+													}
+											}
+											else
+											{ // this player has not chosen
+													$turnOrder = 0; // we don't know their order yet
+											}
+									}
 								}
 
 								$saucerOrder = array();
@@ -12924,6 +12933,18 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				//throw new feException( "false saucerColor:$saucerColor upgradeName:$upgradeName" );
 					return false;
 			}
+		}
+
+		function isPreTurnOrderState($stateName)
+		{
+			switch($stateName)
+			{
+				case "chooseMoveCard":
+				case "askToRotationalStabilizer":
+					return true;
+			}
+
+			return false;
 		}
 
 		function getLocationOfUpgradeCard($upgradeName)
