@@ -562,7 +562,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAirlockCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "askWhichEndOfTurnUpgradeToUse" => 53, "endGame" => 99 )
     ),
 
     64 => array(
