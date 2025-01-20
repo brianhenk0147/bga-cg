@@ -11071,6 +11071,9 @@ echo("<br>");
 				//throw new feexception("turnOrderInt:$turnOrderInt");
 				$this->updateTurnOrder($turnOrderInt); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 
+				// award override tokens
+				$this->giveOverrideTokens();
+
 				$this->gamestate->nextState( "setActivePlayerToProbePlayer");
 		}
 
@@ -12940,7 +12943,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 			switch($stateName)
 			{
 				case "chooseMoveCard":
-				case "askToRotationalStabilizer":
 					return true;
 			}
 
