@@ -8215,6 +8215,12 @@ echo("<br>");
 								if($saucerWeCollideWith != "")
 								{	// there is a saucer here
 
+									// since we collided with another saucer, exhaust all movement remaining... 
+									// otherwise pushing a saucer on a Crash Site with Waste Accelerator won't work
+									$fullMoveDistance = $this->getSaucerDistance( $saucerMoving );
+									$this->setSpacesMoved($saucerMoving, $fullMoveDistance);
+
+
 		//throw new feException("colliding with:$saucerWeCollideWith");
 										array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 
@@ -8415,7 +8421,12 @@ echo("<br>");
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
 
-									//array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
+									// since we collided with another saucer, exhaust all movement remaining... 
+									// otherwise pushing a saucer on a Crash Site with Waste Accelerator won't work
+									$fullMoveDistance = $this->getSaucerDistance( $saucerMoving );
+									$this->setSpacesMoved($saucerMoving, $fullMoveDistance);
+
+									array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 //throw new feException("saucerPush added. now adding X, Y ($thisX, $currentY) and distance, direction ($distance, $direction), and saucerWeCollideWith ($saucerWeCollideWith)");
 
 									$pushedEventList = $this->getEventsWhileExecutingMove($thisX, $currentY, $distance, $direction, $saucerWeCollideWith, true);
@@ -8606,6 +8617,11 @@ echo("<br>");
 								if($saucerWeCollideWith != "")
 								{	// there is an ostrich here
 
+									// since we collided with another saucer, exhaust all movement remaining... 
+									// otherwise pushing a saucer on a Crash Site with Waste Accelerator won't work
+									$fullMoveDistance = $this->getSaucerDistance( $saucerMoving );
+									$this->setSpacesMoved($saucerMoving, $fullMoveDistance);
+
 										array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 
 										$pushedEventList = $this->getEventsWhileExecutingMove($currentX, $thisY, $distance, $direction, $saucerWeCollideWith, true);
@@ -8793,6 +8809,11 @@ echo("<br>");
 
 								if($saucerWeCollideWith != "")
 								{	// there is another saucer here
+
+									// since we collided with another saucer, exhaust all movement remaining... 
+									// otherwise pushing a saucer on a Crash Site with Waste Accelerator won't work
+									$fullMoveDistance = $this->getSaucerDistance( $saucerMoving );
+									$this->setSpacesMoved($saucerMoving, $fullMoveDistance);
 
 									array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
 
@@ -10240,6 +10261,19 @@ echo("<br>");
 
 					$this->placeSaucerOnSpace($saucerToPlace, $crashSiteX, $crashSiteY);
 
+					// award if they have Scavenger Bot
+					if($this->doesSaucerHaveUpgradePlayed($saucerToPlace, 'Scavenger Bot') &&
+					$this->isUpgradePlayable($saucerToPlace, 'Scavenger Bot'))
+					{ // this saucer has Scavenger Bot
+
+						// give a Booster
+						$this->giveSaucerBooster($saucerToPlace);								
+			
+						// give an Energy
+						$this->giveSaucerEnergy($saucerToPlace);
+					}
+					
+
 					if($stateUsedIn == "BEFORE_TURN")
 					{ // this is being used before the player's turn
 
@@ -10629,6 +10663,7 @@ echo("<br>");
 				$this->gamestate->nextState( "zigChosen" ); // stay in this phase
 		}
 
+		// Clicked Saucer button during Saucer placement to put them on a random Crash Site.
 		function executeClickedSaucerToPlace($colorAsHex)
 		{
 				$currentState = $this->getStateName();
@@ -12134,6 +12169,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				}
 				elseif($currentState == "chooseCrashSiteSaucerTeleporter")
 				{ // choosing en empty crash site
+
 					$cardId = $this->getUpgradeCardId($saucerColor, "Saucer Teleporter");
 					$upgradeName = $this->getUpgradeTitleFromCollectorNumber(6);
 
@@ -12141,7 +12177,21 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					$this->executeChooseCrashSite($crashSiteNumber);
 				}
 				elseif($currentState == "chooseCrashSiteRegenerationGateway")
-				{ // choosing en empty crash site
+				{ // choosing en empty crash site 
+					
+					//I DON'T THINK THIS EVER TRIGGERS HERE (IT TRIGGERS IN executeChooseCrashSite)
+
+					if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Scavenger Bot') &&
+					$this->isUpgradePlayable($saucerColor, 'Scavenger Bot'))
+					{ // this saucer has Scavenger Bot
+
+						// give a Booster
+						$this->giveSaucerBooster($saucerColor);								
+		
+						// give an Energy
+						$this->giveSaucerEnergy($saucerColor);
+					}
+
 					$cardId = $this->getUpgradeCardId($saucerColor, "Regeneration Gateway");
 					$upgradeName = $this->getUpgradeTitleFromCollectorNumber(13);
 
@@ -12153,12 +12203,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					$cardId = $this->getUpgradeCardId($saucerColor, "Time Machine");
 					$upgradeName = $this->getUpgradeTitleFromCollectorNumber(12);
 
-					$this->executeDirectionClick($direction);
-				}
-				elseif($currentState == "chooseTimeMachineDirection")
-				{ // choosing a direction after they were crashed before their turn
-
-					$skipNotify = true;
+					//$skipNotify = true;
 
 					$this->executeDirectionClick($direction);
 				}
@@ -12181,6 +12226,24 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$formattedSpace = $xLocation.'_'.$yLocation;
 				$saucerColor = $this->getOstrichWhoseTurnItIs();
 
+				$currentState = $this->getStateName();
+				if($currentState == "chooseCrashSiteRegenerationGateway")
+				{ // choosing en empty crash site
+
+					//I DON'T THINK THIS EVER TRIGGERS HERE (IT TRIGGERS IN executeChooseCrashSite)
+
+					if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Scavenger Bot') &&
+					$this->isUpgradePlayable($saucerColor, 'Scavenger Bot'))
+					{ // this saucer has Scavenger Bot
+
+						// give a Booster
+						$this->giveSaucerBooster($saucerColor);								
+		
+						// give an Energy
+						$this->giveSaucerEnergy($saucerColor);
+					}
+				}
+
 				$allValidSpaces = $this->getAllSpacesNotInCrewmemberRowColumn();
 				foreach( $allValidSpaces as $space )
 				{ // go through each valid space
@@ -12194,7 +12257,6 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								// locate the saucer there and notify all players
 								$this->placeSaucerOnSpace($saucerColor, $xLocation, $yLocation);
 
-								$currentState = $this->getStateName();
 								if($currentState == "allCrashSitesOccupiedChooseSpaceEndRound")
 								{ // we are placing a crashed saucer at the end of a round
 										$this->gamestate->nextState( "endRoundCleanUp" ); // back to end round clean-up to see if we need to place any others
