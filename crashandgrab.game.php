@@ -1388,7 +1388,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						{ // we are moving from Landing Legs
 
 								// put it in the same format as when using a move card
-								$landingLegsMoves = $this->getValidSpacesForUpgrade($saucerWhoseTurnItIs, "Landing Legs"); // in order of right, left, down, up
+								$landingLegsMoves = $this->getValidSpacesForUpgrade($saucerColor, "Landing Legs"); // in order of right, left, down, up
 								$result[$owner][$color]['none'] = array(); // using 'none' for move card key because we don't care about that for Landing Legs
 								$result[$owner][$color]['none'][$this->UP_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
 								$result[$owner][$color]['none'][$this->DOWN_DIRECTION] = array(); // we need an array for the spaces we get with this card type and direction
