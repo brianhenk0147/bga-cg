@@ -1496,6 +1496,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 							$result[$crashSiteIndex]['x'] = $locX; // 1, 2, 3
 							$result[$crashSiteIndex]['y'] = $locY; // 1, 2, 3
 							$result[$crashSiteIndex]['number'] = $this->getBoardSpaceType($locX, $locY); // 1, 2, 3
+							$result[$crashSiteIndex]['numberAsInt'] = (int)$this->getBoardSpaceType($locX, $locY); // 1, 2, 3
 						}
 				}
 
@@ -1503,7 +1504,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				//throw new feException( "Count:".$count);
 
 				// sort the crash sites
-				sort($result);
+				usort($result, function($a, $b) {
+					return $a['numberAsInt'] <=> $b['numberAsInt'];
+				});
 
 				return $result;
 		}

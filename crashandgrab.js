@@ -4229,6 +4229,9 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
                             // they get pushed down by the number of upgrades their teammat has
                             this.adjustCrewmemberLocationBasedOnUpgrades(saucerColor, crewmemberType);
 
+                            // remove its wiggling
+                            dojo.removeClass(source, "wiggle");
+
                         }
                         else if(eventType == 'saucerMove')
                         { // the saucer picked up a crewmember
@@ -7931,6 +7934,7 @@ console.log("success... onClickUpgradeCardInHand");
                       small: ""
                 } ) , sourceStackHtmlId );
             }
+
                     console.log('crewmemberType:'+crewmemberType);
                     console.log('destinationSaucerColor:'+destinationSaucerColor);
                     var destination = crewmemberType+'_container_'+destinationSaucerColor; // pilot_container_b83a4b
@@ -7944,6 +7948,7 @@ console.log("success... onClickUpgradeCardInHand");
                     dojo.addClass(source, 'played_'+crewmemberType);
 
                     // remove the wiggle
+                    console.log('removing wiggle from:'+source);
                     dojo.removeClass(source, "wiggle"); // remove the wiggle
 
                     // add it to the stock on the player board

@@ -207,6 +207,7 @@ body {
 .direction_token {
   border-radius: 6px;
   border: 1px black solid;
+  z-index: 20; /* must be lower than .saucer but higher than green space highlighting */
 
   /*fixed issue where off board spaces were overlapping direction tokens*/
   position: relative;
@@ -2138,6 +2139,7 @@ width: 170px;
 .saucer {
     width: 49px;
     height: 47px;
+    z-index: 25; /* must be higher than the 4 directional tokens on edge of board */
     position: relative;
     background-image: url('img/saucer_token.png');
     -webkit-filter: drop-shadow(2px 2px 2px #222);
