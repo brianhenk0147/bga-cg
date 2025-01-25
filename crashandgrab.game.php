@@ -2276,7 +2276,11 @@ echo("<br>");
 					 $this->isUpgradePlayable($saucerColor, 'Wormhole Generator'))
 				{ // they have played this upgrade but they have not yet activated it
 //throw new feException( "wormhole");
+					if(!$this->isSaucerCrashed($saucerColor))
+					{ // they are not crashed
+
 						return true;
+					}
 				}
 
 				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Pulse Cannon') &&
@@ -8962,6 +8966,7 @@ echo("<br>");
 				$saucerColorFriendly = $this->convertColorToHighlightedText($newSaucerGettingProbe);
 
 				$message = clienttranslate( '${ostrichName} gets the Probe and will go first this round!' ); // default
+				
 				switch($reason)
 				{
 					case "Starting":
