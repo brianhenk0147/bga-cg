@@ -8035,6 +8035,7 @@ echo("<br>");
 				//$moveEventList[1] = array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => 2, 'destination_Y' => 7);
 
 				$playerMoving = $this->getOwnerIdOfOstrich($saucerMoving);
+				//$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs(); // this is NOT the saucer moving if they are being pushed
 
 				// see if we are within 1 space of our other saucer
 				//$this->checkIfPassedByOtherSaucer($saucerMoving, $currentX, $currentY);
@@ -8148,8 +8149,9 @@ echo("<br>");
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") &&
  										   $this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1 &&
-											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator'))
-										{ // they have Waste Accelerator played and they haven't used it yet this round
+											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator') && 
+											!$wasPushed)
+										{ // they have Waste Accelerator played and they haven't used it yet this round and they are not being pushed
 
 											array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
@@ -8353,8 +8355,9 @@ echo("<br>");
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") &&
  										   $this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1 &&
-											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator'))
-										{ // they have Waste Accelerator played and they haven't used it yet this round
+											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator') && 
+											!$wasPushed)
+										{ // they have Waste Accelerator played and they haven't used it yet this round and they are not being pushed
 
 											array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
@@ -8549,8 +8552,9 @@ echo("<br>");
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") &&
  										   $this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1 &&
-											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator'))
-										{ // they have Waste Accelerator played and they haven't used it yet this round
+											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator') && 
+											!$wasPushed)
+										{ // they have Waste Accelerator played and they haven't used it yet this round and they are not being pushed
 
 											array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
@@ -8743,8 +8747,9 @@ echo("<br>");
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Waste Accelerator") &&
  										   $this->getUpgradeTimesActivatedThisRound($saucerMoving, "Waste Accelerator") < 1 &&
-											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator'))
-										{ // they have Waste Accelerator played and they haven't used it yet this round
+											$this->isUpgradePlayable($saucerMoving, 'Waste Accelerator') && 
+											!$wasPushed)
+										{ // they have Waste Accelerator played and they haven't used it yet this round and they are not being pushed
 
 											array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
