@@ -9204,6 +9204,7 @@ echo("<br>");
 								if($saucerMurderer == '')
 								{ // we have not yet set this saucer's murderer
 
+
 										// set the saucer murderer so we know to give them a reward and put in the message log
 										$this->setSaucerMurderer($ostrichColor, $ostrichTakingTurn);
 //throw new feException( "murdered: $ostrichColor murderer: $ostrichTakingTurn");
@@ -11480,17 +11481,22 @@ echo("<br>");
 		{
 				$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerMoving);
 
-				$spaces = "spaces";
 				$saucerMoveDistance = $this->getSaucerDistance($saucerMoving);
-				if($saucerMoveDistance == 1)
-				{ // we are only moving 1 spaces
-						$spaces = "space";
+				if($saucerMoveDistance == 11)
+				{ // they were pushed at the end of the turn (maybe always from Pulse Cannon?)
+					$saucerMoveDistance = 1;
 				}
 
-				self::notifyAllPlayers( "saucerMove", clienttranslate( '${saucerMovingHighlightedText} is moving ${distance} ${spaces}.' ), array(
+				$messageText = clienttranslate( '${saucerMovingHighlightedText} is moving ${distance} spaces.' );
+
+				if($saucerMoveDistance == 1)
+				{ // we are only moving 1 spaces
+						$messageText = clienttranslate( '${saucerMovingHighlightedText} is moving ${distance} space.' );
+				}
+
+				self::notifyAllPlayers( "saucerMove", $messageText, array(
 					'saucerMovingHighlightedText' => $saucerMovingHighlightedText,
-					'distance' => $saucerMoveDistance,
-					'spaces' => $spaces
+					'distance' => $saucerMoveDistance
 				) );
 
 				foreach($eventList as $event)
