@@ -1099,6 +1099,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 			// COUNTER-CLOCKWISE
 			array_push($orderOptions['counterClockwise'], $saucerWithProbe);
+			$playerCount = 1;
 			$currentPlayer = $this->getPlayerBefore($playerWithProbe);
 			while ($currentPlayer != $playerWithProbe && $playerCount < $max) {
 
