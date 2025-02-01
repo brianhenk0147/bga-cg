@@ -3245,7 +3245,7 @@ echo("<br>");
 					{ // they have nothing to steal
 
 						// this player (notify all will result in multiple message logs because this happens in args to a state) 
-						self::notifyPlayer( $currentPlayer, "nothingToSteal", clienttranslate( '${stealer_color} has nothing for ${stealee_color} to steal.' ), array(
+						self::notifyPlayer( $currentPlayer, "nothingToSteal", clienttranslate( '${stealee_color} has nothing for ${stealer_color} to steal.' ), array(
 							'stealer_color' => $saucerColorFriendlyStealer,
 							'stealee_color' => $saucerColorFriendlyCrashed
 						) );
@@ -9135,7 +9135,8 @@ echo("<br>");
 				return false;
 		}
 
-		// Check all ostriches and see if any are off the cliff. If so, notify players that they fell off, set their respawn order, and update stats.
+		// Check all Saucers and see if any are off the board. 
+		// If so, notify players that they fell off, set their respawn order, and update stats.
 		function sendCliffFallsToPlayers()
 		{
 				$ostrichTakingTurn = $this->getOstrichWhoseTurnItIs();
@@ -9144,12 +9145,9 @@ echo("<br>");
 				$allOstriches = $this->getSaucersInOrder();
 
 				foreach($allOstriches as $ostrichObject)
-				{
+				{ // go through each saucer
 						$ostrichColor = $ostrichObject['color'];
 						$saucerMurderer = $ostrichObject['ostrich_causing_cliff_fall'];
-
-
-
 
 						$boardValue = $this->getBoardSpaceTypeForOstrich($ostrichColor); // get the type of space of the ostrich who just moved
 						$ownerOfOstrich = $this->getOwnerIdOfOstrich($ostrichColor); // get the player who controls the ostrich moving
