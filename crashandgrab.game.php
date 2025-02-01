@@ -1360,7 +1360,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				$result = array();
 				if($saucerColor == '')
 				{
-					$saucerColor = $this->getOstrichWhoseTurnItIs();
+					$saucerColor = $this->getSaucerWhoseTurnItIs();
 				}
 
 
@@ -1372,7 +1372,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 //throw new feException( "allSaucers Count:$allSaucersCount" );
 				$currentPlayerId = 0;
 				foreach( $saucerDetails as $saucer )
-				{
+				{ // go through the details of this Saucer (should just be 1)
 						$owner = $saucer['ostrich_owner'];
 						$color = $saucer['ostrich_color'];
 
@@ -1421,20 +1421,35 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						else
 						{ // we are moving from a movement card
 								$getLastSaucerDistanceType = $this->getSaucerDistanceType($color); // 0, 1, 2
-								$movesForSaucer = $this->getMovesForSaucer($color, $getLastSaucerDistanceType);
+								
+								$movesForSaucer = array();
+								if($this->hasOverrideToken($color) || 
+								   $this->canSaucerChooseDirection($color) || 
+								   ($this->doesSaucerHaveUpgradePlayed($color, "Time Machine") &&
+								   $this->getUpgradeTimesActivatedThisRound($color, "Time Machine") < 1 &&
+								   $this->isUpgradePlayable($color, 'Time Machine')))
+								{ // this Saucer can go in any direction
+									//throw new feException( "can choose direction" );
+									$movesForSaucer = $this->getMovesForSaucer($color, $getLastSaucerDistanceType, ''); // go in any direction
+								}
+								else
+								{ // this saucer is going in a specific direction
+									//throw new feException( "cannot choose direction" );
+									$directionSelected = $this->getSaucerDirection($color);
+									$movesForSaucer = $this->getMovesForSaucer($color, $getLastSaucerDistanceType, $directionSelected); // specify the direction
+								}
+								
 								foreach( $movesForSaucer as $cardType => $moveCard )
 								{ // go through each move card for this saucer
 
 										$directionsWithSpaces = $moveCard['directions'];
-										//$count = count($spacesForCard);
-										//throw new feException( "spacesForCard Count:$count" );
+										//$count = count($directionsWithSpaces);
+										//throw new feException( "directionsWithSpaces Count:$count" );
 
 										$result[$owner][$color][$cardType] = array(); // make an array for the list of spaces available using this card
 
 										foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
 										{ // go through each direction
-
-
 
 												$result[$owner][$color][$cardType][$direction] = array(); // we need an array for the spaces we get with this card type and direction
 
@@ -1682,16 +1697,28 @@ if($color == '009add')
 								$saucerY = $this->getSaucerYLocation($color); // this saucer's starting row
 
 								if($specificDirection == '' || $specificDirection == 'sun')
+								{
+									//throw new feException( "sun specificDirection:$specificDirection" );
 									$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'sun'); // destinations for this saucer, this card, in the sun direction
+								}
 
 								if($specificDirection == '' || $specificDirection == 'asteroids')
+								{
+									//throw new feException( "asteroids specificDirection:$specificDirection" );
 									$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
+								}
 
 								if($specificDirection == '' || $specificDirection == 'meteor')
+								{
+									//throw new feException( "meteor specificDirection:$specificDirection" );
 									$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'meteor'); // destinations for this saucer, this card, in the meteor direction
+								}
 
 								if($specificDirection == '' || $specificDirection == 'constellation')
+								{
+									//throw new feException( "constallation specificDirection:$specificDirection" );
 									$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'constellation'); // destinations for this saucer, this card, in the constellation direction
+								}
 
 								//$countSun = count($result[$distanceType]['directions']['sun']);
 								//throw new feException( "countSun:$countSun" );
@@ -1702,6 +1729,24 @@ if($color == '009add')
 				//$count = count($result);
 				//throw new feException( "result Count:$count" );
 
+				/*
+				$countDirections = 0;
+				foreach($result as $moveCard)
+				{
+					foreach($moveCard as $directions)
+					{
+						$arrayKeys = array_keys($directions);
+						foreach($arrayKeys as $directionKey)
+						{
+							$countDirections++;
+							echo($directionKey);
+							echo("<br>");
+						}
+					}
+				}
+				//throw new feException( "result Count Directions:$countDirections" );
+				*/
+				
 				return $result;
 		}
 
@@ -14652,7 +14697,17 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function argGetAllXMoves()
 		{
 				$saucerColor = $this->getOstrichWhoseTurnItIs();
+				
 				$direction = $this->getSaucerDirection($saucerColor);
+				if($this->hasOverrideToken($saucerColor) || 
+				$this->canSaucerChooseDirection($saucerColor) || 
+				($this->doesSaucerHaveUpgradePlayed($saucerColor, "Time Machine") &&
+				$this->getUpgradeTimesActivatedThisRound($saucerColor, "Time Machine") < 1 &&
+				$this->isUpgradePlayable($saucerColor, 'Time Machine')))
+				{ // this saucer can go in any direction
+					$direction = '';
+				}
+
 				$startingXLocation = $this->getSaucerXLocation($saucerColor);
 				$startingYLocation = $this->getSaucerYLocation($saucerColor);
 				return array(
