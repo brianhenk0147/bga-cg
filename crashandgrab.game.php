@@ -1364,7 +1364,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 				}
 
 
-				//throw new feException( "saucer whose turn it is:$saucerWhoseTurnItIs player whose turn it is:$playerWhoseTurnItIs" );
+				//throw new feException( "saucerColor:$saucerColor moveType:$moveType" );
 
 				$saucerDetails = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner
 																					 FROM ostrich WHERE ostrich_color='$saucerColor' ORDER BY ostrich_owner" );
@@ -1421,7 +1421,9 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 						else
 						{ // we are moving from a movement card
 								$getLastSaucerDistanceType = $this->getSaucerDistanceType($color); // 0, 1, 2
-								
+
+								$movesForSaucer = $this->getMovesForSaucer($color, $getLastSaucerDistanceType, ''); // go in any direction
+								/*
 								$movesForSaucer = array();
 								if($this->hasOverrideToken($color) || 
 								   $this->canSaucerChooseDirection($color) || 
@@ -1438,6 +1440,7 @@ self::warn("<b>HAND not NULL</b>"); // log to sql database
 									$directionSelected = $this->getSaucerDirection($color);
 									$movesForSaucer = $this->getMovesForSaucer($color, $getLastSaucerDistanceType, $directionSelected); // specify the direction
 								}
+								*/
 								
 								foreach( $movesForSaucer as $cardType => $moveCard )
 								{ // go through each move card for this saucer
