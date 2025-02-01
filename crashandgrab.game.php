@@ -2340,7 +2340,11 @@ echo("<br>");
 						if($this->isSaucerInRowOrColumnOfSaucer($saucerColor))
 						{ // there is another saucer in the row or column of our saucer
 							//throw new feException( "true dat");
+							
+							if(!$this->isSaucerCrashed($saucerColor))
+							{ // they are not crashed
 								return true;
+							}
 						}
 				}
 
