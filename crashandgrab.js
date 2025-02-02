@@ -2992,7 +2992,7 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
             var crewmemberHtmlIdExtras = 'extra_crewmembers_container_'+sourceSaucerColor+'_item_'+uniqueId; // html ID of crewmember if it is on another saucer's extras
             if(sourceSaucerColor != 'board' && sourceSaucerColor != 'pile')
             { // it's coming from a saucer
-                console.log("moveCrewmemberFromBoardToSaucerMatExtras for sourceSaucerColor " + sourceSaucerColor + " with crewmemberType " + crewmemberType + " has uniqueId " + uniqueId + " has stock:");
+                console.log("moveCrewmemberFromBoardToSaucerMatExtras IS COMING FROM A SAUCER for sourceSaucerColor " + sourceSaucerColor + " with crewmemberType " + crewmemberType + " has uniqueId " + uniqueId + " has stock:");
                 console.log(this.saucerMatExtraCrewmemberStocks[sourceSaucerColor]['primary']);
             }
 
@@ -7896,6 +7896,14 @@ console.log("success... onClickUpgradeCardInHand");
             console.log("notif_moveCrewmemberToSaucerExtras crewmemberType:"+crewmemberType+" crewmemberColor:"+crewmemberColor+" sourceSaucerColor:"+sourceSaucerColor + " destinationSaucerColor:" + destinationSaucerColor);
 
             this.moveCrewmemberFromBoardToSaucerMatExtras(sourceSaucerColor, destinationSaucerColor, crewmemberColor, crewmemberType);
+            
+
+            if(sourceSaucerColor != 'board' && sourceSaucerColor != 'pile')
+            { // this is coming from a saucer
+    
+                // remove it from the player board of the previous saucer
+                this.removeCrewmemberFromPlayerBoard(sourceSaucerColor, crewmemberColor, crewmemberType);
+            }
 
             // add it to the stock on the player board
             this.addCrewmemberToPlayerBoard(destinationSaucerColor, crewmemberColor, crewmemberType);
