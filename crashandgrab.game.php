@@ -6174,7 +6174,7 @@ echo("<br>");
 
 		// Starting with the Probe player and going clockwise, get the next saucer who is in a
 		// crashed state. Return '' when there are none.
-		function getSaucerThatCrashed()
+		function getSaucerThatCrashed($onlyThosePendingCrashPenalty=false)
 		{
 				$saucerWithProbe = $this->getSaucerWithProbe();
 				$ownerOfSaucerWithProbe = $this->getOwnerIdOfOstrich($saucerWithProbe);
@@ -6190,12 +6190,20 @@ echo("<br>");
 						foreach( $allPlayersSaucers as $saucer )
 						{ // go through each saucer owned by this player
 
-								if($this->isSaucerCrashed($saucer['ostrich_color']))
-								{ // this Saucer has crashed
-									//throw new feException( "returning saucer: ".$saucer['ostrich_color']);
+							$crashPenaltyRendered = $saucer['crash_penalty_rendered']; // 0 if the penalty/reward for crashing has been given for this crash
 
-										return $saucer['ostrich_color'];
+							if($this->isSaucerCrashed($saucer['ostrich_color']))
+							{ // this Saucer has crashed
+								//throw new feException( "returning saucer: ".$saucer['ostrich_color']);
+
+								if(!$onlyThosePendingCrashPenalty || 
+									($onlyThosePendingCrashPenalty && $crashPenaltyRendered < 1))
+								{ // either don't care if the crash penalty was rendered for this
+									  // OR we only want to return a saucer who has not yet had their crash penalty rendered and this crash has not had its penalty rendered
+	
+									  return $saucer['ostrich_color'];
 								}
+							}
 						}
 
 						$player = $this->getPlayerAfter( $player ); // check the next player
@@ -7367,7 +7375,7 @@ echo("<br>");
 		// NOTE: we need to order by ostrich_is_chosen so we can use this for determining turn order
 		function getSaucersForPlayer($playerId)
 		{
-				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_turns_taken, ostrich_is_chosen, ostrich_color color, ostrich_owner owner, 'name' ownerName
+				return self::getObjectListFromDB( "SELECT ostrich_color, ostrich_turns_taken, ostrich_is_chosen, ostrich_color color, ostrich_owner owner, 'name' ownerName, crash_penalty_rendered
 																										 FROM ostrich
 																										 WHERE ostrich_owner=$playerId ORDER BY ostrich_is_chosen, ostrich_color" );
 		}
@@ -10626,7 +10634,7 @@ echo("<br>");
 		function executeStealCrewmember( $stolenTypeText, $stolenColor, $areWePassing, $areWeTaking )
 		{
 				$saucerReceiving = $this->getOstrichWhoseTurnItIs();
-				$saucerGiving = $this->getSaucerThatCrashed();
+				$saucerGiving = $this->getSaucerThatCrashed(true);
 
 				$moveType = $this->getMoveTypeWeAreExecuting();
 				
