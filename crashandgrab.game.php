@@ -8264,7 +8264,8 @@ echo("<br>");
 												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") &&
 												$this->isUpgradePlayable($saucerMoving, 'Phase Shifter')) ||
 												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
-												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')))
+												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+												   !$wasPushed)
 												{ // this saucer has phase shifter or proximity mines played
 
 													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
@@ -8471,8 +8472,9 @@ echo("<br>");
 												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") &&
 												$this->isUpgradePlayable($saucerMoving, 'Phase Shifter')) ||
 												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
-												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')))
-												{ // this saucer has phase shifter or proximity mines played
+												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+												   !$wasPushed)
+												{ // this saucer has phase shifter or proximity mines played and it's their turn
 
 													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
@@ -8668,7 +8670,8 @@ echo("<br>");
 												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") &&
 												$this->isUpgradePlayable($saucerMoving, 'Phase Shifter')) ||
 												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
-												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')))
+												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+												   !$wasPushed)
 												{ // this saucer has phase shifter or proximity mines played
 
 													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
@@ -8862,7 +8865,8 @@ echo("<br>");
 												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") &&
 												$this->isUpgradePlayable($saucerMoving, 'Phase Shifter')) ||
 												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
-												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')))
+												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+												   !$wasPushed)
 												{ // this saucer has phase shifter or proximity mines played
 
 													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
