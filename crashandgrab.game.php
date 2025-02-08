@@ -10942,7 +10942,7 @@ echo("<br>");
 
 				// move to next phase (roll rotation die) when everyone else confirms too
 				// and tell the machine state to use transtion "directionChosen" if all players are now unactive
-        $this->gamestate->setPlayerNonMultiactive( $playerConfirming, "allMovesChosen" );
+        		$this->gamestate->setPlayerNonMultiactive( $playerConfirming, "allMovesChosen" );
 		}
 
 		function executeClickedMoveCard( $distance, $color )
@@ -15105,25 +15105,120 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
     function zombieTurn( $state, $active_player )
     {
     	$statename = $state['name'];
+		$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
 
-        if ($state['type'] === "activeplayer") {
-            switch ($statename) {
-                default:
-                    $this->gamestate->nextState( "zombiePass" );
-                	break;
-            }
+        // Make sure player is in a non blocking status for role turn
+        switch ($statename) 
+		{
+			case 'chooseMoveCard':
+				$saucer1Color = ''; // ff0000, 0000ff, etc.
+				$saucer1Distance = '0'; // 0, 1, 2
+				$saucer1Direction = 'sun'; // asteroids
+				$saucer2Color = ''; // ff0000, 0000ff, etc.
+				$saucer2Distance = '0'; // 0, 1, 2
+				$saucer2Direction = 'sun'; // asteroids
+	
+				$saucersForPlayer = $this->getSaucersForPlayer($active_player);
+				foreach( $saucersForPlayer as $saucer )
+				{ // go through each saucer of this player
+					if($saucer1Color == '')
+					{ // this is the first saucer we've seen from this player
+						$saucer1Color = $saucer['ostrich_color'];
+					}
+					else
+					{ // this is the second saucer we've seen from this player
+						$saucer2Color = $saucer['ostrich_color'];
+					}
+				}
+	
+				$this->executeClickedConfirmMove( $saucer1Color, $saucer1Distance, $saucer1Direction, $saucer2Color, $saucer2Distance, $saucer2Direction );
+	
+			break;
 
-            return;
-        }
+			case 'askWhichUpgradeToPlay':
 
-        if ($state['type'] === "multipleactiveplayer") {
-            // Make sure player is in a non blocking status for role turn
-            $this->gamestate->setPlayerNonMultiactive( $active_player, '' );
+				// get the database ID of a card available for them to choose
+				$databaseId = 0;
+				$upgradeList = $this->upgradeCards->getCardsInLocation('drawn');
+				foreach( $upgradeList as $card )
+				{ // go through all the cards drawn
+					$databaseId = $card['id']; // get the database id of the card
+				}
+				$this->executeClickedUpgradeCardInHand($databaseId, $saucerWhoseTurnItIs);
+			break;
 
-            return;
-        }
+			case 'setActivePlayerToProbePlayer':
+			case 'chooseTileRotationQuakeMaker':
+			case 'askToWasteAccelerate':
+			case 'chooseSaucerPulseCannon':
+			case 'askToRotationalStabilizer':
+			case 'askToProximityMine':
+			case 'chooseDistressSignalerGiveCrewmember':
+			case 'chooseDistressSignalerTakeCrewmember':
+			case 'chooseCrewmemberToAirlock':
+			case 'chooseTractorBeamCrewmember':
+			case 'chooseAfterburnerSpace':
+			case 'chooseBlastOffThrusterSpace':
+			case 'chooseLandingLegsSpace':
+			case 'chooseCrewmembersToTake':
+			case 'chooseCrewmembersToPass':
+			case 'chooseCrashSiteSaucerTeleporter':
+			case 'chooseSaucerWormholeGenerator':
+			case 'askWhichEndOfTurnUpgradeToUse':
+			case 'crashPenaltyAskWhichToSteal':
+			case 'crashPenaltyAskWhichToGiveAway':
+			case 'chooseWhetherToHyperdrive':
+			case 'askWhichStartOfTurnUpgradeToUse':
+			case 'chooseTimeMachineDirection':
+			case 'chooseDistanceDuringMoveReveal':
+			case 'finalizeMove':
+			case 'chooseIfYouWillUseBooster':
+			case 'beginTurn':
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+			break;
 
-        throw new feException( "Zombie mode not supported at this game state: ".$statename );
+			case 'placeCrewmemberChooseCrewmember':
+				
+				// find a valid crewmember to place
+				$crewmemberTypeString = '';
+				$crewmemberColor = '';
+				$lostCrewmembers = $this->getLostCrewmembers(); // the first crewmember in the queue for each saucer
+				foreach($lostCrewmembers as $crewmember)
+				{
+					$crewmemberColor = $crewmember['garment_color'];
+					$crewmemberTypeInt = $crewmember['garment_type'];
+					$crewmemberTypeString = $this->convertGarmentTypeIntToString($crewmemberTypeInt);
+				}
+				
+				// randomly place it
+				$this->executeReplaceGarmentChooseGarment($crewmemberTypeString, $crewmemberColor);
+			break;
+
+			case 'chooseCrashSiteRegenerationGateway':
+			case 'askPreTurnToPlaceCrashedSaucer':
+				// place it at a random location
+				$foundUnoccupiedCrashSite = $this->randomlyPlaceSaucer($saucerWhoseTurnItIs);
+
+				// end their turn
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+
+
+			break;
+			case 'chooseAcceleratorDirection':
+				// move them off the board (they will be randomly placed at the end of the round)
+				$this->placeSaucerOnSpace($saucerWhoseTurnItIs, 0, 0);
+
+				// do not give the next player who takes a turn credit for crashing them
+				$this->markCrashPenaltyRendered($saucerWhoseTurnItIs);
+
+				// end their turn
+				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+			break;
+
+			default:
+				throw new feException( "Zombie mode not supported at this game state: ".$statename );
+			break;
+        }        
     }
 
 ///////////////////////////////////////////////////////////////////////////////////:

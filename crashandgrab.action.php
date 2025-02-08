@@ -436,8 +436,8 @@
     public function actClickedConfirmMove()
     {
         self::setAjaxMode();
-        $saucer1Color = self::getArg( "saucer1Color", AT_alphanum, true ); // 0, 1, 2
-        $saucer1Distance = self::getArg( "saucer1Distance", AT_alphanum, true ); // ff0000, 0000ff, etc.
+        $saucer1Color = self::getArg( "saucer1Color", AT_alphanum, true ); // ff0000, 0000ff, etc.
+        $saucer1Distance = self::getArg( "saucer1Distance", AT_alphanum, true ); // 0, 1, 2
         $saucer1Direction = self::getArg( "saucer1Direction", AT_alphanum, true ); // asteroids
         $saucer2Color = self::getArg( "saucer2Color", AT_alphanum, true ); // ff0000, 0000ff, etc.
         $saucer2Distance = self::getArg( "saucer2Distance", AT_alphanum, true ); // 0, 1, 2

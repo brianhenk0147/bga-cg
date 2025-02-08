@@ -63,7 +63,6 @@ $machinestates = array(
 
     // Note: ID=2 => your first state
     // PLAN PHASE (simultaneous)
-
     2 => array(
     		"name" => "chooseMoveCard",
     		"description" => clienttranslate('Everyone is choosing their moves.'),
@@ -71,22 +70,10 @@ $machinestates = array(
     		"type" => "multipleactiveplayer",
         'args' => 'argGetAllPlayerSaucerMoves',
     		"possibleactions" => array( "clickMoveDirection", "clickDistance", "undoChooseMoveCard", "confirmMove", "clickUpgradeCardInHand", "undoConfirmMove" ),
-    		"transitions" => array( "zigChosen" => 2, "startOver" => 2, "allMovesChosen" => 25 )
-    ),
-
-    // SET TRAPS PHASE (simultaneous timed)
-
-    3 => array(
-    		"name" => "setTrapsPhase",
-    		"description" => clienttranslate("Other ostriches are setting traps. 😬"),
-    		"descriptionmyturn" => clienttranslate('You choose an ostrich to target with your trap.'),
-    		"type" => "multipleactiveplayer",
-    		"possibleactions" => array( "setTrap" ),
-    		"transitions" => array( "setTrap" => 3, "notTrap" => 3, "allTrappersDone" => 7 )
+    		"transitions" => array( "zigChosen" => 2, "startOver" => 2, "allMovesChosen" => 25, "zombiePass" => 98 )
     ),
 
     // END ROUND PHASE (game)
-
     5 => array(
         "name" => "endRoundCleanup",
         "description" => "",
@@ -94,17 +81,6 @@ $machinestates = array(
         "action" => "endRoundCleanup",
         "updateGameProgression" => true,
         "transitions" => array( "newRound" => 2, "endRoundPlaceCrashedSaucer" => 37, "chooseCrashSiteRegenerationGateway" => 40, "endRoundCleanUp" => 5 )
-    ),
-
-    // END PLAN PHASE - ENTER TRAP PHASE
-
-    6 => array(
-        "name" => "endPlanPhase",
-        "description" => "",
-        "type" => "game",
-        "action" => "startTrapPhase",
-        "updateGameProgression" => false,
-        "transitions" => array( "startSetTraps" => 3, "allTrappersDone" => 7 )
     ),
 
     // END TRAP PHASE - ENTER MOVE PHASE
@@ -125,7 +101,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickAcceleratorDirection", "clickMoveDirection" ),
-    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "executingMove" => 70 )
+    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "executingMove" => 70 )
     ),
 
     10 => array(
@@ -163,7 +139,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('Would you like to zag?'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "answerZagQuestion" ),
-    		"transitions" => array( "askTrapBasic" => 19, "executeMove" => 4, "endTurn" => 8, "askUseSkateboard" => 9, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "askWhichGarmentToDiscard" => 18, "endGame" => 99 )
+    		"transitions" => array( "askTrapBasic" => 19, "executeMove" => 4, "endTurn" => 8, "askUseSkateboard" => 9, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "endGame" => 99 )
     ),
 
     15 => array(
@@ -175,15 +151,6 @@ $machinestates = array(
     		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15 )
     ),
 
-    16 => array(
-    		"name" => "askToRespawn",
-    		"description" => clienttranslate('${actplayer} is climbing back up.'),
-    		"descriptionmyturn" => clienttranslate('You should get this ostrich back in the action.'),
-    		"type" => "activeplayer",
-    		"possibleactions" => array( "answerRespawn" ),
-    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "nextMovementTurn" => 4, "askStealOrDraw" => 17 )
-    ),
-
     17 => array(
     		"name" => "askStealOrDraw",
     		"description" => clienttranslate('${actplayer} is claiming their cliff-pushing reward.'),
@@ -191,17 +158,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argStealableGarments',
     		"possibleactions" => array( "clickDraw2Zigs", "stealGarmentClick" ),
-    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "chooseGarmentToSteal" => 23, "endTurn" => 8 )
-    ),
-
-    18 => array(
-    		"name" => "askWhichGarmentToDiscard",
-    		"description" => clienttranslate('${actplayer} is sadly deciding which garment to discard.'),
-    		"descriptionmyturn" => clienttranslate('You must choose an off-colored garment to discard.'),
-    		"type" => "activeplayer",
-        'args' => 'argDiscardableGarments',
-    		"possibleactions" => array( "discardGarmentClick" ),
-    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "endTurn" => 8, "askToRespawn" => 16, "askWhichGarmentToDiscard" => 18 )
+    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "chooseGarmentToSteal" => 23, "endTurn" => 8 )
     ),
 
     19 => array(
@@ -239,7 +196,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argStealableGarments',
         "possibleactions" => array( "stealGarmentClick" ),
-    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askToRespawn" => 16, "askStealOrDraw" => 17, "endTurn" => 8 )
+    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "endTurn" => 8 )
     ),
 
     24 => array(
@@ -295,7 +252,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorAndBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
-    		"transitions" => array( "chooseBoosterDirection" => 33, "playerTurnLocateCrewmembers" => 35, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70 )
+    		"transitions" => array( "chooseBoosterDirection" => 33, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70 )
     ),
 
     34 => array(
@@ -306,15 +263,6 @@ $machinestates = array(
         'args' => 'argGetAllCrashSitesOccupiedDetails',
         "possibleactions" => array( "chooseSaucerSpace" ),
     		"transitions" => array( "endRoundCleanUp" => 5 )
-    ),
-
-    35 => array(
-    		"name" => "playerTurnLocateCrewmembers",
-    		"description" => clienttranslate('${actplayer} is locating a crewmember.'),
-    		"descriptionmyturn" => clienttranslate('You must choose a crewmember to locate.'),
-    		"type" => "activeplayer",
-        "possibleactions" => array( "clickCrewmemberToLocate" ),
-    		"transitions" => array( "endSaucerTurnCleanUp" => 50 )
     ),
 
     36 => array(
@@ -403,7 +351,7 @@ $machinestates = array(
         "action" => "beginTurn",
         'args' => 'argGetSaucerMoveCardInfo',
         "possibleactions" => array( "clickBegin" ),
-    		"transitions" => array(  "checkStartOfTurnUpgrades" => 24 )
+    		"transitions" => array(  "checkStartOfTurnUpgrades" => 24, "endSaucerTurnCleanUp" => 50)
     ),
 
     45 => array(
@@ -689,6 +637,16 @@ $machinestates = array(
     ),
 
 */
+
+    // Zombie pass state (zombie players are automatically managed here)
+    98 => array(
+        "name" => "zombiePass",
+        "description" => clienttranslate('This is a disconnected player.'),
+        "type" => "game",
+        "action" => "zombiePass",
+        "updateGameProgression" => false,
+        "transitions" => array( "zigChosen" => 2, "startOver" => 2, "allMovesChosen" => 25 )
+    ),
 
     // Final state.
     // Please do not modify (and do not overload action/args methods).
