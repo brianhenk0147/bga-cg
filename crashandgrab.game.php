@@ -8930,6 +8930,25 @@ echo("<br>");
 				return self::getUniqueValueFromDb("SELECT ostrich_color FROM ostrich WHERE ostrich_has_crown=1");
 		}
 
+		// Returns true if the saucer is on the same space as any of the crewmembers given. False otherwise.
+		function isSaucerOnAnyOfTheseCrewmembers($saucerColor, $crewmemberList)
+		{
+			$saucerX = $this->getSaucerXLocation($saucerColor);
+			$saucerY = $this->getSaucerYLocation($saucerColor);
+			foreach( $crewmemberList as $crewmember )
+			{ // go through each saucer
+				$crewmemberX = $crewmember['garment_x'];
+				$crewmemberY = $crewmember['garment_y'];
+
+				if($saucerX == $crewmemberX && $saucerY == $crewmemberY)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		function isCrashSiteEmpty($crashSiteNumber)
 		{
 				// get the X and Y position of the given crash site
@@ -11204,6 +11223,8 @@ echo("<br>");
 //throw new feException( "executeSaucerMove saucer moving: $saucerMoving");
 				//self::debug( "executeSaucerMove saucerMoving:$saucerMoving" );
 
+				$crewmembersBeforeMoving = $this->getAllCrewmembers();
+
 				// get list of move events in chronological order (saucers and where they end up, crewmembers picked up and by whom)
 				$moveEventList = $this->getMovingEvents($saucerMoving);
 
@@ -11292,6 +11313,7 @@ echo("<br>");
 					  $this->getAskedToActivateUpgrade($saucerMoving, "Waste Accelerator") == false &&
 					  $this->isUpgradePlayable($saucerMoving, 'Waste Accelerator') &&
 					  $this->isCrashSite($spaceType) &&
+					  !$this->isSaucerOnAnyOfTheseCrewmembers($saucerMoving, $crewmembersBeforeMoving) &&
 					  $wasAPushEvent == false &&
 					  $lastEventType != "crewmemberPickup")
 				{ // this saucer has Waste Accelerator played and unused, we are on a Crash Site, they did not collide with someone here, and they did not just pick up a crewmember here
