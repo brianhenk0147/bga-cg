@@ -223,11 +223,11 @@ class CrashAndGrab extends Table
 				{ // go through each saucer owned by the player
 						$saucerColor = $saucer['ostrich_color'];
 
-self::warn("<b>Saucer Color:</b> $saucerColor"); // log to sql database
+//self::warn("<b>Saucer Color:</b> $saucerColor"); // log to sql database
 
 								if(is_null($result['hand']))
 								{ // first saucer
-self::warn("<b>HAND NULL</b>"); // log to sql database
+//self::warn("<b>HAND NULL</b>"); // log to sql database
 
 										// save the color representing saucer 1
 										$result['saucer1'] = $saucerColor;
@@ -239,7 +239,7 @@ self::warn("<b>HAND NULL</b>"); // log to sql database
 								else
 								{ // they had a second saucer
 
-self::warn("<b>HAND not NULL</b>"); // log to sql database
+//self::warn("<b>HAND not NULL</b>"); // log to sql database
 
 										// save the color representing saucer 2
 										$result['saucer2'] = $saucerColor;
