@@ -535,15 +535,6 @@ $machinestates = array(
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
     ),
 
-    66 => array(
-        "name" => "askToPhaseShift",
-        "description" => clienttranslate('${saucerColor} is deciding whether they will Phase Shift.'),
-        "descriptionmyturn" => clienttranslate('Phase Shifter: Would you like to move through this Saucer or collide with it?'),
-        "type" => "activeplayer",
-        "possibleactions" => array( "chooseToProximityMine" ),
-        "transitions" => array(  "executingMove" => 70 )
-    ),
-
     67 => array(
         "name" => "askToProximityMine",
         "description" => clienttranslate('${saucerColor} is deciding whether they will use their Proximity Mines.'),
@@ -551,7 +542,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argAskToProximityMine',
         "possibleactions" => array( "choosePhaseShift" ),
-        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "endGame" => 99 )
+        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "endGame" => 99 )
     ),
 
     68 => array(
@@ -582,7 +573,7 @@ $machinestates = array(
         "action" => "executeMove",
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
-        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToPhaseShift" => 66, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "executingMove" => 70, "endGame" => 99 )
+        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "executingMove" => 70, "endGame" => 99 )
     ),
 
     71 => array(

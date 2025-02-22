@@ -549,49 +549,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                 },
 
-                onClick_activatePhaseShifter: function (evt )
-                {
-                    console.log( "Clicked activate phase shifter button." );
-
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actActivatePhaseShifter.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
-
-                },
-
-                onClick_skipPhaseShifter: function (evt )
-                {
-                    console.log( "Clicked skip phase shifter button." );
-
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actSkipPhaseShifter.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
-                },
-
                 onClick_activateWasteAccelerator: function (evt )
                 {
                     console.log( "Clicked activate Waste Accelerator button." );
@@ -1856,29 +1813,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
                     break;
 */
-                  case 'askToPhaseShift':
-
-                      if ( this.isCurrentPlayerActive() )
-                      { // we are the active player
-                          // add a button for confirming the move
-                          var finalizeButtonLabel = _('Move Through Them');
-                          var finalizeIsDisabled = false;
-                          var finalizeHoverOverText = ''; // hover over text or '' if we don't want a hover over
-                          var finalizeActionName = 'activatePhaseShifter'; // such as selectSaucerToGoFirst
-                          var finalizeMakeRed = false;
-                          this.addButtonToActionBar(finalizeButtonLabel, finalizeIsDisabled, finalizeHoverOverText, finalizeActionName, finalizeMakeRed);
-
-                          // add a button for undo'ing the move
-                          var undoButtonLabel = _('Collide With Them');
-                          var undoIsDisabled = false;
-                          var undoHoverOverText = ''; // hover over text or '' if we don't want a hover over
-                          var undoActionName = 'skipPhaseShifter'; // such as selectSaucerToGoFirst
-                          var undoMakeRed = false;
-                          this.addButtonToActionBar(undoButtonLabel, undoIsDisabled, undoHoverOverText, undoActionName, undoMakeRed);
-
-                      }
-
-                  break;
 
                   case 'askToProximityMine':
 
@@ -4295,6 +4229,9 @@ console.log("directionKey is " + directionKey + " and direction is " + direction
          this.upgradeList.addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
          this.upgradeList.addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
          this.upgradeList.addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
+         this.upgradeList.addItemType( 24, 24, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 21 );
+         this.upgradeList.addItemType( 25, 25, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 22 );
+         this.upgradeList.addItemType( 26, 26, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 23 );
 
          this.resetUpgradeList(allUpgrades);
 
@@ -4611,6 +4548,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
           this.playerBoardThumbnailStocks[saucerColor].addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 18 );
           this.playerBoardThumbnailStocks[saucerColor].addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 19 );
           this.playerBoardThumbnailStocks[saucerColor].addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 20 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 24, 24, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 21 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 25, 25, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 22 );
+          this.playerBoardThumbnailStocks[saucerColor].addItemType( 26, 26, g_gamethemeurl+'img/ship_upgrades_32_23.jpg', 23 );
         },
 
         createSaucerMatExtraCrewmemberStock: function(saucerColor)
@@ -4855,6 +4795,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.upgradesAvailable.addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
             this.upgradesAvailable.addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
             this.upgradesAvailable.addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
+            this.upgradesAvailable.addItemType( 24, 24, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 21 );
+            this.upgradesAvailable.addItemType( 25, 25, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 22 );
+            this.upgradesAvailable.addItemType( 26, 26, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 23 );
         },
 
         placeUpgradeCard: function(collectorNumber, databaseId, upgradePosition)
@@ -4926,6 +4869,12 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
                     return 3;
                 case 20:
                     return 0;
+                case 24:
+                    return 1;
+                case 25:
+                    return 2;
+                case 26:
+                    return 3;
             }
         },
 
@@ -4961,6 +4910,9 @@ console.log('upgradeRow:'+upgradeRow+' upgradewidth:'+this.upgradecardwidth);
                 case 19:
                     return 4;
                 case 20:
+                case 24:
+                case 25:
+                case 26:
                     return 5;
             }
         },
@@ -5192,6 +5144,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_1.addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
                     this.upgradesPlayed_1.addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
                     this.upgradesPlayed_1.addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
+                    this.upgradesPlayed_1.addItemType( 24, 24, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 21 );
+                    this.upgradesPlayed_1.addItemType( 25, 25, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 22 );
+                    this.upgradesPlayed_1.addItemType( 26, 26, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 23 );
 
 
                 }
@@ -5226,6 +5181,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_2.addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
                     this.upgradesPlayed_2.addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
                     this.upgradesPlayed_2.addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
+                    this.upgradesPlayed_2.addItemType( 24, 24, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 21 );
+                    this.upgradesPlayed_2.addItemType( 25, 25, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 22 );
+                    this.upgradesPlayed_2.addItemType( 26, 26, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 23 );
                 }
                 else if(saucerIndex == 3)
                 {
@@ -5258,6 +5216,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_3.addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
                     this.upgradesPlayed_3.addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
                     this.upgradesPlayed_3.addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
+                    this.upgradesPlayed_3.addItemType( 24, 24, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 21 );
+                    this.upgradesPlayed_3.addItemType( 25, 25, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 22 );
+                    this.upgradesPlayed_3.addItemType( 26, 26, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 23 );
 
                 }
                 else if(saucerIndex == 4)
@@ -5291,6 +5252,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_4.addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
                     this.upgradesPlayed_4.addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
                     this.upgradesPlayed_4.addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
+                    this.upgradesPlayed_4.addItemType( 24, 24, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 21 );
+                    this.upgradesPlayed_4.addItemType( 25, 25, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 22 );
+                    this.upgradesPlayed_4.addItemType( 26, 26, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 23 );
 
                 }
                 else if(saucerIndex == 5)
@@ -5324,6 +5288,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_5.addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
                     this.upgradesPlayed_5.addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
                     this.upgradesPlayed_5.addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
+                    this.upgradesPlayed_5.addItemType( 24, 24, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 21 );
+                    this.upgradesPlayed_5.addItemType( 25, 25, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 22 );
+                    this.upgradesPlayed_5.addItemType( 26, 26, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 23 );
 
                 }
                 else if(saucerIndex == 6)
@@ -5357,6 +5324,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                     this.upgradesPlayed_6.addItemType( 18, 18, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 18 );
                     this.upgradesPlayed_6.addItemType( 19, 19, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 19 );
                     this.upgradesPlayed_6.addItemType( 20, 20, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 20 );
+                    this.upgradesPlayed_6.addItemType( 24, 24, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 21 );
+                    this.upgradesPlayed_6.addItemType( 25, 25, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 22 );
+                    this.upgradesPlayed_6.addItemType( 26, 26, g_gamethemeurl+'img/ship_upgrades_230_164.jpg', 23 );
 
                 }
             }

@@ -434,7 +434,7 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Distress Signaler', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
-						//array( 'type' => 'Phase Shifter', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Kinetic Siphon', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
@@ -2506,7 +2506,7 @@ echo("<br>");
 								return clienttranslate( 'Regeneration Gateway');
 
 						case 14:
-								return clienttranslate( 'Phase Shifter');
+								return clienttranslate( 'Kinetic Siphon');
 
 						case 15:
 								return clienttranslate( 'Cargo Hold');
@@ -2584,9 +2584,9 @@ echo("<br>");
 						case 13:
 								return clienttranslate( 'When your Saucer is placed, you choose the Crash Site.');
 
-						// Phase Shifter
+						// Kinetic Siphon
 						case 14:
-								return clienttranslate( 'Move through other Saucers.');
+								return clienttranslate( 'Once on your turn, when you push a Saucer, take a Booster.');
 
 						// Cargo Hold
 						case 15:
@@ -2688,7 +2688,7 @@ echo("<br>");
 				$result[13]['name'] = $this->getUpgradeTitleFromCollectorNumber(13);
 				$result[13]['effect'] = $this->getUpgradeEffectFromCollectorNumber(13);
 
-				// Phase Shifter
+				// Kinetic Siphon
 				$result[14] = array();
 				$result[14]['name'] = $this->getUpgradeTitleFromCollectorNumber(14);
 				$result[14]['effect'] = $this->getUpgradeEffectFromCollectorNumber(14);
@@ -8261,12 +8261,20 @@ echo("<br>");
 												// the saucer we collide with will start their movement over
 												$this->setSpacesMoved($saucerWeCollideWith, 0);
 
-												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") &&
-												$this->isUpgradePlayable($saucerMoving, 'Phase Shifter')) ||
-												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Kinetic Siphon") &&
+												$this->getUpgradeTimesActivatedThisRound($saucerMoving, "Kinetic Siphon") < 1 &&
+												$this->isUpgradePlayable($saucerMoving, 'Kinetic Siphon')) && 
+												   !$wasPushed)
+												{ // this saucer has kinetic siphon played
+
+													$this->giveSaucerBooster($saucerMoving); // give them a booster
+													$this->activateUpgradeWithCollectorNumber($saucerMoving, 14); // make as played so we don't give it to them more than once/turn
+												}
+
+												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
 												   !$wasPushed)
-												{ // this saucer has phase shifter or proximity mines played
+												{ // this saucer has proximity mines played
 
 													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
@@ -8469,12 +8477,20 @@ echo("<br>");
 												// the saucer we collide with will start their movement over
 												$this->setSpacesMoved($saucerWeCollideWith, 0);
 
-												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") &&
-												$this->isUpgradePlayable($saucerMoving, 'Phase Shifter')) ||
-												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Kinetic Siphon") &&
+												$this->getUpgradeTimesActivatedThisRound($saucerMoving, "Kinetic Siphon") < 1 &&
+												$this->isUpgradePlayable($saucerMoving, 'Kinetic Siphon')) && 
+												   !$wasPushed)
+												{ // this saucer has kinetic siphon played
+
+													$this->giveSaucerBooster($saucerMoving); // give them a booster
+													$this->activateUpgradeWithCollectorNumber($saucerMoving, 14); // make as played so we don't give it to them more than once/turn
+												}
+
+												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
 												   !$wasPushed)
-												{ // this saucer has phase shifter or proximity mines played and it's their turn
+												{ // this saucer has proximity mines played and it's their turn
 
 													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
@@ -8667,12 +8683,20 @@ echo("<br>");
 												// the saucer we collide with will start their movement over
 												$this->setSpacesMoved($saucerWeCollideWith, 0);
 
-												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") &&
-												$this->isUpgradePlayable($saucerMoving, 'Phase Shifter')) ||
-												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Kinetic Siphon") &&
+												$this->getUpgradeTimesActivatedThisRound($saucerMoving, "Kinetic Siphon") < 1 &&
+												$this->isUpgradePlayable($saucerMoving, 'Kinetic Siphon')) && 
+												   !$wasPushed)
+												{ // this saucer has kinetic siphon played
+
+													$this->giveSaucerBooster($saucerMoving); // give them a booster
+													$this->activateUpgradeWithCollectorNumber($saucerMoving, 14); // make as played so we don't give it to them more than once/turn
+												}
+
+												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
 												   !$wasPushed)
-												{ // this saucer has phase shifter or proximity mines played
+												{ // this saucer has proximity mines played
 
 													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
@@ -8862,12 +8886,20 @@ echo("<br>");
 												// the saucer we collide with will start their movement over
 												$this->setSpacesMoved($saucerWeCollideWith, 0);
 
-												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") &&
-												$this->isUpgradePlayable($saucerMoving, 'Phase Shifter')) ||
-												   ($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Kinetic Siphon") &&
+												$this->getUpgradeTimesActivatedThisRound($saucerMoving, "Kinetic Siphon") < 1 &&
+												$this->isUpgradePlayable($saucerMoving, 'Kinetic Siphon')) && 
+												   !$wasPushed)
+												{ // this saucer has kinetic siphon played
+
+													$this->giveSaucerBooster($saucerMoving); // give them a booster
+													$this->activateUpgradeWithCollectorNumber($saucerMoving, 14); // make as played so we don't give it to them more than once/turn
+												}
+
+												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
 												   !$wasPushed)
-												{ // this saucer has phase shifter or proximity mines played
+												{ // this saucer has proximity mines played
 
 													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
 
@@ -10147,35 +10179,6 @@ echo("<br>");
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
-		function executeActivatePhaseShifter()
-		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-
-				$this->activateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
-
-				// set asked_to_activate_this_round to 1 so we don't ask again
-				//$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
-
-				// reset pushed setting so we don't think a saucer was pushed when we do our next move
-				$this->resetPushedForAllSaucers();
-
-				//throw new feException( "executeSkipPhaseShifter");
-
-				// finish any movement that still remains
-				$this->gamestate->nextState( "executingMove" );
-		}
-
-		function executeSkipPhaseShifter()
-		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-
-				// set asked_to_activate_this_round to 1 so we don't ask again
-				//$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Phase Shifter");
-
-				// finish any movement that still remains
-				$this->gamestate->nextState( "executingMove" );
-		}
-
 		function executeActivateWasteAccelerator()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -11280,12 +11283,6 @@ echo("<br>");
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
 						$this->gamestate->nextState( "endGame" );
-				}
-				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Phase Shifter") && $saucerWeCollideWith != "" && $spacesLeft > 0 &&
-				$this->isUpgradePlayable($saucerMoving, 'Phase Shifter'))
-				{ // this saucer has phase shifter played and we are colliding with another saucer and we have at least 1 space left after colliding
-
-						$this->gamestate->nextState( "askToPhaseShift" );
 				}
 				elseif(count($airlockExchangeableCrewmembers) > 0 && $spaceType != "S" && $saucerWeCollideWith == "")
 				{ // there is at least one crewmember that can be exchanged
@@ -12954,7 +12951,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Regeneration Gateway":
 								return 13;
 
-						case "Phase Shifter":
+						case "Kinetic Siphon":
 								return 14;
 
 						case "Cargo Hold":
@@ -13051,7 +13048,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 							$sql .= " AND card_type_arg=13";
 							break;
 
-					case "Phase Shifter":
+					case "Kinetic Siphon":
 					case 14:
 							$sql .= " AND card_type_arg=14";
 							break;
@@ -13186,7 +13183,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 							$sql .= " card_type_arg=13";
 							break;
 
-					case "Phase Shifter":
+					case "Kinetic Siphon":
 					case 14:
 							$sql .= " card_type_arg=14";
 							break;
@@ -13303,7 +13300,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=13";
 								break;
 
-						case "Phase Shifter":
+						case "Kinetic Siphon":
 						case 14:
 								$sql .= " AND card_type_arg=14";
 								break;
@@ -13427,7 +13424,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=13";
 								break;
 
-						case "Phase Shifter":
+						case "Kinetic Siphon":
 						case 14:
 								$sql .= " AND card_type_arg=14";
 								break;
@@ -13550,7 +13547,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=13";
 								break;
 
-						case "Phase Shifter":
+						case "Kinetic Siphon":
 						case 14:
 								$sql .= " AND card_type_arg=14";
 								break;
@@ -13663,7 +13660,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								$sql .= " AND card_type_arg=13";
 								break;
 
-						case "Phase Shifter":
+						case "Kinetic Siphon":
 						case 14:
 								$sql .= " AND card_type_arg=14";
 								break;
