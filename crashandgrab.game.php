@@ -424,7 +424,7 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 1),
+						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 10),
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
@@ -434,7 +434,7 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Distress Signaler', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Kinetic Siphon', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Kinetic Siphon', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 10),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
@@ -10160,6 +10160,15 @@ echo("<br>");
 
 				// mark that we have activated it
 				$this->activateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, 4);
+
+				if(($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Kinetic Siphon") &&
+					$this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Kinetic Siphon") < 1 &&
+					$this->isUpgradePlayable($saucerWhoseTurnItIs, 'Kinetic Siphon')))
+				{ // this saucer has kinetic siphon played
+
+					$this->giveSaucerBooster($saucerWhoseTurnItIs); // give them a booster
+					$this->activateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, 14); // make as played so we don't give it to them more than once/turn
+				}
 
 				$this->gamestate->nextState( "executingMove" );
 		}
