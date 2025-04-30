@@ -132,8 +132,7 @@
         $this->tpl['UPGRADE_REFERENCE_LABEL'] = self::_("Upgrade Reference");
 
 
-        global $g_user;
-        $current_player_id = $g_user->get_id();
+        $current_player_id = $this->getCurrentPlayerId();
 
         // get the saucers this player owns
         $thisPlayersSaucers = $this->game->getSaucersForPlayer($current_player_id);
