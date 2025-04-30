@@ -424,7 +424,7 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Blast Off Thrusters', 'type_arg' => 1, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Wormhole Generator', 'type_arg' => 2, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Afterburner', 'type_arg' => 3, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 10),
+						array( 'type' => 'Pulse Cannon', 'type_arg' => 4, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Tractor Beam', 'type_arg' => 5, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Saucer Teleporter', 'type_arg' => 6, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Cloaking Device', 'type_arg' => 7, 'card_location' => 'deck', 'nbr' => 1),
@@ -434,12 +434,13 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Distress Signaler', 'type_arg' => 11, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Time Machine', 'type_arg' => 12, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Kinetic Siphon', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 10),
+						array( 'type' => 'Kinetic Siphon', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 1),
-						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1)
+						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Acceleration Regulator', 'type_arg' => 24, 'card_location' => 'deck','nbr' => 1)
 				);
 
 				if($this->getNumberOfPlayers() > 2)
@@ -1356,7 +1357,7 @@ class CrashAndGrab extends Table
 
 		// Gets only the moves for a specific saucer's last move to use to show the available
 		// moves when landing on an Accelerator or using a Booster.
-		function getSaucerAcceleratorAndBoosterMoves($moveType='regular', $saucerColor='')
+		function getSaucerAcceleratorAndBoosterMoves($moveType='regular', $saucerColor='', $usingBooster=false, $usingAccelerator=false)
 		{
 				$result = array();
 				if($saucerColor == '')
@@ -1423,7 +1424,7 @@ class CrashAndGrab extends Table
 						{ // we are moving from a movement card
 								$getLastSaucerDistanceType = $this->getSaucerDistanceType($color); // 0, 1, 2
 
-								$movesForSaucer = $this->getMovesForSaucer($color, $getLastSaucerDistanceType, ''); // go in any direction
+								$movesForSaucer = $this->getMovesForSaucer($color, $getLastSaucerDistanceType, '', $usingBooster, $usingAccelerator); // go in any direction
 								/*
 								$movesForSaucer = array();
 								if($this->hasOverrideToken($color) || 
@@ -1674,7 +1675,7 @@ if($color == '009add')
 				return $result;
 		}
 
-		function getMovesForSaucer($color, $specificMoveCard='', $specificDirection='')
+		function getMovesForSaucer($color, $specificMoveCard='', $specificDirection='', $usingBooster=false, $usingAccelerator=false)
 		{
 			//throw new feException( "getMovesForSaucer color:$color specificMoveCard:$specificMoveCard specificDirection:$specificDirection" );
 				$result = array();
@@ -1703,25 +1704,224 @@ if($color == '009add')
 								if($specificDirection == '' || $specificDirection == 'sun')
 								{
 									//throw new feException( "sun specificDirection:$specificDirection" );
-									$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'sun'); // destinations for this saucer, this card, in the sun direction
+
+									if($usingBooster)
+									{ // we are using a booster
+
+										// if we are using a Booster, you just boost the distance you moved at the beginning of your turn... it might have been modified by Hyperdrive or a specific card... but we just go that distance
+										$originalDistance = $this->getSaucerOriginalTurnDistance($color);
+										$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'sun'); // destinations for this saucer, this card, in the sun direction
+
+									}
+									elseif($usingAccelerator)
+									{ // they are using an accelerator
+
+										// just give them the option to go that distance... not what they chose for their move card
+										$lastDistanceChosen = $this->getSaucerLastDistance($color);
+										$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $lastDistanceChosen, 'sun'); // destinations for this saucer, this card, in the sun direction
+									}
+									elseif($distanceType == 1)
+									{ // played a 2 card
+										$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'sun'); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'sun')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
+									elseif($distanceType == 2)
+									{ // played a 3 card
+										$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'sun'); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'sun')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
+									elseif($distanceType == 0)
+									{ // played a 0-5 card
+
+										$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 0, 'sun'); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 1, 'sun')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'sun')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'sun')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'sun')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 5, 'sun')); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'sun')); // destinations for this saucer, this card, in the sun direction
+											$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 8, 'sun')); // destinations for this saucer, this card, in the sun direction
+											$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 10, 'sun')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
+
 								}
 
 								if($specificDirection == '' || $specificDirection == 'asteroids')
 								{
 									//throw new feException( "asteroids specificDirection:$specificDirection" );
-									$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
+									
+									if($usingBooster)
+									{ // we are using a booster
+
+										// if we are using a Booster, you just boost the distance you moved at the beginning of your turn... it might have been modified by Hyperdrive or a specific card... but we just go that distance
+										$originalDistance = $this->getSaucerOriginalTurnDistance($color);
+										$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'asteroids'); // destinations for this saucer, this card, in the sun direction
+									}
+									elseif($usingAccelerator)
+									{ // they are using an accelerator
+
+										// just give them the option to go that distance... not what they chose for their move card
+										$lastDistanceChosen = $this->getSaucerLastDistance($color);
+										$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $lastDistanceChosen, 'asteroids'); // destinations for this saucer, this card, in the sun direction
+									}
+									elseif($distanceType == 1)
+									{ // played a 2 card
+										$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'asteroids'); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
+									elseif($distanceType == 2)
+									{ // played a 3 card
+										$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'asteroids'); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
+									elseif($distanceType == 0)
+									{ // played a 0-5 card
+
+										$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 0, 'asteroids'); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 1, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 5, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+											$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 8, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+											$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 10, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
 								}
 
 								if($specificDirection == '' || $specificDirection == 'meteor')
 								{
 									//throw new feException( "meteor specificDirection:$specificDirection" );
-									$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'meteor'); // destinations for this saucer, this card, in the meteor direction
+									
+									if($usingBooster)
+									{ // we are using a booster
+
+										// if we are using a Booster, you just boost the distance you moved at the beginning of your turn... it might have been modified by Hyperdrive or a specific card... but we just go that distance
+										$originalDistance = $this->getSaucerOriginalTurnDistance($color);
+										$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'meteor'); // destinations for this saucer, this card, in the sun direction
+									}
+									elseif($usingAccelerator)
+									{ // they are using an accelerator
+
+										// just give them the option to go that distance... not what they chose for their move card
+										$lastDistanceChosen = $this->getSaucerLastDistance($color);
+										$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $lastDistanceChosen, 'meteor'); // destinations for this saucer, this card, in the meteor direction
+									}
+									elseif($distanceType == 1)
+									{ // played a 2 card
+										$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'meteor'); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'meteor')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
+									elseif($distanceType == 2)
+									{ // played a 3 card
+										$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'meteor'); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'meteor')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
+									elseif($distanceType == 0)
+									{ // played a 0-5 card
+
+										$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 0, 'meteor'); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 1, 'meteor')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'meteor')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'meteor')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'meteor')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 5, 'meteor')); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'meteor')); // destinations for this saucer, this card, in the sun direction
+											$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 8, 'meteor')); // destinations for this saucer, this card, in the sun direction
+											$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 10, 'meteor')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
 								}
 
 								if($specificDirection == '' || $specificDirection == 'constellation')
 								{
 									//throw new feException( "constallation specificDirection:$specificDirection" );
-									$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $distanceType, 'constellation'); // destinations for this saucer, this card, in the constellation direction
+									
+									if($usingBooster)
+									{ // we are using a booster
+
+										// if we are using a Booster, you just boost the distance you moved at the beginning of your turn... it might have been modified by Hyperdrive or a specific card... but we just go that distance
+										$originalDistance = $this->getSaucerOriginalTurnDistance($color);
+										$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'constellation'); // destinations for this saucer, this card, in the sun direction
+									}
+									elseif($usingAccelerator)
+									{ // they are using an accelerator
+
+										// just give them the option to go that distance... not what they chose for their move card
+										$lastDistanceChosen = $this->getSaucerLastDistance($color);
+										$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $lastDistanceChosen, 'constellation'); // destinations for this saucer, this card, in the constellation direction
+									}
+									elseif($distanceType == 1)
+									{ // played a 2 card
+										$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'constellation'); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'constellation')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
+									elseif($distanceType == 2)
+									{ // played a 3 card
+										$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'constellation'); // destinations for this saucer, this card, in the sun direction
+										//throw new feException( "constallation distanceType:$distanceType" );
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											//throw new feException( "hyperdrive constallation distanceType:$distanceType" );
+											$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'constellation')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
+									elseif($distanceType == 0)
+									{ // played a 0-5 card
+
+										$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 0, 'constellation'); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 1, 'constellation')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'constellation')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'constellation')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'constellation')); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 5, 'constellation')); // destinations for this saucer, this card, in the sun direction
+
+										if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+										{ // this player has Hyperdrive
+											$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'constellation')); // destinations for this saucer, this card, in the sun direction
+											$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 8, 'constellation')); // destinations for this saucer, this card, in the sun direction
+											$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 10, 'constellation')); // destinations for this saucer, this card, in the sun direction
+										}
+									}
 								}
 
 								//$countSun = count($result[$distanceType]['directions']['sun']);
@@ -1754,85 +1954,18 @@ if($color == '009add')
 				return $result;
 		}
 
-		function getMoveDestinationsInDirection($saucerColor, $startColumn, $startRow, $distanceType, $direction)
+		// Returns an array of spaces starting at the startRow, startColumn in a specific $direction for the specified $distance.
+		function getMoveDestinationsInDirection($saucerColor, $startColumn, $startRow, $distance, $direction)
 		{
 				$result = array();
 //throw new feException( "distanceType: $distanceType direction: $direction");
-				switch($distanceType)
-				{ // 0=X, 1=2, 2=3, 3=max
-						case 3: // max
-						case 0: // X
-
-								$row = $startRow;
-								$column = $startColumn;
-
-								$space = array();
-								$space['row'] = $row;
-								$space['column'] = $column;
-								array_push($result, $space); // add this space to the list of move destinations
-
-								$maxDistance = $this->getSaucerXValue( $saucerColor ) + 1;
-								
-
-								if($maxDistance == 12)
-								{ // we haven't chosen X yet
-									$maxDistance = 6; // 5 distance max plus your starting space
-								}
-								//throw new feException( "maxDistance: $maxDistance distanceType:$distanceType");
-
-								if($distanceType == 3)
-								{ // max distance
-										$maxDistance = 20;
-								}
-								elseif($this->getUpgradeTimesActivatedThisRound($saucerColor, "Hyperdrive") > 0)
-								{ // this player activated hyperdrive this round
-										$maxDistance = $maxDistance * 2;
-								}
-
-//throw new feException( "maxDistance: $maxDistance");
-								switch($direction)
-								{
-										case $this->UP_DIRECTION:
-												$result = $this->getSpacesInColumnUp($startRow, $startColumn, $maxDistance); // add this space to the list of move destinations
-										break;
-
-										case $this->DOWN_DIRECTION:
-												$result = $this->getSpacesInColumnDown($startRow, $startColumn, $maxDistance); // add this space to the list of move destinations
-										break;
-
-										case $this->RIGHT_DIRECTION:
-												$result = $this->getSpacesInRowRight($startColumn, $startRow, $maxDistance); // add this space to the list of move destinations
-										break;
-
-										case $this->LEFT_DIRECTION:
-												$result = $this->getSpacesInRowLeft($startColumn, $startRow, $maxDistance); // add this space to the list of move destinations
-										break;
-
-										default:
-											throw new feException( "Invalid direction type: $direction");
-										break;
-								}
-
-								return $result;
-
-						break;
-						case 1: // 2
-						case 2: // 3
-								$offset = 2;
-								if($distanceType == 2)
-										$offset = 3;
-
-								if($this->getUpgradeTimesActivatedThisRound($saucerColor, "Hyperdrive") > 0)
-								{ // this player activated hyperdrive this round
-										$offset = $offset * 2;
-								}
-
+				
 								switch($direction)
 								{
 										case 'sun':
-												$row = $startRow - $offset; // default
-												for ($x = ($startRow - 1); $x >= ($startRow - $offset); $x--) 
-												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
+												$row = $startRow - $distance; // default
+												for ($x = ($startRow - 1); $x >= ($startRow - $distance); $x--) 
+												{ // second part is the CONTINUATION CONDITION not the ENDING CONDITION
 
 													
 												  	$spaceType = $this->getBoardSpaceType($startColumn, $x);
@@ -1855,15 +1988,20 @@ if($color == '009add')
 
 												$column = $startColumn;
 
+												$space = array();
+												$space['row'] = $row;
+												$space['column'] = $column;
+												array_push($result, $space); // add this space to the list of move destinations
+
 										break;
 
 										case 'asteroids':
 
 												$row = $startRow;
 
-												$column = $startColumn + $offset; // default
+												$column = $startColumn + $distance; // default
 												//throw new feException( "saucerColor:$saucerColor row:$row column:$column");
-												for ($y = ($startColumn + 1); $y <= ($startColumn + $offset); $y++) 
+												for ($y = ($startColumn + 1); $y <= ($startColumn + $distance); $y++) 
 												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
 														$spaceType = $this->getBoardSpaceType($y, $startRow);
 //if($saucerColor == '753bbd' && $spaceType == 'S')
@@ -1894,15 +2032,21 @@ echo("<br>");
 
 														$column = $maxColumns;
 												}
+
+												$space = array();
+												$space['row'] = $row;
+												$space['column'] = $column;
+												array_push($result, $space); // add this space to the list of move destinations
+
 										break;
 
 										case 'meteor':
 										if($saucerColor == 'b83a4b')
 										{
-											//throw new feException( "saucerColor:$saucerColor startRow:$startRow startColumn:$startColumn offset:$offset");
+											//throw new feException( "saucerColor:$saucerColor startRow:$startRow startColumn:$startColumn distance:$distance");
 										}
-												$row = $startRow + $offset;
-												for ($x = ($startRow + 1); $x <= ($startRow + $offset); $x++) 
+												$row = $startRow + $distance;
+												for ($x = ($startRow + 1); $x <= ($startRow + $distance); $x++) 
 												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
 														$spaceType = $this->getBoardSpaceType($startColumn, $x);
 														//if($saucerColor == 'b83a4b')
@@ -1934,14 +2078,20 @@ echo("<br>");
 												}
 
 												$column = $startColumn;
+
+												$space = array();
+												$space['row'] = $row;
+												$space['column'] = $column;
+												array_push($result, $space); // add this space to the list of move destinations
+
 										break;
 
 										case 'constellation':
 												$row = $startRow;
 
-												$column = $startColumn - $offset;
+												$column = $startColumn - $distance;
 												//throw new feException( "saucerColor:$saucerColor row:$row column:$column startColumn:$startColumn offset:$offset");
-												for ($y = ($startColumn - 1); $y >= ($startColumn - $offset); $y--) 
+												for ($y = ($startColumn - 1); $y >= ($startColumn - $distance); $y--) 
 												{ // second part is the CONTINUATION CONDIATION not the ENDING CONDITION
 													//throw new feException( "y:$y");
 													$spaceType = $this->getBoardSpaceType($y, $startRow);
@@ -1965,21 +2115,19 @@ echo("<br>");
 
 														$column = 0;
 												}
+
+												$space = array();
+												$space['row'] = $row;
+												$space['column'] = $column;
+												array_push($result, $space); // add this space to the list of move destinations
+
 										break;
 
 										default:
 											throw new feException( "Invalid direction type: $direction");
 										break;
 								}
-								$space = array();
-								$space['row'] = $row;
-								$space['column'] = $column;
-								array_push($result, $space); // add this space to the list of move destinations
-						break;
-						default:
-							throw new feException( "Invalid distance type: $distanceType");
-						break;
-				}
+				
 
 				return $result;
 		}
@@ -2525,6 +2673,9 @@ echo("<br>");
 
 						case 20:
 							return clienttranslate( 'Airlock');
+
+						case 24:
+							return clienttranslate( 'Acceleration Regulator');
 				}
 		}
 
@@ -2534,7 +2685,7 @@ echo("<br>");
 				{
 						// Blast Off Thrusters
 						case 1:
-								return clienttranslate( 'At the start of your turn, move 1 space onto an empty space.');
+								return clienttranslate( 'At the start of your turn, move 1 space (but not diagonally) onto an empty space.');
 
 						// Wormhole Generator
 						case 2:
@@ -2598,7 +2749,7 @@ echo("<br>");
 
 						// Landing Legs
 						case 17:
-								return clienttranslate( 'At the end of your turn, move 1 space in any direction.');
+								return clienttranslate( 'At the end of your turn, move 1 space in any direction (not diagonally).');
 
 						// Quake Maker
 						case 18:
@@ -2611,6 +2762,10 @@ echo("<br>");
 						// Airlock
 						case 20:
 								return clienttranslate( 'When you pick up a Crewmember, you may exchange it with any other Crewmember on the board.');
+
+						// Acceleration Regulator
+						case 24:
+							return clienttranslate( 'On your turn, move 1-4 off each Accelerator.');
 				}
 		}
 
@@ -2722,6 +2877,11 @@ echo("<br>");
 				$result[20] = array();
 				$result[20]['name'] = $this->getUpgradeTitleFromCollectorNumber(20);
 				$result[20]['effect'] = $this->getUpgradeEffectFromCollectorNumber(20);
+
+				// Acceleration Regulator
+				$result[24] = array();
+				$result[24]['name'] = $this->getUpgradeTitleFromCollectorNumber(24);
+				$result[24]['effect'] = $this->getUpgradeEffectFromCollectorNumber(24);
 
 				return $result;
 		}
@@ -3445,6 +3605,146 @@ echo("<br>");
 
 							//$validSpace = array_merge($validSpaces, $afterburnerMoves);
 							return $afterburnerMoves;
+						break;
+
+						case "Acceleration Regulator":
+							$result = array();
+
+							// normally you just accelerate the distance you just moved
+							$lastMovedDistance = $this->getSaucerLastDistance($saucerColor);
+
+							// SUN
+							$result[1]['directions']['sun'] = $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 1, 'sun'); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 2, 'sun')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 3, 'sun')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 4, 'sun')); // destinations for this saucer, this card, in the sun direction
+							if($lastMovedDistance != 0 && $lastMovedDistance != 1 && $lastMovedDistance != 2 && $lastMovedDistance != 3 && $lastMovedDistance != 4)
+							{
+								$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, $lastMovedDistance, 'sun')); // destinations for this saucer, this card, in the sun direction
+							}
+							if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+							{ // they have hyperdrive as well so we need to add 6 and 8 as options
+
+								if($lastMovedDistance != 6)
+								{ // the last distance is already 6 so we don't want to add another one
+
+									// add 6
+									$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 6, 'sun'));
+								}
+
+								if($lastMovedDistance != 8)
+								{ // the last distance is already 8 so we don't want to add another one
+
+									// add 8
+									$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 8, 'sun'));
+								}
+							}
+
+
+							// ASTEROIDS
+							$result[1]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 1, 'asteroids'); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 2, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 3, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 4, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							if($lastMovedDistance != 0 && $lastMovedDistance != 1 && $lastMovedDistance != 2 && $lastMovedDistance != 3 && $lastMovedDistance != 4)
+							{
+								$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, $lastMovedDistance, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							}
+							if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+							{ // they have hyperdrive as well so we need to add 6 and 8 as options
+
+								if($lastMovedDistance != 6)
+								{ // the last distance is already 6 so we don't want to add another one
+
+									// add 6
+									$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 6, 'asteroids'));
+								}
+
+								if($lastMovedDistance != 8)
+								{ // the last distance is already 8 so we don't want to add another one
+
+									// add 8
+									$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 8, 'asteroids'));
+								}
+							}
+
+							// METEOR
+							$result[1]['directions']['meteor'] = $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 1, 'meteor'); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 2, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 3, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 4, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							if($lastMovedDistance != 0 && $lastMovedDistance != 1 && $lastMovedDistance != 2 && $lastMovedDistance != 3 && $lastMovedDistance != 4)
+							{
+								$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, $lastMovedDistance, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							}
+							if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+							{ // they have hyperdrive as well so we need to add 6 and 8 as options
+
+								if($lastMovedDistance != 6)
+								{ // the last distance is already 6 so we don't want to add another one
+
+									// add 6
+									$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 6, 'meteor'));
+								}
+
+								if($lastMovedDistance != 8)
+								{ // the last distance is already 8 so we don't want to add another one
+
+									// add 8
+									$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 8, 'meteor'));
+								}
+							}
+
+							// CONSTELLATION
+							$result[1]['directions']['constellation'] = $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 1, 'constellation'); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 2, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 3, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 4, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							if($lastMovedDistance != 0 && $lastMovedDistance != 1 && $lastMovedDistance != 2 && $lastMovedDistance != 3 && $lastMovedDistance != 4)
+							{
+								$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, $lastMovedDistance, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							}
+							if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+							{ // they have hyperdrive as well so we need to add 6 and 8 as options
+
+								if($lastMovedDistance != 6)
+								{ // the last distance is already 6 so we don't want to add another one
+
+									// add 6
+									$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 6, 'constellation'));
+								}
+
+								if($lastMovedDistance != 8)
+								{ // the last distance is already 8 so we don't want to add another one
+
+									// add 8
+									$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 8, 'constellation'));
+								}
+							}
+
+
+							foreach( $result as $movesInDirection )
+								{ // go through each move card for this saucer
+
+										$directionsWithSpaces = $movesInDirection['directions'];
+										//$count = count($spacesForCard);
+										//throw new feException( "spacesForCard Count:$count" );
+
+										foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
+										{ // go through each direction
+
+												foreach( $directionWithSpaces as $space )
+												{ // go through each space
+
+														$column = $space['column'];
+														$row = $space['row'];
+
+														$formattedSpace = $column.'_'.$row;
+														array_push($validSpaces, $formattedSpace);
+												}
+										}
+								}
+
 						break;
 
 						case "Landing Legs":
@@ -6356,234 +6656,6 @@ echo("<br>");
 
 		}
 
-		function triggerTrap()
-		{
-
-				$trapCardToExecute = $this->getTrapCardToExecute(); // OBJECT of the card with multiple keys/values
-				$trapCardOwner = $this->getOwnerOfTrapCard($trapCardToExecute['uniqueCardId']); // the player who played the trap card
-				$trapCardOwnerName = self::getPlayerNameById($trapCardOwner);
-
-				$trappedOstrich = $this->getOstrichWhoseTurnItIs();	// find the ostrich whose turn it is
-				$trappedOstrichName = $this->getOstrichName($trappedOstrich); // get the name of the trapped ostrich
-				$ownerOfTrappedOstrich = $this->getOwnerIdOfOstrich($trappedOstrich); // the player who owns the ostrich being trapped
-				switch($trapCardToExecute['trapName'])
-				{
-						case "Blastorocket":
-
-								$currentDistance = $this->getOstrichDistance($trappedOstrich);
-								$newDistance = $currentDistance * 2; // double the distance
-								$this->saveSaucerLastDistance($trappedOstrich, $newDistance); // save the new distance to where our move is stored
-								$this->saveSaucerMoveCardDistance($trappedOstrich, $newDistance); // save the new distance to where our zig values are stored
-
-								$currentXValue = $this->getSaucerXValue($trappedOstrich);
-								$newXValue = $currentXValue * 2; // double the X value in case they used an X
-								$this->saveOstrichXValue($trappedOstrich, $newXValue); // save the new X value
-
-								// set the old and new values for the messaging to players
-								$oldZigValue = $currentDistance;
-								$newZigValue = $newDistance;
-								if($currentXValue != 0)
-								{	// this ostrich played an X
-										$oldZigValue = $currentXValue;
-										$newZigValue = $newXValue;
-								}
-
-								// notify players of what changed
-								self::notifyAllPlayers( "executeTrapDescription", clienttranslate( '${player_name} doubled the ${ostrichName} ostrich Zig from a ${oldZigValue} to a ${newZigValue}!' ), array(
-													'player_name' => $trapCardOwnerName,
-													'ostrichName' => $trappedOstrichName,
-													'oldZigValue' => $oldZigValue,
-													'newZigValue' => $newZigValue
-								) );
-
-						break;
-
-						case "Boulderdash":
-
-								$oldDirection = $this->getOstrichDirection($trappedOstrich);
-								$newDirection = $this->getRotatedDirection($oldDirection, 90, false); // rotate it 90 degrees clockwise
-								$this->saveSaucerLastDirection($trappedOstrich, $newDirection); // save the new direction to where we will move them
-								$this->saveSaucerMoveCardDirection($trappedOstrich, $newDirection); // save the new direction of their zig
-
-								// notify players of what changed
-								self::notifyAllPlayers( "executeTrapRotateZig", clienttranslate( '${player_name} rotated the ${trappedOstrichName} ostrich Zig from ${oldDirection} to ${newDirectionValue}!' ), array(
-									'newDirectionValue' => $newDirection,
-									'oldDirection' => $oldDirection,
-									'playerTrapped' => $ownerOfTrappedOstrich,
-									'trappedOstrichName' => self::getPlayerNameById($trapCardOwner),
-									'player_name' => $trapCardOwnerName
-								) );
-
-						break;
-
-						case "Deface Paint":
-
-								$oldDirection = $this->getOstrichDirection($trappedOstrich);
-								$newDirection = $this->getRotatedDirection($oldDirection, 90, true); // rotate it 90 degrees clockwise
-								$this->saveSaucerLastDirection($trappedOstrich, $newDirection); // save the new direction to what we use for moving
-								$this->saveSaucerMoveCardDirection($trappedOstrich, $newDirection); // save the new direction to where their zig is stored
-
-								// notify players of what changed
-								self::notifyAllPlayers( "executeTrapRotateZig", clienttranslate( '${player_name} rotated the ${trappedOstrichName} ostrich Zig from ${oldDirection} to ${newDirectionValue}!' ), array(
-									'newDirectionValue' => $newDirection,
-									'playerTrapped' => $ownerOfTrappedOstrich,
-									'oldDirection' => $oldDirection,
-									'trappedOstrichName' => self::getPlayerNameById($trapCardOwner),
-									'player_name' => $trapCardOwnerName
-								) );
-
-						break;
-
-						case "Krazy Crane":
-
-								// find the board tile the victim ostrich is on
-								$tilePosition = $this->getTilePositionOfOstrich($trappedOstrich); // get which tile they are on
-								$tileNumber = $this->getTileNumber($tilePosition); // find the number of that tile
-
-								$sideOfTile = $this->getTileSide($tilePosition); // get whether this tile is on side A or B
-
-								// convert this to an integer 1 or 0
-								$useSideA = 1;
-								if($sideOfTile == "B")
-								{ // this tile is on side B
-										$useSideA = 0;
-								}
-
-								$oldDegreeRotation = $this->getTileRotation($tilePosition); // get current rotation
-								$degreeRotation = 0; // this will be set to the new degree rotation
-								// increase the degree rotation by 1
-								if($oldDegreeRotation == 3)
-								{
-										$degreeRotation = 0;
-								}
-								else
-								{
-										$degreeRotation = $oldDegreeRotation + 1;
-								}
-
-								// rotate that tile
-								//echo "setting board tile number $tileNumber at position $tilePosition with useSideA of $useSideA and degree rotation $degreeRotation";
-								$this->setBoardTile($tileNumber, $useSideA, $degreeRotation, $tilePosition); // update the board table with each new space value
-								$this->updateTileRotations($tileNumber, $degreeRotation); // also update the tile table with the new degree rotation
-
-
-								$this->rotateOstriches($tileNumber, true); // rotate any ostriches on it clockwise
-								$this->rotateGarments($tileNumber, true); // rotate any garments on it clockwise
-
-								// notify players of what changed
-								self::notifyAllPlayers( "executeTrapRotateTile", clienttranslate( '${player_name} turned the tile ${ostrichName} is on 90 degrees clockwise!' ), array(
-													'player_name' => $trapCardOwnerName,
-													'ostrichName' => $trappedOstrichName,
-													'tileNumber' => $tileNumber,
-													'oldDegreeRotation' => $oldDegreeRotation,
-													'newDegreeRotation' => $degreeRotation,
-													'tileSide' => $sideOfTile,
-													'tilePosition' => $tilePosition
-								) );
-
-						break;
-
-						case "Rooster Booster":
-
-								$currentDistance = $this->getOstrichDistance($trappedOstrich);
-								$newDistance = 5; // make their distance 5
-								$this->saveSaucerLastDistance($trappedOstrich, $newDistance); // save the new distance to where our movement is stored
-								$this->saveSaucerMoveCardDistance($trappedOstrich, $newDistance); // save the new distance to where our zig values are stored
-
-								$currentXValue = $this->getSaucerXValue($trappedOstrich);
-								$newXValue = 5; // make their distance 5
-								$this->saveOstrichXValue($trappedOstrich, $newXValue); // save the new X value
-
-								// set the old and new values for the messaging to players
-								$oldZigValue = $currentDistance;
-								$newZigValue = $newDistance;
-								if($currentXValue != 0)
-								{	// this ostrich played an X
-										$oldZigValue = $currentXValue;
-										$newZigValue = $newXValue;
-								}
-
-								// notify players of what changed
-								self::notifyAllPlayers( "executeTrapDescription", clienttranslate( '${player_name} set the ${trappedOstrichName} ostrich Zig from a ${oldZigValue} to a ${newZigValue}!' ), array(
-													'player_name' => $trapCardOwnerName,
-													'ostrichName' => $trappedOstrichName,
-													'oldZigValue' => $oldZigValue,
-													'newZigValue' => $newZigValue,
-													'trappedOstrichName' => $trappedOstrichName
-								) );
-
-						break;
-
-						case "Twirlybird":
-
-								// find the board tile the victim ostrich is on
-								$tilePosition = $this->getTilePositionOfOstrich($trappedOstrich); // get which tile they are on
-								$tileNumber = $this->getTileNumber($tilePosition); // find the number of that tile
-
-								$sideOfTile = $this->getTileSide($tilePosition); // get whether this tile is on side A or B
-
-								// convert this to an integer 1 or 0
-								$useSideA = 1;
-								if($sideOfTile == "B")
-								{ // this tile is on side B
-										$useSideA = 0;
-								}
-
-								$oldDegreeRotation = $this->getTileRotation($tilePosition); // get current rotation
-								$degreeRotation = 0; // this will be set to the new degree rotation
-								// increase the degree rotation by 1 COUNTER-CLOCKWISE
-								if($oldDegreeRotation == 0)
-								{
-										$degreeRotation = 3;
-								}
-								else
-								{
-										$degreeRotation = $oldDegreeRotation - 1;
-								}
-
-								// rotate that tile
-								//echo "setting board tile number $tileNumber at position $tilePosition with useSideA of $useSideA and degree rotation $degreeRotation";
-								$this->setBoardTile($tileNumber, $useSideA, $degreeRotation, $tilePosition); // update the board table with each new space value
-								$this->updateTileRotations($tileNumber, $degreeRotation); // also update the tile table with the new degree rotation
-
-
-								$this->rotateOstriches($tileNumber, false); // rotate any ostriches on it clockwise
-								$this->rotateGarments($tileNumber, false); // rotate any garments on it clockwise
-
-								// notify players of what changed
-								self::notifyAllPlayers( "executeTrapRotateTile", clienttranslate( '${player_name} turned the tile ${ostrichName} is on 90 degrees clockwise!' ), array(
-													'player_name' => $trapCardOwnerName,
-													'ostrichName' => $trappedOstrichName,
-													'tileNumber' => $tileNumber,
-													'oldDegreeRotation' => $oldDegreeRotation,
-													'newDegreeRotation' => $degreeRotation,
-													'tileSide' => $sideOfTile,
-													'tilePosition' => $tilePosition
-								) );
-
-						break;
-
-						default:
-								$oldDirection = $this->getOstrichDirection($trappedOstrich);
-								$newDirection = $this->getRotatedDirection($oldDirection, 90, false); // rotate it 90 degrees clockwise
-								$this->saveSaucerLastDirection($trappedOstrich, $newDirection); // save the new direction to where we check for moving
-								$this->saveSaucerMoveCardDirection($trappedOstrich, $newDirection); // save the new direction to where we keep our zig values
-
-								// notify players of what changed
-								$trapCardOwnerName = self::getPlayerNameById($trapCardOwner);
-								self::notifyAllPlayers( "executeTrapRotateZig", clienttranslate( '${player_name} rotated the ${trappedOstrichName} ostrich Zig from ${oldDirection} to ${newDirectionValue}!' ), array(
-									'newDirectionValue' => $newDirection,
-									'playerTrapped' => $ownerOfTrappedOstrich,
-									'player_name' => $trapCardOwnerName,
-									'trappedOstrichName' => $trappedOstrichName,
-									'oldDirection' => $oldDirection
-								) );
-						break;
-				}
-
-				$this->discardTrapCard($trapCardToExecute['uniqueCardId'], false); // discard the trap card (and reset any other fields needed)
-		}
-
 		function countTotalSeatedCrewmembers()
 		{
 				return self::getUniqueValueFromDb("SELECT COUNT(garment_id) FROM garment WHERE garment_location<>'board' AND garment_location<>'pile' AND garment_location<>'chosen' AND is_primary=1");
@@ -7016,7 +7088,7 @@ echo("<br>");
 
 		function resetAllOstrichZigs()
 		{
-				$sql = "UPDATE ostrich SET ostrich_zig_distance=20, ostrich_zig_direction=''" ;
+				$sql = "UPDATE ostrich SET ostrich_zig_distance=20, ostrich_zig_direction='', saucer_original_turn_distance=13" ;
 				self::DbQuery( $sql );
 		}
 		function resetOstrichChosen()
@@ -7066,7 +7138,7 @@ echo("<br>");
 		function resetSaucers()
 		{
 
-			$sql = "UPDATE ostrich SET skipped_passing=0, skipped_taking=0, passed_by_other_saucer=0, skipped_boosting=0, given_with_distress=0, spaces_moved=0, distance_remaining=0, pushed_on_saucer_turn='0'" ;
+			$sql = "UPDATE ostrich SET skipped_passing=0, skipped_taking=0, passed_by_other_saucer=0, skipped_boosting=0, given_with_distress=0, spaces_moved=0, distance_remaining=0, pushed_on_saucer_turn='0', saucer_original_turn_distance=13" ;
 			self::DbQuery( $sql );
 		}
 
@@ -8296,7 +8368,7 @@ echo("<br>");
 
 									// since we collided with another saucer, exhaust all movement remaining... 
 									// otherwise pushing a saucer on a Crash Site with Waste Accelerator won't work
-									$fullMoveDistance = $this->getSaucerDistance( $saucerMoving );
+									$fullMoveDistance = $this->getSaucerLastDistance( $saucerMoving );
 									$this->setSpacesMoved($saucerMoving, $fullMoveDistance);
 
 
@@ -8512,7 +8584,7 @@ echo("<br>");
 
 									// since we collided with another saucer, exhaust all movement remaining... 
 									// otherwise pushing a saucer on a Crash Site with Waste Accelerator won't work
-									$fullMoveDistance = $this->getSaucerDistance( $saucerMoving );
+									$fullMoveDistance = $this->getSaucerLastDistance( $saucerMoving );
 									$this->setSpacesMoved($saucerMoving, $fullMoveDistance);
 
 									array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
@@ -8718,7 +8790,7 @@ echo("<br>");
 
 									// since we collided with another saucer, exhaust all movement remaining... 
 									// otherwise pushing a saucer on a Crash Site with Waste Accelerator won't work
-									$fullMoveDistance = $this->getSaucerDistance( $saucerMoving );
+									$fullMoveDistance = $this->getSaucerLastDistance( $saucerMoving );
 									$this->setSpacesMoved($saucerMoving, $fullMoveDistance);
 
 										array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
@@ -8921,7 +8993,7 @@ echo("<br>");
 
 									// since we collided with another saucer, exhaust all movement remaining... 
 									// otherwise pushing a saucer on a Crash Site with Waste Accelerator won't work
-									$fullMoveDistance = $this->getSaucerDistance( $saucerMoving );
+									$fullMoveDistance = $this->getSaucerLastDistance( $saucerMoving );
 									$this->setSpacesMoved($saucerMoving, $fullMoveDistance);
 
 									array_push($moveEventList, array( 'event_type' => 'saucerPush', 'saucer_moving' => $saucerMoving, 'saucer_pushed' => $saucerWeCollideWith, 'spaces_pushed' => $distance));
@@ -9441,38 +9513,96 @@ echo("<br>");
 				self::DbQuery( $sqlUpdate );
 		}
 
-		function getSaucerDistance( $saucerColor )
+		function getSaucerAcceleratorDistanceOptions($saucerColor)
 		{
-				$distanceType = self::getUniqueValueFromDb("SELECT ostrich_zig_distance FROM ostrich WHERE ostrich_color='$saucerColor'"); // 0, 1, 2
-//throw new feException( "distanceType: $distanceType");
+			$arrayOfDistance = array();
 
-				$distanceInteger = 0;
+			// normally you just accelerate the distance you just moved
+			$lastMovedDistance = $this->getSaucerLastDistance($saucerColor);
 
-				if($distanceType == 0)
-				{ // X
-						$distanceInteger = $this->getSaucerXValue($saucerColor);
+			if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Acceleration Regulator"))
+			{ // they have acceleration regulator
 
-				}
-				elseif($distanceType == 1)
-				{ // 2
-						$distanceInteger = 2;
-				}
-				elseif($distanceType == 2)
-				{ // 3
-						$distanceInteger = 3;
-				}
-				else
-				{
-						throw new feException( "Unrecognized distance type ($distanceType)");
+				array_push($arrayOfDistance, 1);
+				array_push($arrayOfDistance, 2);
+				array_push($arrayOfDistance, 3);
+				array_push($arrayOfDistance, 4);
+
+				if($lastMovedDistance != 0 && $lastMovedDistance != 1 && $lastMovedDistance != 2 && $lastMovedDistance != 3 && $lastMovedDistance != 4)
+				{ // the last moved distnace is something other than 1-4 (or 0) so let them choose that if they wish as well
+					
+					array_push($arrayOfDistance, $lastMovedDistance);
 				}
 
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-				if($this->getUpgradeTimesActivatedThisRound($saucerWhoseTurnItIs, "Hyperdrive") > 0)
-				{ // this player activated hyperdrive this round
-						$distanceInteger = $distanceInteger * 2;
-				}
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+				{ // they also have hyperdrive
 
-				return $distanceInteger;
+					array_push($arrayOfDistance, 6);
+					array_push($arrayOfDistance, 8);
+				}
+			}
+			else
+			{ // they don't have acceleration regulator (shouldn't get here)
+
+				// the only button should be for their last moved distance
+				array_push($arrayOfDistance, $lastMovedDistance);
+			}
+
+			// sort the array in ascending order
+			sort($arrayOfDistance);
+
+			return $arrayOfDistance;
+		}
+
+		function getSaucerOriginalTurnDistanceOptions($saucerColor)
+		{
+			$arrayOfDistance = array();
+
+
+			// get the type of card they played
+			$distanceType = self::getUniqueValueFromDb("SELECT ostrich_zig_distance FROM ostrich WHERE ostrich_color='$saucerColor'"); // 0, 1, 2
+
+			$distanceInteger = 0;
+			if($distanceType == 0)
+			{ // X was played
+				array_push($arrayOfDistance, 0);
+				array_push($arrayOfDistance, 1);
+				array_push($arrayOfDistance, 2);
+				array_push($arrayOfDistance, 3);
+				array_push($arrayOfDistance, 4);
+				array_push($arrayOfDistance, 5);
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+				 { // this player has Hyperdrive
+					array_push($arrayOfDistance, 6);
+					array_push($arrayOfDistance, 8);
+					array_push($arrayOfDistance, 10);
+				 }
+			}
+			elseif($distanceType == 1)
+			{ // 2 was played
+				array_push($arrayOfDistance, 2);
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+				 { // this player has Hyperdrive
+					array_push($arrayOfDistance, 4);
+				 }
+			}
+			elseif($distanceType == 2)
+			{ // 3 was played
+				array_push($arrayOfDistance, 3);
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+				 { // this player has Hyperdrive
+					array_push($arrayOfDistance, 6);
+				 }
+			}
+			else
+			{
+				throw new feException( "Unrecognized distance type ($distanceType)");
+			}
+
+			return $arrayOfDistance;
 		}
 
 		function getSaucerDistanceType( $saucerColor )
@@ -9480,6 +9610,7 @@ echo("<br>");
 				return self::getUniqueValueFromDb("SELECT ostrich_zig_distance FROM ostrich WHERE ostrich_color='$saucerColor'"); // 0, 1, 2
 		}
 
+		// Returns the distance the Saucer most recently traveled.
 		function getSaucerLastDistance( $saucerColor )
 		{
 				return self::getUniqueValueFromDb("SELECT ostrich_last_distance FROM ostrich WHERE ostrich_color='$saucerColor'");
@@ -9509,6 +9640,8 @@ echo("<br>");
 				$sqlUpdate .= "ostrich_color='".$ostrich."'";
 
 				self::DbQuery( $sqlUpdate );
+
+				//$this->setSaucerOriginalTurnDistance( $ostrich, $distance ); // set the original turn distance too
 		}
 
 		function saveZigOstrich( $ostrich, $cardId )
@@ -9575,6 +9708,20 @@ echo("<br>");
 		function getSaucerYLocation($saucerColor)
 		{
 				return self::getUniqueValueFromDb("SELECT ostrich_y FROM ostrich WHERE ostrich_color='$saucerColor'");
+		}
+
+		function getSaucerOriginalTurnDistance( $saucerColor )
+		{
+				return self::getUniqueValueFromDb("SELECT saucer_original_turn_distance FROM ostrich WHERE ostrich_color='$saucerColor'");
+		}
+
+		function setSaucerOriginalTurnDistance( $saucerColor, $distance )
+		{
+				$sqlUpdate = "UPDATE ostrich SET ";
+				$sqlUpdate .= "saucer_original_turn_distance='".$distance."' WHERE ";
+				$sqlUpdate .= "ostrich_color='".$saucerColor."'";
+
+				self::DbQuery( $sqlUpdate );
 		}
 
 		function getSaucerXValue( $ostrich )
@@ -9938,7 +10085,16 @@ echo("<br>");
 				else if($boardValue == "S")
 				{ // the saucer onto an accelerator on their turn
 					//throw new feException("accelerator");
-						$this->gamestate->nextState( "chooseAcceleratorDirection" ); // need to ask the player which direction they want to go on the skateboard
+					if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Acceleration Regulator") &&
+		  			   $this->isUpgradePlayable($saucerMoving, 'Acceleration Regulator') && 
+					   !$wasPushed)
+					{ // acceleration regulator is played and it doesn't have summoning sickness
+						$this->gamestate->nextState( "chooseAcceleratorDistance" ); // need to ask the player which direction they want to go on the accelerator
+					}
+					else
+					{
+						$this->gamestate->nextState( "chooseAcceleratorDirection" ); // need to ask the player which direction they want to go on the accelerator
+					}
 				}
 				else if($this->canSaucerBoost($saucerWhoseTurnItIs) && $this->getSkippedBoosting($saucerWhoseTurnItIs) == 0 && $moveType == 'regular')
 				{ // the player has a boost they can use and they have not crashed
@@ -10196,15 +10352,23 @@ echo("<br>");
 
 				//throw new feException( "executeSkipPhaseShifter");
 
-				// let them choose the direction they will travel on this "accelerator"
-				$this->gamestate->nextState( "chooseAcceleratorDirection" );
+				if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Acceleration Regulator") &&
+		  			   $this->isUpgradePlayable($saucerMoving, 'Acceleration Regulator'))
+				{ // acceleration regulator is played and it doesn't have summoning sickness
+						$this->gamestate->nextState( "chooseAcceleratorDistance" ); // need to ask the player which direction they want to go on the accelerator
+				}
+				else
+				{
+					// let them choose the direction they will travel on this "accelerator"
+					$this->gamestate->nextState( "chooseAcceleratorDirection" );
+				}
 		}
 
 		function executeSkipWasteAccelerator()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
-				$distance = $this->getSaucerDistance($saucerWhoseTurnItIs);
+				$distance = $this->getSaucerLastDistance($saucerWhoseTurnItIs);
 				$spacesMoved = $this->getSpacesMoved($saucerWhoseTurnItIs);
 				$spacesLeft = $distance - $spacesMoved;
 
@@ -11013,71 +11177,71 @@ echo("<br>");
 
 		// Called when a player has chosen their direction.
 		// This saves the move they selected to the database for use during the Move Phase.
-    function executeChooseZigDirection( $direction )
-    {
-        //self::checkAction( "giveCards" );
+   		function executeChooseZigDirection( $direction )
+   		{
+        	//self::checkAction( "giveCards" );
 
-				$player_id = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
-				$player_name = self::getCurrentPlayerName(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+			$player_id = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
+			$player_name = self::getCurrentPlayerName(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
-				$card_id = $this->getCardIdOfPlayerChosenZig($player_id);
-				$ostrich = $this->getOstrichOfPlayerChosenZig($player_id);
+			$card_id = $this->getCardIdOfPlayerChosenZig($player_id);
+			$ostrich = $this->getOstrichOfPlayerChosenZig($player_id);
 
-				// move our card to played (face-down)
-        $this->movementCards->moveCard( $card_id, 'played', $player_id );
+			// move our card to played (face-down)
+        	$this->movementCards->moveCard( $card_id, 'played', $player_id );
 
-				$card_name = "unknown"; // will be set in the loop next
-				$card_distance = -3; // will be set in the loop next
-				$card_clockwise = -3; // will be set in the loop next
+			$card_name = "unknown"; // will be set in the loop next
+			$card_distance = -3; // will be set in the loop next
+			$card_clockwise = -3; // will be set in the loop next
 
-				$sql = "SELECT card_type, card_type_arg ";
-        $sql .= "FROM movementCards ";
-        $sql .= "WHERE card_id=".$card_id;
-        $dbres = self::DbQuery( $sql );
-        while( $movementCard = mysql_fetch_assoc( $dbres ) )
-        {
-						$card_distance = $movementCard['card_type_arg'];
-						$card_clockwise = $movementCard['card_type'];
-						$card_name = $movementCard['card_type_arg']." ".$movementCard['card_type'];
-        }
+			$sql = "SELECT card_type, card_type_arg ";
+			$sql .= "FROM movementCards ";
+			$sql .= "WHERE card_id=".$card_id;
+			$dbres = self::DbQuery( $sql );
+			while( $movementCard = mysql_fetch_assoc( $dbres ) )
+			{
+				$card_distance = $movementCard['card_type_arg'];
+				$card_clockwise = $movementCard['card_type'];
+				$card_name = $movementCard['card_type_arg']." ".$movementCard['card_type'];
+        	}
 
-				$card_clockwise_integer = $this->getClockwiseInteger($card_clockwise);
+			$card_clockwise_integer = $this->getClockwiseInteger($card_clockwise);
 
-				$hasCrown = $this->doesOstrichHaveCrown($ostrich); // true if this ostrich is the starting player
-				if($hasCrown)
-				{ // this is the starting player and they have chosen their zig so we can update the turn order now
-						$this->resetTurnOrder($card_clockwise);
+			$hasCrown = $this->doesOstrichHaveCrown($ostrich); // true if this ostrich is the starting player
+			if($hasCrown)
+			{ // this is the starting player and they have chosen their zig so we can update the turn order now
+					$this->resetTurnOrder($card_clockwise);
 
-						self::incStat( 1, 'rounds_started', $player_id ); // increase end game player stat
-				}
+					self::incStat( 1, 'rounds_started', $player_id ); // increase end game player stat
+			}
 
-				$this->saveOstrichMove($ostrich, $direction, $card_distance, $card_clockwise_integer, $card_id); // save the direction to the ostrich table in the ostrich_last_direction field
-				$this->saveSaucerMoveCardDirection($ostrich, $direction); // save the direction so we have it in case we are pushed before our turn comes up
-				$this->saveSaucerMoveCardDistance($ostrich, $card_distance); // save the distance so we have it in case we are pushed before our turn comes up
+			$this->saveOstrichMove($ostrich, $direction, $card_distance, $card_clockwise_integer, $card_id); // save the direction to the ostrich table in the ostrich_last_direction field
+			$this->saveSaucerMoveCardDirection($ostrich, $direction); // save the direction so we have it in case we are pushed before our turn comes up
+			$this->saveSaucerMoveCardDistance($ostrich, $card_distance); // save the distance so we have it in case we are pushed before our turn comes up
 
-				//throw new feException( "Color ".$ostrich);
+			//throw new feException( "Color ".$ostrich);
 
-				self::notifyPlayer( $player_id, "iChoseDirection", clienttranslate( '${player_name} chose a direction.' ), array(
-            'player_id' => $player_id,
-            'player_name' => $player_name,
-            'card_name' => $card_name,
-						'card_id' => $card_id,
-						'distance' => $card_distance,
-						'color' => $ostrich,
-						'clockwise' => $card_clockwise_integer,
-						'degreesRotated' => $this->getDegreesRotated($direction)
-        ) );
+			self::notifyPlayer( $player_id, "iChoseDirection", clienttranslate( '${player_name} chose a direction.' ), array(
+				'player_id' => $player_id,
+				'player_name' => $player_name,
+				'card_name' => $card_name,
+				'card_id' => $card_id,
+				'distance' => $card_distance,
+				'color' => $ostrich,
+				'clockwise' => $card_clockwise_integer,
+				'degreesRotated' => $this->getDegreesRotated($direction)
+        	) );
 
-				self::notifyAllPlayers( "otherPlayerPlayedZig", clienttranslate( '${player_name} chose a direction.' ), array(
-            'player_id' => $player_id,
-            'player_name' => $player_name,
-						'color' => $ostrich
-        ) );
+			self::notifyAllPlayers( "otherPlayerPlayedZig", clienttranslate( '${player_name} chose a direction.' ), array(
+            	'player_id' => $player_id,
+            	'player_name' => $player_name,
+				'color' => $ostrich
+        	) );
 
-        // Make this player unactive now
-        // (and tell the machine state to use transtion "directionsChosen" if all players are now unactive
-        $this->gamestate->setPlayerNonMultiactive( $player_id, "directionsChosen" );
-    }
+			// Make this player unactive now
+			// (and tell the machine state to use transtion "directionsChosen" if all players are now unactive
+			$this->gamestate->setPlayerNonMultiactive( $player_id, "directionsChosen" );
+		}
 
 		function executeStartZigPhaseOver()
 		{
@@ -11262,7 +11426,7 @@ echo("<br>");
 				$moveType = $this->getMoveTypeWeAreExecuting();
 
 				// calculate spaces left for use with Phase Shifter
-				$distance = $this->getSaucerDistance($saucerMoving);
+				$distance = $this->getSaucerLastDistance($saucerMoving);
 				$spacesMoved = $this->getSpacesMoved($saucerMoving);
 				$spacesLeft = $distance - $spacesMoved;
 //throw new feException( "distance:$distance spacesMoved:$spacesMoved spacesLeft:$spacesLeft");
@@ -11339,8 +11503,16 @@ echo("<br>");
 						{
 							//throw new feException( "yes accelerator");
 
-							// ask them which direction they want to travel on the accelerator
-							$this->gamestate->nextState( "chooseAcceleratorDirection" );
+							if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Acceleration Regulator") &&
+							   $this->isUpgradePlayable($saucerMoving, 'Acceleration Regulator'))
+							{ // acceleration regulator is played and it doesn't have summoning sickness
+								$this->gamestate->nextState( "chooseAcceleratorDistance" ); // need to ask the player which direction they want to go on the accelerator
+							}
+							else
+							{
+								// ask them which direction they want to travel on the accelerator
+								$this->gamestate->nextState( "chooseAcceleratorDirection" );
+							}
 						}
 						else
 						{ // we are not on an accelerator (if we are on an accelerator we need to know we are still executing Landing Legs)
@@ -11450,6 +11622,14 @@ echo("<br>");
 				{
 						$moveType = 'Afterburner';
 				}
+				elseif($this->getUpgradeValue2($saucerColor, "Acceleration Regulator") != 0)
+				{
+						$moveType = 'Acceleration Regulator';
+				}
+				elseif($this->getUpgradeValue2($saucerColor, "Boost Amplifier") != 0)
+				{
+						$moveType = 'Boost Amplifier';
+				}
 //throw new feException( "moveType: $moveType");
 				return $moveType;
 		}
@@ -11529,7 +11709,8 @@ echo("<br>");
 		{
 				$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerMoving);
 
-				$saucerMoveDistance = $this->getSaucerDistance($saucerMoving);
+				
+				$saucerMoveDistance = $this->getSaucerLastDistance($saucerMoving);
 				if($saucerMoveDistance == 11)
 				{ // they were pushed at the end of the turn (maybe always from Pulse Cannon?)
 					$saucerMoveDistance = 1;
@@ -11639,8 +11820,10 @@ echo("<br>");
 
 				//self::debug( "getMovingEvents saucerMoving:$saucerMoving" );
 
-				$originalDistance = $this->getSaucerDistance($saucerMoving); //2, 3, 5, etc
+				$lastTraveledDistance = $this->getSaucerLastDistance($saucerMoving); //2, 3, 5, etc
 				$spacesMoved = $this->getSpacesMoved($saucerMoving);
+
+				// get modified distance (if using Accleration Regulator or Boost Amplifier)
 
 				$direction = $this->getSaucerDirection($saucerMoving); // meteor
 
@@ -11648,13 +11831,13 @@ echo("<br>");
 				if($wasPushed)
 				{ // this saucer was pushed
 						$pushedDistance = $this->getPushedDistance($saucerMoving);
-						$originalDistance = $pushedDistance;
+						$lastTraveledDistance = $pushedDistance;
 
 						$pushedDirection = $this->getPushedDirection($saucerMoving);
 						$direction = $pushedDirection;
 				}
 
-				$distance = $originalDistance - $spacesMoved;
+				$distance = $lastTraveledDistance - $spacesMoved;
 
 				$currentX = $this->getSaucerXLocation($saucerMoving); // 7
 				$currentY = $this->getSaucerYLocation($saucerMoving); // 5
@@ -11697,6 +11880,7 @@ echo("<br>");
 				return $allEvents;
 		}
 
+		// This is called when a player clicks a direction button to use an Accelerator, a Booster, or choose their direction if they have Time Machine.
 		function executeDirectionClick( $direction )
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs(); // you can only zag on your own turn
@@ -11714,9 +11898,18 @@ echo("<br>");
 
 						$this->saveSaucerLastDirection($saucerWhoseTurnItIs, $direction); // update the database with its new last moved direction
 
+						// We need to set the last distance traveled back to the original turn distance because that is always used
+						// for the Booster distance, even if someone just used an Acceleration Regulator for a different distance. We do this 
+						// so we can always use the last distance traveled during our move execution.
+						$originalDistance = $this->getSaucerOriginalTurnDistance($saucerWhoseTurnItIs);
+						$this->saveSaucerLastDistance($saucerWhoseTurnItIs, $originalDistance); 
+
+
 						// set the number of spaces moved back to 0 since we're starting a new movement
 						$this->setSpacesMoved($saucerWhoseTurnItIs, 0);
 						//throw new feException( "booster saucerWhoseTurnItIs: $saucerWhoseTurnItIs");
+
+						
 
 						$this->notifyPlayersOfBoosterUsage($saucerWhoseTurnItIs);
 						$this->decrementBoosterForSaucer($saucerWhoseTurnItIs); // must come after notification
@@ -11809,13 +12002,6 @@ echo("<br>");
 
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				//$this->setState_PreMovement(); // set the player's phase based on what that player has available to them (REMOVED because X running off a cliff on their own turn caused them to keep going forever)
-		}
-
-		function executeTrapUsage()
-		{
-				$this->triggerTrap(); // trigger the next trap for this ostrich
-
-				$this->setState_PreMovement(); // set the player's phase based on what that player has available to them
 		}
 
 		function executeDraw2Zigs()
@@ -12070,31 +12256,132 @@ echo("<br>");
 				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
-		// A player revealed a 0-5 and chose the distance they will travel with it.
-		function executeSelectXValue($xValue)
+		// Happens when:
+		//    - Acceleration Regulator: A player selects a distance to move off an Accelerator.
+		//    - Hyperdrive: A player has Hyperdrive and chose the distance they will travel.
+		//    - Boost Amplifier: A player used a Booster and can choose the distance they will travel with it.
+		function executeSelectDistanceValue($xValue)
 		{
-				$saucer = $this->getOstrichWhoseTurnItIs();
+				$saucer = $this->getSaucerWhoseTurnItIs();
+				$playerId = $this->getOwnerIdOfOstrich($saucer);
+				$currentState = $this->getStateName();
 
-				$isValid = $this->isValidXSelection($saucer, $xValue);
-				if(!$isValid)
+				switch($currentState)
 				{
-					throw new BgaUserException( self::_("That is not a valid space.") );
+					// Acceleration Regulator
+					case "chooseAcceleratorDistance":
+						//throw new feException( "Acceleration Regulator" );
+
+						if(!$this->isValidDistanceForUpgrade($xValue, $saucer, "Acceleration Regulator"))
+						{ // this is not a valid space
+							throw new BgaUserException( self::_("That is not a valid distance.") );
+						}
+
+						$normalAcceleratorDistance = $this->getSaucerLastDistance($saucer);
+						if($xValue != $normalAcceleratorDistance)
+						{ // they chose a value other than what they would be able to do without Acceleration Regulator
+
+							// increment the state for using it
+							self::incStat( 1, 'upgrades_activated', $playerId );
+						}
+						
+						$this->saveSaucerLastDistance($saucer, $xValue); // when we push someone, they go the distance we just went so we need to save how far we're going
+						$cardId = $this->getUpgradeCardId($saucer, "Acceleration Regulator");
+						$this->setUpgradeValue3($cardId, $xValue); // we need to save the distance we chose for this Accelerator, which also shows it is active
+
+						
+
+						// notify players of the selection
+						$highlightedSaucerColor = $this->convertColorToHighlightedText($saucer);
+						self::notifyAllPlayers( 'accelerationRegulatorSelected', clienttranslate( '${saucer_color_highlighted} used Acceleration Regulator to go ${xValue} off the Accelerator.' ), array(
+								'ostrich' => $saucer,
+								'xValue' => $xValue,
+								'player_name' => self::getActivePlayerName(),
+								'saucer_color_highlighted' => $highlightedSaucerColor
+						) );
+
+						$this->gamestate->nextState( "chooseAcceleratorDirection" );
+					break;
+
+					// Boost Amplifier
+					case "chooseBoosterDistance":
+						//throw new feException( "Boost Amplifier" );
+
+						if(!$this->isValidDistanceForUpgrade($xValue, $saucer, "Boost Amplifier"))
+						{ // this is not a valid space
+							throw new BgaUserException( self::_("That is not a valid distance.") );
+						}
+
+						$normalBoosterDistance = $this->getSaucerOriginalTurnDistance($saucer);
+						if($xValue != $normalBoosterDistance)
+						{ // they chose a value other than what they would be able to do without Boost Amplifier
+
+							// increment the state for using it
+							self::incStat( 1, 'upgrades_activated', $playerId );
+						}
+						
+						$this->saveSaucerLastDistance($saucer, $xValue); // when we push someone, they go the distance we just went so we need to save how far we're going
+						$cardId = $this->getUpgradeCardId($saucer, "Boost Amplifier");
+						$this->setUpgradeValue3($cardId, $xValue); // we need to save the distance we chose for this Accelerator, which also shows it is active
+
+
+
+						// notify players of the selection
+						$highlightedSaucerColor = $this->convertColorToHighlightedText($saucer);
+						self::notifyAllPlayers( 'boostAmplifierSelected', clienttranslate( '${saucer_color_highlighted} used Boost Amplifier to go ${xValue} with their Booster.' ), array(
+								'ostrich' => $saucer,
+								'xValue' => $xValue,
+								'player_name' => self::getActivePlayerName(),
+								'saucer_color_highlighted' => $highlightedSaucerColor
+						) );
+
+						$this->gamestate->nextState( "chooseBoosterDirection" );
+					break;
+
+
+					// Hyperdrive
+					case "chooseDistanceDuringMoveReveal":
+
+						$isValid = $this->isValidXSelection($saucer, $xValue);
+						if(!$isValid)
+						{
+							throw new BgaUserException( self::_("That is not a valid space.") );
+						}
+
+						// increment the state for using it
+						self::incStat( 1, 'upgrades_activated', $playerId );
+
+						$this->saveSaucerLastDistance($saucer, $xValue); // when we push someone, they go the distance we just went so we need to save how far we're going
+						$this->saveOstrichXValue($saucer, $xValue); // save the value we chose for X
+						$this->setSaucerOriginalTurnDistance( $saucer, $xValue ); // set the original turn distance too so we know how much to go with a Booster
+
+						$highlightedSaucerColor = $this->convertColorToHighlightedText($saucer);
+						self::notifyAllPlayers( 'hyperdriveSelected', clienttranslate( '${saucer_color_highlighted} set their distance to ${xValue} using Hyperdrive.' ), array(
+								'ostrich' => $saucer,
+								'xValue' => $xValue,
+								'player_name' => self::getActivePlayerName(),
+								'saucer_color_highlighted' => $highlightedSaucerColor
+						) );
+
+						$this->gamestate->nextState( "checkForRevealDecisions" );
+						//$this->setState_PreMovement(); // set the player's phase based on what that player has available to them
+
+					break;
+					default: 
+						throw new feException( "Cannot choose the distance in this state. ($currentState)" );
+					break;
 				}
 
-				$this->saveSaucerLastDistance($saucer, $xValue);
-				$this->saveOstrichXValue($saucer, $xValue);
-
-				$this->notifyPlayersOfXSelection($saucer, $xValue);
-
-				$this->gamestate->nextState( "checkForRevealDecisions" );
-				//$this->setState_PreMovement(); // set the player's phase based on what that player has available to them
+			// increase stat for activating
+			$ownerActivating = $this->getOwnerIdOfOstrich($saucer);
+			self::incStat( 1, 'upgrades_activated', $ownerActivating );
 		}
 
 		function isValidXSelection($saucerColor, $xValue)
 		{
 			$maxDistance = 5;
 
-			if($this->getUpgradeTimesActivatedThisRound($saucerColor, "Hyperdrive") > 0)
+			if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
 			{ // this player activated hyperdrive this round
 				$maxDistance = $maxDistance * 2;
 			}
@@ -12169,19 +12456,33 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		}
 
-		function notifyPlayersOfXSelection($ostrichUsing, $xValue)
+		function isValidDistanceForUpgrade($distance, $saucerColor, $upgradeName)
 		{
-			//$player_name = self::getCurrentPlayerName();
+			switch($upgradeName)
+			{
+				case "Acceleration Regulator":
+					if($distance == 1 || $distance == 2 || $distance == 3 || $distance == 4)
+					{
+						return true;
+					}
 
-			$highlightedSaucerColor = $this->convertColorToHighlightedText($ostrichUsing);
+					$normalAcceleratorDistance = $this->getSaucerLastDistance($saucerColor);
+					if($distance == $normalAcceleratorDistance)
+					{ // they aren't using Acceleration Regulator and just using their last distance chosen
+						return true;
+					}
 
+					if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+					{ // they have Hyperdrive too
+						if($distance == 6 || $distance == 8)
+						{
+							return true;
+						}
+					}
+				break;
+			}
 
-			self::notifyAllPlayers( 'xSelected', clienttranslate( '${saucer_color_highlighted} set their distance to ${xValue}.' ), array(
-					'ostrich' => $ostrichUsing,
-					'xValue' => $xValue,
-					'player_name' => self::getActivePlayerName(),
-					'saucer_color_highlighted' => $highlightedSaucerColor
-			) );
+			return false;
 		}
 
 		function isValidSpaceForUpgrade($xLocation, $yLocation, $saucerColor, $upgradeName)
@@ -12981,6 +13282,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Airlock":
 								return 20;
 
+						case "Acceleration Regulator":
+								return 8;
+
 						default:
 								return 0;
 				}
@@ -13090,6 +13394,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					case "Airlock":
 					case 20:
 							$sql .= " AND card_type_arg=20";
+							break;
+
+					case "Acceleration Regulator":
+					case 24:
+							$sql .= " AND card_type_arg=24";
 							break;
 			}
 
@@ -13226,6 +13535,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					case 20:
 							$sql .= " card_type_arg=20";
 							break;
+
+					case "Acceleration Regulator":
+					case 24:
+							$sql .= " card_type_arg=24";
+							break;
 			}
 
 			// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -13343,6 +13657,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 20:
 								$sql .= " AND card_type_arg=20";
 								break;
+
+						case "Acceleration Regulator":
+						case 24:
+							$sql .= " AND card_type_arg=24";
+							break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -13467,6 +13786,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 20:
 								$sql .= " AND card_type_arg=20";
 								break;
+
+						case "Acceleration Regulator":
+						case 24:
+								$sql .= " AND card_type_arg=24";
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -13590,6 +13914,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 20:
 								$sql .= " AND card_type_arg=20";
 								break;
+
+						case "Acceleration Regulator":
+						case 24:
+								$sql .= " AND card_type_arg=24";
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -13698,6 +14027,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 20:
 								$sql .= " AND card_type_arg=20";
 								break;
+
+						case "Acceleration Regulator":
+						case 24:
+								$sql .= " AND card_type_arg=24";
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -13726,6 +14060,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 
 				//throw new feException( "saucerWhoseTurnItIs:$saucerWhoseTurnItIs");
+
+				// Set the last distance traveled to the full 
 
 				if($this->isSaucerCrashed($saucerWhoseTurnItIs))
 				{ // this saucer is crashed
@@ -13912,8 +14248,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$distanceString = $this->convertDistanceTypeToString($distanceType);
 
 
-				if($distanceType == 0 && !$this->hasSaucerChosenX($saucerWhoseTurnItIs))
-				{ // saucer played an X and has not yet chosen its value
+				if(($distanceType == 0 && !$this->hasSaucerChosenX($saucerWhoseTurnItIs)) || 
+					($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Hyperdrive") && $this->getSaucerOriginalTurnDistance($saucerWhoseTurnItIs) == 13))
+				{ // saucer played an X and has not yet chosen its value or they have Hyperdrive and haven't selected their turn distance yet
 
 						//throw new feException( "distanceType:$distanceType saucerWhoseTurnItIs:$saucerWhoseTurnItIs");
 
@@ -13956,14 +14293,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 											) );
 									}
 
-									$this->gamestate->nextState( "chooseTimeMachineDirection" );
-						}
-						elseif($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Hyperdrive") &&
-									 $this->getAskedToActivateUpgrade($saucerWhoseTurnItIs, "Hyperdrive") == false &&
-									 $this->isUpgradePlayable($saucerWhoseTurnItIs, 'Hyperdrive'))
-						{ // saucer has Hyperdrive active and has not yet chosen its value
+									$originalDistance = $this->getSaucerOriginalTurnDistance($saucerWhoseTurnItIs);
+									$this->saveSaucerLastDistance($saucerWhoseTurnItIs, $originalDistance); // we need to set the last traveled distance to the original distance at the start of the player turn so we can always use the value for last distance traveled (other than when boosting)
 
-									$this->gamestate->nextState( "chooseWhetherToHyperdrive" );
+									$this->gamestate->nextState( "chooseTimeMachineDirection" );
 						}
 						else
 						{ // saucer does NOT have a reveal upgrade active or they have already chosen whether to activate it
@@ -13998,6 +14331,13 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 												// give a booster
 												$this->giveSaucerBooster($saucerWhoseTurnItIs);
 										}
+
+										if(!$this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Hyperdrive"))
+										{ // they don't have Hyperdrive (because if they do, they have already set this by selecting a value and we don't want to overwrite it)
+
+											$this->saveSaucerLastDistance($saucerWhoseTurnItIs, 2); // update the last distance traveled so we can use last distance traveled any time we execute a move
+											$this->setSaucerOriginalTurnDistance( $saucerWhoseTurnItIs, 2 ); // set the original turn distance too so we know how far to go with a Booster
+										}
 									}
 									elseif($distanceType == 2)
 									{ // played a 3
@@ -14007,8 +14347,14 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 										// give an energy
 										$this->giveSaucerEnergy($saucerWhoseTurnItIs);
-									}
 
+										if(!$this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Hyperdrive"))
+										{ // they don't have Hyperdrive (because if they do, they have already set this by selecting a value and we don't want to overwrite it)
+
+											$this->saveSaucerLastDistance($saucerWhoseTurnItIs, 3); // update the last distance traveled so we can use last distance traveled any time we execute a move
+											$this->setSaucerOriginalTurnDistance( $saucerWhoseTurnItIs, 3); // set the original turn distance too so we know how far to go with a Booster
+										}
+									}
 
 									//throw new feException( "executeStartMove with saucer: $saucerWhoseTurnItIs");
 
@@ -14571,6 +14917,28 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				);
 		}
 
+		function argChooseAcceleratorDistance()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
+
+				$distanceOptions = $this->getSaucerAcceleratorDistanceOptions($saucerWhoseTurnItIs); // return an array of the distances the saucer can travel for their turn
+				$moves = $this->getValidSpacesForUpgrade($saucerWhoseTurnItIs, "Acceleration Regulator");
+
+				$startingXLocation = $this->getSaucerXLocation($saucerWhoseTurnItIs);
+				$startingYLocation = $this->getSaucerYLocation($saucerWhoseTurnItIs);
+
+//throw new feException( "saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerToCrash: $saucerToCrash" );
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
+						'distanceOptions' => $distanceOptions,
+						'currentSpaceOptions' => $moves,
+						'startingXLocation' => $startingXLocation,
+						'startingYLocation' => $startingYLocation
+				);
+		}
+
 		function argAskToRotationalStabilizer()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
@@ -14762,13 +15130,16 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					$direction = '';
 				}
 
+				$distanceOptions = $this->getSaucerOriginalTurnDistanceOptions($saucerColor); // return an array of the distances the saucer can travel for their turn
+
 				$startingXLocation = $this->getSaucerXLocation($saucerColor);
 				$startingYLocation = $this->getSaucerYLocation($saucerColor);
 				return array(
 						'playerSaucerMoves' => self::getSaucerAcceleratorAndBoosterMoves(),
 						'direction' => $direction,
 						'startingXLocation' => $startingXLocation,
-						'startingYLocation' => $startingYLocation
+						'startingYLocation' => $startingYLocation,
+						'distanceOptions' => $distanceOptions
 				);
 		}
 
@@ -14801,17 +15172,32 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 			);
 		}
 
-		function argGetSaucerAcceleratorAndBoosterMoves()
+		function argGetSaucerAcceleratorMoves()
 		{
 				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
 				$saucerHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 				$moveType = $this->getMoveTypeWeAreExecuting();
 
-				$moves = self::getSaucerAcceleratorAndBoosterMoves($moveType);
+				$moves = self::getSaucerAcceleratorAndBoosterMoves($moveType, $saucerWhoseTurnItIs, false, true);
 
 				return array(
 						'playerSaucerAcceleratorMoves' => $moves,
+						'saucerColor' => $saucerHighlightedText
+				);
+		}
+
+		function argGetSaucerBoosterMoves()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+
+				$moveType = $this->getMoveTypeWeAreExecuting();
+
+				$moves = self::getSaucerAcceleratorAndBoosterMoves($moveType, $saucerWhoseTurnItIs, true, false);
+
+				return array(
+						'playerSaucerBoosterMoves' => $moves,
 						'saucerColor' => $saucerHighlightedText
 				);
 		}
@@ -15159,6 +15545,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 			case 'chooseSaucerPulseCannon':
 			case 'askToRotationalStabilizer':
 			case 'askToProximityMine':
+			case 'argChooseAcceleratorDistance':
 			case 'chooseDistressSignalerGiveCrewmember':
 			case 'chooseDistressSignalerTakeCrewmember':
 			case 'chooseCrewmemberToAirlock':

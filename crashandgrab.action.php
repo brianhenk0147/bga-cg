@@ -510,11 +510,11 @@
         self::ajaxResponse( );
     }
 
-    public function actSelectXValue()
+    public function actSelectDistanceValue()
     {
         self::setAjaxMode();
-        $x_value = self::getArg( "xValue",  AT_int, true );
-        $this->game->executeSelectXValue($x_value);
+        $x_value = self::getArg( "distanceValue",  AT_int, true );
+        $this->game->executeSelectDistanceValue($x_value);
         self::ajaxResponse( );
     }
 

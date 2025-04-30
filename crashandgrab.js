@@ -1372,11 +1372,13 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     }
                     else if (this.checkPossibleActions( 'selectXValue', true ))
                     { // we just revealed an X and are choosing its value
-                        console.log('chosenSpaceX:'+chosenSpaceX+' chosenSpaceY:'+chosenSpaceY+' this.chosenSpaceX:'+this.chosenSpaceX+' this.chosenSpaceY:'+this.chosenSpaceY+' this.startingXLocation:'+this.startingXLocation+' this.startingYLocation:'+this.startingYLocation);
+                        console.log('chosenSpaceX:'+chosenSpaceX+' chosenSpaceY:'+chosenSpaceY+' this.startingXLocation:'+this.startingXLocation+' this.startingYLocation:'+this.startingYLocation+' this.startingXLocation:'+this.startingXLocation+' this.startingYLocation:'+this.startingYLocation);
 
                         var distance = 0;
                         if(chosenSpaceX != this.startingXLocation && chosenSpaceY != this.startingYLocation)
                         { // we are not moving in a straight line
+
+                            console.log('we are not moving in a straight line');
 
                             // not valid
                             return;
@@ -1391,7 +1393,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                         }
 
                         console.log('sending distance:'+distance);
-                        this.sendXValue(distance);
+                        this.sendDistanceValue(distance);
                     }
                     else if (this.checkPossibleActions( 'clickAcceleratorDirection', true ))
                     {
@@ -2557,6 +2559,25 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                   break;
 
+                  case 'chooseAcceleratorDistance':
+                        if ( this.isCurrentPlayerActive() )
+                        { // we are the active player
+
+                            // save the current locations of the saucer whose turn it is
+                            this.startingXLocation = args.startingXLocation;
+                            this.startingYLocation = args.startingYLocation;
+
+                            // get list of distances they could travel (including options for Hyperdrive)
+                            console.log("DISTANCE OPTIONS:");
+                            console.log(args.distanceOptions);
+
+
+                            this.showAcceleratorDistanceButtons(args.distanceOptions);
+
+                            this.highlightAllTheseSpaces(args.currentSpaceOptions);
+                        }
+                  break;
+
                   case 'chooseWhetherToHyperdrive':
                       if ( this.isCurrentPlayerActive() )
                       { // we are the active player
@@ -2639,7 +2660,13 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                           this.startingXLocation = args.startingXLocation;
                           this.startingYLocation = args.startingYLocation;
 
-                          this.showXValueButtons();
+                          // get list of distances they could travel (including options for Hyperdrive)
+                          console.log("DISTANCE OPTIONS:");
+                          console.log(args.distanceOptions);
+
+                          this.showXValueButtons(args.distanceOptions);
+
+
 
                           // highlight board space with the possible move destinations
                           this.highlightPossibleAcceleratorOrBoostMoveSelections(args.playerSaucerMoves, args.direction);
@@ -2686,14 +2713,14 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                       if( this.isCurrentPlayerActive() )
                       { // this is the active player so they need to discard
 
-                        console.log("args.playerSaucerAcceleratorMoves:");
-                        console.log(args.playerSaucerAcceleratorMoves);
+                        console.log("args.playerSaucerBoosterMoves:");
+                        console.log(args.playerSaucerBoosterMoves);
 
                           // show a button in the bar for each direction
                           this.showDirectionButtons();
 
                           // highlight all spaces available
-                          this.highlightPossibleAcceleratorOrBoostMoveSelections(args.playerSaucerAcceleratorMoves);
+                          this.highlightPossibleAcceleratorOrBoostMoveSelections(args.playerSaucerBoosterMoves);
 
                           // show a button to skip using a booster
                           this.showAskToUseBoosterButtons();
@@ -3819,7 +3846,7 @@ console.log(moveCardKeys);
                                     for (const directionKey of directionKeys)
                                     { // go through each direction for this move card
 
-console.log("directionKey is " + directionKey + " and direction is " + direction);
+console.log("directionKey is " + directionKey + " and direction is (" + direction+")");
                                         if(direction == '' || direction == 'all' || direction == directionKey)
                                         {
 
@@ -3832,7 +3859,7 @@ console.log(spaces);
                                                
                                             
                                                 for (const spaceKey of spaceKeys)
-                                                { // go through each direction for this move card
+                                                { // go through each space in this direction for this move card
                                                     var x = playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey][spaceKey]['row'];
                                                     var y = playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey][spaceKey]['column'];
                                                     console.log('x:'+x);
@@ -3895,11 +3922,13 @@ console.log(directionKeys);
                                     for (const directionKey of directionKeys)
                                     { // go through each direction for this move card
 
-console.log("directionKey is " + directionKey + " and direction is " + direction);
+console.log("directionKey is " + directionKey + " and direction is (" + direction + ")");
                                         if(direction == '' || direction == directionKey)
                                         {
 
                                             var spaces = playerSaucerMoves[playerKey][saucerKey][moveCardKey][directionKey]; // array of spaces like 8_7, 3_4
+console.log("spaces:");
+console.log(spaces);
                                             for (const space of spaces)
                                             { // go through each direction for this move card
 
@@ -5811,20 +5840,38 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             this.addActionButton( 'crashed_saucer_'+saucerWhoCrashed, '<div class="energy_cube"></div>', 'onClick_energyReward', null, null, 'gray');
         },
 
-        showXValueButtons: function()
+        showAcceleratorDistanceButtons: function(distanceOptions)
         {
-          this.addActionButton( '0_button', _('0'), 'onXValueSelection' );
-          this.addActionButton( '1_button', _('1'), 'onXValueSelection' );
-          this.addActionButton( '2_button', _('2'), 'onXValueSelection' );
-          this.addActionButton( '3_button', _('3'), 'onXValueSelection' );
-          this.addActionButton( '4_button', _('4'), 'onXValueSelection' );
-          this.addActionButton( '5_button', _('5'), 'onXValueSelection' );
-//          this.addActionButton( '6_button', _('6'), 'onXValueSelection' );
-//          this.addActionButton( '7_button', _('7'), 'onXValueSelection' );
-//          this.addActionButton( '8_button', _('8'), 'onXValueSelection' );
-//          this.addActionButton( '9_button', _('9'), 'onXValueSelection' );
-//          this.addActionButton( '10_button', _('10'), 'onXValueSelection' );
-//          this.addActionButton( '11_button', _('11'), 'onXValueSelection' );
+            for (const distance of distanceOptions)
+            { // go through each distance they could travel
+                    
+                console.log("distance:"+distance);
+                this.addActionButton( distance+'_button', _(distance), 'onDistanceValueSelection' );
+            }
+
+            //this.addActionButton( '1_button', _('1'), 'onDistanceValueSelection' );
+            //this.addActionButton( '2_button', _('2'), 'onDistanceValueSelection' );
+            //this.addActionButton( '3_button', _('3'), 'onDistanceValueSelection' );
+            //this.addActionButton( '4_button', _('4'), 'onDistanceValueSelection' );
+        },
+
+        showXValueButtons: function(distanceOptions)
+        {
+
+            for (const distance of distanceOptions)
+            { // go through each distance they could travel
+                
+                console.log("distance:"+distance);
+                this.addActionButton( distance+'_button', _(distance), 'onDistanceValueSelection' );
+            }
+    
+
+          //this.addActionButton( '0_button', _('0'), 'onDistanceValueSelection' );
+          //this.addActionButton( '1_button', _('1'), 'onDistanceValueSelection' );
+          //this.addActionButton( '2_button', _('2'), 'onDistanceValueSelection' );
+          //this.addActionButton( '3_button', _('3'), 'onDistanceValueSelection' );
+          //this.addActionButton( '4_button', _('4'), 'onDistanceValueSelection' );
+          //this.addActionButton( '5_button', _('5'), 'onDistanceValueSelection' );
         },
 
         showDirectionButtons: function()
@@ -6182,10 +6229,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             this.addActionButton( 'noBooster_button', _('Skip Booster'), 'skipBooster', null, false, 'red' );
         },
 
-        sendXValue: function(value)
+        sendDistanceValue: function(value)
         {
-            console.log('sendXValue:'+value);
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSelectXValue.html", { xValue: value, lock: true }, this, function( result ) {
+            console.log('distanceValue:'+value);
+            this.ajaxcall( "/crashandgrab/crashandgrab/actSelectDistanceValue.html", { distanceValue: value, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },
 
@@ -7061,12 +7108,12 @@ console.log("success... onClickUpgradeCardInHand");
             this.sendExecuteMove("");
         },
 
-        onXValueSelection: function( evt )
+        onDistanceValueSelection: function( evt )
         {
             var node = evt.currentTarget.id;
             var value = node.split('_')[0];
 
-            this.sendXValue(value);
+            this.sendDistanceValue(value);
         },
 
         onGiveCards: function()

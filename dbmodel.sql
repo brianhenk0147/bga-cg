@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
   `ostrich_zig_direction` varchar(16) NOT NULL,
   `ostrich_zig_distance` int(10) unsigned NOT NULL DEFAULT '20',
   `ostrich_chosen_x_value` int(10) unsigned NOT NULL DEFAULT '11',
+  `saucer_original_turn_distance` int(10) unsigned NOT NULL DEFAULT '13',
   `ostrich_last_turn_order` smallint(5) unsigned NOT NULL,
   `ostrich_has_zag` smallint(5) unsigned NOT NULL,
   `ostrich_is_chosen` smallint(5) unsigned NOT NULL,
