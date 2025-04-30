@@ -7490,8 +7490,8 @@ echo("<br>");
 						                                               FROM ostrich
 						                                               WHERE 1 ORDER BY ostrich_owner, ostrich_color" );
 
-						global $g_user;
-		  			$current_player_id = $g_user->get_id();
+
+		  			$current_player_id = $this->getCurrentPlayerId();
 
 						// put YOUR ostriches first
 						foreach( $ostriches as $ostrich )
