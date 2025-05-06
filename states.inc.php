@@ -252,7 +252,17 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
-    		"transitions" => array( "chooseBoosterDirection" => 33, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70 )
+    		"transitions" => array( "chooseBoosterDistance" => 33, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70 )
+    ),
+
+    33 => array(
+        "name" => "chooseBoosterDistance",
+        "description" => clienttranslate('${saucerColor} is deciding whether they will use their Boost Amplifier.'),
+        "descriptionmyturn" => clienttranslate('Acceleration Regulator: How far would you like to travel during this Boost?'),
+        "type" => "activeplayer",
+        'args' => 'argChooseBoosterDistance',
+        "possibleactions" => array( "selectXValue" ),
+        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endGame" => 99 )
     ),
 
     34 => array(
@@ -593,7 +603,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argAskToWasteAccelerate',
         "possibleactions" => array( "chooseWasteAccelerator", "declineWasteAccelerator" ),
-        "transitions" => array(  "executingMove" => 70, "chooseAcceleratorDirection" => 9, "askToWasteAccelerate" => 71 )
+        "transitions" => array(  "executingMove" => 70, "chooseAcceleratorDirection" => 9, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66 )
     ),
 
     72 => array(

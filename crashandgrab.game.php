@@ -441,6 +441,7 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Acceleration Regulator', 'type_arg' => 24, 'card_location' => 'deck','nbr' => 1)
+						//array( 'type' => 'Boost Amplifier', 'type_arg' => 25, 'card_location' => 'deck','nbr' => 1)
 				);
 
 				if($this->getNumberOfPlayers() > 2)
@@ -1701,6 +1702,8 @@ if($color == '009add')
 								$saucerX = $this->getSaucerXLocation($color); // this saucer's starting column
 								$saucerY = $this->getSaucerYLocation($color); // this saucer's starting row
 
+								$originalDistance = $this->getSaucerOriginalTurnDistance($color); // if we are using a Booster, you just boost the distance you moved at the beginning of your turn... it might have been modified by Hyperdrive or a specific card... but we just go that distance
+
 								if($specificDirection == '' || $specificDirection == 'sun')
 								{
 									//throw new feException( "sun specificDirection:$specificDirection" );
@@ -1708,10 +1711,59 @@ if($color == '009add')
 									if($usingBooster)
 									{ // we are using a booster
 
-										// if we are using a Booster, you just boost the distance you moved at the beginning of your turn... it might have been modified by Hyperdrive or a specific card... but we just go that distance
-										$originalDistance = $this->getSaucerOriginalTurnDistance($color);
 										$result[$distanceType]['directions']['sun'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'sun'); // destinations for this saucer, this card, in the sun direction
+										
+										if($this->doesSaucerHaveUpgradePlayed($color, "Boost Amplifier"))
+										{ // this player has Boost Amplifier
+											if($originalDistance != 1)
+											{
+												$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 1, 'sun')); // destinations for this saucer, this card, in the sun direction
+											}
 
+											if($originalDistance != 2)
+											{
+												$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'sun')); // destinations for this saucer, this card, in the sun direction
+											}
+
+											if($originalDistance != 3)
+											{
+												$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'sun')); // destinations for this saucer, this card, in the sun direction
+											}
+											
+											if($originalDistance != 4)
+											{
+												$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'sun')); // destinations for this saucer, this card, in the sun direction
+											}
+											
+											if($originalDistance != 5)
+											{
+												$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 5, 'sun')); // destinations for this saucer, this card, in the sun direction
+											}
+											
+											if($originalDistance != 6)
+											{
+												$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'sun')); // destinations for this saucer, this card, in the sun direction
+											}
+
+											if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+											{ // this player has Hyperdrive
+
+												if($originalDistance != 8)
+												{
+													$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 8, 'sun')); // destinations for this saucer, this card, in the sun direction
+												}
+												
+												if($originalDistance != 10)
+												{
+													$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 10, 'sun')); // destinations for this saucer, this card, in the sun direction
+												}
+											
+												if($originalDistance != 12)
+												{
+													$result[$distanceType]['directions']['sun'] = array_merge($result[$distanceType]['directions']['sun'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 12, 'sun')); // destinations for this saucer, this card, in the sun direction
+												}
+											}
+										}
 									}
 									elseif($usingAccelerator)
 									{ // they are using an accelerator
@@ -1765,9 +1817,59 @@ if($color == '009add')
 									if($usingBooster)
 									{ // we are using a booster
 
-										// if we are using a Booster, you just boost the distance you moved at the beginning of your turn... it might have been modified by Hyperdrive or a specific card... but we just go that distance
-										$originalDistance = $this->getSaucerOriginalTurnDistance($color);
-										$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'asteroids'); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'asteroids'); // destinations for this saucer, this card, in the asteroids direction
+										
+										if($this->doesSaucerHaveUpgradePlayed($color, "Boost Amplifier"))
+										{ // this player has Boost Amplifier
+											if($originalDistance != 1)
+											{
+												$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 1, 'asteroids')); // destinations for this saucer, this card, in the asteroids direction
+											}
+
+											if($originalDistance != 2)
+											{
+												$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'asteroids')); // destinations for this saucer, this card, in the asteroids direction
+											}
+
+											if($originalDistance != 3)
+											{
+												$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'asteroids')); // destinations for this saucer, this card, in the asteroids direction
+											}
+											
+											if($originalDistance != 4)
+											{
+												$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'asteroids')); // destinations for this saucer, this card, in the asteroids direction
+											}
+											
+											if($originalDistance != 5)
+											{
+												$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 5, 'asteroids')); // destinations for this saucer, this card, in the asteroids direction
+											}
+											
+											if($originalDistance != 6)
+											{
+												$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'asteroids')); // destinations for this saucer, this card, in the asteroids direction
+											}
+
+											if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+											{ // this player has Hyperdrive
+
+												if($originalDistance != 8)
+												{
+													$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 8, 'asteroids')); // destinations for this saucer, this card, in the asteroids direction
+												}
+												
+												if($originalDistance != 10)
+												{
+													$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 10, 'asteroids')); // destinations for this saucer, this card, in the asteroids direction
+												}
+											
+												if($originalDistance != 12)
+												{
+													$result[$distanceType]['directions']['asteroids'] = array_merge($result[$distanceType]['directions']['asteroids'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 12, 'asteroids')); // destinations for this saucer, this card, in the asteroids direction
+												}
+											}
+										}
 									}
 									elseif($usingAccelerator)
 									{ // they are using an accelerator
@@ -1820,9 +1922,59 @@ if($color == '009add')
 									if($usingBooster)
 									{ // we are using a booster
 
-										// if we are using a Booster, you just boost the distance you moved at the beginning of your turn... it might have been modified by Hyperdrive or a specific card... but we just go that distance
-										$originalDistance = $this->getSaucerOriginalTurnDistance($color);
-										$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'meteor'); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['meteor'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'meteor'); // destinations for this saucer, this card, in the meteor direction
+										
+										if($this->doesSaucerHaveUpgradePlayed($color, "Boost Amplifier"))
+										{ // this player has Boost Amplifier
+											if($originalDistance != 1)
+											{
+												$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 1, 'meteor')); // destinations for this saucer, this card, in the meteor direction
+											}
+
+											if($originalDistance != 2)
+											{
+												$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'meteor')); // destinations for this saucer, this card, in the meteor direction
+											}
+
+											if($originalDistance != 3)
+											{
+												$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'meteor')); // destinations for this saucer, this card, in the meteor direction
+											}
+											
+											if($originalDistance != 4)
+											{
+												$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'meteor')); // destinations for this saucer, this card, in the meteor direction
+											}
+											
+											if($originalDistance != 5)
+											{
+												$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 5, 'meteor')); // destinations for this saucer, this card, in the meteor direction
+											}
+											
+											if($originalDistance != 6)
+											{
+												$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'meteor')); // destinations for this saucer, this card, in the meteor direction
+											}
+
+											if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+											{ // this player has Hyperdrive
+
+												if($originalDistance != 8)
+												{
+													$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 8, 'meteor')); // destinations for this saucer, this card, in the meteor direction
+												}
+												
+												if($originalDistance != 10)
+												{
+													$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 10, 'meteor')); // destinations for this saucer, this card, in the meteor direction
+												}
+											
+												if($originalDistance != 12)
+												{
+													$result[$distanceType]['directions']['meteor'] = array_merge($result[$distanceType]['directions']['meteor'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 12, 'meteor')); // destinations for this saucer, this card, in the meteor direction
+												}
+											}
+										}
 									}
 									elseif($usingAccelerator)
 									{ // they are using an accelerator
@@ -1875,9 +2027,59 @@ if($color == '009add')
 									if($usingBooster)
 									{ // we are using a booster
 
-										// if we are using a Booster, you just boost the distance you moved at the beginning of your turn... it might have been modified by Hyperdrive or a specific card... but we just go that distance
-										$originalDistance = $this->getSaucerOriginalTurnDistance($color);
-										$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'constellation'); // destinations for this saucer, this card, in the sun direction
+										$result[$distanceType]['directions']['constellation'] = $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, $originalDistance, 'constellation'); // destinations for this saucer, this card, in the constellation direction
+										
+										if($this->doesSaucerHaveUpgradePlayed($color, "Boost Amplifier"))
+										{ // this player has Boost Amplifier
+											if($originalDistance != 1)
+											{
+												$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 1, 'constellation')); // destinations for this saucer, this card, in the constellation direction
+											}
+
+											if($originalDistance != 2)
+											{
+												$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 2, 'constellation')); // destinations for this saucer, this card, in the constellation direction
+											}
+
+											if($originalDistance != 3)
+											{
+												$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 3, 'constellation')); // destinations for this saucer, this card, in the constellation direction
+											}
+											
+											if($originalDistance != 4)
+											{
+												$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 4, 'constellation')); // destinations for this saucer, this card, in the constellation direction
+											}
+											
+											if($originalDistance != 5)
+											{
+												$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 5, 'constellation')); // destinations for this saucer, this card, in the constellation direction
+											}
+											
+											if($originalDistance != 6)
+											{
+												$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 6, 'constellation')); // destinations for this saucer, this card, in the constellation direction
+											}
+
+											if($this->doesSaucerHaveUpgradePlayed($color, "Hyperdrive"))
+											{ // this player has Hyperdrive
+
+												if($originalDistance != 8)
+												{
+													$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 8, 'constellation')); // destinations for this saucer, this card, in the constellation direction
+												}
+												
+												if($originalDistance != 10)
+												{
+													$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 10, 'constellation')); // destinations for this saucer, this card, in the constellation direction
+												}
+											
+												if($originalDistance != 12)
+												{
+													$result[$distanceType]['directions']['constellation'] = array_merge($result[$distanceType]['directions']['constellation'], $this->getMoveDestinationsInDirection($color, $saucerX, $saucerY, 12, 'constellation')); // destinations for this saucer, this card, in the constellation direction
+												}
+											}
+										}
 									}
 									elseif($usingAccelerator)
 									{ // they are using an accelerator
@@ -2676,6 +2878,9 @@ echo("<br>");
 
 						case 24:
 							return clienttranslate( 'Acceleration Regulator');
+
+						case 25:
+							return clienttranslate( 'Boost Amplifier');
 				}
 		}
 
@@ -2766,6 +2971,10 @@ echo("<br>");
 						// Acceleration Regulator
 						case 24:
 							return clienttranslate( 'On your turn, move 1-4 off each Accelerator.');
+
+						// Acceleration Regulator
+						case 25:
+							return clienttranslate( 'Move 1-6 when you use a Booster.');
 				}
 		}
 
@@ -2882,6 +3091,11 @@ echo("<br>");
 				$result[24] = array();
 				$result[24]['name'] = $this->getUpgradeTitleFromCollectorNumber(24);
 				$result[24]['effect'] = $this->getUpgradeEffectFromCollectorNumber(24);
+
+				// Boost Amplifier
+				$result[25] = array();
+				$result[25]['name'] = $this->getUpgradeTitleFromCollectorNumber(25);
+				$result[25]['effect'] = $this->getUpgradeEffectFromCollectorNumber(25);
 
 				return $result;
 		}
@@ -3719,6 +3933,182 @@ echo("<br>");
 
 									// add 8
 									$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 8, 'constellation'));
+								}
+							}
+
+
+							foreach( $result as $movesInDirection )
+								{ // go through each move card for this saucer
+
+										$directionsWithSpaces = $movesInDirection['directions'];
+										//$count = count($spacesForCard);
+										//throw new feException( "spacesForCard Count:$count" );
+
+										foreach( $directionsWithSpaces as $direction => $directionWithSpaces )
+										{ // go through each direction
+
+												foreach( $directionWithSpaces as $space )
+												{ // go through each space
+
+														$column = $space['column'];
+														$row = $space['row'];
+
+														$formattedSpace = $column.'_'.$row;
+														array_push($validSpaces, $formattedSpace);
+												}
+										}
+								}
+
+						break;
+
+						case "Boost Amplifier":
+							$result = array();
+
+							// normally you just accelerate the distance you just moved
+							$originalTurnDistance = $this->getSaucerOriginalTurnDistance($saucerColor);
+
+							// SUN
+							$result[1]['directions']['sun'] = $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 1, 'sun'); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 2, 'sun')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 3, 'sun')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 4, 'sun')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 5, 'sun')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 6, 'sun')); // destinations for this saucer, this card, in the sun direction
+							if($originalTurnDistance != 0 && $originalTurnDistance != 1 && $originalTurnDistance != 2 && $originalTurnDistance != 3 && $originalTurnDistance != 4 && $originalTurnDistance != 5 && $originalTurnDistance != 6)
+							{
+								$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, $originalTurnDistance, 'sun')); // destinations for this saucer, this card, in the sun direction
+							}
+							if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+							{ // they have hyperdrive as well so we need to add 6 and 8 as options
+
+								if($originalTurnDistance != 8)
+								{ // the last distance is already 8 so we don't want to add another one
+
+									// add 8
+									$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 8, 'sun'));
+								}
+
+								if($originalTurnDistance != 10)
+								{ // the last distance is already 10 so we don't want to add another one
+
+									// add 10
+									$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 10, 'sun'));
+								}
+
+								if($originalTurnDistance != 12)
+								{ // the last distance is already 12 so we don't want to add another one
+
+									// add 12
+									$result[1]['directions']['sun'] = array_merge($result[1]['directions']['sun'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 12, 'sun'));
+								}
+							}
+
+
+							// ASTEROIDS
+							$result[1]['directions']['asteroids'] = $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 1, 'asteroids'); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 2, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 3, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 4, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 5, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 6, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							if($originalTurnDistance != 0 && $originalTurnDistance != 1 && $originalTurnDistance != 2 && $originalTurnDistance != 3 && $originalTurnDistance != 4 && $originalTurnDistance != 5 && $originalTurnDistance != 6)
+							{
+								$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, $originalTurnDistance, 'asteroids')); // destinations for this saucer, this card, in the sun direction
+							}
+							if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+							{ // they have hyperdrive as well so we need to add 6 and 8 as options
+
+								if($originalTurnDistance != 8)
+								{ // the last distance is already 8 so we don't want to add another one
+
+									// add 8
+									$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 8, 'asteroids'));
+								}
+
+								if($originalTurnDistance != 10)
+								{ // the last distance is already 10 so we don't want to add another one
+
+									// add 10
+									$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 10, 'asteroids'));
+								}
+
+								if($originalTurnDistance != 12)
+								{ // the last distance is already 12 so we don't want to add another one
+
+									// add 12
+									$result[1]['directions']['asteroids'] = array_merge($result[1]['directions']['asteroids'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 12, 'asteroids'));
+								}
+							}
+
+							// METEOR
+							$result[1]['directions']['meteor'] = $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 1, 'meteor'); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 2, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 3, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 4, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 5, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 6, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							if($originalTurnDistance != 0 && $originalTurnDistance != 1 && $originalTurnDistance != 2 && $originalTurnDistance != 3 && $originalTurnDistance != 4 && $originalTurnDistance != 5 && $originalTurnDistance != 6)
+							{
+								$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, $originalTurnDistance, 'meteor')); // destinations for this saucer, this card, in the sun direction
+							}
+							if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+							{ // they have hyperdrive as well so we need to add 6 and 8 as options
+
+								if($originalTurnDistance != 8)
+								{ // the last distance is already 8 so we don't want to add another one
+
+									// add 8
+									$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 8, 'meteor'));
+								}
+
+								if($originalTurnDistance != 10)
+								{ // the last distance is already 10 so we don't want to add another one
+
+									// add 10
+									$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 10, 'meteor'));
+								}
+
+								if($originalTurnDistance != 12)
+								{ // the last distance is already 12 so we don't want to add another one
+
+									// add 12
+									$result[1]['directions']['meteor'] = array_merge($result[1]['directions']['meteor'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 12, 'meteor'));
+								}
+							}
+
+							// CONSTELLATION
+							$result[1]['directions']['constellation'] = $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 1, 'constellation'); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 2, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 3, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 4, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 5, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 6, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							if($originalTurnDistance != 0 && $originalTurnDistance != 1 && $originalTurnDistance != 2 && $originalTurnDistance != 3 && $originalTurnDistance != 4 && $originalTurnDistance != 5 && $originalTurnDistance != 6)
+							{
+								$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, $originalTurnDistance, 'constellation')); // destinations for this saucer, this card, in the sun direction
+							}
+							if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+							{ // they have hyperdrive as well so we need to add 8, 10, 12 as options
+
+								if($originalTurnDistance != 8)
+								{ // the last distance is already 8 so we don't want to add another one
+
+									// add 8
+									$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 8, 'constellation'));
+								}
+
+								if($originalTurnDistance != 10)
+								{ // the last distance is already 10 so we don't want to add another one
+
+									// add 10
+									$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 10, 'constellation'));
+								}
+
+								if($originalTurnDistance != 12)
+								{ // the last distance is already 12 so we don't want to add another one
+
+									// add 12
+									$result[1]['directions']['constellation'] = array_merge($result[1]['directions']['constellation'], $this->getMoveDestinationsInDirection($saucerColor, $currentSaucerX, $currentSaucerY, 12, 'constellation'));
 								}
 							}
 
@@ -9554,6 +9944,50 @@ echo("<br>");
 			return $arrayOfDistance;
 		}
 
+		function getSaucerBoosterDistanceOptions($saucerColor)
+		{
+			$arrayOfDistance = array();
+
+			// normally you just accelerate the distance you just moved
+			$lastMovedDistance = $this->getSaucerLastDistance($saucerColor);
+
+			if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Boost Amplifier"))
+			{ // they have boost amplifier
+
+				array_push($arrayOfDistance, 1);
+				array_push($arrayOfDistance, 2);
+				array_push($arrayOfDistance, 3);
+				array_push($arrayOfDistance, 4);
+				array_push($arrayOfDistance, 5);
+				array_push($arrayOfDistance, 6);
+
+				if($lastMovedDistance != 0 && $lastMovedDistance != 1 && $lastMovedDistance != 2 && $lastMovedDistance != 3 && $lastMovedDistance != 4 && $lastMovedDistance != 5 && $lastMovedDistance != 6)
+				{ // the last moved distnace is something other than 1-6 (or 0) so let them choose that if they wish as well
+					
+					array_push($arrayOfDistance, $lastMovedDistance);
+				}
+
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+				{ // they also have hyperdrive
+
+					array_push($arrayOfDistance, 8);
+					array_push($arrayOfDistance, 10);
+					array_push($arrayOfDistance, 12);
+				}
+			}
+			else
+			{ // they don't have boost amplifier (shouldn't get here)
+
+				// the only button should be for their last moved distance
+				array_push($arrayOfDistance, $lastMovedDistance);
+			}
+
+			// sort the array in ascending order
+			sort($arrayOfDistance);
+
+			return $arrayOfDistance;
+		}
+
 		function getSaucerOriginalTurnDistanceOptions($saucerColor)
 		{
 			$arrayOfDistance = array();
@@ -10352,8 +10786,8 @@ echo("<br>");
 
 				//throw new feException( "executeSkipPhaseShifter");
 
-				if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Acceleration Regulator") &&
-		  			   $this->isUpgradePlayable($saucerMoving, 'Acceleration Regulator'))
+				if($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Acceleration Regulator") &&
+		  			   $this->isUpgradePlayable($saucerWhoseTurnItIs, 'Acceleration Regulator'))
 				{ // acceleration regulator is played and it doesn't have summoning sickness
 						$this->gamestate->nextState( "chooseAcceleratorDistance" ); // need to ask the player which direction they want to go on the accelerator
 				}
@@ -11909,15 +12343,22 @@ echo("<br>");
 						$this->setSpacesMoved($saucerWhoseTurnItIs, 0);
 						//throw new feException( "booster saucerWhoseTurnItIs: $saucerWhoseTurnItIs");
 
-						
+						self::incStat( 1, 'boosters_used', $ownerOfSaucerWhoseTurnItIs );
 
 						$this->notifyPlayersOfBoosterUsage($saucerWhoseTurnItIs);
 						$this->decrementBoosterForSaucer($saucerWhoseTurnItIs); // must come after notification
 
-						self::incStat( 1, 'boosters_used', $ownerOfSaucerWhoseTurnItIs );
+						if($this->doesSaucerHaveUpgradePlayed($saucerWhoseTurnItIs, "Boost Amplifier"))
+						{ // this player has Boost Amplifier
 
-						$this->gamestate->nextState( "executingMove" );
-						//$this->executeSaucerMove($saucerWhoseTurnItIs);
+							// they get to choose how far they will go on the Booster
+							$this->gamestate->nextState( "chooseBoosterDistance" );
+						}
+						else
+						{
+							$this->gamestate->nextState( "executingMove" );
+							//$this->executeSaucerMove($saucerWhoseTurnItIs);
+						}
 				}
 				elseif($currentState == "chooseAcceleratorDirection")
 				{ // they are accelerating
@@ -12322,9 +12763,7 @@ echo("<br>");
 						
 						$this->saveSaucerLastDistance($saucer, $xValue); // when we push someone, they go the distance we just went so we need to save how far we're going
 						$cardId = $this->getUpgradeCardId($saucer, "Boost Amplifier");
-						$this->setUpgradeValue3($cardId, $xValue); // we need to save the distance we chose for this Accelerator, which also shows it is active
-
-
+						$this->setUpgradeValue3($cardId, $xValue); // we need to save the distance we chose for this Boost, which also shows it is active
 
 						// notify players of the selection
 						$highlightedSaucerColor = $this->convertColorToHighlightedText($saucer);
@@ -12335,7 +12774,7 @@ echo("<br>");
 								'saucer_color_highlighted' => $highlightedSaucerColor
 						) );
 
-						$this->gamestate->nextState( "chooseBoosterDirection" );
+						$this->gamestate->nextState( "executingMove" );
 					break;
 
 
@@ -12475,6 +12914,27 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
 					{ // they have Hyperdrive too
 						if($distance == 6 || $distance == 8)
+						{
+							return true;
+						}
+					}
+				break;
+
+				case "Boost Amplifier":
+					if($distance == 1 || $distance == 2 || $distance == 3 || $distance == 4 || $distance == 5 || $distance == 6)
+					{
+						return true;
+					}
+
+					$normalBoosterDistance = $this->getSaucerOriginalTurnDistance($saucerColor);
+					if($distance == $normalBoosterDistance)
+					{ // they aren't using Boost Amplifier and just using their last distance chosen
+						return true;
+					}
+
+					if($this->doesSaucerHaveUpgradePlayed($saucerColor, "Hyperdrive"))
+					{ // they have Hyperdrive too
+						if($distance == 8 || $distance == 10 || $distance == 12)
 						{
 							return true;
 						}
@@ -13283,7 +13743,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								return 20;
 
 						case "Acceleration Regulator":
-								return 8;
+								return 24;
+
+						case "Boost Amplifier":
+								return 25;
 
 						default:
 								return 0;
@@ -13399,6 +13862,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					case "Acceleration Regulator":
 					case 24:
 							$sql .= " AND card_type_arg=24";
+							break;
+
+					case "Boost Amplifier":
+					case 25:
+							$sql .= " AND card_type_arg=25";
 							break;
 			}
 
@@ -13540,6 +14008,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					case 24:
 							$sql .= " card_type_arg=24";
 							break;
+
+					case "Boost Amplifier":
+					case 25:
+							$sql .= " card_type_arg=25";
+							break;
 			}
 
 			// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -13661,6 +14134,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Acceleration Regulator":
 						case 24:
 							$sql .= " AND card_type_arg=24";
+							break;
+
+						case "Boost Amplifier":
+						case 25:
+							$sql .= " AND card_type_arg=25";
 							break;
 				}
 
@@ -13791,6 +14269,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 24:
 								$sql .= " AND card_type_arg=24";
 								break;
+
+						case "Boost Amplifier":
+						case 25:
+								$sql .= " AND card_type_arg=25";
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -13919,6 +14402,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 24:
 								$sql .= " AND card_type_arg=24";
 								break;
+
+						case "Boost Amplifier":
+						case 25:
+								$sql .= " AND card_type_arg=25";
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -14031,6 +14519,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Acceleration Regulator":
 						case 24:
 								$sql .= " AND card_type_arg=24";
+								break;
+
+						case "Boost Amplifier":
+						case 25:
+								$sql .= " AND card_type_arg=25";
 								break;
 				}
 
@@ -14925,6 +15418,28 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 				$distanceOptions = $this->getSaucerAcceleratorDistanceOptions($saucerWhoseTurnItIs); // return an array of the distances the saucer can travel for their turn
 				$moves = $this->getValidSpacesForUpgrade($saucerWhoseTurnItIs, "Acceleration Regulator");
+
+				$startingXLocation = $this->getSaucerXLocation($saucerWhoseTurnItIs);
+				$startingYLocation = $this->getSaucerYLocation($saucerWhoseTurnItIs);
+
+//throw new feException( "saucerWhoseTurnItIs: $saucerWhoseTurnItIs saucerToCrash: $saucerToCrash" );
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
+						'distanceOptions' => $distanceOptions,
+						'currentSpaceOptions' => $moves,
+						'startingXLocation' => $startingXLocation,
+						'startingYLocation' => $startingYLocation
+				);
+		}
+
+		function argChooseBoosterDistance()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
+
+				$distanceOptions = $this->getSaucerBoosterDistanceOptions($saucerWhoseTurnItIs); // return an array of the distances the saucer can travel for their turn
+				$moves = $this->getValidSpacesForUpgrade($saucerWhoseTurnItIs, "Boost Amplifier");
 
 				$startingXLocation = $this->getSaucerXLocation($saucerWhoseTurnItIs);
 				$startingYLocation = $this->getSaucerYLocation($saucerWhoseTurnItIs);

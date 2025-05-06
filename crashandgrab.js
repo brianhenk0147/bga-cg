@@ -2572,7 +2572,26 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                             console.log(args.distanceOptions);
 
 
-                            this.showAcceleratorDistanceButtons(args.distanceOptions);
+                            this.showDistanceButtons(args.distanceOptions);
+
+                            this.highlightAllTheseSpaces(args.currentSpaceOptions);
+                        }
+                  break;
+
+                  case 'chooseBoosterDistance':
+                        if ( this.isCurrentPlayerActive() )
+                        { // we are the active player
+
+                            // save the current locations of the saucer whose turn it is
+                            this.startingXLocation = args.startingXLocation;
+                            this.startingYLocation = args.startingYLocation;
+
+                            // get list of distances they could travel (including options for Hyperdrive)
+                            console.log("DISTANCE OPTIONS:");
+                            console.log(args.distanceOptions);
+
+
+                            this.showDistanceButtons(args.distanceOptions);
 
                             this.highlightAllTheseSpaces(args.currentSpaceOptions);
                         }
@@ -5840,7 +5859,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             this.addActionButton( 'crashed_saucer_'+saucerWhoCrashed, '<div class="energy_cube"></div>', 'onClick_energyReward', null, null, 'gray');
         },
 
-        showAcceleratorDistanceButtons: function(distanceOptions)
+        showDistanceButtons: function(distanceOptions)
         {
             for (const distance of distanceOptions)
             { // go through each distance they could travel
