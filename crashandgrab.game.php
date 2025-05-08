@@ -440,8 +440,9 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Acceleration Regulator', 'type_arg' => 24, 'card_location' => 'deck','nbr' => 1)
+						array( 'type' => 'Acceleration Regulator', 'type_arg' => 24, 'card_location' => 'deck','nbr' => 1),
 						//array( 'type' => 'Boost Amplifier', 'type_arg' => 25, 'card_location' => 'deck','nbr' => 1)
+						array( 'type' => 'Organic Triangulator', 'type_arg' => 26, 'card_location' => 'deck','nbr' => 20)
 				);
 
 				if($this->getNumberOfPlayers() > 2)
@@ -1608,6 +1609,30 @@ class CrashAndGrab extends Table
 				return false;
 		}
 
+		// Returns true if the given saucer picked up or stole a crewmember this round.
+		function didSaucerPickUpOrStealCrewmemberThisRound($saucerColor)
+		{
+			$currentRound = $this->getGameStateValue("CURRENT_ROUND");
+
+			$crewmembersOnSaucer = $this->getCrewmembersOnSaucer($saucerColor);
+			foreach( $crewmembersOnSaucer as $crewmember )
+			{ // go through each crewmember on this saucer
+				$roundAcquired = $crewmember['round_acquired'];
+
+				//throw new feException( "CURRENT ROUND $currentRound and ROUND ACQUIRED $roundAcquired" );
+				
+
+				if($roundAcquired == $currentRound)
+				{ // this crewmember was acquired this round
+
+					return true;
+				}
+			}
+
+			//throw new feException( "did not find any for CURRENT ROUND $currentRound and saucer color $saucerColor" );
+			return false;
+		}
+
 		function getAllPlayerSaucerMoves()
 		{
 				$result = array();
@@ -2395,8 +2420,7 @@ echo("<br>");
 
 		function getAllCrewmembers()
 		{
-				return self::getObjectListFromDB( "SELECT *
-																					 FROM garment ORDER BY garment_color" );
+				return self::getObjectListFromDB( "SELECT * FROM garment ORDER BY garment_color" );
 		}
 
 		function getAllSaucers()
@@ -2660,15 +2684,20 @@ echo("<br>");
 						array_push($result, $upgradeArray);
 				}
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Organic Triangulator'))
+				{
+						$upgradeArray = array();
+						$upgradeArray['collectorNumber'] = 26;
+						$upgradeArray['upgradeName'] = $this->getUpgradeTitleFromCollectorNumber(26);
+
+						array_push($result, $upgradeArray);
+				}
+
 				return $result;
 		}
 
 		function doesPlayerHaveAnyEndOfTurnUpgradesToActivate($saucerColor)
 		{
-				$isWormholePlayed = $this->doesSaucerHaveUpgradePlayed($saucerColor, 'Afterburner');
-				$isWormholdActivated = $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Afterburner');
-				//throw new feException( "saucer:$saucerColor Played:$isWormholePlayed Activated:$isWormholdActivated");
-
 				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Wormhole Generator') &&
 				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Wormhole Generator') < 1 &&
 					 $this->getAskedToActivateUpgrade($saucerColor, 'Wormhole Generator') == false &&
@@ -2805,6 +2834,25 @@ echo("<br>");
 						return true;
 				}
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Organic Triangulator') &&
+				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Organic Triangulator') < 1 &&
+					 $this->getAskedToActivateUpgrade($saucerColor, 'Organic Triangulator') == false &&
+					 $this->isUpgradePlayable($saucerColor, 'Organic Triangulator'))
+				{ // they have played this upgrade, they have not yet activated it, and they have not yet indicated whether they want to activate it
+//throw new feException( "after");
+
+					if(!$this->didSaucerPickUpOrStealCrewmemberThisRound($saucerColor))
+					{ // there is another saucer in the row or column of our saucer
+
+						//throw new feException( "true dat");
+						if(!$this->isSaucerCrashed($saucerColor))
+						{ // they are not crashed
+
+								return true;
+						}
+					}
+				}
+
 				//$cloakingDeviceTimesActivated = $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Cloaking Device');
 				//throw new feException( "false saucer:$saucerColor cloakingDeviceTimesActivated:$cloakingDeviceTimesActivated");
 
@@ -2881,6 +2929,9 @@ echo("<br>");
 
 						case 25:
 							return clienttranslate( 'Boost Amplifier');
+
+						case 26:
+							return clienttranslate( 'Organic Triangulator');
 				}
 		}
 
@@ -2975,6 +3026,10 @@ echo("<br>");
 						// Acceleration Regulator
 						case 25:
 							return clienttranslate( 'Move 1-6 when you use a Booster.');
+
+						// Organic Triangulator
+						case 26:
+							return clienttranslate( 'At the end of your turn where you did not pick up or steal a Crewmember, move to any empty space.');
 				}
 		}
 
@@ -3096,6 +3151,11 @@ echo("<br>");
 				$result[25] = array();
 				$result[25]['name'] = $this->getUpgradeTitleFromCollectorNumber(25);
 				$result[25]['effect'] = $this->getUpgradeEffectFromCollectorNumber(25);
+
+				// Organic Triangulator
+				$result[26] = array();
+				$result[26]['name'] = $this->getUpgradeTitleFromCollectorNumber(26);
+				$result[26]['effect'] = $this->getUpgradeEffectFromCollectorNumber(26);
 
 				return $result;
 		}
@@ -3547,6 +3607,26 @@ echo("<br>");
 
 				}
 
+				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Organic Triangulator') &&
+						$this->getUpgradeTimesActivatedThisRound($saucerColor, 'Organic Triangulator') < 1 &&
+						$this->isUpgradePlayable($saucerColor, 'Organic Triangulator'))
+				{ // they have played Organic Triangulator but they have not yet activated it this round
+
+						if(!$this->isSaucerCrashed($saucerColor))
+						{ // they are not crashed
+
+								$result[$index] = array();
+								$result[$index]['buttonId'] = 'upgradeButton_26';
+								$result[$index]['buttonLabel'] = $this->getUpgradeTitleFromCollectorNumber(26);
+								$result[$index]['hoverOverText'] = '';
+								$result[$index]['actionName'] = 'activateUpgrade';
+								$result[$index]['isDisabled'] = false;
+								$result[$index]['makeRed'] = false;
+
+								$index++;
+						}
+				}
+
 				return $result;
 		}
 
@@ -3819,6 +3899,13 @@ echo("<br>");
 
 							//$validSpace = array_merge($validSpaces, $afterburnerMoves);
 							return $afterburnerMoves;
+						break;
+
+						case "Organic Triangulator":
+							$organicMoves = $this->getOrganicTriangulatorMoves($saucerColor, $currentSaucerX, $currentSaucerY);
+
+							//$validSpace = array_merge($validSpaces, $afterburnerMoves);
+							return $organicMoves;
 						break;
 
 						case "Acceleration Regulator":
@@ -4225,7 +4312,46 @@ echo("<br>");
 			// get all non-accelerator, non-crash-site spaces in our row or column
 			$spacesInRowCol = self::getObjectListFromDB( "SELECT *
 														  FROM board
-														  WHERE board_space_type <> 'S' AND (board_x=$xLocation OR board_y=$yLocation)" );
+														  WHERE board_space_type <> 'S' AND board_space_type <> 'D' AND (board_x=$xLocation OR board_y=$yLocation)" );
+
+
+			$countSpaces = count($spacesInRowCol);
+			foreach($spacesInRowCol as $space)
+			{ // go through each non-accelerator, non-crash-site spaces in our row or column
+
+					$spaceX = $space['board_x'];
+					$spaceY = $space['board_y'];
+
+					// see if there is a Saucer here
+					$saucerWeCollideWith = $this->getSaucerAt($spaceX, $spaceY, $saucerColor);
+					
+					// see if there is a Crewmember here
+					$crewmemberId = $this->getGarmentIdAt($spaceX, $spaceY);
+
+					if($saucerWeCollideWith == '' && $crewmemberId == 0)
+					{ // there is no crewmember nor saucer here
+
+						$column = $spaceX;
+						$row = $spaceY;
+
+						$formattedSpace = $column.'_'.$row;
+
+						array_push($moveList, $formattedSpace);
+					}
+					
+			}
+
+			return $moveList;
+		}
+
+		function getOrganicTriangulatorMoves($saucerColor, $xLocation, $yLocation)
+		{
+			$moveList = array();
+
+			// get all non-accelerator, non-crash-site spaces in our row or column
+			$spacesInRowCol = self::getObjectListFromDB( "SELECT *
+														  FROM board
+														  WHERE board_space_type <> 'S' AND board_space_type <> 'D'" );
 
 
 			$countSpaces = count($spacesInRowCol);
@@ -5972,6 +6098,13 @@ echo("<br>");
 				self::DbQuery( $sql );
 		}
 
+		function saveRoundPickedUp($crewmemberId)
+		{
+			$newValue = $this->getGameStateValue("CURRENT_ROUND");
+			$sql = "UPDATE garment SET round_acquired=$newValue WHERE garment_id=$crewmemberId";
+			self::DbQuery( $sql );
+		}
+
 		function setSaucerGivenWithDistress($saucerColor, $newValue)
 		{
 				$sql = "UPDATE ostrich SET given_with_distress=$newValue WHERE ostrich_color='$saucerColor'";
@@ -6055,6 +6188,8 @@ echo("<br>");
 
 				// go through each crewmember for this saucer and set the primary and extras
 				$this->setCrewmemberPrimaryAndExtras($saucerColor, $garmentType);
+
+				$this->saveRoundPickedUp($crewmemberId); // record the round this crewmember was picked up in for Organic Triangulator
 /*
 				$garmentTypeString = $this->convertGarmentTypeIntToString($garmentType);
 
@@ -8403,6 +8538,12 @@ echo("<br>");
 				return self::getUniqueValueFromDb("SELECT garment_id FROM garment WHERE garment_color='$color' AND garment_type=$typeAsInt LIMIT 1");
 		}
 
+		function getCrewmemberIdFromColorAndTypeText($color, $typeAsText)
+		{
+			$typeAsInt = $this->convertGarmentTypeStringToInt($typeAsText);
+			return self::getUniqueValueFromDb("SELECT garment_id FROM garment WHERE garment_color='$color' AND garment_type=$typeAsInt LIMIT 1");
+		}
+
 		function getCrewmemberColorFromId($crewmemberId)
 		{
 				return self::getUniqueValueFromDb("SELECT garment_color FROM garment WHERE garment_id=$crewmemberId LIMIT 1");
@@ -8608,6 +8749,9 @@ echo("<br>");
 								{ // there is a crewmember here
 
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
+
+										$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerMoving);
+										self::incStat( 1, 'crewmembers_picked_up', $ownerPickingUp );
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock") &&
 										$this->isUpgradePlayable($saucerMoving, 'Airlock'))
@@ -8823,6 +8967,8 @@ echo("<br>");
 								{ // there is a garment here
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
 
+										$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerMoving);
+										self::incStat( 1, 'crewmembers_picked_up', $ownerPickingUp );
 
 //throw new feException( "pre-Airlock right");
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock") &&
@@ -9029,7 +9175,8 @@ echo("<br>");
 								{ // there is a garment here
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
 
-
+										$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerMoving);
+										self::incStat( 1, 'crewmembers_picked_up', $ownerPickingUp );
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock") &&
 										$this->isUpgradePlayable($saucerMoving, 'Airlock'))
@@ -9233,7 +9380,8 @@ echo("<br>");
 								{ // there is a garment here
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
 
-
+										$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerMoving);
+										self::incStat( 1, 'crewmembers_picked_up', $ownerPickingUp );
 
 										if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Airlock") &&
 										$this->isUpgradePlayable($saucerMoving, 'Airlock'))
@@ -10559,7 +10707,7 @@ echo("<br>");
 				}
 				else
 				{ // movement is complete
-						if($moveType == 'Landing Legs' || $moveType == 'Afterburner')
+						if($moveType == 'Landing Legs' || $moveType == 'Afterburner' || $moveType == 'Organic Triangulator')
 						{ // this is a bonus move from an Upgrade
 
 								//$currentState = $this->getStateName();
@@ -11033,6 +11181,9 @@ echo("<br>");
 				$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
 				self::incStat( 1, 'crewmembers_picked_up', $ownerPickingUp );
 
+				$crewmemberId = $this->getCrewmemberIdFromColorAndTypeText($crewmemberColor, $crewmemberType);
+				$this->saveRoundPickedUp($crewmemberId);
+
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
 						$this->gamestate->nextState( "endGame" );
@@ -11070,6 +11221,12 @@ echo("<br>");
 
 				// update the database and tell the UI about the crewmember moving to the saucer
 				$this->moveCrewmemberToSaucerMat($saucerWhoseTurnItIs, $crewmemberType, $crewmemberColor);
+
+				// increment stat for picking up crewmembers
+				$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+				self::incStat( 1, 'crewmembers_you_stole', $ownerPickingUp );
+				$previousOwner = $this->getOwnerIdOfOstrich($saucerHoldingTakenCrewmember);
+				self::incStat( 1, 'crewmembers_stolen_from_you', $previousOwner );
 
 				// move to the state where they can choose which to give (don't try to skip this... we want smooth transitions)
 				$this->gamestate->nextState( "chooseDistressSignalerGiveCrewmember" );
@@ -11293,6 +11450,9 @@ echo("<br>");
 				//throw new feException( "executeStealCrewmember");
 				// give the crewmember to the saucer in the DB and notify the UI
 				$this->moveCrewmemberToSaucerMat($saucerReceiving, $stolenTypeText, $stolenColor);
+
+				$crewmemberId = $this->getCrewmemberIdFromColorAndTypeText($stolenColor, $stolenTypeText);
+				$this->saveRoundPickedUp($crewmemberId);
 
 				// mark that the reward for this crash has been acquired so we don't let them have multiple rewards
 
@@ -12056,6 +12216,10 @@ echo("<br>");
 				{
 						$moveType = 'Afterburner';
 				}
+				elseif($this->getUpgradeValue2($saucerColor, "Organic Triangulator") != 0)
+				{
+						$moveType = 'Organic Triangulator';
+				}
 				elseif($this->getUpgradeValue2($saucerColor, "Acceleration Regulator") != 0)
 				{
 						$moveType = 'Acceleration Regulator';
@@ -12239,6 +12403,8 @@ echo("<br>");
 							$ownerPickingUp = $this->getOwnerIdOfOstrich($saucerMoving);
 							self::incStat( 1, 'crewmembers_picked_up', $ownerPickingUp );
 
+							$crewmemberId = $this->getCrewmemberIdFromColorAndTypeText($crewmemberColor, $crewmemberType);
+							$this->saveRoundPickedUp($crewmemberId);
 						}
 				}
 
@@ -12559,6 +12725,11 @@ echo("<br>");
 				{ // Afterburner
 
 						$this->gamestate->nextState( "chooseAfterburnerSpace" );
+				}
+				elseif($collectorNumber == 26)
+				{ // Organic Triangulator
+
+						$this->gamestate->nextState( "chooseOrganicTriangulatorSpace" );
 				}
 				elseif($collectorNumber == 4)
 				{ // Pulse Cannon
@@ -13017,6 +13188,22 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						// since we're not moving traditionally, we need to specify the next state
 						$this->setState_AfterMovementEvents($saucerColor, "Afterburner");
 				}
+				elseif($currentState == "chooseOrganicTriangulatorSpace")
+				{
+						$cardId = $this->getUpgradeCardId($saucerColor, "Organic Triangulator");
+						$upgradeName = $this->getUpgradeTitleFromCollectorNumber(26);
+
+						if(!$this->isValidSpaceForUpgrade($xLocation, $yLocation, $saucerColor, $upgradeName))
+						{ // this is not a valid space
+								throw new BgaUserException( self::_("That is not a valid space for this upgrade.") );
+						}
+
+						// teleport saucer to new location
+						$this->placeSaucerOnSpace($saucerColor, $xLocation, $yLocation);
+
+						// since we're not moving traditionally, we need to specify the next state
+						$this->setState_AfterMovementEvents($saucerColor, "Organic Triangulator");
+				}
 				elseif($currentState == "chooseLandingLegsSpace")
 				{
 						$cardId = $this->getUpgradeCardId($saucerColor, "Landing Legs");
@@ -13078,6 +13265,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 					$this->executeDirectionClick($direction);
 				}
+
+				// increment the stat for using this upgrade
+				$ownerActivating = $this->getOwnerIdOfOstrich($saucerColor);
+				self::incStat( 1, 'upgrades_activated', $ownerActivating );
 				
 				if(!$skipNotify)
 				{ // we don't want to skip notifying
@@ -13624,7 +13815,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				self::notifyAllPlayers( "endTurn", clienttranslate( '${saucer_color_highlighted} has ended their turn.' ), array(
 								'player_name' => $nameOfPlayerWhoseTurnItWas,
 								'saucer_color_highlighted' => $highlightedSaucerColor,
-								'allCrewmembers' => $this->getAllCrewmembers()
+								'allCrewmembers' => $this->getAllCrewmembers(),
+								'current_round' => $this->getGameStateValue("CURRENT_ROUND")
 						) );
 
 				if($this->isTurnOrderClockwise())
@@ -13748,6 +13940,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Boost Amplifier":
 								return 25;
 
+						case "Organic Triangulator":
+								return 26;
+
 						default:
 								return 0;
 				}
@@ -13867,6 +14062,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					case "Boost Amplifier":
 					case 25:
 							$sql .= " AND card_type_arg=25";
+							break;
+
+					case "Organic Triangulator":
+					case 3:
+							$sql .= " AND card_type_arg=26";
 							break;
 			}
 
@@ -14013,6 +14213,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 					case 25:
 							$sql .= " card_type_arg=25";
 							break;
+
+					case "Organic Triangulator":
+					case 26:
+							$sql .= " card_type_arg=26";
+							break;
 			}
 
 			// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -14139,6 +14344,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Boost Amplifier":
 						case 25:
 							$sql .= " AND card_type_arg=25";
+							break;
+
+						case "Organic Triangulator":
+						case 26:
+							$sql .= " AND card_type_arg=26";
 							break;
 				}
 
@@ -14274,6 +14484,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 25:
 								$sql .= " AND card_type_arg=25";
 								break;
+
+						case "Organic Triangulator":
+						case 26:
+								$sql .= " AND card_type_arg=26";
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -14407,6 +14622,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case 25:
 								$sql .= " AND card_type_arg=25";
 								break;
+
+						case "Organic Triangulator":
+						case 26:
+								$sql .= " AND card_type_arg=26";
+								break;
 				}
 
 				// add a limit of 1 mainly just during testing where the same saucer may have multiple copies of the same upgrade in hand
@@ -14524,6 +14744,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						case "Boost Amplifier":
 						case 25:
 								$sql .= " AND card_type_arg=25";
+								break;
+
+						case "Organic Triangulator":
+						case 26:
+								$sql .= " AND card_type_arg=26";
 								break;
 				}
 
@@ -15234,6 +15459,23 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 
 				$validSpaces = $this->getValidSpacesForUpgrade($saucerWhoseTurnItIs, "Afterburner");
+
+				// return both the location of all the
+				return array(
+						'saucerColor' => $saucerWhoseTurnItIsColorFriendly,
+						'upgradeName' => $upgradeName,
+						'validSpaces' => $validSpaces
+				);
+		}
+
+		function argGetOrganicTriangulatorSpaces()
+		{
+				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(26);
+
+
+				$validSpaces = $this->getValidSpacesForUpgrade($saucerWhoseTurnItIs, "Organic Triangulator");
 
 				// return both the location of all the
 				return array(
@@ -16066,6 +16308,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 			case 'chooseCrewmemberToAirlock':
 			case 'chooseTractorBeamCrewmember':
 			case 'chooseAfterburnerSpace':
+			case 'chooseOrganicTriangulatorSpace':
 			case 'chooseBlastOffThrusterSpace':
 			case 'chooseLandingLegsSpace':
 			case 'chooseCrewmembersToTake':

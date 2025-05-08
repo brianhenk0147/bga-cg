@@ -420,7 +420,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
         "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64, "chooseSaucerPulseCannon" => 69, "chooseTileRotationQuakeMaker" => 72 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseOrganicTriangulatorSpace" => 74, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64, "chooseSaucerPulseCannon" => 69, "chooseTileRotationQuakeMaker" => 72 )
     ),
 
     54 => array(
@@ -622,6 +622,16 @@ $machinestates = array(
         "action" => "executeSetActivePlayerToProbePlayer",
         "updateGameProgression" => false,
         "transitions" => array( "playerTurnStart" => 29 )
+    ),
+
+    74 => array(
+        "name" => "chooseOrganicTriangulatorSpace",
+        "description" => clienttranslate('${saucerColor} is choosing a space for ${upgradeName}.'),
+        "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
+        "type" => "activeplayer",
+        'args' => 'argGetOrganicTriangulatorSpaces',
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
     ),
 
 

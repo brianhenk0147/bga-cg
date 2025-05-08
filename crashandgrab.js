@@ -1778,6 +1778,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 case 'chooseBlastOffThrusterSpace':
                 case 'chooseLandingLegsSpace':
                 case 'chooseAfterburnerSpace':
+                case 'chooseOrganicTriangulatorSpace':
                 case 'askWhichUpgradeToPlay':
                 case 'placeCrewmemberChooseCrewmember':
                     this.unhighlightAllSpaces();
@@ -2173,6 +2174,22 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                             this.highlightAllTheseSpaces(validSpaces);
 
                             this.addActionButton( 'skipButton_3', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
+                      }
+
+                  break;
+
+                  case 'chooseOrganicTriangulatorSpace':
+
+                      if( this.isCurrentPlayerActive() )
+                      { // this player is active
+
+                            var validSpaces = args.validSpaces;
+                            console.log('validSpaces:');
+                            console.log(validSpaces);
+                            
+                            this.highlightAllTheseSpaces(validSpaces);
+
+                            this.addActionButton( 'skipButton_26', _('Skip'), 'onClick_skipActivateSpecificEndOfTurnUpgrade', null, false, 'red' );
                       }
 
                   break;
@@ -6658,11 +6675,12 @@ console.log("success... onClickUpgradeCardInHand");
                 var crewmemberHtmlId = 'crewmember_'+typeString+'_'+color;
 
                 if(location == "board")
-                {
+                { //
                     if($(crewmemberHtmlId))
                     {
                         // make them wiggle
-                        dojo.addClass(crewmemberHtmlId, "wiggle");
+                        dojo.addClass(crewmemberHtmlId, "wiggle"); 
+                        console.log('added wiggle to ' + crewmemberHtmlId + ' because location is ' + location);
                     }
                 }
                 else
@@ -8513,7 +8531,7 @@ console.log("success... onClickUpgradeCardInHand");
 
             var allCrewmembers = notif.args.allCrewmembers;
 
-            this.resetWiggling(allCrewmembers);
+            //this.resetWiggling(allCrewmembers);
         },
 
    });
