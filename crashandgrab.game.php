@@ -2751,9 +2751,9 @@ echo("<br>");
 						if(!$this->isSaucerCrashed($saucerColor))
 						{ // they are not crashed
 
-								$crewmembersWithin2 = $this->getCrewmembersWithin2($saucerColor);
-								if(count($crewmembersWithin2) > 0)
-								{ // there is a crewmember within 2 of saucer
+								$crewmembersWithinTractor = $this->getCrewmembersWithinTractorBeam($saucerColor);
+								if(count($crewmembersWithinTractor) > 0)
+								{ // there is a crewmember within 3 of saucer and on row or column
 
 										return true;
 								}
@@ -2957,7 +2957,7 @@ echo("<br>");
 
 						// Tractor Beam
 						case 5:
-								return clienttranslate( 'At the end of your turn, pick up a Crewmember up to 2 spaces away from you.');
+								return clienttranslate( 'At the end of your turn, pick up a Crewmember on your row or column up to 3 spaces away from you.');
 
 						// Saucer Teleporter
 						case 6:
@@ -3330,9 +3330,9 @@ echo("<br>");
 				return false;
 		}
 
-		function getCrewmembersWithin2($saucerColor)
+		function getCrewmembersWithinTractorBeam($saucerColor)
 		{
-				$crewmembersWithin2 = array();
+				$crewmembersWithinTractor = array();
 
 				$xLocation = $this->getSaucerXLocation($saucerColor);
 				$yLocation = $this->getSaucerYLocation($saucerColor);
@@ -3349,13 +3349,16 @@ echo("<br>");
 						$distanceAwayX = abs($xLocation - $crewmemberX);
 						$distanceAwayY = abs($yLocation - $crewmemberY);
 
-						if($distanceAwayX + $distanceAwayY <= 2)
-						{ // it is within 2
-								array_push($crewmembersWithin2, $crewmember);
+						if($distanceAwayX + $distanceAwayY <= 3)
+						{ // it is within 3
+							if($crewmemberX == $xLocation || $crewmemberY == $yLocation)
+							{ // they are on their row or column
+								array_push($crewmembersWithinTractor, $crewmember);
+							}
 						}
 				}
 
-				return $crewmembersWithin2;
+				return $crewmembersWithinTractor;
 		}
 
 		function getCrewmembersSaucerCanGiveAway($saucerGivingAway)
@@ -3488,9 +3491,9 @@ echo("<br>");
 						if(!$this->isSaucerCrashed($saucerColor))
 						{ // they are not crashed
 
-								$crewmembersWithin2 = $this->getCrewmembersWithin2($saucerColor);
-								if(count($crewmembersWithin2) > 0)
-								{ // there is a crewmember within 2 of saucer
+								$crewmembersWithinTractor = $this->getCrewmembersWithinTractorBeam($saucerColor);
+								if(count($crewmembersWithinTractor) > 0)
+								{ // there is a crewmember within 3 of saucer and on row or column
 
 										$result[$index] = array();
 										$result[$index]['buttonId'] = 'upgradeButton_5';
@@ -15565,7 +15568,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(5);
 
-				$validCrewmembers = $this->getCrewmembersWithin2($saucerWhoseTurnItIs);
+				$validCrewmembers = $this->getCrewmembersWithinTractorBeam($saucerWhoseTurnItIs);
 
 				// return both the location of all the
 				return array(
