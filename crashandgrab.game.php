@@ -440,9 +440,9 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Acceleration Regulator', 'type_arg' => 24, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Acceleration Regulator', 'type_arg' => 24, 'card_location' => 'deck','nbr' => 1)
 						//array( 'type' => 'Boost Amplifier', 'type_arg' => 25, 'card_location' => 'deck','nbr' => 1)
-						array( 'type' => 'Organic Triangulator', 'type_arg' => 26, 'card_location' => 'deck','nbr' => 20)
+						//array( 'type' => 'Organic Triangulator', 'type_arg' => 26, 'card_location' => 'deck','nbr' => 1)
 				);
 
 				if($this->getNumberOfPlayers() > 2)

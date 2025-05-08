@@ -8531,6 +8531,7 @@ console.log("success... onClickUpgradeCardInHand");
 
             var allCrewmembers = notif.args.allCrewmembers;
 
+            // commented out because allCrewmembers does not have up-to-date garment_location field so it sets wiggling incorrectly and I cannot figure out why
             //this.resetWiggling(allCrewmembers);
         },
 
