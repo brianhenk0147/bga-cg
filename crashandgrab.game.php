@@ -776,6 +776,7 @@ class CrashAndGrab extends Table
         return $result;
     }
 
+		// used for text in message log chat describing the value on a Move Card
 		function convertDistanceTypeToString($distanceType)
 		{
 				switch($distanceType)
@@ -791,6 +792,9 @@ class CrashAndGrab extends Table
 						case "2":
 						case 2:
 						return "3";
+
+						default:
+						return "new value";
 				}
 		}
 
