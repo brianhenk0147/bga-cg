@@ -6369,7 +6369,7 @@ echo("<br>");
 				{ // each player only has 1 saucer
 
 					$timesActivatedCloakingDevice = $this->getUpgradeTimesActivatedThisRound($saucer, "Cloaking Device");
-					if($timesActivatedCloakingDevice > 0)
+					if($saucerWhoseTurnItIs == $saucer && $timesActivatedCloakingDevice > 0)
 					{	// the used Cloaking Device to remove themself from the board
 
 							// do not penalize them for "crashing"
@@ -10610,6 +10610,10 @@ echo("<br>");
 				//echo "needToPlaceCrewmember is ($needToPlaceCrewmember) for ostrich $saucerWhoseTurnItIs <br>";
 				//echo "nextSaucerWithPendingCrashReward is ($nextSaucerWithPendingCrashReward) for ostrich $saucerWhoseTurnItIs <br>";
 				//throw new feException( "nextSaucerWithPendingCrashReward:$nextSaucerWithPendingCrashReward needToPlaceCrewmember:$needToPlaceCrewmember");
+
+				//$hasPendingCrashPenalty = $this->hasPendingCrashPenalty($saucerWhoseTurnItIs);
+				//$skippedGivingAway = $this->getSkippedGivingAway($saucerWhoseTurnItIs);
+				//throw new feException( "hasPendingCrashPenalty:$hasPendingCrashPenalty skippedGivingAway:$skippedGivingAway");
 				if($this->hasPendingCrashPenalty($saucerWhoseTurnItIs) && $this->getSkippedGivingAway($saucerWhoseTurnItIs) != 1)
 				{ // player whose turn it is crashed and hasn't yet been penalized for crashing on their own turn
 						$this->gamestate->nextState( "crashPenaltyAskWhichToGiveAway" );
@@ -11283,12 +11287,21 @@ echo("<br>");
 				// before we change anything in the database, check if we already have a primary for this crewmember type
 				$currentPrimaryCrewmemberId = $this->getPrimaryCrewmemberId($saucerColorReceiving, $crewmemberTypeId);
 
-				// see if it was primary on the originating saucer (if it's coming from a saucer)
-				$wasPreviouslyPrimary = $this->isPrimaryCrewmember($crewmemberId);
-				//throw new feException( "wasPreviouslyPrimary for crewmember ($crewmemberId): $wasPreviouslyPrimary");
-
 				// see where this crewmember is (board, saucer, etc.) before the move to the saucer
 				$currentLocation = $this->getCrewmemberLocationFromId($crewmemberId);
+				//$saucerGivingPrimaryCrewmemberId = $this->getPrimaryCrewmemberId($currentLocation, $crewmemberTypeId);
+
+				if($currentLocation != "board" && $currentLocation != "pile")
+				{ // saucer to saucer transfer
+					// go through each crewmember for the GIVING saucer and set the primary and extras to make sure it's accurate
+					$this->setCrewmemberPrimaryAndExtras($currentLocation, $crewmemberTypeId);
+				}
+
+				// see if it was primary on the originating saucer (if it's coming from a saucer)
+				$wasPreviouslyPrimary = $this->isPrimaryCrewmember($crewmemberId);
+				//throw new feException( "wasPreviouslyPrimary for crewmember ($crewmemberId): $wasPreviouslyPrimary saucerGivingPrimaryCrewmemberId: $saucerGivingPrimaryCrewmemberId");
+
+				
 
 				// give the garment to the saucer in the database (set garment_location to the color)
 				$this->giveCrewmemberToSaucer($crewmemberId, $saucerColorReceiving);
@@ -11318,7 +11331,7 @@ echo("<br>");
 
 						}
 
-
+						//throw new feException( "crewmemberId: $crewmemberId currentLocation:$currentLocation wasPreviouslyPrimary:$wasPreviouslyPrimary");
 						if($currentLocation != "board" && $currentLocation != "pile" &&
 							$wasPreviouslyPrimary)
 						{ // this is moving from a Saucer to another Saucer and it was Primary on the other saucer
@@ -11511,6 +11524,8 @@ echo("<br>");
 					'saucerGivingHighlightedText' => $saucerGivingHighlightedText,
 					'saucerReceivingHighlightedText' => $saucerReceivingHighlightedText
 				) );
+
+				//throw new feException( "moveCrewmemberToSaucerMat $saucerReceiving $crewmemberTypeText $crewmemberColor");
 
 				// give the crewmember to the saucer int he DB and notify the UI
 				$this->moveCrewmemberToSaucerMat($saucerReceiving, $crewmemberTypeText, $crewmemberColor);
@@ -12719,6 +12734,16 @@ echo("<br>");
 				// set this to activated
 				$this->activateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, $collectorNumber);
 
+				$nameOfUpgrade = $this->getUpgradeTitleFromCollectorNumber($collectorNumber);
+				$colorName = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+
+				// notify all players that is has been used
+				self::notifyAllPlayers( 'upgradeUsed', clienttranslate( '${color_name} used ${name_of_upgrade}.' ), array(
+						'name_of_upgrade' => $nameOfUpgrade,
+						'color_name' => $colorName
+				) );
+
+
 				if($collectorNumber == 1)
 				{ // Blast Off Thrusters
 
@@ -12821,7 +12846,7 @@ echo("<br>");
 				$colorName = $this->convertColorToHighlightedText($color);
 
 				// notify all players that is has been played
-				self::notifyAllPlayers( 'upgradePlayed', clienttranslate( '${color_name} played the upgrade ${name_of_upgrade}.' ), array(
+				self::notifyAllPlayers( 'upgradePlayed', clienttranslate( '${color_name} played ${name_of_upgrade}.' ), array(
 						'saucerColor' => $color,
 						'collectorNumber' => $collectorNumber,
 						'databaseId' => $databaseId,
@@ -15164,7 +15189,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				// erase all choices players made for their X value
 				$this->resetXValueChoices();
 
-				// mark all crash penalties to 0
+				// mark all crash penalties to 0 
 				$this->resetCrashPenalties();
 
 				// reset value for who murdered a saucer
