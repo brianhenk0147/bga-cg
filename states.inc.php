@@ -130,7 +130,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetAllXMoves',
     		"possibleactions" => array( "selectXValue" ),
-    		"transitions" => array( "checkForRevealDecisions" => 38 )
+    		"transitions" => array( "checkForRevealDecisions" => 38, "endSaucerTurnCleanUp" => 50 )
     ),
 
     14 => array(
@@ -330,7 +330,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetDirectionHighlights',
         "possibleactions" => array( "clickDirection", "chooseUpgradeSpace" ),
-        "transitions" => array( "checkForRevealDecisions" => 38  )
+        "transitions" => array( "checkForRevealDecisions" => 38, "endSaucerTurnCleanUp" => 50 )
     ),
 
     42 => array(
@@ -340,7 +340,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetStartOfTurnUpgradesToActivate',
         "possibleactions" => array( "skipActivateUpgrade", "activateUpgrade" ),
-        "transitions" => array( "checkForRevealDecisions" => 38, "chooseBlastOffThrusterSpace" => 60, "chooseSaucerPulseCannon" => 69  )
+        "transitions" => array( "checkForRevealDecisions" => 38, "chooseBlastOffThrusterSpace" => 60, "chooseSaucerPulseCannon" => 69, "endSaucerTurnCleanUp" => 50  )
     ),
 
     43 => array(
@@ -350,7 +350,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerToPlaceButton',
         "possibleactions" => array( "clickSaucer" ),
-    		"transitions" => array(  "allCrashSitesOccupiedChooseSpacePreTurn" => 39, "beginTurn" => 44 )
+    		"transitions" => array(  "allCrashSitesOccupiedChooseSpacePreTurn" => 39, "beginTurn" => 44, "endSaucerTurnCleanUp" => 50 )
     ),
 
     44 => array(
@@ -371,7 +371,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetHyperdriveHighlights',
         "possibleactions" => array( "clickDirection" ),
-        "transitions" => array( "checkForRevealDecisions" => 38  )
+        "transitions" => array( "checkForRevealDecisions" => 38, "endSaucerTurnCleanUp" => 50 )
     ),
 
     49 => array(
@@ -572,7 +572,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argAskToRotationalStabilizer',
         "possibleactions" => array( "chooseTurnDirection" ),
-        "transitions" => array(  "playerTurnStart" => 29, "setActivePlayerToProbePlayer" => 73 )
+        "transitions" => array(  "playerTurnStart" => 29, "setActivePlayerToProbePlayer" => 73, "endSaucerTurnCleanUp" => 50 )
     ),
 
     69 => array(
@@ -603,7 +603,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argAskToWasteAccelerate',
         "possibleactions" => array( "chooseWasteAccelerator", "declineWasteAccelerator" ),
-        "transitions" => array(  "executingMove" => 70, "chooseAcceleratorDirection" => 9, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66 )
+        "transitions" => array(  "executingMove" => 70, "chooseAcceleratorDirection" => 9, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endSaucerTurnCleanUp" => 50 )
     ),
 
     72 => array(
@@ -621,7 +621,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeSetActivePlayerToProbePlayer",
         "updateGameProgression" => false,
-        "transitions" => array( "playerTurnStart" => 29 )
+        "transitions" => array( "playerTurnStart" => 29, "endSaucerTurnCleanUp" => 50 )
     ),
 
     74 => array(
