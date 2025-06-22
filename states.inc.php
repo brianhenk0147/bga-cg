@@ -465,7 +465,7 @@ $machinestates = array(
 
     58 => array(
         "name" => "askWhichUpgradeToPlay",
-        "description" => clienttranslate('${saucerColor} is choosing an Upgrade to play.'),
+        "description" => clienttranslate('${saucerColor} is choosing a Saucer Upgrade to play.'),
         "descriptionmyturn" => clienttranslate('Choose an Upgrade to play.'),
         "type" => "activeplayer",
         'args' => 'argGetUpgradesToPlay',
