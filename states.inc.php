@@ -405,7 +405,7 @@ $machinestates = array(
 
     52 => array(
         "name" => "crashPenaltyAskWhichToSteal",
-        "description" => clienttranslate('${saucerWhoIsStealingText} is stealing a Crewmember from ${saucerWhoCrashedText}.'),
+        "description" => clienttranslate('${saucerWhoIsStealingText} is choosing a reward for crashing ${saucerWhoCrashedText}.'),
         "descriptionmyturn" => clienttranslate('You must gain an Energy or choose a Crewmember to steal from ${saucerWhoCrashedText} because you crashed them.'),
         "type" => "activeplayer",
         'args' => 'argGetStealableCrewmembers',
