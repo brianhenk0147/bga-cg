@@ -450,7 +450,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetPassableCrewmembers',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49, "endGame" => 99 )
     ),
 
     57 => array(
