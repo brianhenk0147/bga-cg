@@ -1,0 +1,91 @@
+{
+    "table": {
+        "turns_number": {
+            "id": 10,
+            "name": "Turns Taken",
+            "type": "int"
+        }
+    },
+    "player": {
+        "turns_number": {
+            "id": 10,
+            "name": "Turns Taken",
+            "type": "int"
+        },
+        "rounds_started": {
+            "id": 11,
+            "name": "Rounds With Probe",
+            "type": "int"
+        },
+        "crewmembers_picked_up": {
+            "id": 12,
+            "name": "Crewmembers Picked Up",
+            "type": "int"
+        },
+        "crewmembers_you_stole": {
+            "id": 13,
+            "name": "Crewmembers You Stole",
+            "type": "int"
+        },
+        "crewmembers_stolen_from_you": {
+            "id": 14,
+            "name": "Crewmembers Stolen from You",
+            "type": "int"
+        },
+        "saucers_you_crashed": {
+            "id": 15,
+            "name": "Saucers You Crashed",
+            "type": "int"
+        },
+        "times_you_crashed": {
+            "id": 16,
+            "name": "Times You Crashed",
+            "type": "int"
+        },
+        "distance_you_were_pushed": {
+            "id": 17,
+            "name": "Distance You Were Pushed",
+            "type": "int"
+        },
+        "2s_played": {
+            "id": 18,
+            "name": "2s Played",
+            "type": "int"
+        },
+        "3s_played": {
+            "id": 19,
+            "name": "3s Played",
+            "type": "int"
+        },
+        "Xs_played": {
+            "id": 20,
+            "name": "0-5s Played",
+            "type": "int"
+        },
+        "accelerators_used": {
+            "id": 21,
+            "name": "Accelerators Used",
+            "type": "int"
+        },
+        "boosters_used": {
+            "id": 22,
+            "name": "Boosters Used",
+            "type": "int"
+        },
+        "distance_moved": {
+            "id": 23,
+            "name": "Distance Moved",
+            "type": "int"
+        },
+        "upgrades_played": {
+            "id": 24,
+            "name": "Upgrades Collected",
+            "type": "int"
+        },
+        "upgrades_activated": {
+            "id": 25,
+            "name": "Upgrade Uses",
+            "type": "int"
+        }
+    }
+}

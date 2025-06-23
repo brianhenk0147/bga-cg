@@ -480,20 +480,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     //if(this.isCurrentPlayerActive() && this.checkAction( 'clickSaucer', true ))
                     //{ // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
 
-                        this.ajaxcall( "/crashandgrab/crashandgrab/actClickedSaucerToPlace.html", {
-                                                                                    colorAsHex: color,
-                                                                                    lock: true
-                                                                                 },
-                                         this, function( result ) {
+                        this.bgaPerformAction( "actClickedSaucerToPlace", {
+                                                                                    colorAsHex: color
+                                                                          });
 
-                                            // What to do after the server call if it succeeded
-                                            // (most of the time: nothing)
-
-                                         }, function( is_error) {
-
-                                            // What to do after the server call in anyway (success or failure)
-                                            // (most of the time: nothing)
-                      } );
                   //}
 
                 },
@@ -507,23 +497,9 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     if(this.isCurrentPlayerActive() && this.checkAction( 'clickSaucerToGoFirst', true ))
                     { // player is allowed to confirm move (nomessage parameter is true so that an error message is not displayed)
 
-                        this.ajaxcall( "/crashandgrab/crashandgrab/actClickedSaucerToGoFirst.html", {
-                                                                                    colorHex: colorHex,
-                                                                                    lock: true
-                                                                                 },
-                                         this, function( result ) {
-
-                                            // What to do after the server call if it succeeded
-                                            // (most of the time: nothing)
-
-
-
-                                         }, function( is_error) {
-
-                                            // What to do after the server call in anyway (success or failure)
-                                            // (most of the time: nothing)
-
-                        } );
+                        this.bgaPerformAction( "actClickedSaucerToGoFirst", {
+                                                                                    colorHex: colorHex
+                                                                                 });
                     }
                 },
 
@@ -531,22 +507,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 {
                     console.log( "Clicked start turn button." );
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickedBeginTurn.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
-
+                    this.bgaPerformAction( "actClickedBeginTurn", {});
                 },
 
                 onClick_activateWasteAccelerator: function (evt )
@@ -557,43 +518,14 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     console.log( "Clicked button "+htmlIdOfButton+"." );
                     var saucerWhoCrashed = htmlIdOfButton.split('_')[1]; // ff00ff
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actActivateWasteAccelerator.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
-
+                    this.bgaPerformAction( "actActivateWasteAccelerator", {});
                 },
 
                 onClick_skipWasteAccelerator: function (evt )
                 {
                     console.log( "Clicked skip Waste Accelerator button." );
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actSkipWasteAccelerator.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
+                    this.bgaPerformAction( "actSkipWasteAccelerator", {});
                 },
 
                 onClick_activateProximityMines: function (evt )
@@ -604,173 +536,58 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     console.log( "Clicked saucer with node "+htmlIdOfButton+"." );
                     var saucerWhoCrashed = htmlIdOfButton.split('_')[1]; // ff00ff
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actActivateProximityMines.html", {
-                                                                                lock: true,
+                    this.bgaPerformAction( "actActivateProximityMines", {
                                                                                 saucerWhoCrashed: saucerWhoCrashed
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
-
+                                                                        });
                 },
 
                 onClick_skipProximityMines: function (evt )
                 {
                     console.log( "Clicked skip proximity mines button." );
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actSkipProximityMines.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
+                    this.bgaPerformAction( "actSkipProximityMines", {});
                 },
 
                 onClick_clockwise: function (evt )
                 {
                     console.log( "Clicked clockwise button." );
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actClockwise.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
+                    this.bgaPerformAction( "actClockwise.html", {});
                 },
 
                 onClick_counter: function (evt )
                 {
                     console.log( "Clicked counter button." );
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actCounter.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
+                    this.bgaPerformAction( "actCounter", {});
                 },
 
                 onClick_activateHyperdrive: function (evt )
                 {
                     console.log( "Clicked activate hyperdrive button." );
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actActivateHyperdrive.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
-
+                    this.bgaPerformAction( "actActivateHyperdrive", {});
                 },
 
                 onClick_skipHyperdrive: function (evt )
                 {
                     console.log( "Clicked skip hyperdrive button." );
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actSkipHyperdrive.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
+                    this.bgaPerformAction( "actSkipHyperdrive", {});
                 },
 
                 onClick_undoMove: function( evt )
                 {
                     console.log( "Clicked undo move button." );
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickedUndoMove.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
-
+                    this.bgaPerformAction( "actClickedUndoMove", {});
                 },
 
                 onClick_finalizeMove: function( evt )
                 {
                     console.log( "Clicked finalize move button." );
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickedFinalizeMove.html", {
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
-
+                    this.bgaPerformAction( "actClickedFinalizeMove", {});
                 },
 
                 onClick_undoChooseMove: function( evt )
@@ -779,25 +596,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                     var saucer1Color = this.gamedatas.saucer1; // 228848
                     var saucer2Color = this.gamedatas.saucer2; // 228848
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickedUndoConfirmMove.html", {
+                    this.bgaPerformAction( "actClickedUndoConfirmMove", {
                         saucer1Color: saucer1Color,
-                        saucer2Color: saucer2Color,
-                        lock: true
-                    },
-                    this, function( result ) {
-
-                    // What to do after the server call if it succeeded
-                    // (most of the time: nothing)
-
-
-
-                    }, function( is_error) {
-
-                    // What to do after the server call in anyway (success or failure)
-                    // (most of the time: nothing)
-
-                    } );
-
+                        saucer2Color: saucer2Color
+                    });
                 },
 
                 onClick_confirmMove: function( evt )
@@ -826,28 +628,14 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                           saucer2Direction = saucer2Direction.split('_')[1]; // asteroids
 
 
-                        this.ajaxcall( "/crashandgrab/crashandgrab/actClickedConfirmMove.html", {
+                        this.bgaPerformAction( "actClickedConfirmMove", {
                                                                                     saucer1Color: saucer1Color,
                                                                                     saucer1Distance: saucer1Distance,
                                                                                     saucer1Direction: saucer1Direction,
                                                                                     saucer2Color: saucer2Color,
                                                                                     saucer2Distance: saucer2Distance,
-                                                                                    saucer2Direction: saucer2Direction,
-                                                                                    lock: true
-                                                                                 },
-                                         this, function( result ) {
-
-                                            // What to do after the server call if it succeeded
-                                            // (most of the time: nothing)
-
-
-
-                                         }, function( is_error) {
-
-                                            // What to do after the server call in anyway (success or failure)
-                                            // (most of the time: nothing)
-
-                        } );
+                                                                                    saucer2Direction: saucer2Direction
+                                                                                 });
                     }
                 },
 
@@ -1043,21 +831,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                             //dojo.style( boardTileHtml, 'display', 'none' );
                         }
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actActivateQuakeMaker.html", {
+                    this.bgaPerformAction( "actActivateQuakeMaker", {
                         tilePosition: this.CHOSEN_ROTATION_TILE,
-                        timesRotated: this.CHOSEN_ROTATION_TIMES,
-                        lock: true
-                     },
-                    this, function( result ) {
-                        // What to do after the server call if it succeeded
-                        // (most of the time: nothing)
-
-
-                    }, function( is_error) {
-                        // What to do after the server call in anyway (success or failure)
-                        // (most of the time: nothing)
-
-                    } );
+                        timesRotated: this.CHOSEN_ROTATION_TIMES
+                     });
                 },
 
                 onClick_saucerButtonClick: function (evt)
@@ -1070,11 +847,11 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     switch(type)
                     {
                         case 'wormhole':
-                            this.ajaxcall( "/crashandgrab/crashandgrab/actWormholeSelectSaucer.html", { saucerColor: saucerColor, lock: true }, this, function( result ) {}, function( is_error ) {} );
+                            this.bgaPerformAction( "actWormholeSelectSaucer", { saucerColor: saucerColor } );
                         break;
 
                         case 'pulse':
-                            this.ajaxcall( "/crashandgrab/crashandgrab/actPulseCannonSelectSaucer.html", { saucerColor: saucerColor, lock: true }, this, function( result ) {}, function( is_error ) {} );
+                            this.bgaPerformAction( "actPulseCannonSelectSaucer", { saucerColor: saucerColor } );
                         break;
                     }
                 },
@@ -1208,24 +985,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     var distance = node.split('_')[2]; // 0, 1, 2
                     var color = node.split('_')[3]; // f8e946
 
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickedMoveCard.html", {
+                    this.bgaPerformAction( "actClickedMoveCard", {
                                                                                 distance: distance,
-                                                                                color: color,
-                                                                                lock: true
-                                                                             },
-                                     this, function( result ) {
-
-                                        // What to do after the server call if it succeeded
-                                        // (most of the time: nothing)
-
-
-
-                                     }, function( is_error) {
-
-                                        // What to do after the server call in anyway (success or failure)
-                                        // (most of the time: nothing)
-
-                    } );
+                                                                                color: color
+                                                                             } );
 
                 },
 
@@ -1335,7 +1098,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
                             if(this.chosenSpaceX != 0 && this.chosenSpaceY != 0)
                             { // the player has chosen both a destination space and a garment
-                                this.ajaxcall( "/crashandgrab/crashandgrab/actReplaceGarmentChooseSpace.html", {garmentDestinationX: chosenSpaceX, garmentDestinationY: chosenSpaceY, lock: true }, this, function( result ) {}, function( is_error ) {} );
+                                this.bgaPerformAction( "actReplaceGarmentChooseSpace", { garmentDestinationX: chosenSpaceX, garmentDestinationY: chosenSpaceY } );
                             }
 
                     }
@@ -1343,30 +1106,16 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     { // we are choosing a space when activating an upgrade
                         dojo.stopEvent( evt ); // Preventing default browser reaction
 
-                        this.ajaxcall( "/crashandgrab/crashandgrab/actChooseUpgradeSpace.html", {
+                        this.bgaPerformAction( "actChooseUpgradeSpace", {
                                                                                     chosenX: chosenSpaceX,
-                                                                                    chosenY: chosenSpaceY,
-                                                                                    lock: true
-                                                                                 },
-                                         this, function( result ) {
-
-                                            // What to do after the server call if it succeeded
-                                            // (most of the time: nothing)
-
-
-
-                                         }, function( is_error) {
-
-                                            // What to do after the server call in anyway (success or failure)
-                                            // (most of the time: nothing)
-
-                        } );
+                                                                                    chosenY: chosenSpaceY
+                                                                        } );
                     }
                     else if (this.checkPossibleActions( 'chooseSaucerSpace', true ))
                     { // we are choosing a space to place a Saucer
                         if(this.chosenSpaceX != 0 && this.chosenSpaceY != 0)
                         { // the player has chosen both a destination space and a garment
-                            this.ajaxcall( "/crashandgrab/crashandgrab/actChooseAnySpaceForSaucer.html", {garmentDestinationX: chosenSpaceX, garmentDestinationY: chosenSpaceY, lock: true }, this, function( result ) {}, function( is_error ) {} );
+                            this.bgaPerformAction( "actChooseAnySpaceForSaucer", { garmentDestinationX: chosenSpaceX, garmentDestinationY: chosenSpaceY } );
                             this.unhighlightAllSpaces();
                         }
                     }
@@ -3378,23 +3127,9 @@ console.log('moveCrewmemberFromBoardToSaucerMatExtras crewmemberType:'+crewmembe
         chooseAcceleratorDirection: function(direction)
         {
           console.log("chooseAcceleratorDirection");
-            this.ajaxcall( "/crashandgrab/crashandgrab/actClickedAcceleratorDirection.html", {
-                                                                        direction: direction,
-                                                                        lock: true
-                                                                     },
-                             this, function( result ) {
-
-                                // What to do after the server call if it succeeded
-                                // (most of the time: nothing)
-
-
-
-                             }, function( is_error) {
-
-                                // What to do after the server call in anyway (success or failure)
-                                // (most of the time: nothing)
-
-            } );
+            this.bgaPerformAction( "actClickedAcceleratorDirection", {
+                                                                        direction: direction
+                                                                     } );
         },
 
         checkConfirmEnableDisable: function()
@@ -6268,66 +6003,58 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
         sendDistanceValue: function(value)
         {
             console.log('distanceValue:'+value);
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSelectDistanceValue.html", { distanceValue: value, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSelectDistanceValue", { distanceValue: value } );
         },
 
         sendLostCrewmemberSelection: function(crewmemberTypeString, crewmemberColor)
         {
             if(crewmemberTypeString != null && crewmemberColor != null)
             { // the player has chosen both a destination space and a garment
-                this.ajaxcall( "/crashandgrab/crashandgrab/actReplaceGarmentChooseGarment.html", { garmentType: crewmemberTypeString, garmentColor: crewmemberColor, lock: true }, this, function( result ) {}, function( is_error ) {} );
+                this.bgaPerformAction( "actReplaceGarmentChooseGarment", { garmentType: crewmemberTypeString, garmentColor: crewmemberColor } );
             }
         },
 
         sendSkipZag: function()
         {
           console.log("sendSkipZag");
-          this.ajaxcall( "/crashandgrab/crashandgrab/actSkipZag.html", { lock: true }, this, function( result ) {
-          }, function( is_error) { } );
+          this.bgaPerformAction( "actSkipZag", {} );
         },
 
         sendZigChoice: function(ostrich, cardId)
         { // Tell the server which move was selected for this ostrich.
             console.log("sendZigChoice sending card_id " + cardId);
-            this.ajaxcall( "/crashandgrab/crashandgrab/actChooseZigCard.html", { id: cardId, ostrich: ostrich, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actChooseZigCard", { id: cardId, ostrich: ostrich } );
         },
 
         sendZigDirectionChoice: function(chosenCardDirection)
         { // Tell the server which move was selected for this ostrich.
             console.log("sendZigDirectionChoice sending in direction " + chosenCardDirection);
-            this.ajaxcall( "/crashandgrab/crashandgrab/actChooseZigDirection.html", { direction: chosenCardDirection, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actChooseZigDirection", { direction: chosenCardDirection } );
         },
 
         sendStartZigPhaseOver: function()
         {
             console.log("sendStartZigPhaseOver");
-            this.ajaxcall( "/crashandgrab/crashandgrab/actStartZigPhaseOver.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actStartZigPhaseOver", {} );
         },
 
         // The player is saying they want this ostrich to go next when they have more than 1.
         sendOstrichChoice: function(ostrich)
         {
           console.log("sendOstrichChoice sending ostrich " + ostrich);
-          this.ajaxcall( "/crashandgrab/crashandgrab/actChooseOstrichToGoNext.html", { ostrich: ostrich, lock: true }, this, function( result ) {
-          }, function( is_error) { } );
+          this.bgaPerformAction( "actChooseOstrichToGoNext", { ostrich: ostrich } );
         },
 
         sendExecuteMove: function( ostrich )
         { // Tell the server which move was selected for this ostrich.
             console.log("sendExecuteMove sending in ostrich " + ostrich);
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteMove.html", { ostrich: ostrich, ostrichTakingTurn: ostrich, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteMove", { ostrich: ostrich, ostrichTakingTurn: ostrich } );
         },
 
         sendZagMove: function( chosenDirection )
         { // Tell the server which move was selected for this ostrich.
             console.log("sendZagMove sending direction " + chosenDirection);
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteZagMove.html", { direction: chosenDirection, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteZagMove", { direction: chosenDirection } );
         },
 
         onClickMoveCardDistance: function( evt )
@@ -6357,8 +6084,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
         sendDirectionClick: function( chosenDirection )
         {
             console.log("sendDirectionClick sending direction " + chosenDirection);
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDirectionClick.html", { direction: chosenDirection, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteDirectionClick", { direction: chosenDirection } );
         },
 
         onSelectTileToRotate: function( evt )
@@ -6376,8 +6102,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             console.log("onClickCrashSite node:"+node);
             var crashSiteNumber = node.split('_')[1]; // 4
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteChooseCrashSite.html", { crashSiteNumber: crashSiteNumber, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteChooseCrashSite", { crashSiteNumber: crashSiteNumber } );
         },
 
         onClickStealableCrewmember: function( evt )
@@ -6387,8 +6112,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberType = node.split('_')[2]; // pilot
             var crewmemberColor = node.split('_')[1]; // 228848
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteStealCrewmember.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteStealCrewmember", { stolenType: crewmemberType, stolenColor: crewmemberColor } );
         },
 
         onClickTractorBeamCrewmember: function( evt )
@@ -6398,8 +6122,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberType = node.split('_')[2]; // pilot
             var crewmemberColor = node.split('_')[1]; // 228848
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteTractorBeamCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteTractorBeamCrewmember", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor } );
         },
 
         onClickDistressSignalerTakeCrewmember: function( evt )
@@ -6409,8 +6132,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberType = node.split('_')[2]; // pilot
             var crewmemberColor = node.split('_')[1]; // 228848
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDistressSignalerTakeCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteDistressSignalerTakeCrewmember", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor } );
         },
 
         onClickDistressSignalerGiveCrewmember: function( evt )
@@ -6420,8 +6142,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberType = node.split('_')[2]; // pilot
             var crewmemberColor = node.split('_')[1]; // 228848
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteDistressSignalerGiveCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteDistressSignalerGiveCrewmember", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor } );
         },
 
         onClickAirlockCrewmember: function( evt )
@@ -6431,8 +6152,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberType = node.split('_')[2]; // pilot
             var crewmemberColor = node.split('_')[1]; // 228848
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteAirlockCrewmember.html", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteAirlockCrewmember", { crewmemberType: crewmemberType, crewmemberColor: crewmemberColor } );
         },
 
         onClickPassableCrewmember: function( evt )
@@ -6442,8 +6162,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberType = node.split('_')[2]; // pilot
             var crewmemberColor = node.split('_')[1]; // 228848
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecutePassCrewmember.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecutePassCrewmember", { stolenType: crewmemberType, stolenColor: crewmemberColor } );
         },
 
         onClickTakeableCrewmember: function( evt )
@@ -6453,8 +6172,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberType = node.split('_')[2]; // pilot
             var crewmemberColor = node.split('_')[1]; // 228848
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteTakeCrewmember.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteTakeCrewmember", { stolenType: crewmemberType, stolenColor: crewmemberColor } );
         },
 
         onClickGiveAwayCrewmember: function( evt )
@@ -6475,11 +6193,8 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
             if(this.GIVE_AWAY_TYPE != '' && this.GIVE_AWAY_COLOR != '' && this.GIVE_AWAY_SAUCER != '')
             { // we have selected both the crewmember and the saucer we're giving it to
-                this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteGiveAwayCrewmember.html", { stolenType: this.GIVE_AWAY_TYPE, stolenColor: this.GIVE_AWAY_COLOR, saucerColor: this.GIVE_AWAY_SAUCER, lock: true }, this, function( result ) {
-                }, function( is_error) { } );
+                this.bgaPerformAction( "actExecuteGiveAwayCrewmember", { stolenType: this.GIVE_AWAY_TYPE, stolenColor: this.GIVE_AWAY_COLOR, saucerColor: this.GIVE_AWAY_SAUCER } );
             }
-
-
         },
 
         onClickGiveAwayToSaucer: function( evt )
@@ -6498,8 +6213,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
 
             if(this.GIVE_AWAY_TYPE != '' && this.GIVE_AWAY_COLOR != '' && this.GIVE_AWAY_SAUCER != '')
             { // we have selected both the crewmember and the saucer we're giving it to
-                this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteGiveAwayCrewmember.html", { stolenType: this.GIVE_AWAY_TYPE, stolenColor: this.GIVE_AWAY_COLOR, saucerColor: this.GIVE_AWAY_SAUCER, lock: true }, this, function( result ) {
-                }, function( is_error) { } );
+                this.bgaPerformAction( "actExecuteGiveAwayCrewmember", { stolenType: this.GIVE_AWAY_TYPE, stolenColor: this.GIVE_AWAY_COLOR, saucerColor: this.GIVE_AWAY_SAUCER} );
             }
         },
 
@@ -6542,52 +6256,33 @@ console.log("failed... onClickUpgradeCardInHand");
                 else
                 { // we can click it
 console.log("success... onClickUpgradeCardInHand");
-                    this.ajaxcall( "/crashandgrab/crashandgrab/actClickUpgradeInHand.html", {
-                                                                            lock: true,
+                    this.bgaPerformAction( "actClickUpgradeInHand", {
                                                                             upgradeDatabaseId: databaseUniqueIdentifier
-                                                                         },
-                                 this, function( result ) {
-
-                                    // What to do after the server call if it succeeded
-                                    // (most of the time: nothing)
-                                    //this.highlightComponent(node);  // highlight the card
-
-                                 }, function( is_error) {
-
-                                    // What to do after the server call in anyway (success or failure)
-                                    // (most of the time: nothing)
-
-                                 }
-                    );
+                                                                    } );
                 }
-
         },
 
         sendRespawnRequest: function()
         {
           console.log("sendRespawnRequest");
-          this.ajaxcall( "/crashandgrab/crashandgrab/actRespawnOstrich.html", { lock: true }, this, function( result ) {
-          }, function( is_error) { } );
+          this.bgaPerformAction( "actRespawnOstrich", {} );
         },
 
         sendDraw2ZigsRequest: function()
         {
           console.log("sendDraw2ZigsRequest");
-          this.ajaxcall( "/crashandgrab/crashandgrab/actDraw2Zigs.html", { lock: true }, this, function( result ) {
-          }, function( is_error) { } );
+          this.bgaPerformAction( "actDraw2Zigs", {} );
         },
 
         sendAskWhichGarmentToStealRequest: function()
         {
             console.log("sendStealGarmentRequest");
-            this.ajaxcall( "/crashandgrab/crashandgrab/actAskWhichGarmentToSteal.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actAskWhichGarmentToSteal", {} );
         },
 
         sendEndTurn: function()
         {
-            this.ajaxcall( "/crashandgrab/crashandgrab/actNoZag.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actNoZag", {} );
         },
 
         getDegreesRotated: function(directionAsString)
@@ -6722,23 +6417,11 @@ console.log("success... onClickUpgradeCardInHand");
             if( ! this.checkAction( 'myAction' ) )
             {   return; }
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/myAction.html", {
-                                                                    lock: true,
+            this.bgaPerformAction( "myAction", {
                                                                     myArgument1: arg1,
                                                                     myArgument2: arg2,
                                                                     ...
-                                                                 },
-                         this, function( result ) {
-
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
-
-                         }, function( is_error) {
-
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
-
-                         } );
+                                            } );
         },
         */
 
@@ -6772,14 +6455,13 @@ console.log("success... onClickUpgradeCardInHand");
             console.log( "node:"+node );
             var saucerWhoCrashed = node.split('_')[2];
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteEnergyRewardSelection.html", { saucerWhoCrashed: saucerWhoCrashed, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actExecuteEnergyRewardSelection", { saucerWhoCrashed: saucerWhoCrashed } );
         },
 
         onClick_MoveCard_sunDirection: function( evt )
         {
             var node = evt.currentTarget.id; // sun_1_button
-            console.log( "node:"+node );
+            console.log( "onClick_MoveCard_sunDirection node:"+node );
             var saucerNumber = node.split('_')[1];
 
             this.chooseMoveCardDirection(this.UP_DIRECTION, saucerNumber);
@@ -6788,7 +6470,7 @@ console.log("success... onClickUpgradeCardInHand");
         onClick_MoveCard_asteroidsDirection: function( evt )
         {
             var node = evt.currentTarget.id; // sun_1_button
-            console.log( "node:"+node );
+            console.log( "onClick_MoveCard_asteroidsDirection node:"+node );
             var saucerNumber = node.split('_')[1];
 
             this.chooseMoveCardDirection(this.RIGHT_DIRECTION, saucerNumber);
@@ -6797,7 +6479,7 @@ console.log("success... onClickUpgradeCardInHand");
         onClick_MoveCard_meteorDirection: function( evt )
         {
             var node = evt.currentTarget.id; // sun_1_button
-            console.log( "node:"+node );
+            console.log( "onClick_MoveCard_meteorDirection node:"+node );
             var saucerNumber = node.split('_')[1];
 
             this.chooseMoveCardDirection(this.DOWN_DIRECTION, saucerNumber);
@@ -6806,7 +6488,7 @@ console.log("success... onClickUpgradeCardInHand");
         onClick_MoveCard_constellationDirection: function( evt )
         {
             var node = evt.currentTarget.id; // sun_1_button
-            console.log( "node:"+node );
+            console.log( "onClick_MoveCard_constellationDirection node:"+node );
             var saucerNumber = node.split('_')[1];
 
             this.chooseMoveCardDirection(this.LEFT_DIRECTION, saucerNumber);
@@ -6816,7 +6498,6 @@ console.log("success... onClickUpgradeCardInHand");
         {
             console.log( "onClick_sunDirection" );
             this.sendDirectionClick(this.UP_DIRECTION);
-
         },
 
         onClick_asteroidsDirection: function()
@@ -6839,78 +6520,68 @@ console.log("success... onClickUpgradeCardInHand");
 
         onClick_skipGiveAwayCrewmember: function()
         {
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipGiveAwayCrewmember.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSkipGiveAwayCrewmember", {} );
         },
 
         onClick_skipStealCrewmember: function(evt)
         {
             var node = evt.currentTarget.id;
             var saucerWhoCrashed = node.split('_')[1];
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipStealCrewmember.html", { lock: true, saucerWhoCrashed: saucerWhoCrashed }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSkipStealCrewmember", { saucerWhoCrashed: saucerWhoCrashed } );
         },
 
         onClick_skipPassCrewmember: function()
         {
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipPassCrewmember.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSkipPassCrewmember", {} );
         },
 
         onClick_skipTakeCrewmember: function()
         {
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipTakeCrewmember.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSkipTakeCrewmember", {} );
         },
 
         // SKIP ALL START OF TURN UPGRADES
         onClick_skipActivateStartOfTurnUpgrade: function()
         {
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipActivateStartOfTurnUpgrade.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSkipActivateStartOfTurnUpgrade", {} );
         },
 
         // SKIP A SPECIFIC START OF TURN UPGRADE AFTER YOU CLICKED TO USE IT
         onClick_skipActivateSpecificStartOfTurnUpgrade: function(evt)
         {
             var node = evt.currentTarget.id; // skipButton_2
-            console.log( "node:"+node );
+            console.log( "onClick_skipActivateSpecificStartOfTurnUpgrade node:"+node );
             var collectorNumber = node.split('_')[1];
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipActivateSpecificStartOfTurnUpgrade.html", { collectorNumber: collectorNumber, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSkipActivateSpecificStartOfTurnUpgrade", { collectorNumber: collectorNumber } );
         },
 
         onClick_skipActivateEndOfTurnUpgrade: function()
         {
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipActivateEndOfTurnUpgrade.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSkipActivateEndOfTurnUpgrade", {} );
         },
 
         onClick_skipActivateSpecificEndOfTurnUpgrade: function(evt)
         {
             var node = evt.currentTarget.id; // skipButton_2
-            console.log( "node:"+node );
+            console.log( "onClick_skipActivateSpecificEndOfTurnUpgrade node:"+node );
             var collectorNumber = node.split('_')[1];
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipActivateSpecificEndOfTurnUpgrade.html", { collectorNumber: collectorNumber, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSkipActivateSpecificEndOfTurnUpgrade", { collectorNumber: collectorNumber } );
         },
 
         onClick_skipActivateAirlock: function(evt)
         {
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipActivateAirlock.html", { lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actSkipActivateAirlock", {} );
         },
 
         onClick_activateUpgrade: function( evt )
         {
             var node = evt.currentTarget.id; // upgradeButton_2
-            console.log( "node:"+node );
+            console.log( "onClick_activateUpgrade node:"+node );
             var collectorNumber = node.split('_')[1];
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actActivateUpgrade.html", { collectorNumber: collectorNumber, lock: true }, this, function( result ) {
-            }, function( is_error) { } );
+            this.bgaPerformAction( "actActivateUpgrade", { collectorNumber: collectorNumber } );
         },
 
         onZagBridge: function()
@@ -7171,8 +6842,7 @@ console.log("success... onClickUpgradeCardInHand");
                 {
                     to_give += items[i].id+';';
                 }
-                this.ajaxcall( "/crashandgrab/crashandgrab/giveCards.html", { cards: to_give, lock: true }, this, function( result ) {
-                }, function( is_error) { } );
+                this.bgaPerformAction( "giveCards", { cards: to_give } );
             }
         },
 
@@ -7183,22 +6853,7 @@ console.log("success... onClickUpgradeCardInHand");
             if( ! this.checkAction( 'clickUseBooster' ) )
             {   return; }
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actUseBooster.html", {
-                                                                    lock: true
-                                                                 },
-                         this, function( result ) {
-
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
-
-                         }, function( is_error) {
-
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
-
-                         } );
-
-
+            this.bgaPerformAction( "actUseBooster", {} );
         },
 
         skipBooster: function()
@@ -7209,21 +6864,7 @@ console.log("success... onClickUpgradeCardInHand");
             if( !this.checkAction( 'clickSkipBooster' ) )
             {   return; }
 
-            this.ajaxcall( "/crashandgrab/crashandgrab/actSkipBooster.html", {
-                                                                    lock: true
-                                                                 },
-                         this, function( result ) {
-
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
-
-                         }, function( is_error) {
-
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
-
-                         } );
-
+            this.bgaPerformAction( "actSkipBooster", {} );
         },
 
 
