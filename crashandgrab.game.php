@@ -10547,10 +10547,6 @@ echo("<br>");
 				$ostrichWhoseTurnItIs = $this->getOstrichWhoseTurnItIs(); // the ostrich whose turn it is (empty string if we don't know)
 				$trapPlayedOnOstrichWhoseTurnItIs = $this->getNextTrapPlayedOnOstrich($ostrichWhoseTurnItIs);
 
-				// signify that this player has taken a turn for end game stats
-				$ostrichOwner = $this->getOwnerIdOfOstrich($ostrichWhoseTurnItIs); // get the owner of the ostrich
-				self::incStat( 1, 'turns_number', $ostrichOwner ); // increase end game player stat
-
 				//echo "ostrichHasPlayedX is $ostrichHasPlayedX for ostrich $ostrich_whose_turn_it_is <br>";
 
 				if($ostrichWhoseTurnItIs == "")
@@ -10644,6 +10640,17 @@ echo("<br>");
 				}
 		}
 
+		function goToEndGame()
+		{
+			$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
+
+			// add one to turn count for current player because normally this only get incremented at the end of a turn
+			$saucerOwner = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs); // get the owner of the ostrich
+			self::incStat( 1, 'turns_number', $saucerOwner ); // increase end game player stat
+
+			$this->gamestate->nextState( "endGame" );
+		}
+
 		// Note: A pushed saucer does not go in here.
 		function setState_AfterMovementEvents($saucerMoving, $moveType, $wasPushed=false)
 		{
@@ -10673,7 +10680,7 @@ echo("<br>");
 
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
-						$this->gamestate->nextState( "endGame" );
+					$this->goToEndGame(); // end the game
 				}
 				else if($boardValue == "S")
 				{ // the saucer onto an accelerator on their turn
@@ -11197,11 +11204,11 @@ echo("<br>");
 
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
-						$this->gamestate->nextState( "endGame" );
+					$this->goToEndGame(); // end the game
 				}
 				else
 				{
-						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+					$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
 		}
 
@@ -11266,11 +11273,11 @@ echo("<br>");
 				//throw new feException( "afternotify");
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
-						$this->gamestate->nextState( "endGame" );
+					$this->goToEndGame(); // end the game
 				}
 				else
 				{
-						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+					$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
 		}
 
@@ -11421,7 +11428,7 @@ echo("<br>");
 
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
-						$this->gamestate->nextState( "endGame" );
+					$this->goToEndGame(); // end the game
 				}
 				else
 				{
@@ -11479,16 +11486,16 @@ echo("<br>");
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
 
-						if(!$areWePassing && !$areWeTaking)
-						{
-								// increment any stats related to thefts
-								$ownerOfStealer = $this->getOwnerIdOfOstrich($saucerReceiving);
-								$ownerOfStealee = $this->getOwnerIdOfOstrich($saucerGiving);
-								self::incStat( 1, 'crewmembers_you_stole', $ownerOfStealer ); // add stat that says the player using played a trap
-								self::incStat( 1, 'crewmembers_stolen_from_you', $ownerOfStealee ); // add stat that the owner of the ostrich targeted was targeted by a trap
-						}
+					if(!$areWePassing && !$areWeTaking)
+					{
+						// increment any stats related to thefts
+						$ownerOfStealer = $this->getOwnerIdOfOstrich($saucerReceiving);
+						$ownerOfStealee = $this->getOwnerIdOfOstrich($saucerGiving);
+						self::incStat( 1, 'crewmembers_you_stole', $ownerOfStealer ); // add stat that says the player using played a trap
+						self::incStat( 1, 'crewmembers_stolen_from_you', $ownerOfStealee ); // add stat that the owner of the ostrich targeted was targeted by a trap
+					}
 
-						$this->gamestate->nextState( "endGame" );
+					$this->goToEndGame(); // end the game
 				}
 				elseif($areWePassing)
 				{ // we are passing a Crewmember to our other Saucer
@@ -11535,11 +11542,11 @@ echo("<br>");
 
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
-						$this->gamestate->nextState( "endGame" );
+					$this->goToEndGame(); // end the game
 				}
 				else
 				{
-						$this->gamestate->nextState( "endSaucerTurnCleanUp" );
+					$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
 		}
 
@@ -12071,7 +12078,7 @@ echo("<br>");
 				$saucerWeCollideWith = $this->getSaucerAt($saucerX, $saucerY, $saucerMoving);
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
-						$this->gamestate->nextState( "endGame" );
+					$this->goToEndGame(); // end the game
 				}
 				elseif(count($airlockExchangeableCrewmembers) > 0 && $spaceType != "S" && $saucerWeCollideWith == "")
 				{ // there is at least one crewmember that can be exchanged
@@ -15142,11 +15149,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 			if($currentRound > 1)
 				throw new feException( "Lowest completed is ".$lowestRoundsPlayedByAPlayer." and current round is ".$currentRound);
 */
-  		if($lowestRoundsPlayedByAPlayer >= $currentRound)
+  			if($lowestRoundsPlayedByAPlayer >= $currentRound)
 			{ // all player have gone this round
 						$this->gamestate->nextState( "endRound" ); // use the endTurn transition to go to the next player's turn
 			}
-	  	else
+	  		else
 			{ // at least one player still has to take a turn this round
 						$nextPlayer = $this->getPlayerWhoseTurnIsNext(); // figure out which player goes next
 						$this->gamestate->changeActivePlayer( $nextPlayer ); // set the active player (this cannot be done in an activeplayer game state)
