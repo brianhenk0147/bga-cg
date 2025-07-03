@@ -69,7 +69,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You must choose your move DISTANCE and DIRECTION for this round.'),
     		"type" => "multipleactiveplayer",
         'args' => 'argGetAllPlayerSaucerMoves',
-    		"possibleactions" => array( "clickMoveDirection", "clickDistance", "undoChooseMoveCard", "confirmMove", "clickUpgradeCardInHand", "undoConfirmMove", "actClickedConfirmMove" ),
+    		"possibleactions" => array( "clickMoveDirection", "clickDistance", "undoChooseMoveCard", "confirmMove", "clickUpgradeCardInHand", "undoConfirmMove" ),
     		"transitions" => array( "zigChosen" => 2, "startOver" => 2, "allMovesChosen" => 25, "zombiePass" => 98 )
     ),
 
@@ -110,7 +110,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You must choose a Crewmember to place.'),
     		"type" => "activeplayer",
         'args' => 'argGetLostCrewmembers',
-    		"possibleactions" => array( "chooseLostCrewmember", "actReplaceGarmentChooseGarment" ),
+    		"possibleactions" => array( "chooseLostCrewmember" ),
     		"transitions" => array( "replaceGarmentChooseGarment" => 13, "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurnCleanUp" => 50 )
     ),
 
@@ -223,7 +223,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You must choose which of your Saucers will go first.'),
     		"type" => "activeplayer",
         'args' => 'argGetSaucerGoFirstButtons',
-        "possibleactions" => array( "clickSaucerToGoFirst", "actClickedSaucerToGoFirst" ),
+        "possibleactions" => array( "clickSaucerToGoFirst" ),
     		"transitions" => array( "locateCrashedSaucer" => 27, "checkStartOfTurnUpgrades" => 24 )
     ),
 
@@ -319,7 +319,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('You must choose where to place your Saucer with your Regeneration Gateway.'),
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
-        "possibleactions" => array( "clickCrashSite", "chooseUpgradeSpace", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "clickCrashSite", "chooseUpgradeSpace" ),
         "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50, "endRoundCleanUp" => 5, "chooseWhichSaucerGoesFirst" => 26, "beginTurn" => 44  )
     ),
 
@@ -329,7 +329,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('You can choose any Direction for your move.'),
         "type" => "activeplayer",
         'args' => 'argGetDirectionHighlights',
-        "possibleactions" => array( "clickDirection", "chooseUpgradeSpace", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "clickDirection", "chooseUpgradeSpace" ),
         "transitions" => array( "checkForRevealDecisions" => 38, "endSaucerTurnCleanUp" => 50 )
     ),
 
@@ -339,7 +339,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('You must decide if you will activate an Upgrade.'),
         "type" => "activeplayer",
         'args' => 'argGetStartOfTurnUpgradesToActivate',
-        "possibleactions" => array( "skipActivateUpgrade", "activateUpgrade", "actActivateUpgrade" ),
+        "possibleactions" => array( "skipActivateUpgrade", "activateUpgrade" ),
         "transitions" => array( "checkForRevealDecisions" => 38, "chooseBlastOffThrusterSpace" => 60, "chooseSaucerPulseCannon" => 69, "endSaucerTurnCleanUp" => 50  )
     ),
 
@@ -349,7 +349,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You must place your Saucer.'),
     		"type" => "activeplayer",
         'args' => 'argGetSaucerToPlaceButton',
-        "possibleactions" => array( "clickSaucer", "actClickedSaucerToPlace" ),
+        "possibleactions" => array( "clickSaucer" ),
     		"transitions" => array(  "allCrashSitesOccupiedChooseSpacePreTurn" => 39, "beginTurn" => 44, "endSaucerTurnCleanUp" => 50 )
     ),
 
@@ -360,7 +360,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         "action" => "beginTurn",
         'args' => 'argGetSaucerMoveCardInfo',
-        "possibleactions" => array( "clickBegin", "actClickedBeginTurn" ),
+        "possibleactions" => array( "clickBegin" ),
     		"transitions" => array(  "checkStartOfTurnUpgrades" => 24, "endSaucerTurnCleanUp" => 50)
     ),
 
@@ -380,7 +380,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You must confirm or undo your move for ${saucerColor}.'),
     		"type" => "activeplayer",
         'args' => 'argGetSaucerColor',
-        "possibleactions" => array( "undoMove", "actClickedFinalizeMove" ),
+        "possibleactions" => array( "undoMove" ),
     		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "beginTurn" => 44, "checkStartOfTurnUpgrades" => 24 )
     ),
 
@@ -419,7 +419,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('You must decide if you will activate an Upgrade.'),
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
-        "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade", "actActivateUpgrade" ),
+        "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseOrganicTriangulatorSpace" => 74, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64, "chooseSaucerPulseCannon" => 69, "chooseTileRotationQuakeMaker" => 72 )
     ),
 
@@ -439,7 +439,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Choose a teleportation destination for ${saucerColor}.'),
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
-        "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade", "chooseUpgradeSpace", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade", "chooseUpgradeSpace" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
     ),
 
@@ -479,7 +479,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
         "type" => "activeplayer",
         'args' => 'argGetLandingLegSpaces',
-        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "executingMove" => 70, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57  )
     ),
 
@@ -489,7 +489,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
         "type" => "activeplayer",
         'args' => 'argGetBlastOffThrustersSpaces',
-        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "executingMove" => 70, "checkStartOfTurnUpgrades" => 24)
     ),
 
@@ -499,7 +499,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
         "type" => "activeplayer",
         'args' => 'argGetAfterburnerSpaces',
-        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
     ),
 
@@ -509,7 +509,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Choose 1 Crewmember to pick up.'),
         "type" => "activeplayer",
         'args' => 'argGetTractorBeamCrewmembers',
-        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "endGame" => 99 )
     ),
@@ -520,7 +520,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Airlock: You may exchange the ${crewmemberTakenColor} ${crewmemberTakenTypeString} you just picked up for one of these on the board if you wish.'),
         "type" => "activeplayer",
         'args' => 'argGetAirlockCrewmembers',
-        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "askWhichEndOfTurnUpgradeToUse" => 53, "endGame" => 99 )
     ),
@@ -531,7 +531,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Distress Signaler: You may take one of these Crewmembers in exchange for one of yours of the same type.'),
         "type" => "activeplayer",
         'args' => 'argGetDistressSignalerTakeCrewmembers',
-        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseDistressSignalerGiveCrewmember" => 65 )
     ),
 
@@ -541,7 +541,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Distress Signaler: You must exchange the ${crewmemberTakenColor} ${crewmemberTakenTypeString} you just picked up for one of these.'),
         "type" => "activeplayer",
         'args' => 'argGetDistressSignalerGiveCrewmembers',
-        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
     ),
     
@@ -591,7 +591,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('executingMove state'),
         "type" => "game",
         "action" => "executeMove",
-        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
         "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "executingMove" => 70, "endGame" => 99 )
     ),
@@ -611,7 +611,7 @@ $machinestates = array(
         "description" => clienttranslate('${actplayer} is rotating a tile.'),
         "descriptionmyturn" => clienttranslate('You may rotate a tile.'),
         "type" => "activeplayer",
-        "possibleactions" => array( "rotateTile", "skipActivateUpgrade", "actActivateQuakeMaker" ),
+        "possibleactions" => array( "rotateTile", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
     ),
 
@@ -630,7 +630,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('Choose a space to move to for ${upgradeName}.'),
         "type" => "activeplayer",
         'args' => 'argGetOrganicTriangulatorSpaces',
-        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade", "actChooseUpgradeSpace" ),
+        "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
     ),
 
