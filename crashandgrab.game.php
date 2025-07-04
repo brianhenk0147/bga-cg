@@ -9919,10 +9919,16 @@ echo("<br>");
 											else
 											{ // they did crash
 												self::incStat( 1, 'times_you_crashed', $ownerOfOstrich ); // add a that you ran off a cliff
+
+												if(!$this->doesSaucerHaveOffColoredCrewmember($ostrichColor))
+												{ // they don't have an off-colored crewmember to give away so they will not have a penalty
+
+													$this->markCrashPenaltyRendered($ostrichColor); // make sure no one gets an energy for knocking them off
+												}
 											}
 										}
 										else
-										{ // the ostrich was pushed off a cliff by the player taking their turn
+										{ // the ostrich was pushed off a cliff by the saucer taking their turn
 
 /* Removing because we don't need to do this because we will do it in the updateGameLogForEvents method.
 												self::notifyAllPlayers( "ostrichWasPushedOffCliff", clienttranslate( '${saucerWhoIsStealingText} is stealing a Crewmember from ${saucerWhoCrashedText}.' ), array(
