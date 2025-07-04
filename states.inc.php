@@ -400,7 +400,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetGiveAwayCrewmembers',
         "possibleactions" => array( "clickCrewmember" ),
-    		"transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+    		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "endGame" => 99 )
     ),
 
     52 => array(
