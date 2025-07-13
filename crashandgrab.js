@@ -1887,7 +1887,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     console.log('pre CHOSEN_DIRECTION_SAUCER_1:'+this.CHOSEN_DIRECTION_SAUCER_1); // direction_meteor
                     
 
-                    if( this.isCurrentPlayerActive() )
+                    if( this.isCurrentPlayerActive())
                       { // this player has not yet chosen their move
 
                           // create a place to put saucer 1 move selection button
@@ -2000,15 +2000,19 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                             this.chooseMoveCardDirection(saucer2DirectionSelected, 2);
                         }
                       }
+                      else if(this.isSpectator)
+                      { // they are a spectator
+                      
+                            // show nothing
+                      }
                       else
                       { // the player has chosen their move and they are waiting for others to choose
-
                             var buttonLabel = "Undo";
                             var isDisabled = false; // TODO: Update this to be disabled until moves are selected
                             var hoverOverText = "Choose a different move."; // hover over text or '' if we don't want a hover over
                             var actionName = "undoChooseMove"; // shoot, useEquipment
                             var makeRed = true;
-
+                            
                             this.addButtonToActionBar(buttonLabel, isDisabled, hoverOverText, actionName, makeRed);
                       }
 
@@ -2820,7 +2824,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
 
                     // list of special keys we want to replace with images
-                    var keys = ['CREWMEMBERIMAGE'];
+                    var keys = ['CREWMEMBERIMAGE', "ENERGYCUBE", "BOOSTERDISC"];
 
                     //console.log("Looking through keys:" + keys);
                     for ( var i in keys) {
@@ -2858,6 +2862,19 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     console.log('getTokenDiv CREWMEMBERIMAGE token_id:'+token_id+' tokenDiv:'+tokenDiv);
                     return tokenDiv;
 
+                case 'ENERGYCUBE':
+                    var energyDiv = this.format_block( 'jstpl_energy_log', {
+                        token_id: token_id
+                    } );
+                    console.log('getTokenDiv ENERGYCUBE token_id:'+token_id+' tokenDiv:'+energyDiv);
+                    return energyDiv;
+
+                case 'BOOSTERDISC':
+                    var boosterDiv = this.format_block( 'jstpl_booster_log', {
+                        token_id: token_id
+                    } );
+                    console.log('getTokenDiv BOOSTERDISC token_id:'+token_id+' tokenDiv:'+boosterDiv);
+                    return boosterDiv;
 
                 default:
                     break;

@@ -2371,6 +2371,10 @@ margin-top: 6px;
     float: right;
 }
 
+.message_log_image {
+  display: inline-block;
+}
+
 /***** UPGRADES *****/
 #upgrade_market_container
 {

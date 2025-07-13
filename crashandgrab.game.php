@@ -10357,12 +10357,13 @@ echo("<br>");
 				$colorHighlightedText = $this->convertColorToHighlightedText($saucerColor);
 
 				$player_name = $this->getPlayerNameFromPlayerId($player_id);
-				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${saucer_color_text} gained a Booster.' ), array(
+				self::notifyAllPlayers( 'boosterAcquired', clienttranslate( '${saucer_color_text} gained a ${BOOSTERDISC}.' ), array(
 								'player_id' => $player_id,
 								'boosterPosition' => $boosterPosition,
 								'saucerColor' => $saucerColor,
 								'player_name' => $player_name,
-								'saucer_color_text' => $colorHighlightedText
+								'saucer_color_text' => $colorHighlightedText,
+								'BOOSTERDISC' => 'BOOSTERDISC'
 				) );
 		}
 
@@ -10377,12 +10378,13 @@ echo("<br>");
 
 
 				$player_name = self::getCurrentPlayerName();
-				self::notifyAllPlayers( 'energyAcquired', clienttranslate( '${saucer_color_text} gained an Energy.' ), array(
+				self::notifyAllPlayers( 'energyAcquired', clienttranslate( '${saucer_color_text} gained a ${ENERGYCUBE}.' ), array(
 								'player_id' => $player_id,
 								'energyPosition' => $energyPosition,
 								'saucerColor' => $saucerColor,
 								'player_name' => $player_name,
-								'saucer_color_text' => $colorHighlightedText
+								'saucer_color_text' => $colorHighlightedText,
+								'ENERGYCUBE' => 'ENERGYCUBE'
 				) );
 		}
 
@@ -13058,11 +13060,12 @@ echo("<br>");
 
 				$colorFriendlyText = $this->convertColorToHighlightedText($saucerColor);
 
-				self::notifyAllPlayers( 'zagUsed', clienttranslate( '${saucer_friendly_color} is boosting.' ), array(
+				self::notifyAllPlayers( 'zagUsed', clienttranslate( '${saucer_friendly_color} is boosting by using a ${BOOSTERDISC}.' ), array(
 						'ostrich' => $saucerColor,
 						'boosterQuantity' => $boosterQuantity,
 						'player_name' => self::getActivePlayerName(),
-						'saucer_friendly_color' => $colorFriendlyText
+						'saucer_friendly_color' => $colorFriendlyText,
+						'BOOSTERDISC' => 'BOOSTERDISC'
 				) );
 		}
 

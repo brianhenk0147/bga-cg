@@ -1185,7 +1185,9 @@ var jstpl_saucerInformational='<div class="saucer saucer_color_${color}" id="sau
 
 var jstpl_zag='<div class="zag component_circle" id="zag_${color}"></div>';
 
+var jstpl_energy_log='<div class="energy_cube message_log_image" id="energy_${token_id}"></div>';
 var jstpl_energy='<div class="energy_cube" id="energy_${location}_${position}"></div>';
+var jstpl_booster_log='<div class="booster_token_small message_log_image" id="booster_${token_id}"></div>';
 var jstpl_booster='<div class="booster_token" id="booster_${location}_${position}"></div>';
 var jstpl_boosterLabel = '<span id="saucer_mat_booster_count_value_${color}" class="saucer_mat_booster_count text_shadow">${qty}</span>';
 
