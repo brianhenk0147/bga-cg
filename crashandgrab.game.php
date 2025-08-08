@@ -441,8 +441,8 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Acceleration Regulator', 'type_arg' => 24, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Boost Amplifier', 'type_arg' => 25, 'card_location' => 'deck','nbr' => 1)
-						//array( 'type' => 'Organic Triangulator', 'type_arg' => 26, 'card_location' => 'deck','nbr' => 1)
+						array( 'type' => 'Boost Amplifier', 'type_arg' => 25, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Organic Triangulator', 'type_arg' => 26, 'card_location' => 'deck','nbr' => 1)
 				);
 
 				if($this->getNumberOfPlayers() > 2)
@@ -6817,7 +6817,7 @@ echo("<br>");
 		{
 				$equipmentList = array();
 
-				$sql = "SELECT * FROM upgradeCards ORDER BY card_type DESC ";
+				$sql = "SELECT * FROM upgradeCards ORDER BY card_type_arg DESC ";
 				$equipmentListFromDb = self::getCollectionFromDb( $sql );
 
 				$index = 0;
@@ -12892,7 +12892,7 @@ echo("<br>");
 						{ // this is an upgrade the player did not choose to play
 
 								// notify all players that is has been played
-								self::notifyAllPlayers( 'upgradeDiscarded', clienttranslate( '${color_name} discarded the upgrade ${name_of_upgrade}.' ), array(
+								self::notifyAllPlayers( 'upgradeDiscarded', clienttranslate( '${color_name} discarded the upgrade ${UPGRADEMESSAGELOG}.' ), array(
 										'saucerColor' => $color,
 										'collectorNumber' => $collectorNumberDiscarded,
 										'databaseId' => $databaseIdDiscarded,
@@ -12900,7 +12900,8 @@ echo("<br>");
 										'player_name' => $playerName,
 										'name_of_upgrade' => $nameOfUpgradeDiscarded,
 										'color_name' => $colorName,
-										'energyQuantity' => $energyQuantity
+										'energyQuantity' => $energyQuantity,
+										'UPGRADEMESSAGELOG' => "upgrade_$collectorNumberDiscarded"
 								) );
 						}
 				}

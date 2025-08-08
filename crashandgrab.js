@@ -258,7 +258,6 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
             this.initializeUpgradeList(this.gamedatas.upgradeList);
 
 
-
             for( var i in gamedatas.board )
             {
                 var square = gamedatas.board[i];
@@ -2824,7 +2823,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
 
                     // list of special keys we want to replace with images
-                    var keys = ['CREWMEMBERIMAGE', "ENERGYCUBE", "BOOSTERDISC"];
+                    var keys = ['CREWMEMBERIMAGE', "ENERGYCUBE", "BOOSTERDISC", "UPGRADEMESSAGELOG"];
 
                     //console.log("Looking through keys:" + keys);
                     for ( var i in keys) {
@@ -2875,6 +2874,25 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     } );
                     console.log('getTokenDiv BOOSTERDISC token_id:'+token_id+' tokenDiv:'+boosterDiv);
                     return boosterDiv;
+
+                case 'UPGRADEMESSAGELOG':
+
+                    var collectorNumber = token_id.split('_')[1]; // 5, 8, 15
+                    var upgradeName = this.getUpgradeTitle(collectorNumber);
+                    var upgradeEffect = this.getUpgradeEffect(collectorNumber);
+
+                    var upgradeMessageLogDiv = this.format_block( 'jstpl_upgrade_log', {
+                        token_id: token_id,
+                        upgradeName: upgradeName
+                    } );
+
+                    // add a hoverover tooltip with a bigger version of the card
+                    this.addLargeUpgradeTooltip(token_id, collectorNumber, upgradeName, upgradeEffect);
+    
+                    console.log('getTokenDiv UPGRADEMESSAGELOG token_id:'+token_id+' tokenDiv:'+upgradeMessageLogDiv);
+
+                    
+                    return upgradeMessageLogDiv;
 
                 default:
                     break;
@@ -4406,6 +4424,7 @@ console.log(spaces);
             } ); // the HTML (image) to be displayed
             */
 
+            console.log('addLargeUpgradeTooltip htmlIdToAddItTo:'+htmlIdToAddItTo+' collectorNumber:'+collectorNumber + 'upgradeName:'+upgradeName+' upgradeEffect:'+upgradeEffect);
                 var html = this.format_block( 'jstpl_largeUpgrade', {
                     x: 0,
                     y: 0,

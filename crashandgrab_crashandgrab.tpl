@@ -1206,6 +1206,7 @@ var jstpl_tileRotateTileButtonHolder='<div id="tile_rotation_tile_button_holder"
 var jstpl_tileRotateDirectionButtonHolder='<div id="tile_rotation_direction_button_holder"></div>';
 var jstpl_tileRotateConfirmButtonHolder='<div id="tile_rotation_confirm_button_holder"></div>';
 
+var jstpl_upgrade_log = '<span id="${token_id}"><b>${upgradeName}</b></span>';
 var jstpl_largeUpgrade = '<div class="large_upgrade large_component_rounding" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
                         </div>';
 var jstpl_listUpgrade = '<div class="list_upgrade_card component_rounding" id="list_equipment_${collectorNumber}" style="background-position:-${x}px -${y}px"><div class="large_equipment_name">${equipmentName}</div><div class="large_equipment_effect">${equipmentEffect}</div>\
