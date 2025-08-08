@@ -90,7 +90,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "startMovePhase",
         "updateGameProgression" => false,
-        "transitions" => array( "nextMovementTurn" => 4, "chooseOstrich" => 11, "chooseXValue" => 12, "askTrapBasic" => 19 )
+        "transitions" => array( "chooseOstrich" => 11, "chooseXValue" => 12, "askTrapBasic" => 19 )
     ),
 
     // PLAYER HIT ACCELERATOR SO WE NEED TO ASK WHICH DIRECTION THEY WANT TO TRAVEL
@@ -111,7 +111,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetLostCrewmembers',
     		"possibleactions" => array( "chooseLostCrewmember" ),
-    		"transitions" => array( "replaceGarmentChooseGarment" => 13, "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurnCleanUp" => 50 )
+    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurnCleanUp" => 50 )
     ),
 
     11 => array(
@@ -120,7 +120,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You must choose which ostrich you will move.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "chooseOstrich" ),
-    		"transitions" => array( "chooseXValue" => 12, "askTrapBasic" => 19, "executeMove" => 4 )
+    		"transitions" => array( "chooseXValue" => 12, "askTrapBasic" => 19 )
     ),
 
     12 => array(
@@ -139,7 +139,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('Would you like to zag?'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "answerZagQuestion" ),
-    		"transitions" => array( "askTrapBasic" => 19, "executeMove" => 4, "endTurn" => 8, "askUseSkateboard" => 9, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "endGame" => 99 )
+    		"transitions" => array( "askTrapBasic" => 19, "askUseSkateboard" => 9, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "endGame" => 99 )
     ),
 
     15 => array(
@@ -148,7 +148,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You must discard down to 1 Trap Card.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "discardTrapCard" ),
-    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15 )
+    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15 )
     ),
 
     17 => array(
@@ -158,7 +158,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argStealableGarments',
     		"possibleactions" => array( "clickDraw2Zigs", "stealGarmentClick" ),
-    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "chooseGarmentToSteal" => 23, "endTurn" => 8 )
+    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "chooseGarmentToSteal" => 23 )
     ),
 
     19 => array(
@@ -167,7 +167,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You have been trapped.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "executeTrap" ),
-    		"transitions" => array( "askTrapBasic" => 19, "nextMovementTurn" => 4 )
+    		"transitions" => array( "askTrapBasic" => 19 )
     ),
 
     20 => array(
@@ -184,7 +184,7 @@ $machinestates = array(
         "name" => "transitionToChooseZig",
         "description" => "",
         "type" => "game",
-        "action" => "transitionToChooseZig",
+        "action" => "checkStartOfTurnUpgrades",
         "updateGameProgression" => true,
         "transitions" => array( "chooseZig" => 2 )
     ),
@@ -196,7 +196,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argStealableGarments',
         "possibleactions" => array( "stealGarmentClick" ),
-    		"transitions" => array( "endTurn" => 8, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "endTurn" => 8 )
+    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17 )
     ),
 
     24 => array(
