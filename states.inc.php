@@ -631,7 +631,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetOrganicTriangulatorSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
 
