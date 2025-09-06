@@ -136,6 +136,7 @@ CREATE TABLE IF NOT EXISTS `garment` (
   `is_primary` smallint(5) unsigned NOT NULL DEFAULT '0',
   `is_passable` smallint(5) unsigned NOT NULL DEFAULT '0',
   `round_acquired` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `turn_acquired` smallint(5) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`garment_id`)
 ) ENGINE=InnoDB;
 

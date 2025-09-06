@@ -37,6 +37,7 @@ class CrashAndGrab extends Table
 					"CURRENT_ROUND" => 10,
 					"NUMBER_OF_PLAYERS" => 11,
 					"TURN_ORDER" => 12,
+					"CURRENT_TURN" => 13
 
             //    "my_second_global_variable" => 11,
             //      ...
@@ -161,6 +162,7 @@ class CrashAndGrab extends Table
         // TODO: setup the initial game situation here
 
 				$this->setGameStateValue("CURRENT_ROUND", 1); // start on round 1
+				$this->setGameStateValue("CURRENT_TURN", 1); // start on turn 1
 
 
 
@@ -1613,27 +1615,27 @@ class CrashAndGrab extends Table
 				return false;
 		}
 
-		// Returns true if the given saucer picked up or stole a crewmember this round.
-		function didSaucerPickUpOrStealCrewmemberThisRound($saucerColor)
+		// Returns true if the given saucer picked up or stole a crewmember this turn.
+		function didSaucerPickUpOrStealCrewmemberThisTurn($saucerColor)
 		{
-			$currentRound = $this->getGameStateValue("CURRENT_ROUND");
+			$currentTurn = $this->getGameStateValue("CURRENT_TURN");
 
 			$crewmembersOnSaucer = $this->getCrewmembersOnSaucer($saucerColor);
 			foreach( $crewmembersOnSaucer as $crewmember )
 			{ // go through each crewmember on this saucer
-				$roundAcquired = $crewmember['round_acquired'];
+				$turnAcquired = $crewmember['turn_acquired'];
 
-				//throw new feException( "CURRENT ROUND $currentRound and ROUND ACQUIRED $roundAcquired" );
+				//throw new feException( "CURRENT TURN $currentTurn and TURN ACQUIRED $turnAcquired" );
 				
 
-				if($roundAcquired == $currentRound)
-				{ // this crewmember was acquired this round
+				if($turnAcquired == $currentTurn)
+				{ // this crewmember was acquired this turn
 
 					return true;
 				}
 			}
 
-			//throw new feException( "did not find any for CURRENT ROUND $currentRound and saucer color $saucerColor" );
+			//throw new feException( "did not find any for CURRENT TURN $currentTurn and saucer color $saucerColor" );
 			return false;
 		}
 
@@ -2838,6 +2840,11 @@ echo("<br>");
 						return true;
 				}
 
+				//$isPlayed = $this->doesSaucerHaveUpgradePlayed($saucerColor, 'Organic Triangulator');
+				//$timesActivated = $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Organic Triangulator');
+				//$askedToActivate =  $this->getAskedToActivateUpgrade($saucerColor, 'Organic Triangulator');
+				//$isPlayable = $this->isUpgradePlayable($saucerColor, 'Organic Triangulator');
+				//throw new feException( "isPlayed:$isPlayed timesActivated:$timesActivated askedToActivate:$askedToActivate isPlayable:$isPlayable");
 				if($this->doesSaucerHaveUpgradePlayed($saucerColor, 'Organic Triangulator') &&
 				   $this->getUpgradeTimesActivatedThisRound($saucerColor, 'Organic Triangulator') < 1 &&
 					 $this->getAskedToActivateUpgrade($saucerColor, 'Organic Triangulator') == false &&
@@ -2845,8 +2852,8 @@ echo("<br>");
 				{ // they have played this upgrade, they have not yet activated it, and they have not yet indicated whether they want to activate it
 //throw new feException( "after");
 
-					if(!$this->didSaucerPickUpOrStealCrewmemberThisRound($saucerColor))
-					{ // there is another saucer in the row or column of our saucer
+					if(!$this->didSaucerPickUpOrStealCrewmemberThisTurn($saucerColor))
+					{ // the saucer did not pick up a crewmember
 
 						//throw new feException( "true dat");
 						if(!$this->isSaucerCrashed($saucerColor))
@@ -6110,6 +6117,10 @@ echo("<br>");
 			$newValue = $this->getGameStateValue("CURRENT_ROUND");
 			$sql = "UPDATE garment SET round_acquired=$newValue WHERE garment_id=$crewmemberId";
 			self::DbQuery( $sql );
+
+			$turnAcquired = $this->getGameStateValue("CURRENT_TURN");
+			$sqlTurn = "UPDATE garment SET turn_acquired=$turnAcquired WHERE garment_id=$crewmemberId";
+			self::DbQuery( $sqlTurn );
 		}
 
 		function setSaucerGivenWithDistress($saucerColor, $newValue)
@@ -13873,6 +13884,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 									//throw new feException( "counterclockwise." );
 						$this->activePrevPlayer(); // go to the next player counter-clockwise in turn order
 				}
+
+				// increment turn count
+				$currentTurn = $this->getGameStateValue('CURRENT_TURN');
+				$this->setGameStateValue('CURRENT_TURN', $currentTurn + 1);
 
 				if($this->haveAllSaucersTakenTheirTurn())
 				{ // round is over
