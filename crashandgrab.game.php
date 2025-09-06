@@ -3024,7 +3024,7 @@ echo("<br>");
 
 						// Rotational Stabilizer
 						case 19:
-								return clienttranslate( 'At the start of the round, you choose whether the turn order is clockwise or counter-clockwise.');
+								return clienttranslate( 'After the Probe player takes their turn, you choose whether the turn order is clockwise or counter-clockwise.');
 
 						// Airlock
 						case 20:
