@@ -430,7 +430,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetOtherUncrashedSaucers',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
     55 => array(
@@ -440,7 +440,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade", "chooseUpgradeSpace" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
     56 => array(
@@ -480,7 +480,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetLandingLegSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "executingMove" => 70, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57  )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "executingMove" => 70, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53  )
     ),
 
     60 => array(
@@ -500,7 +500,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAfterburnerSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
     62 => array(
@@ -511,7 +511,7 @@ $machinestates = array(
         'args' => 'argGetTractorBeamCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "endGame" => 99 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "endGame" => 99, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
     63 => array(
@@ -532,7 +532,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetDistressSignalerTakeCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseDistressSignalerGiveCrewmember" => 65 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseDistressSignalerGiveCrewmember" => 65, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
     65 => array(
@@ -612,7 +612,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('You may rotate a tile.'),
         "type" => "activeplayer",
         "possibleactions" => array( "rotateTile", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "askWhichEndOfTurnUpgradeToUse" => 53 )
     ),
 
     73 => array(
