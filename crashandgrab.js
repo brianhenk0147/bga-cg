@@ -2307,8 +2307,8 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
 
 
                             dojo.place( this.format_block( 'jstpl_tileRotateDirectionButtonHolder', {} ) , holderDiv );
-                            this.addActionButton( 'rotateTile_clockwise_button', '<div id="button_clockwise" class="clockwise"></div>', 'onClickRotateTileClockwise', 'tile_rotation_direction_button_holder', null, 'gray');
-                            this.addActionButton( 'rotateTile_counterclockwise_button', '<div id="button_counterclockwise" class="counterclockwise"></div>', 'onClickRotateTileCounterclockwise', 'tile_rotation_direction_button_holder', null, 'gray');
+                            this.addActionButton( 'rotateTile_clockwise_button', '<div id="button_clockwise" class="clockwise"></div>', 'onClickRotateTileClockwise', 'tile_rotation_direction_button_holder', null, false);
+                            this.addActionButton( 'rotateTile_counterclockwise_button', '<div id="button_counterclockwise" class="counterclockwise"></div>', 'onClickRotateTileCounterclockwise', 'tile_rotation_direction_button_holder', null, false);
 
 
                             dojo.place( this.format_block( 'jstpl_tileRotateConfirmButtonHolder', {} ) , holderDiv );
@@ -5958,10 +5958,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             dojo.place( this.format_block( 'jstpl_actionButtonHolder_General', {
             } ) , holderDiv );
 
-            this.addActionButton( this.LEFT_DIRECTION+'_button', '<div class="'+this.LEFT_DIRECTION+'"></div>', 'onClick_'+this.LEFT_DIRECTION+'Direction', generalButtonHolder, null, 'gray');
-            this.addActionButton( this.UP_DIRECTION+'_button', '<div class="'+this.UP_DIRECTION+'"></div>', 'onClick_'+this.UP_DIRECTION+'Direction', generalButtonHolder, null, 'gray');
-            this.addActionButton( this.DOWN_DIRECTION+'_button', '<div class="'+this.DOWN_DIRECTION+'"></div>', 'onClick_'+this.DOWN_DIRECTION+'Direction', generalButtonHolder, null, 'gray');
-            this.addActionButton( this.RIGHT_DIRECTION+'_button', '<div class="'+this.RIGHT_DIRECTION+'"></div>', 'onClick_'+this.RIGHT_DIRECTION+'Direction', generalButtonHolder, null, 'gray');
+            this.addActionButton( this.LEFT_DIRECTION+'_button', '<div class="'+this.LEFT_DIRECTION+'"></div>', 'onClick_'+this.LEFT_DIRECTION+'Direction', generalButtonHolder, null, false);
+            this.addActionButton( this.UP_DIRECTION+'_button', '<div class="'+this.UP_DIRECTION+'"></div>', 'onClick_'+this.UP_DIRECTION+'Direction', generalButtonHolder, null, false);
+            this.addActionButton( this.DOWN_DIRECTION+'_button', '<div class="'+this.DOWN_DIRECTION+'"></div>', 'onClick_'+this.DOWN_DIRECTION+'Direction', generalButtonHolder, null, false);
+            this.addActionButton( this.RIGHT_DIRECTION+'_button', '<div class="'+this.RIGHT_DIRECTION+'"></div>', 'onClick_'+this.RIGHT_DIRECTION+'Direction', generalButtonHolder, null, false);
 
             //dojo.addClass('sun_button','bgaimagebutton'); // remove the button outline
 
@@ -5970,10 +5970,10 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
         showMoveCardDirectionButtons: function(saucerNumber)
         {
             var saucerButtonHolder = 'saucer_'+saucerNumber+'_action_button_holder';
-            this.addActionButton( this.LEFT_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.LEFT_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.LEFT_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
-            this.addActionButton( this.UP_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.UP_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.UP_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
-            this.addActionButton( this.DOWN_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.DOWN_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.DOWN_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
-            this.addActionButton( this.RIGHT_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.RIGHT_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.RIGHT_DIRECTION+'Direction', saucerButtonHolder, null, 'gray');
+            this.addActionButton( this.LEFT_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.LEFT_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.LEFT_DIRECTION+'Direction', saucerButtonHolder, null, false);
+            this.addActionButton( this.UP_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.UP_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.UP_DIRECTION+'Direction', saucerButtonHolder, null, false);
+            this.addActionButton( this.DOWN_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.DOWN_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.DOWN_DIRECTION+'Direction', saucerButtonHolder, null, false);
+            this.addActionButton( this.RIGHT_DIRECTION+'_'+saucerNumber+'_button', '<div class="'+this.RIGHT_DIRECTION+'"></div>', 'onClick_MoveCard_'+this.RIGHT_DIRECTION+'Direction', saucerButtonHolder, null, false);
 
 
             //dojo.addClass('sun_button','bgaimagebutton'); // remove the button outline
@@ -5993,9 +5993,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             dojo.style( saucer1ButtonHtmlId, 'border', '0px' );
 
             // show distance buttons
-            this.addActionButton( 'moveCard_1_distance_1_button', _('2'), 'onClickMoveCardDistance', saucer1ButtonHolder, null, 'gray' );
-            this.addActionButton( 'moveCard_1_distance_2_button', _('3'), 'onClickMoveCardDistance', saucer1ButtonHolder, null, 'gray' );
-            this.addActionButton( 'moveCard_1_distance_0_button', _('0-5'), 'onClickMoveCardDistance', saucer1ButtonHolder, null, 'gray' );
+            this.addActionButton( 'moveCard_1_distance_1_button', _('2'), 'onClickMoveCardDistance', saucer1ButtonHolder, null, false );
+            this.addActionButton( 'moveCard_1_distance_2_button', _('3'), 'onClickMoveCardDistance', saucer1ButtonHolder, null, false );
+            this.addActionButton( 'moveCard_1_distance_0_button', _('0-5'), 'onClickMoveCardDistance', saucer1ButtonHolder, null, false );
 
             // show direction buttons
             this.showMoveCardDirectionButtons('1');
@@ -6012,9 +6012,9 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 dojo.style( saucer2ButtonHtmlId, 'border', '0px' );
 
                 // show distance buttons
-                this.addActionButton( 'moveCard_2_distance_1_button', _('2'), 'onClickMoveCardDistance', saucer2ButtonHolder, null, 'gray' );
-                this.addActionButton( 'moveCard_2_distance_2_button', _('3'), 'onClickMoveCardDistance', saucer2ButtonHolder, null, 'gray' );
-                this.addActionButton( 'moveCard_2_distance_0_button', _('0-5'), 'onClickMoveCardDistance', saucer2ButtonHolder, null, 'gray' );
+                this.addActionButton( 'moveCard_2_distance_1_button', _('2'), 'onClickMoveCardDistance', saucer2ButtonHolder, null, false );
+                this.addActionButton( 'moveCard_2_distance_2_button', _('3'), 'onClickMoveCardDistance', saucer2ButtonHolder, null, false );
+                this.addActionButton( 'moveCard_2_distance_0_button', _('0-5'), 'onClickMoveCardDistance', saucer2ButtonHolder, null, false );
 
                 // show direction buttons
                 this.showMoveCardDirectionButtons('2');
@@ -6251,7 +6251,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 saucerHtml += '<div class="saucer saucer_button saucer_color_'+saucer+' saucer_in_button_list"></div>'
               });
             saucerHtml += '</div>';
-            this.addActionButton( 'saucer_button_clockwise', saucerHtml, 'onClick_clockwise', null, null, 'gray');
+            this.addActionButton( 'saucer_button_clockwise', saucerHtml, 'onClick_clockwise', null, null, false);
 
             // COUNTER-CLOCKWISE
             var saucerHtml = '<div>';
@@ -6264,7 +6264,7 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
                 saucerHtml += '<div class="saucer saucer_button saucer_color_'+saucer+' saucer_in_button_list"></div>'
               });
             saucerHtml += '</div>';
-            this.addActionButton( 'saucer_button_counterClockwise', saucerHtml, 'onClick_counter', null, null, 'gray');
+            this.addActionButton( 'saucer_button_counterClockwise', saucerHtml, 'onClick_counter', null, null, false);
 
           //this.addActionButton( 'clockwise_button', '<div class="player_board_arrow" style="background-position-x:0px"></div>', 'onClick_clockwise', null, null, 'gray');
 
