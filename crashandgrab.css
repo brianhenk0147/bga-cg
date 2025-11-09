@@ -90,6 +90,10 @@
 }
 
 /***** GENERAL LAYOUT *****/
+html {
+  background-image: url('img/stars-galaxy-3840x2560-10307_lowerres.jpg');
+}
+
 body {
     /* The following lines prevent the iPhone from overriding small font sizes. */
     -webkit-text-size-adjust: 100%;
