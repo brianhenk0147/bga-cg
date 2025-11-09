@@ -8410,11 +8410,18 @@ console.log("success... onClickUpgradeCardInHand");
                         }
 
             var classToRemove = 'board_tile_image_'+tileNumber+'_'+side+'_'+oldRotation;
-            dojo.removeClass( tileId, classToRemove ); // remove existing style like board_tile_image_1_A_1
+            console.log('classToRemove:'+classToRemove);
+            if($(classToRemove))
+            { // the element exists 
+                dojo.removeClass( tileId, classToRemove ); // remove existing style like board_tile_image_1_A_1
+            }
 
             var classToAdd = 'board_tile_image_'+tileNumber+'_'+side+'_'+newRotation;
-            dojo.addClass( tileId, classToAdd ); // add style like board_tile_image_1_A_2
-
+            console.log('classToAdd:'+classToAdd);
+            if($(classToAdd))
+            { // the element exists 
+                dojo.addClass( tileId, classToAdd ); // add style like board_tile_image_1_A_2
+            }
             console.log("removed class " + classToRemove + " and added class " + classToAdd);
 
 
