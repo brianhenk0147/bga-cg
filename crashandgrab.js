@@ -1167,6 +1167,10 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                     console.log( "A direction token was clicked with node "+htmlIdOfToken+"." );
                     var direction = htmlIdOfToken.split('_')[1]; // sun, constellation
 
+                    if ( !this.isCurrentPlayerActive() )
+                    { // someone other than the active player is clicking
+                        return;
+                    }
 
                     if(this.checkPossibleActions('clickAcceleratorDirection'))
                     { // we are clicking on a direction as we hit an accelerator
