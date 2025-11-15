@@ -4756,6 +4756,11 @@ echo("<br>");
 		// Returns 0 if it is not one of the 4 main tiles.
 		function getTilePositionOfOstrich($ostrich)
 		{
+			if($this->isSaucerCrashed($ostrich))
+			{ // the saucer we are checking is crashed
+				return 0;
+			}
+			
 			$tileNumber = null;
 			$ostrichX = $this->getSaucerXLocation($ostrich);
 			$ostrichY = $this->getSaucerYLocation($ostrich);
@@ -7523,7 +7528,7 @@ echo("<br>");
 
 		function rotateSaucersNumberOfTimes($tileNumberToRotate, $numberOfTimesClockwise)
 		{
-				$allOstriches = $this->getSaucersInOrder(); // get all ostriches
+				$allOstriches = $this->getSaucersInOrder(); // get all saucers
 
 				foreach($allOstriches as $ostrich)
 				{
