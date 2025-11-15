@@ -1870,14 +1870,14 @@ width: 170px;
 }
 
 .other_mat_and_stuff_row {
+   display: inline-block;
     width: 232px;
 
     /* center it */
-    display:flex;
     justify-content: center;
     align-items: center;
 
-    float: left;
+ 
     vertical-align: middle;
     padding: 10px;
     margin: 5px;
