@@ -185,7 +185,7 @@ $machinestates = array(
         "description" => "",
         "type" => "game",
         "action" => "checkStartOfTurnUpgrades",
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array( "chooseZig" => 2 )
     ),
 
@@ -213,7 +213,7 @@ $machinestates = array(
         "description" => "",
         "type" => "game",
         "action" => "rollRotationDie",
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array( "playerTurnStart" => 29, "askToRotationalStabilizer" => 68 )
     ),
 
@@ -232,7 +232,7 @@ $machinestates = array(
         "description" => clienttranslate('Starting Saucer turn...'),
         "type" => "game",
         "action" => "saucerTurnStart",
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array( "chooseCrashSiteRegenerationGateway" => 40, "askPreTurnToPlaceCrashedSaucer" => 43, "checkStartOfTurnUpgrades" => 24, "beginTurn" => 44 )
     ),
 
@@ -241,7 +241,7 @@ $machinestates = array(
         "description" => clienttranslate('Starting player turn...'),
         "type" => "game",
         "action" => "playerTurnStart",
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array( "chooseWhichSaucerGoesFirst" => 26, "saucerTurnStart" => 27 )
     ),
 
@@ -280,7 +280,7 @@ $machinestates = array(
         "description" => clienttranslate('End of turn'),
         "type" => "game",
         "action" => "endSaucerTurn",
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array( "playerTurnStart" => 29, "endRoundCleanUp" => 5 )
     ),
 
@@ -299,7 +299,7 @@ $machinestates = array(
         "description" => clienttranslate('Checking for reveal decisions...'),
         "type" => "game",
         "action" => "checkForRevealDecisions",
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array( "chooseDistanceDuringMoveReveal" => 12, "chooseTimeMachineDirection" => 41, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseIfYouWillUseBooster" => 32, "chooseWhetherToHyperdrive" => 45, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70 )
     ),
 
@@ -390,7 +390,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "endSaucerTurnCleanUp",
         "updateGameProgression" => true,
-        "transitions" => array( "endSaucerTurnCleanUp" => 50, "crashPenaltyAskWhichToGiveAway" => 51, "crashPenaltyAskWhichToSteal" => 52, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurn" => 36, "askWhichEndOfTurnUpgradeToUse" => 53, "askWhichUpgradeToPlay" => 58 )
+        "transitions" => array( "endSaucerTurnCleanUp" => 50, "crashPenaltyAskWhichToGiveAway" => 51, "crashPenaltyAskWhichToSteal" => 52, "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurn" => 36, "askWhichEndOfTurnUpgradeToUse" => 53, "askWhichUpgradeToPlay" => 58, "endGame" => 99 )
     ),
 
     51 => array(
@@ -592,7 +592,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeMove",
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "updateGameProgression" => false,
+        "updateGameProgression" => true,
         "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "executingMove" => 70, "endGame" => 99 )
     ),
 

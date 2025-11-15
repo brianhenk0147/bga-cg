@@ -4758,7 +4758,7 @@ echo("<br>");
 		{
 			if($this->isSaucerCrashed($ostrich))
 			{ // the saucer we are checking is crashed
-				return 0;
+				return 0; // don't rotate it
 			}
 			
 			$tileNumber = null;
@@ -10634,7 +10634,12 @@ echo("<br>");
 				//$hasPendingCrashPenalty = $this->hasPendingCrashPenalty($saucerWhoseTurnItIs);
 				//$skippedGivingAway = $this->getSkippedGivingAway($saucerWhoseTurnItIs);
 				//throw new feException( "hasPendingCrashPenalty:$hasPendingCrashPenalty skippedGivingAway:$skippedGivingAway");
-				if($this->hasPendingCrashPenalty($saucerWhoseTurnItIs) && $this->getSkippedGivingAway($saucerWhoseTurnItIs) != 1)
+				//throw new feException( "afternotify");
+				if($this->isEndGameConditionMet())
+				{ // the game has ended
+					$this->goToEndGame(); // end the game
+				}
+				elseif($this->hasPendingCrashPenalty($saucerWhoseTurnItIs) && $this->getSkippedGivingAway($saucerWhoseTurnItIs) != 1)
 				{ // player whose turn it is crashed and hasn't yet been penalized for crashing on their own turn
 						$this->gamestate->nextState( "crashPenaltyAskWhichToGiveAway" );
 				}
@@ -10702,11 +10707,14 @@ echo("<br>");
 				//$count = count($airlockExchangeableCrewmembers);
 				//throw new feException("airlockExchangeableCrewmembers count ($count).");
 
+				/*
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
 					$this->goToEndGame(); // end the game
 				}
-				else if($boardValue == "S")
+				else
+				*/ 
+				if($boardValue == "S")
 				{ // the saucer onto an accelerator on their turn
 					//throw new feException("accelerator");
 					if($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Acceleration Regulator") &&
@@ -12100,11 +12108,14 @@ echo("<br>");
 
 				// see if we ended move sequence because we need to activate an upgrade
 				$saucerWeCollideWith = $this->getSaucerAt($saucerX, $saucerY, $saucerMoving);
+				/*
 				if($this->isEndGameConditionMet())
 				{ // the game has ended
 					$this->goToEndGame(); // end the game
 				}
-				elseif(count($airlockExchangeableCrewmembers) > 0 && $spaceType != "S" && $saucerWeCollideWith == "")
+				else
+				*/
+				if(count($airlockExchangeableCrewmembers) > 0 && $spaceType != "S" && $saucerWeCollideWith == "")
 				{ // there is at least one crewmember that can be exchanged
 
 						// get the ID of the highest crewmember available for exchange (in case they picked up 2 on the same turn)
@@ -13894,7 +13905,12 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$currentTurn = $this->getGameStateValue('CURRENT_TURN');
 				$this->setGameStateValue('CURRENT_TURN', $currentTurn + 1);
 
-				if($this->haveAllSaucersTakenTheirTurn())
+				//throw new feException( "afternotify");
+				if($this->isEndGameConditionMet())
+				{ // the game has ended
+					$this->goToEndGame(); // end the game
+				}
+				elseif($this->haveAllSaucersTakenTheirTurn())
 				{ // round is over
 						//throw new feException( "round ends" );
 						$this->gamestate->nextState( "endRoundCleanUp" );

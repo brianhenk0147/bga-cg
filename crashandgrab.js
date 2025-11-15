@@ -1033,14 +1033,7 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                 onConfirmTileToRotate: function(evt)
                 {
 
-                        var boardTileHtml = 'board_tile_'+this.CHOSEN_ROTATION_TILE;
-                        console.log('boardTileHtml:'+boardTileHtml);
-                        if( $(boardTileHtml) )
-                        { // this element exists
-
-                            // make the tile invisible
-                            //dojo.style( boardTileHtml, 'display', 'none' );
-                        }
+                        
 
                     this.ajaxcall( "/crashandgrab/crashandgrab/actActivateQuakeMaker.html", {
                         tilePosition: this.CHOSEN_ROTATION_TILE,
@@ -1051,12 +1044,28 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                         // What to do after the server call if it succeeded
                         // (most of the time: nothing)
 
-
                     }, function( is_error) {
                         // What to do after the server call in anyway (success or failure)
                         // (most of the time: nothing)
 
                     } );
+
+                    // update the tile image so it's the correct one
+                        var boardTileHtml = 'board_tile_'+this.CHOSEN_ROTATION_TILE;
+                        console.log('boardTileHtml:'+boardTileHtml);
+                        if( $(boardTileHtml) )
+                        { // this element exists
+
+                            // make the tile invisible
+                            //dojo.style( boardTileHtml, 'display', 'none' );
+
+                            // remove old class
+                            //board_tile_image_3_A_2
+
+                            // add new class
+                            //board_tile_image_3_A_2
+                        }
+
                 },
 
                 onClick_saucerButtonClick: function (evt)
@@ -8402,28 +8411,23 @@ console.log("success... onClickUpgradeCardInHand");
 
             var tileId = 'board_tile_'+tilePosition;
 
-                        if( $(tileId) )
-                        { // this element exists
+            if( $(tileId) )
+            { // this element exists
 
-                            // make the tile visible
-                            //dojo.style( tileId, 'display', 'inline-block' );
-                        }
+                // make the tile visible
+                //dojo.style( tileId, 'display', 'inline-block' );
+                        
 
-            var classToRemove = 'board_tile_image_'+tileNumber+'_'+side+'_'+oldRotation;
-            console.log('classToRemove:'+classToRemove);
-            if($(classToRemove))
-            { // the element exists 
+                var classToRemove = 'board_tile_image_'+tileNumber+'_'+side+'_'+oldRotation;
+                console.log('classToRemove:'+classToRemove);
                 dojo.removeClass( tileId, classToRemove ); // remove existing style like board_tile_image_1_A_1
-            }
 
-            var classToAdd = 'board_tile_image_'+tileNumber+'_'+side+'_'+newRotation;
-            console.log('classToAdd:'+classToAdd);
-            if($(classToAdd))
-            { // the element exists 
+                var classToAdd = 'board_tile_image_'+tileNumber+'_'+side+'_'+newRotation;
+                console.log('classToAdd:'+classToAdd);
                 dojo.addClass( tileId, classToAdd ); // add style like board_tile_image_1_A_2
+               
+                console.log("removed class " + classToRemove + " and added class " + classToAdd);
             }
-            console.log("removed class " + classToRemove + " and added class " + classToAdd);
-
 
             // need a new function that rotates a tile
             // it will:
