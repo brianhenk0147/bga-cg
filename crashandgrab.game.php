@@ -12631,22 +12631,27 @@ echo("<br>");
 
 
 						// notify the player so they can rotate the card on the UI
-						$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-						$playerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
-						$saucerColorHighlighted = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
-						$distanceType = $this->getSaucerDistanceType($saucerWhoseTurnItIs);
-						$distanceText = $this->convertDistanceTypeToString($distanceType);
-						$cardId = $this->getMoveCardIdFromSaucerDistanceType($saucerWhoseTurnItIs, $distanceType, $direction);
-						$revealed = $this->getCardChosenState($cardId);
-						//self::notifyPlayer( $playerWhoseTurnItIs, 'moveCardChange', '', array(
-						self::notifyAllPlayers( 'moveCardChange', clienttranslate( '${saucerColorHighlighted} has changed their Move Card to a ${newDistanceText} in the ${newDirection} direction.' ), array(
-								'saucerColor' => $saucerWhoseTurnItIs,
-								'saucerColorHighlighted' => $saucerColorHighlighted,
-								'newDirection' => $direction,
-								'newDistanceType' => $distanceType,
-								'newDistanceText' => $distanceText,
-								'revealed' => $revealed
-						) );
+						$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
+						
+						if($saucerWhoseTurnItIs != "")
+						{
+							$playerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+							$saucerColorHighlighted = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+							$distanceType = $this->getSaucerDistanceType($saucerWhoseTurnItIs);
+							$distanceText = $this->convertDistanceTypeToString($distanceType);
+							$cardId = $this->getMoveCardIdFromSaucerDistanceType($saucerWhoseTurnItIs, $distanceType, $direction);
+							$revealed = $this->getCardChosenState($cardId);
+							
+							//self::notifyPlayer( $playerWhoseTurnItIs, 'moveCardChange', '', array(
+							self::notifyAllPlayers( 'moveCardChange', clienttranslate( '${saucerColorHighlighted} has changed their Move Card to a ${newDistanceText} in the ${newDirection} direction.' ), array(
+									'saucerColor' => $saucerWhoseTurnItIs,
+									'saucerColorHighlighted' => $saucerColorHighlighted,
+									'newDirection' => $direction,
+									'newDistanceType' => $distanceType,
+									'newDistanceText' => $distanceText,
+									'revealed' => $revealed
+							) );
+						}
 
 						// see if we have any other reveal decisions to make
 						$this->gamestate->nextState( "checkForRevealDecisions" );
