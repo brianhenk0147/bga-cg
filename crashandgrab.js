@@ -8191,9 +8191,11 @@ console.log("success... onClickUpgradeCardInHand");
                 var animationId = this.slideToObject( garmentHtmlId, spaceHtmlId, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
                 dojo.connect(animationId, 'onEnd', () => {
 
-                    // after sliding, the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
-                    //$(source).style.removeProperty('left'); // remove left property
-                    //$(source).style.removeProperty('top'); // remove top property
+                    // tile rotations (and maybe sometimes sliding), the left and top properties have a non-zero value for some reason, making it just a little off on where it should be on the mat
+                    $(source).style.removeProperty('left'); // remove left property
+                    $(source).style.removeProperty('top'); // remove top property
+                    $(source).style.removeProperty('bottom'); // remove bottom property
+                    $(source).style.removeProperty('right'); // remove right property
 
                     // give it a new parent so it's no longer on the space
                     this.attachToNewParent(garmentHtmlId, spaceHtmlId);
