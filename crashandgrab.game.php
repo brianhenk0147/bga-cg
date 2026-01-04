@@ -4706,61 +4706,118 @@ echo("<br>");
 
 		function getTilePositionOfGarment($garmentId)
 		{
-				$garmentX = $this->getGarmentXLocation($garmentId);
-				$garmentY = $this->getGarmentYLocation($garmentId);
+			$garmentX = $this->getGarmentXLocation($garmentId);
+			$garmentY = $this->getGarmentYLocation($garmentId);
 
 				//echo "getting the tile position of $ostrich ostrich with x $ostrichX and y $ostrichY";
 
-				$firstTileX = 1;
-				$firstTileY = 1;
-				$secondTileX = 5;
-				$secondTileY = 1;
-				$thirdTileX = 1;
-				$thirdTileY = 5;
-				$fourthTileX = 5;
-				$fourthTileY = 5;
-				$seventhTileX = 0; // this will be overwritten
-				$eighthTileY = 0; // this will be overwritten
+			$firstTileX = 1;
+			$firstTileY = 1;
+			$secondTileX = 5;
+			$secondTileY = 1;
+			$thirdTileX = 1;
+			$thirdTileY = 5;
+			$fourthTileX = 5;
+			$fourthTileY = 5;
+			$seventhTileX = 0; // this will be overwritten
+			$eighthTileY = 0; // this will be overwritten
 
-				if($this->getNumberOfPlayers() == 5)
-				{ // we need to extend the board by 1
-						$secondTileX = 6;
-						$thirdTileY = 6;
-						$fourthTileX = 6;
-						$fourthTileY = 6;
-						$seventhTileX = 6;
-						$eighthTileY = 6;
-				}
-				elseif($this->getNumberOfPlayers() == 6)
-				{ // we need to extend the board by 2
-						$secondTileX = 7;
-						$thirdTileY = 7;
-						$fourthTileX = 7;
-						$fourthTileY = 7;
-						$seventhTileX = 7;
-						$eighthTileY = 7;
-				}
-
+			if($this->getNumberOfPlayers() < 5)
+			{ // we are NOT using extension tiles between the 4 board tiles
+				
 				if($garmentX < ($firstTileX+4) && $garmentY < ($firstTileY+4))
-				{ // ostrich is on tile 1
+				{ // crewmember is on tile 1
 						return 1;
 				}
 				else if($garmentX < ($secondTileX+4) && $garmentY < ($secondTileY+4))
-				{ // ostrich is on tile 2
+				{ // crewmember is on tile 2
 						return 2;
 				}
 				else if($garmentX < ($thirdTileX+4) && $garmentY < ($thirdTileY+4))
-				{ // ostrich is on tile 3
+				{ // crewmember is on tile 3
 						return 3;
 				}
 				else if($garmentX < ($fourthTileX+4) && $garmentY < ($fourthTileY+4))
-				{ // ostrich is on tile 4
+				{ // crewmember is on tile 4
 						return 4;
 				}
 				else
-				{ // we'll assume they are on one of the extension tiles
-						return 0;
+				{ // we shouldn't get here
+					return 0;
 				}
+			}
+			else if($this->getNumberOfPlayers() == 5)
+			{ // we need to extend the board by 1
+				$secondTileX = 6;
+				$thirdTileY = 6;
+				$fourthTileX = 6;
+				$fourthTileY = 6;
+				$seventhTileX = 6;
+				$eighthTileY = 6;
+				
+
+				if($garmentX == 5 || $garmentY == 5)
+				{ // they are on an extension piece
+					return 0;
+				}
+				if($garmentX < ($firstTileX+4) && $garmentY < ($firstTileY+4))
+				{ // crewmember is on tile 1
+					return 1;
+				}
+				else if($garmentX < ($secondTileX+4) && $garmentY < ($secondTileY+4))
+				{ // crewmember is on tile 2
+					return 2;
+				}
+				else if($garmentX < ($thirdTileX+4) && $garmentY < ($thirdTileY+4))
+				{ // crewmember is on tile 3
+					return 3;
+				}
+				else if($garmentX < ($fourthTileX+4) && $garmentY < ($fourthTileY+4))
+				{ // crewmember is on tile 4
+					return 4;
+				}
+				else
+				{ // we shouldn't get here
+					return 0;
+				}
+			}
+			else if($this->getNumberOfPlayers() == 6)
+			{ // we need to extend the board by 2
+				$secondTileX = 7;
+				$thirdTileY = 7;
+				$fourthTileX = 7;
+				$fourthTileY = 7;
+				$seventhTileX = 7;
+				$eighthTileY = 7;
+				
+				if($garmentX == 5 || $garmentY == 5 || $garmentX == 6 || $garmentY == 6)
+				{ // they are on an extension piece
+					return 0;
+				}
+				if($garmentX < ($firstTileX+4) && $garmentY < ($firstTileY+4))
+				{ // crewmember is on tile 1
+					return 1;
+				}
+				else if($garmentX < ($secondTileX+4) && $garmentY < ($secondTileY+4))
+				{ // crewmember is on tile 2
+					return 2;
+				}
+				else if($garmentX < ($thirdTileX+4) && $garmentY < ($thirdTileY+4))
+				{ // crewmember is on tile 3
+					return 3;
+				}
+				else if($garmentX < ($fourthTileX+4) && $garmentY < ($fourthTileY+4))
+				{ // crewmember is on tile 4
+					return 4;
+				}
+				else
+				{ // we shouldn't get here
+					return 0;
+				}
+			}
+
+			return 0; // we shouldn't get here
+		
 		}
 
 		// Tile Position is where the tiles are from a layout perspective.
@@ -4776,40 +4833,23 @@ echo("<br>");
 			$ostrichX = $this->getSaucerXLocation($ostrich);
 			$ostrichY = $this->getSaucerYLocation($ostrich);
 
-				//echo "getting the tile position of $ostrich ostrich with x $ostrichX and y $ostrichY";
+			//echo "getting the tile position of $ostrich ostrich with x $ostrichX and y $ostrichY";
 
 
+			$firstTileX = 1;
+			$firstTileY = 1;
+			$secondTileX = 5;
+			$secondTileY = 1;
+			$thirdTileX = 1;
+			$thirdTileY = 5;
+			$fourthTileX = 5;
+			$fourthTileY = 5;
+			$seventhTileX = 0; // this will be overwritten
+			$eighthTileY = 0; // this will be overwritten
 
-				$firstTileX = 1;
-				$firstTileY = 1;
-				$secondTileX = 5;
-				$secondTileY = 1;
-				$thirdTileX = 1;
-				$thirdTileY = 5;
-				$fourthTileX = 5;
-				$fourthTileY = 5;
-				$seventhTileX = 0; // this will be overwritten
-				$eighthTileY = 0; // this will be overwritten
-
-				if($this->getNumberOfPlayers() == 5)
-				{ // we need to extend the board by 1
-						$secondTileX = 6;
-						$thirdTileY = 6;
-						$fourthTileX = 6;
-						$fourthTileY = 6;
-						$seventhTileX = 6;
-						$eighthTileY = 6;
-				}
-				elseif($this->getNumberOfPlayers() == 6)
-				{ // we need to extend the board by 2
-						$secondTileX = 7;
-						$thirdTileY = 7;
-						$fourthTileX = 7;
-						$fourthTileY = 7;
-						$seventhTileX = 7;
-						$eighthTileY = 7;
-				}
-
+			if($this->getNumberOfPlayers() < 5)
+			{ // we are NOT using extension tiles between the 4 board tiles
+				
 				if($ostrichX < ($firstTileX+4) && $ostrichY < ($firstTileY+4))
 				{ // ostrich is on tile 1
 						return 1;
@@ -4827,9 +4867,82 @@ echo("<br>");
 						return 4;
 				}
 				else
-				{ // we'll assume they are on one of the extension tiles
-						return 0;
+				{ // we shouldn't get here
+					return 0;
 				}
+			}
+			else if($this->getNumberOfPlayers() == 5)
+			{ // we need to extend the board by 1
+				$secondTileX = 6;
+				$thirdTileY = 6;
+				$fourthTileX = 6;
+				$fourthTileY = 6;
+				$seventhTileX = 6;
+				$eighthTileY = 6;
+				
+
+				if($ostrichX == 5 || $ostrichY == 5)
+				{ // they are on an extension piece
+					return 0;
+				}
+				if($ostrichX < ($firstTileX+4) && $ostrichY < ($firstTileY+4))
+				{ // ostrich is on tile 1
+					return 1;
+				}
+				else if($ostrichX < ($secondTileX+4) && $ostrichY < ($secondTileY+4))
+				{ // ostrich is on tile 2
+					return 2;
+				}
+				else if($ostrichX < ($thirdTileX+4) && $ostrichY < ($thirdTileY+4))
+				{ // ostrich is on tile 3
+					return 3;
+				}
+				else if($ostrichX < ($fourthTileX+4) && $ostrichY < ($fourthTileY+4))
+				{ // ostrich is on tile 4
+					return 4;
+				}
+				else
+				{ // we shouldn't get here
+					return 0;
+				}
+			}
+			else if($this->getNumberOfPlayers() == 6)
+			{ // we need to extend the board by 2
+				$secondTileX = 7;
+				$thirdTileY = 7;
+				$fourthTileX = 7;
+				$fourthTileY = 7;
+				$seventhTileX = 7;
+				$eighthTileY = 7;
+				
+				if($ostrichX == 5 || $ostrichY == 5 || $ostrichX == 6 || $ostrichY == 6)
+				{ // they are on an extension piece
+					return 0;
+				}
+				if($ostrichX < ($firstTileX+4) && $ostrichY < ($firstTileY+4))
+				{ // ostrich is on tile 1
+					return 1;
+				}
+				else if($ostrichX < ($secondTileX+4) && $ostrichY < ($secondTileY+4))
+				{ // ostrich is on tile 2
+					return 2;
+				}
+				else if($ostrichX < ($thirdTileX+4) && $ostrichY < ($thirdTileY+4))
+				{ // ostrich is on tile 3
+					return 3;
+				}
+				else if($ostrichX < ($fourthTileX+4) && $ostrichY < ($fourthTileY+4))
+				{ // ostrich is on tile 4
+					return 4;
+				}
+				else
+				{ // we shouldn't get here
+					return 0;
+				}
+			}
+
+			return 0; // we shouldn't get here
+		
 		}
 
 		function getTileNumber($tilePosition)
@@ -7549,6 +7662,7 @@ echo("<br>");
 						$tilePosition = $this->getTilePositionOfOstrich($ostrichColor); // get which tile they are on (like 1,2,3,4 are the main tile positions)
 						$tileNumber = $this->getTileNumber($tilePosition); // find the unique identifier for the tile
 
+						//echo "saucer $ostrichColor is on tilePosition $tilePosition";
 						//throw new feException( "saucer tileNumberToRotate:$tileNumberToRotate tileNumber:$tileNumber tilePosition:$tilePosition");
 
 						if($tileNumber == $tileNumberToRotate)
