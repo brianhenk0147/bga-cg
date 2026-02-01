@@ -2759,7 +2759,7 @@ echo("<br>");
 
 								$crewmembersWithinTractor = $this->getCrewmembersWithinTractorBeam($saucerColor);
 								if(count($crewmembersWithinTractor) > 0)
-								{ // there is a crewmember within 3 of saucer and on row or column
+								{ // there is a crewmember within 2 of saucer and on row or column
 
 										return true;
 								}
@@ -2968,7 +2968,7 @@ echo("<br>");
 
 						// Tractor Beam
 						case 5:
-								return clienttranslate( 'At the end of your turn, pick up a Crewmember on your row or column up to 3 spaces away from you.');
+								return clienttranslate( 'At the end of your turn, pick up a Crewmember on your row or column up to 2 spaces away from you.');
 
 						// Saucer Teleporter
 						case 6:
@@ -3360,8 +3360,8 @@ echo("<br>");
 						$distanceAwayX = abs($xLocation - $crewmemberX);
 						$distanceAwayY = abs($yLocation - $crewmemberY);
 
-						if($distanceAwayX + $distanceAwayY <= 3)
-						{ // it is within 3
+						if($distanceAwayX + $distanceAwayY <= 2)
+						{ // it is within 2
 							if($crewmemberX == $xLocation || $crewmemberY == $yLocation)
 							{ // they are on their row or column
 								array_push($crewmembersWithinTractor, $crewmember);
@@ -3504,7 +3504,7 @@ echo("<br>");
 
 								$crewmembersWithinTractor = $this->getCrewmembersWithinTractorBeam($saucerColor);
 								if(count($crewmembersWithinTractor) > 0)
-								{ // there is a crewmember within 3 of saucer and on row or column
+								{ // there is a crewmember within 2 of saucer and on row or column
 
 										$result[$index] = array();
 										$result[$index]['buttonId'] = 'upgradeButton_5';
