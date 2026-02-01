@@ -1619,14 +1619,14 @@ class CrashAndGrab extends Table
 		function didSaucerPickUpOrStealCrewmemberThisTurn($saucerColor)
 		{
 			$currentTurn = $this->getGameStateValue("CURRENT_TURN");
-
+//echo "CURRENT TURN $currentTurn";
 			$crewmembersOnSaucer = $this->getCrewmembersOnSaucer($saucerColor);
 			foreach( $crewmembersOnSaucer as $crewmember )
 			{ // go through each crewmember on this saucer
 				$turnAcquired = $crewmember['turn_acquired'];
 
 				//throw new feException( "CURRENT TURN $currentTurn and TURN ACQUIRED $turnAcquired" );
-				
+//				echo "CURRENT TURN $currentTurn and TURN ACQUIRED $turnAcquired";
 
 				if($turnAcquired == $currentTurn)
 				{ // this crewmember was acquired this turn
@@ -3626,6 +3626,9 @@ echo("<br>");
 						$this->isUpgradePlayable($saucerColor, 'Organic Triangulator'))
 				{ // they have played Organic Triangulator but they have not yet activated it this round
 
+					if(!$this->didSaucerPickUpOrStealCrewmemberThisTurn($saucerColor))
+					{ // the saucer did not pick up a crewmember
+						
 						if(!$this->isSaucerCrashed($saucerColor))
 						{ // they are not crashed
 
@@ -3639,6 +3642,7 @@ echo("<br>");
 
 								$index++;
 						}
+					}
 				}
 
 				return $result;
@@ -11460,7 +11464,7 @@ echo("<br>");
 				//$saucerGivingPrimaryCrewmemberId = $this->getPrimaryCrewmemberId($currentLocation, $crewmemberTypeId);
 
 				if($currentLocation != "board" && $currentLocation != "pile")
-				{ // saucer to saucer transfer
+				{ // saucer to saucer transfer (SHOULD WE REMOVE THIS AND JUST ALWAYS CALL SET CREWMEMBERPRIMARYANDEXTRAS?)
 					// go through each crewmember for the GIVING saucer and set the primary and extras to make sure it's accurate
 					$this->setCrewmemberPrimaryAndExtras($currentLocation, $crewmemberTypeId);
 				}
