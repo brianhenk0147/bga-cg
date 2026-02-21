@@ -3738,13 +3738,17 @@ echo("<br>");
 				
 				$result = array();
 				$stealerOwner = $this->getOwnerIdOfOstrich($stealerSaucer);
+				$crashedOwner = $this->getOwnerIdOfOstrich($crashedSaucer);
+				$saucerOwnerFriendlyCrashed = $this->getOwnerNameOfOstrich($crashedSaucer);
+				$saucerOwnerFriendlyStealer = $this->getOwnerNameOfOstrich($stealerSaucer);
 
 				$saucerColorFriendlyCrashed = $this->convertColorToHighlightedText($crashedSaucer);
 				$saucerColorFriendlyStealer = $this->convertColorToHighlightedText($stealerSaucer);
 
-				$totalCrewmembersOfStealer = $this->getSeatedCrewmembersForSaucer($stealerSaucer);
-				$totalCrewmembersOfCrashed = $this->getSeatedCrewmembersForSaucer($crashedSaucer);
+				$totalCrewmembersOfStealer = $this->getSeatedCrewmembersForPlayer($stealerOwner);
+				$totalCrewmembersOfCrashed = $this->getSeatedCrewmembersForPlayer($crashedOwner);
 
+				//echo "totalCrewmembersOfStealer:$totalCrewmembersOfStealer totalCrewmembersOfCrashed:$totalCrewmembersOfCrashed";
 				// get offcolored crewmembers
 				$allStealableCrewmembersFromCrashedSaucer = self::getObjectListFromDB( "SELECT garment_id, garment_color, garment_type
 																									FROM garment
@@ -3758,24 +3762,50 @@ echo("<br>");
 					if($totalCrewmembersOfStealer > $totalCrewmembersOfCrashed)
 					{ // stealer has more seated Crewmembers than the crashed saucer
 
+						if($this->getNumberOfPlayers() == 2)
+						{ // 2 SAUCERS PER PLAYER
+							
+							// notify this player (notify all will result in multiple message logs because this happens in args to a state) that stealer may not steal from crashed because they have more crewmembers
+							self::notifyPlayer( $currentPlayer, "cannotSteal", clienttranslate( '${stealer_owner} has more stationed Crewmembers than ${stealee_owner} so they may not steal any from them.' ), array(
+									'stealer_owner' => $saucerOwnerFriendlyStealer,
+									'stealee_owner' => $saucerOwnerFriendlyCrashed
+							) );
+						}
+						else
+						{ // 1 SAUCER PER PLAYER
+							
 							// notify this player (notify all will result in multiple message logs because this happens in args to a state) that stealer may not steal from crashed because they have more crewmembers
 							self::notifyPlayer( $currentPlayer, "cannotSteal", clienttranslate( '${stealer_color} has more stationed Crewmembers than ${stealee_color} so they may not steal any from them.' ), array(
 									'stealer_color' => $saucerColorFriendlyStealer,
 									'stealee_color' => $saucerColorFriendlyCrashed
 							) );
+						}
+							
+						$this->setNotifiedOfStealingOutcome($currentPlayer, 1);
 
-							$this->setNotifiedOfStealingOutcome($currentPlayer, 1);
-
-							return $result;
+						return $result;
 					}
 					elseif(count($allStealableCrewmembersFromCrashedSaucer) == 0)
 					{ // they have nothing to steal
 
-						// this player (notify all will result in multiple message logs because this happens in args to a state) 
-						self::notifyPlayer( $currentPlayer, "nothingToSteal", clienttranslate( '${stealee_color} has nothing for ${stealer_color} to steal.' ), array(
-							'stealer_color' => $saucerColorFriendlyStealer,
-							'stealee_color' => $saucerColorFriendlyCrashed
-						) );
+						if($this->getNumberOfPlayers() == 2)
+						{ // 2 SAUCERS PER PLAYER
+							
+							// this player (notify all will result in multiple message logs because this happens in args to a state) 
+							self::notifyPlayer( $currentPlayer, "nothingToSteal", clienttranslate( '${stealee_owner} has nothing for ${stealer_owner} to steal.' ), array(
+								'stealer_owner' => $saucerOwnerFriendlyStealer,
+								'stealee_owner' => $saucerOwnerFriendlyCrashed
+							) );
+						}
+						else
+						{ // 1 SAUCER PER PLAYER
+							
+							// notify this player (notify all will result in multiple message logs because this happens in args to a state) that stealer may not steal from crashed because they have more crewmembers
+							self::notifyPlayer( $currentPlayer, "nothingToSteal", clienttranslate( '${stealee_color} has nothing for ${stealer_color} to steal.' ), array(
+									'stealer_color' => $saucerColorFriendlyStealer,
+									'stealee_color' => $saucerColorFriendlyCrashed
+							) );
+						}
 
 						$this->setNotifiedOfStealingOutcome($currentPlayer, 1);
 
@@ -7351,6 +7381,18 @@ echo("<br>");
 				$count = count($distinctCrewmemberTypes);
 
 				return $count;
+		}
+
+		function getSeatedCrewmembersForPlayer($playerId)
+		{
+			$totalCrewmembers = 0;
+			$allPlayersSaucers = $this->getSaucersForPlayer($playerId);
+			foreach( $allPlayersSaucers as $saucer )
+			{ // go through each saucer owned by this player
+				$totalCrewmembers += $this->getSeatedCrewmembersForSaucer($saucer['ostrich_color']);
+			}
+			
+			return $totalCrewmembers;
 		}
 
 		function getUpgradesInDeck()
