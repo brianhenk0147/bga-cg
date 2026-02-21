@@ -3628,7 +3628,7 @@ echo("<br>");
 
 					if(!$this->didSaucerPickUpOrStealCrewmemberThisTurn($saucerColor))
 					{ // the saucer did not pick up a crewmember
-						
+
 						if(!$this->isSaucerCrashed($saucerColor))
 						{ // they are not crashed
 
@@ -3729,13 +3729,14 @@ echo("<br>");
 				return $result;
 		}
 
-		function getStealableCrewmembersFromSaucer($crashedSaucer)
+		function getStealableCrewmembersFromSaucer($stealerSaucer, $crashedSaucer)
 		{
+				//echo "stealerSaucer: $stealerSaucer crashedSaucer: $crashedSaucer";
+
 				$currentPlayer = self::getCurrentPlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 				//$activePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 				
 				$result = array();
-				$stealerSaucer = $this->getSaucerWhoseTurnItIs(); // the only time you can steal garments is if it's your turn so it's always this ostrich who gets to steal
 				$stealerOwner = $this->getOwnerIdOfOstrich($stealerSaucer);
 
 				$saucerColorFriendlyCrashed = $this->convertColorToHighlightedText($crashedSaucer);
@@ -3755,7 +3756,8 @@ echo("<br>");
 				{ // we have not yet sent this notification (since this is in an arg for a state, we will get multiple notifications if we do not do this)
 					
 					if($totalCrewmembersOfStealer > $totalCrewmembersOfCrashed)
-					{ // stealer has more Crewmembers than the crashed saucer
+					{ // stealer has more seated Crewmembers than the crashed saucer
+
 							// notify this player (notify all will result in multiple message logs because this happens in args to a state) that stealer may not steal from crashed because they have more crewmembers
 							self::notifyPlayer( $currentPlayer, "cannotSteal", clienttranslate( '${stealer_color} has more stationed Crewmembers than ${stealee_color} so they may not steal any from them.' ), array(
 									'stealer_color' => $saucerColorFriendlyStealer,
@@ -11615,8 +11617,9 @@ echo("<br>");
 
 		function executeStealCrewmember( $stolenTypeText, $stolenColor, $areWePassing, $areWeTaking )
 		{
-				$saucerReceiving = $this->getOstrichWhoseTurnItIs();
-				$saucerGiving = $this->getSaucerThatCrashed(true);
+				$saucerReceiving = $this->getSaucerWhoseTurnItIs();
+				$saucerGiving = $this->getSaucerHoldingCrewmemberTypeColor($stolenTypeText, $stolenColor);
+				//$saucerGiving = $this->getSaucerThatCrashed(true);
 
 				$moveType = $this->getMoveTypeWeAreExecuting();
 				
@@ -15969,9 +15972,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				$stealableCrewmembers = array();
 
 				
-				$stealableCrewmembers = self::getStealableCrewmembersFromSaucer($crashedSaucer);
+				$stealableCrewmembers = self::getStealableCrewmembersFromSaucer($saucerStealing, $crashedSaucer);
 				
-				//throw new feException( "saucerStealing: $saucerStealing crashedSaucer: $crashedSaucer" );
+				//echo "saucerStealing: $saucerStealing crashedSaucer: $crashedSaucer";
 
 				// return both the location of all the
 				return array(
