@@ -6495,7 +6495,6 @@ echo("<br>");
 
 								$crashPenaltyRendered = $saucerDetail['crash_penalty_rendered'];
 
-								//throw new feException( "saucerCrashed:$saucerCrashed saucerWhoseTurnItIs:$saucerWhoseTurnItIs saucer: $saucer crashPenaltyRendered: $crashPenaltyRendered");
 
 								if($saucerCrashed == true &&
 									$saucerWhoseTurnItIs == $colorOfSaucer &&
@@ -6533,8 +6532,7 @@ echo("<br>");
 
 							$crashPenaltyRendered = $saucerDetail['crash_penalty_rendered'];
 
-							//throw new feException( "saucerCrashed:$saucerCrashed saucerWhoseTurnItIs:$saucerWhoseTurnItIs saucer: $saucer crashPenaltyRendered: $crashPenaltyRendered");
-
+//echo "saucerCrashed:$saucerCrashed saucerWhoseTurnItIs:$saucerWhoseTurnItIs saucer: $saucer crashPenaltyRendered: $crashPenaltyRendered";
 							if($saucerCrashed == true &&
 								$saucerWhoseTurnItIs == $saucer &&
 								$crashPenaltyRendered == false)
@@ -7788,6 +7786,13 @@ echo("<br>");
 		{
 
 			$sql = "UPDATE ostrich SET crash_penalty_rendered=0" ;
+			self::DbQuery( $sql );
+		}
+
+		function resetCrashPenaltyForSaucer($saucerColor)
+		{
+
+			$sql = "UPDATE ostrich SET crash_penalty_rendered=0 WHERE ostrich_color='$saucerColor'" ;
 			self::DbQuery( $sql );
 		}
 
@@ -11730,6 +11735,9 @@ echo("<br>");
 		function executeClickedSaucerToPlace($colorAsHex)
 		{
 				$currentState = $this->getStateName();
+
+				// clear out any pending crash rewards/penalties to avoid them getting crashed on another player's turn and then them crashing on their own turn without being penalized
+				$this->resetCrashPenaltyForSaucer($colorAsHex);
 
 				// place it at a random location
 				$foundUnoccupiedCrashSite = $this->randomlyPlaceSaucer($colorAsHex);
