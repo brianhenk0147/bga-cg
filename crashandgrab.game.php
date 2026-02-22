@@ -15495,8 +15495,9 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						// move the Probe
 						$this->moveTheProbe();
 
-						$this->gamestate->setAllPlayersMultiactive(); // set all players to active
-				  	$this->gamestate->nextState( "newRound" ); // use the newRound transition to go to the plan phase
+						$this->gamestate->setAllPlayersMultiactive(); // set all HUMAN players to active
+
+					  	$this->gamestate->nextState( "newRound" ); // use the newRound transition to go to the plan phase
 
 				}
 		}
@@ -16528,126 +16529,44 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
         you must _never_ use getCurrentPlayerId() or getCurrentPlayerName(), otherwise it will fail with a "Not logged" error message.
     */
 
-    function zombieTurn( $state, $active_player )
+function zombieTurn($state, $active_player)
+{
+    $statename = $state['name'];
+	$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
+
+    if ($statename == 'chooseMoveCard')
     {
-    	$statename = $state['name'];
-		$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
-
-        // Make sure player is in a non blocking status for role turn
-        switch ($statename) 
-		{
-			case 'chooseMoveCard':
-				$saucer1Color = ''; // ff0000, 0000ff, etc.
-				$saucer1Distance = '0'; // 0, 1, 2
-				$saucer1Direction = 'sun'; // asteroids
-				$saucer2Color = ''; // ff0000, 0000ff, etc.
-				$saucer2Distance = '0'; // 0, 1, 2
-				$saucer2Direction = 'sun'; // asteroids
-	
-				$saucersForPlayer = $this->getSaucersForPlayer($active_player);
-				foreach( $saucersForPlayer as $saucer )
-				{ // go through each saucer of this player
-					if($saucer1Color == '')
-					{ // this is the first saucer we've seen from this player
-						$saucer1Color = $saucer['ostrich_color'];
-					}
-					else
-					{ // this is the second saucer we've seen from this player
-						$saucer2Color = $saucer['ostrich_color'];
-					}
-				}
-	
-				$this->executeClickedConfirmMove( $saucer1Color, $saucer1Distance, $saucer1Direction, $saucer2Color, $saucer2Distance, $saucer2Direction );
-	
-			break;
-
-			case 'askWhichUpgradeToPlay':
-
-				// get the database ID of a card available for them to choose
-				$databaseId = 0;
-				$upgradeList = $this->upgradeCards->getCardsInLocation('drawn');
-				foreach( $upgradeList as $card )
-				{ // go through all the cards drawn
-					$databaseId = $card['id']; // get the database id of the card
-				}
-				$this->executeClickedUpgradeCardInHand($databaseId, $saucerWhoseTurnItIs);
-			break;
-
-			case 'setActivePlayerToProbePlayer':
-			case 'chooseTileRotationQuakeMaker':
-			case 'askToWasteAccelerate':
-			case 'chooseSaucerPulseCannon':
-			case 'askToRotationalStabilizer':
-			case 'askToProximityMine':
-			case 'argChooseAcceleratorDistance':
-			case 'chooseDistressSignalerGiveCrewmember':
-			case 'chooseDistressSignalerTakeCrewmember':
-			case 'chooseCrewmemberToAirlock':
-			case 'chooseTractorBeamCrewmember':
-			case 'chooseAfterburnerSpace':
-			case 'chooseOrganicTriangulatorSpace':
-			case 'chooseBlastOffThrusterSpace':
-			case 'chooseLandingLegsSpace':
-			case 'chooseCrewmembersToTake':
-			case 'chooseCrewmembersToPass':
-			case 'chooseCrashSiteSaucerTeleporter':
-			case 'chooseSaucerWormholeGenerator':
-			case 'askWhichEndOfTurnUpgradeToUse':
-			case 'crashPenaltyAskWhichToSteal':
-			case 'crashPenaltyAskWhichToGiveAway':
-			case 'chooseWhetherToHyperdrive':
-			case 'askWhichStartOfTurnUpgradeToUse':
-			case 'chooseTimeMachineDirection':
-			case 'chooseDistanceDuringMoveReveal':
-			case 'finalizeMove':
-			case 'chooseIfYouWillUseBooster':
-			case 'beginTurn':
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
-			break;
-
-			case 'placeCrewmemberChooseCrewmember':
-				
-				// find a valid crewmember to place
-				$crewmemberTypeString = '';
-				$crewmemberColor = '';
-				$lostCrewmembers = $this->getLostCrewmembers(); // the first crewmember in the queue for each saucer
-				foreach($lostCrewmembers as $crewmember)
-				{
-					$crewmemberColor = $crewmember['garment_color'];
-					$crewmemberTypeInt = $crewmember['garment_type'];
-					$crewmemberTypeString = $this->convertGarmentTypeIntToString($crewmemberTypeInt);
-				}
-				
-				// randomly place it
-				$this->executeReplaceGarmentChooseGarment($crewmemberTypeString, $crewmemberColor);
-			break;
-
-			case 'chooseCrashSiteRegenerationGateway':
-			case 'askPreTurnToPlaceCrashedSaucer':
-				// place it at a random location
-				$foundUnoccupiedCrashSite = $this->randomlyPlaceSaucer($saucerWhoseTurnItIs);
-
-				// end their turn
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
-
-
-			break;
-			case 'chooseAcceleratorDirection':
-				// move them off the board (they will be randomly placed at the end of the round)
-				$this->placeSaucerOnSpace($saucerWhoseTurnItIs, 0, 0);
-
-				// do not give the next player who takes a turn credit for crashing them
-				$this->markCrashPenaltyRendered($saucerWhoseTurnItIs);
-
-				// end their turn
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
-			break;
-
-			default:
-				throw new feException( "Zombie mode not supported at this game state: ".$statename );
-			break;
-        }        
+        // Remove zombie from multiactive list, using the transition for this state
+        $this->gamestate->setPlayerNonMultiactive($active_player, 'allMovesChosen');
+        return;
     }
+
+	if ($statename == 'chooseCrashSiteRegenerationGateway' || $statename == 'askPreTurnToPlaceCrashedSaucer')
+    {
+        // place it at a random location
+		$foundUnoccupiedCrashSite = $this->randomlyPlaceSaucer($saucerWhoseTurnItIs);
+
+		 $this->gamestate->nextState('zombiePass');
+        return;
+    }
+
+
+
+    if ($state['type'] == "multipleactiveplayer")
+    {
+        // For any other multiactive state with zombies
+        $this->gamestate->setPlayerNonMultiactive($active_player, 'zombiePass');
+        return;
+    }
+
+    $this->gamestate->nextState('zombiePass');
+}
+
+function zombiePass()
+{
+   $this->gamestate->nextState('endSaucerTurnCleanUp');
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////:
 ////////// DB upgrade

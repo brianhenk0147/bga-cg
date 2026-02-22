@@ -101,7 +101,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetSaucerAcceleratorMoves',
         "possibleactions" => array( "clickAcceleratorDirection", "clickMoveDirection" ),
-    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "executingMove" => 70 )
+    		"transitions" => array( "chooseAcceleratorDirection" => 9, "chooseIfYouWillUseBooster" => 32, "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "executingMove" => 70, "zombiePass" => 98 )
     ),
 
     10 => array(
@@ -111,7 +111,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetLostCrewmembers',
     		"possibleactions" => array( "chooseLostCrewmember" ),
-    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurnCleanUp" => 50 )
+    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98 )
     ),
 
     11 => array(
@@ -120,7 +120,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You must choose which ostrich you will move.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "chooseOstrich" ),
-    		"transitions" => array( "chooseXValue" => 12, "askTrapBasic" => 19 )
+    		"transitions" => array( "chooseXValue" => 12, "askTrapBasic" => 19, "zombiePass" => 98 )
     ),
 
     12 => array(
@@ -130,7 +130,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetAllXMoves',
     		"possibleactions" => array( "selectXValue" ),
-    		"transitions" => array( "checkForRevealDecisions" => 38, "endSaucerTurnCleanUp" => 50 )
+    		"transitions" => array( "checkForRevealDecisions" => 38, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98 )
     ),
 
     14 => array(
@@ -139,7 +139,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('Would you like to zag?'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "answerZagQuestion" ),
-    		"transitions" => array( "askTrapBasic" => 19, "askUseSkateboard" => 9, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "endGame" => 99 )
+    		"transitions" => array( "askTrapBasic" => 19, "askUseSkateboard" => 9, "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "endGame" => 99, "zombiePass" => 98 )
     ),
 
     15 => array(
@@ -148,7 +148,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You must discard down to 1 Trap Card.'),
     		"type" => "multipleactiveplayer",
     		"possibleactions" => array( "discardTrapCard" ),
-    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15 )
+    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "zombiePass" => 98 )
     ),
 
     17 => array(
@@ -158,7 +158,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argStealableGarments',
     		"possibleactions" => array( "clickDraw2Zigs", "stealGarmentClick" ),
-    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "chooseGarmentToSteal" => 23 )
+    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "chooseGarmentToSteal" => 23, "zombiePass" => 98 )
     ),
 
     19 => array(
@@ -167,7 +167,7 @@ $machinestates = array(
     		"descriptionmyturn" => clienttranslate('You have been trapped.'),
     		"type" => "activeplayer",
     		"possibleactions" => array( "executeTrap" ),
-    		"transitions" => array( "askTrapBasic" => 19 )
+    		"transitions" => array( "askTrapBasic" => 19, "zombiePass" => 98 )
     ),
 
     20 => array(
@@ -177,7 +177,7 @@ $machinestates = array(
     		"type" => "multipleactiveplayer",
         'args' => 'argGetOstriches',
     		"possibleactions" => array( "selectZigs", "claimZag", "skipClaimZag", "hideTurnDirection" ),
-    		"transitions" => array( "transitionToChooseZig" => 22, "claimZag" => 20, "chooseZig" => 2 )
+    		"transitions" => array( "transitionToChooseZig" => 22, "claimZag" => 20, "chooseZig" => 2, "zombiePass" => 98 )
     ),
 
     22 => array(
@@ -196,7 +196,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argStealableGarments',
         "possibleactions" => array( "stealGarmentClick" ),
-    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17 )
+    		"transitions" => array( "placeCrewmemberChooseCrewmember" => 10, "discardTrapCards" => 15, "askStealOrDraw" => 17, "zombiePass" => 98 )
     ),
 
     24 => array(
@@ -224,7 +224,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerGoFirstButtons',
         "possibleactions" => array( "clickSaucerToGoFirst" ),
-    		"transitions" => array( "locateCrashedSaucer" => 27, "checkStartOfTurnUpgrades" => 24 )
+    		"transitions" => array( "locateCrashedSaucer" => 27, "checkStartOfTurnUpgrades" => 24, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98 )
     ),
 
     27 => array(
@@ -252,7 +252,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
-    		"transitions" => array( "chooseBoosterDistance" => 33, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70 )
+    		"transitions" => array( "chooseBoosterDistance" => 33, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70, "zombiePass" => 98 )
     ),
 
     33 => array(
@@ -262,7 +262,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argChooseBoosterDistance',
         "possibleactions" => array( "selectXValue" ),
-        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endGame" => 99 )
+        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endGame" => 99, "zombiePass" => 98 )
     ),
 
     34 => array(
@@ -272,7 +272,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetAllCrashSitesOccupiedDetails',
         "possibleactions" => array( "chooseSaucerSpace" ),
-    		"transitions" => array( "endRoundCleanUp" => 5 )
+    		"transitions" => array( "endRoundCleanUp" => 5, "zombiePass" => 98 )
     ),
 
     36 => array(
@@ -291,7 +291,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetSaucerToPlaceButton',
         "possibleactions" => array( "clickSaucerToPlace" ),
-    		"transitions" => array( "allCrashSitesOccupiedChooseSpaceEndRound" => 34, "endRoundCleanUp" => 5, "newRound" => 2  )
+    		"transitions" => array( "allCrashSitesOccupiedChooseSpaceEndRound" => 34, "endRoundCleanUp" => 5, "newRound" => 2, "zombiePass" => 98  )
     ),
 
     38 => array(
@@ -310,7 +310,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetAllCrashSitesOccupiedDetails',
         "possibleactions" => array( "chooseSaucerSpace" ),
-    		"transitions" => array( "saucerTurnStart" => 27 )
+    		"transitions" => array( "saucerTurnStart" => 27, "zombiePass" => 98 )
     ),
 
     40 => array(
@@ -320,7 +320,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
         "possibleactions" => array( "clickCrashSite", "chooseUpgradeSpace" ),
-        "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50, "endRoundCleanUp" => 5, "chooseWhichSaucerGoesFirst" => 26, "beginTurn" => 44  )
+        "transitions" => array( "saucerTurnStart" => 27, "endSaucerTurnCleanUp" => 50, "endRoundCleanUp" => 5, "chooseWhichSaucerGoesFirst" => 26, "beginTurn" => 44, "zombiePass" => 98  )
     ),
 
     41 => array(
@@ -330,7 +330,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetDirectionHighlights',
         "possibleactions" => array( "clickDirection", "chooseUpgradeSpace" ),
-        "transitions" => array( "checkForRevealDecisions" => 38, "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array( "checkForRevealDecisions" => 38, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98 )
     ),
 
     42 => array(
@@ -340,7 +340,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetStartOfTurnUpgradesToActivate',
         "possibleactions" => array( "skipActivateUpgrade", "activateUpgrade" ),
-        "transitions" => array( "checkForRevealDecisions" => 38, "chooseBlastOffThrusterSpace" => 60, "chooseSaucerPulseCannon" => 69, "endSaucerTurnCleanUp" => 50  )
+        "transitions" => array( "checkForRevealDecisions" => 38, "chooseBlastOffThrusterSpace" => 60, "chooseSaucerPulseCannon" => 69, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98  )
     ),
 
     43 => array(
@@ -350,7 +350,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerToPlaceButton',
         "possibleactions" => array( "clickSaucer" ),
-    		"transitions" => array(  "allCrashSitesOccupiedChooseSpacePreTurn" => 39, "beginTurn" => 44, "endSaucerTurnCleanUp" => 50 )
+    		"transitions" => array(  "allCrashSitesOccupiedChooseSpacePreTurn" => 39, "beginTurn" => 44, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98 )
     ),
 
     44 => array(
@@ -361,7 +361,7 @@ $machinestates = array(
         "action" => "beginTurn",
         'args' => 'argGetSaucerMoveCardInfo',
         "possibleactions" => array( "clickBegin" ),
-    		"transitions" => array(  "checkStartOfTurnUpgrades" => 24, "endSaucerTurnCleanUp" => 50)
+    		"transitions" => array(  "checkStartOfTurnUpgrades" => 24, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98)
     ),
 
     45 => array(
@@ -381,7 +381,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerColor',
         "possibleactions" => array( "undoMove" ),
-    		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "beginTurn" => 44, "checkStartOfTurnUpgrades" => 24 )
+    		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "beginTurn" => 44, "checkStartOfTurnUpgrades" => 24, "zombiePass" => 98 )
     ),
 
     50 => array(
@@ -400,7 +400,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetGiveAwayCrewmembers',
         "possibleactions" => array( "clickCrewmember" ),
-    		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "endGame" => 99 )
+    		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "endGame" => 99, "zombiePass" => 98 )
     ),
 
     52 => array(
@@ -410,7 +410,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetStealableCrewmembers',
         "possibleactions" => array( "clickCrewmember", "gainEnergy" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "endGame" => 99 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "endGame" => 99, "zombiePass" => 98 )
     ),
 
     53 => array(
@@ -420,7 +420,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetEndOfTurnUpgradesToActivate',
         "possibleactions" => array( "activateUpgrade", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseOrganicTriangulatorSpace" => 74, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64, "chooseSaucerPulseCannon" => 69, "chooseTileRotationQuakeMaker" => 72 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseSaucerWormholeGenerator" => 54, "chooseCrashSiteSaucerTeleporter" => 55, "chooseLandingLegsSpace" => 59, "chooseAfterburnerSpace" => 61, "chooseOrganicTriangulatorSpace" => 74, "chooseTractorBeamCrewmember" => 62, "chooseDistressSignalerTakeCrewmember" => 64, "chooseSaucerPulseCannon" => 69, "chooseTileRotationQuakeMaker" => 72, "zombiePass" => 98 )
     ),
 
     54 => array(
@@ -430,7 +430,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetOtherUncrashedSaucers',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98 )
     ),
 
     55 => array(
@@ -440,7 +440,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAllUnoccupiedCrashSites',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade", "chooseUpgradeSpace" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98 )
     ),
 
     56 => array(
@@ -450,7 +450,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetPassableCrewmembers',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49, "endGame" => 99 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49, "endGame" => 99, "zombiePass" => 98 )
     ),
 
     57 => array(
@@ -460,7 +460,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetTakeableCrewmembers',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49, "endGame" => 99 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49, "endGame" => 99, "zombiePass" => 98 )
     ),
 
     58 => array(
@@ -470,7 +470,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetUpgradesToPlay',
         "possibleactions" => array( "chooseUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "checkStartOfTurnUpgrades" => 24 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "checkStartOfTurnUpgrades" => 24, "zombiePass" => 98 )
     ),
 
     59 => array(
@@ -480,7 +480,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetLandingLegSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "executingMove" => 70, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53  )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "executingMove" => 70, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98 )
     ),
 
     60 => array(
@@ -490,7 +490,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetBlastOffThrustersSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "executingMove" => 70, "checkStartOfTurnUpgrades" => 24)
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "executingMove" => 70, "checkStartOfTurnUpgrades" => 24, "zombiePass" => 98)
     ),
 
     61 => array(
@@ -500,7 +500,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetAfterburnerSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98)
     ),
 
     62 => array(
@@ -511,7 +511,7 @@ $machinestates = array(
         'args' => 'argGetTractorBeamCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "endGame" => 99, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "endGame" => 99, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98 )
     ),
 
     63 => array(
@@ -522,7 +522,7 @@ $machinestates = array(
         'args' => 'argGetAirlockCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "askWhichEndOfTurnUpgradeToUse" => 53, "endGame" => 99 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "askWhichEndOfTurnUpgradeToUse" => 53, "endGame" => 99, "zombiePass" => 98 )
     ),
 
     64 => array(
@@ -532,7 +532,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetDistressSignalerTakeCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseDistressSignalerGiveCrewmember" => 65, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseDistressSignalerGiveCrewmember" => 65, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98 )
     ),
 
     65 => array(
@@ -542,7 +542,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetDistressSignalerGiveCrewmembers',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "zombiePass" => 98 )
     ),
     
     66 => array(
@@ -552,7 +552,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argChooseAcceleratorDistance',
         "possibleactions" => array( "selectXValue" ),
-        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endGame" => 99 )
+        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endGame" => 99, "zombiePass" => 98 )
     ),
 
     67 => array(
@@ -562,7 +562,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argAskToProximityMine',
         "possibleactions" => array( "choosePhaseShift" ),
-        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endGame" => 99 )
+        "transitions" => array(  "executingMove" => 70, "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endGame" => 99, "zombiePass" => 98 )
     ),
 
     68 => array(
@@ -572,7 +572,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argAskToRotationalStabilizer',
         "possibleactions" => array( "chooseTurnDirection" ),
-        "transitions" => array(  "playerTurnStart" => 29, "setActivePlayerToProbePlayer" => 73, "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array(  "playerTurnStart" => 29, "setActivePlayerToProbePlayer" => 73, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98 )
     ),
 
     69 => array(
@@ -582,7 +582,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetPulseCannonSaucers',
         "possibleactions" => array( "chooseSaucer", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "executingMove" => 70, "checkStartOfTurnUpgrades" => 24, "checkForRevealDecisions" => 38, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "executingMove" => 70, "checkStartOfTurnUpgrades" => 24, "checkForRevealDecisions" => 38, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98 )
     ),
 
     70 => array(
@@ -603,7 +603,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argAskToWasteAccelerate',
         "possibleactions" => array( "chooseWasteAccelerator", "declineWasteAccelerator" ),
-        "transitions" => array(  "executingMove" => 70, "chooseAcceleratorDirection" => 9, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array(  "executingMove" => 70, "chooseAcceleratorDirection" => 9, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98 )
     ),
 
     72 => array(
@@ -612,7 +612,7 @@ $machinestates = array(
         "descriptionmyturn" => clienttranslate('You may rotate a tile.'),
         "type" => "activeplayer",
         "possibleactions" => array( "rotateTile", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98 )
     ),
 
     73 => array(
@@ -621,7 +621,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "executeSetActivePlayerToProbePlayer",
         "updateGameProgression" => false,
-        "transitions" => array( "playerTurnStart" => 29, "endSaucerTurnCleanUp" => 50 )
+        "transitions" => array( "playerTurnStart" => 29, "endSaucerTurnCleanUp" => 50, "zombiePass" => 98 )
     ),
 
     74 => array(
@@ -631,7 +631,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetOrganicTriangulatorSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98 )
     ),
 
 
@@ -668,7 +668,7 @@ $machinestates = array(
         "type" => "game",
         "action" => "zombiePass",
         "updateGameProgression" => false,
-        "transitions" => array( "zigChosen" => 2, "startOver" => 2, "allMovesChosen" => 25 )
+        "transitions" => array( "zigChosen" => 2, "startOver" => 2, "allMovesChosen" => 25, "endSaucerTurnCleanUp" => 50 )
     ),
 
     // Final state.
