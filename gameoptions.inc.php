@@ -24,9 +24,10 @@
  *
  */
 
+ /*
 $game_options = array(
 
-    /*
+    
 
     // note: game variant ID should start at 100 (ie: 100, 101, 102, ...). The maximum is 199.
     100 => array(
@@ -51,6 +52,17 @@ $game_options = array(
                 'default' => 1
             ),
 
+);
     */
 
-);
+$game_options = [
+    100 => [
+        'name' => totranslate('Mode'),
+        'values' => [
+            1 => [ 'name' => totranslate('None') ],
+            2 => [ 'name' => totranslate('Twisted Titanium') ],
+        ],
+        'default' => 1
+    ]
+];
+

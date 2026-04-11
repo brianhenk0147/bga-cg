@@ -37,7 +37,8 @@ class CrashAndGrab extends Table
 					"CURRENT_ROUND" => 10,
 					"NUMBER_OF_PLAYERS" => 11,
 					"TURN_ORDER" => 12,
-					"CURRENT_TURN" => 13
+					"CURRENT_TURN" => 13,
+					"MODE" => 14
 
             //    "my_second_global_variable" => 11,
             //      ...
@@ -122,8 +123,8 @@ class CrashAndGrab extends Table
         self::reloadPlayersBasicInfos();
 
 
-
-
+		// save which mode we are using for use in other functions
+		self::setGameStateInitialValue( 'MODE', $options[100] );
 
         /************ Start the game initialization *****/
 
@@ -136,6 +137,7 @@ class CrashAndGrab extends Table
         //self::initStat( 'table', 'table_teststat1', 0 );    // Init a table statistics
         //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
+				$this->startOfGameMessage(); // put a starting message about how to win in the message log
 
 				$this->initializeStats();
 
@@ -447,6 +449,11 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Organic Triangulator', 'type_arg' => 26, 'card_location' => 'deck','nbr' => 1)
 				);
 
+				if($this->getMode() == "Twisted Titanium")
+				{ // we are using the Twisted Titanium mode
+
+				}
+				
 				if($this->getNumberOfPlayers() > 2)
 				{
 						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1));
@@ -5962,6 +5969,18 @@ echo("<br>");
 */
 		}
 
+		function getMode()
+		{
+			switch($this->getGameStateValue("MODE"))
+			{
+				case 2:
+					return 'Twisted Titanium';
+
+				default:
+					return 'None';
+			}
+		}
+
 		function crewmembersNeededForPlayerCount()
 		{
 				switch($this->getNumberOfPlayers())
@@ -9886,6 +9905,20 @@ echo("<br>");
 				$crewmemberId = $this->getCrewmemberIdFromColorAndType($saucerColor, $type);
 
 				$this->moveCrewmemberToBoard($crewmemberId, $locX, $locY);
+		}
+
+		function startOfGameMessage()
+		{
+			$mode = $this->getMode();
+
+			$message = clienttranslate( 'You are playing the base game. Collect one of each Crewmember type to win!' ); // Base Gmae
+
+			if($mode == "Twisted Titanium")
+			{ // we are using the Twisted Titanium mode
+				$message = clienttranslate( 'You are playing the Twisted Titanium mode. Collect Crewmembers to get "bigger" and then collide with opposing Saucers to gain points. First to 5 points wins!' );
+			}
+
+			self::notifyAllPlayers( "startMessage", $message, array() );
 		}
 
 		function giveProbe($newSaucerGettingProbe, $reason)
