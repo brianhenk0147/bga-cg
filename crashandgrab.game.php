@@ -440,7 +440,6 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Kinetic Siphon', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
-						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1),
@@ -449,10 +448,13 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Organic Triangulator', 'type_arg' => 26, 'card_location' => 'deck','nbr' => 1)
 				);
 
-				if($this->getMode() == "Twisted Titanium")
-				{ // we are using the Twisted Titanium mode
+				if($this->getMode() != "Twisted Titanium")
+				{ // we are NOT using the Twisted Titanium mode
 
+						// Proximity Mines doesn't work in Twisted Titanium
+						array_push($cardsList, array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1));
 				}
+				
 				
 				if($this->getNumberOfPlayers() > 2)
 				{
@@ -8965,10 +8967,10 @@ echo("<br>");
 								}
 
 								$saucerWeCollideWith = $this->getSaucerAt($thisX, $currentY, $saucerMoving); // get any ostriches that might be at this location
-								$garmentId = $this->getGarmentIdAt($thisX,$currentY); // get a garment here if there is one
+								$garmentId = $this->getGarmentIdAt($thisX,$currentY); // get a crewmember here if there is one
 								//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
 								if($garmentId != 0)
-								{ // there is a crewmember here
+								{ // there is a CREWMEMBER here
 
 										$this->giveCrewmemberToSaucer($garmentId, $saucerMoving); // give the garment to the ostrich (set garment_location to the color)
 
@@ -9084,7 +9086,7 @@ echo("<br>");
 										array_push($moveEventList, array( 'event_type' => 'saucerMove', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 										if($saucerWeCollideWith != "")
-										{	// there is a saucer here
+										{	// there is a SAUCER here
 
 												// the saucer we collide with will start their movement over
 												$this->setSpacesMoved($saucerWeCollideWith, 0);
@@ -9114,6 +9116,21 @@ echo("<br>");
 
 														// do not move any further because they will need to answer a question
 														return $moveEventList;
+												}
+
+												if($this->getMode() == "Twisted Titanium")
+												{ // we are using the Twisted Titanium mode
+
+													// if we have more crewmembers than them
+														// they crash
+														// we get 1 point
+														// we lose a crewmember (can be automatic rather than a choice)
+													// if we have fewer crewmembers than them
+														// we crash
+														// they get 1 point
+														// they lose a crewmember
+													
+
 												}
 										}
 								}
