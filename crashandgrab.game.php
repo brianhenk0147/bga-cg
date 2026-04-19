@@ -457,7 +457,9 @@ class CrashAndGrab extends Table
 				
 				
 				if($this->getNumberOfPlayers() > 2)
-				{
+				{ // more than 2 players
+
+						// Rotational Stabilizers does not work in 2-player games
 						array_push($cardsList, array( 'type' => 'Rotational Stabilizer', 'type_arg' => 19, 'card_location' => 'deck','nbr' => 1));
 				}
 
@@ -6425,8 +6427,10 @@ echo("<br>");
 
 		}
 
-		function moveGarmentToPile($garmentId)
+		function giveCrewmemberToLostCrewmembers($garmentId, $reason)
 		{
+			$saucerHoldingCrewmember = $this->getSaucerHoldingCrewmemberId($garmentId);
+
 			// update the database to return it to the pile
 			$sql = "UPDATE garment SET garment_x=0,garment_y=0,garment_location='pile' WHERE garment_id=$garmentId";
 			self::DbQuery( $sql );
@@ -6436,15 +6440,21 @@ echo("<br>");
 
 			$garmentTypeString = $this->convertGarmentTypeIntToString($garmentType);
 
+			
+			//echo "saucerHoldingCrewmember:$saucerHoldingCrewmember"; 
+			$ownerOfCrewmember = $this->getOwnerIdOfOstrich($saucerHoldingCrewmember);
+			$highlightedPlayerNameHolding = $this->convertColorToHighlightedText($saucerHoldingCrewmember);
+
 			// notify players that this garment has been acquired
-			self::notifyAllPlayers( "garmentDiscarded", clienttranslate( '${player_name} is discarding the ${garmentColorText} ${garmentType} garment.' ), array(
+			self::notifyAllPlayers( "garmentDiscarded", clienttranslate( '${player_name} is discarding ${CREWMEMBERIMAGE} ${reason}.' ), array(
 					'garmentColor' => $garmentColor,
 					'garmentType' => $garmentTypeString,
-					'player_name' => self::getActivePlayerName(),
-					'garmentColorText' => $this->getOstrichName($garmentColor)
+					'CREWMEMBERIMAGE' => 'CREWMEMBERIMAGE_'.$garmentTypeString.'_'.$garmentColor,
+					'player_name' => $highlightedPlayerNameHolding,
+					'garmentColorText' => $this->getOstrichName($garmentColor),
+					'sourceSaucerColor' => $saucerHoldingCrewmember,
+					'reason' => $reason
 			) );
-
-				$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 		}
 
 		function moveCrewmemberToBoard($garmentId, $xDestination, $yDestination)
@@ -7312,7 +7322,7 @@ echo("<br>");
 				$locationDescription = clienttranslate("was placed on Crash Site");
 				if($crashSiteNumber == "D")
 				{ // it was placed off the board
-						$locationDescription = clienttranslate("move off the board");
+						$locationDescription = clienttranslate("was placed off the board");
 						$crashSiteNumber = "";
 				}
 
@@ -7322,7 +7332,7 @@ echo("<br>");
 				// notify all players of this saucer's new location
 				$boardValue = $this->getBoardSpaceType($locX, $locY);
 				$ostrichOwner = $this->getOwnerIdOfOstrich($saucerColor);
-				self::notifyAllPlayers( "moveOstrich", clienttranslate( '${color_highlighted} ${location_description} ${crash_site_integer}.' ), array(
+				self::notifyAllPlayers( "moveOstrich", clienttranslate( '${color_highlighted} ${location_description} ${crash_site_integer}' ), array(
 								'color' => $saucerColor,
 								'color_highlighted' => $saucerColorHighlighted,
 								'ostrichTakingTurn' => $saucerColor,
@@ -8514,7 +8524,10 @@ echo("<br>");
 				$clockwiseAsInt = $this->getGameStateValue("TURN_ORDER"); // 0=CLOCKWISE, 1=COUNTER-CLOCKWISE, 2=UNKNOWN
 				$nextPlayer = $this->getStartPlayer(); // get the player with the probe
 				$numberOfPlayers = $this->getNumberOfPlayers();
-
+				
+				//if(!$nextPlayer)
+				//	throw new feException( "nextPlayer null" );
+				
 				if($numberOfPlayers > 2)
 				{ // 1 saucer per player
 						for ($x = 0; $x <= $numberOfPlayers; $x++)
@@ -8552,6 +8565,9 @@ echo("<br>");
 						$probePlayer = $nextPlayer;
 						$countOfTurnsTakenProbePlayer = $this->countTurnsTakenByPlayer($probePlayer);
 						$nextPlayer = $this->getPlayerAfter( $probePlayer );
+						//if(!$nextPlayer)
+						//	throw new feException( "nextPlayer null" );
+
 						$saucerTakingTurn = ""; // we may need to save a saucer color while we look at the other one
 						$countOfTurnsTakenOtherPlayer = $this->countTurnsTakenByPlayer($nextPlayer);
 //throw new feException( "probe player ($probePlayer) has count ($countOfTurnsTakenProbePlayer) while other player ($nextPlayer) has count ($countOfTurnsTakenOtherPlayer)");
@@ -8589,6 +8605,10 @@ echo("<br>");
 						else
 						{ // probe player is going now
 //throw new feException( "probe player going");
+								
+								//if(!$probePlayer)
+								//	throw new feException( "probePlayer null" );
+
 								$saucersForPlayer = $this->getSaucersForPlayer($probePlayer);
 								$saucerTakingTurn = ""; // we may need to save a saucer color while we look at the other one
 								foreach( $saucersForPlayer as $saucer )
@@ -9121,16 +9141,42 @@ echo("<br>");
 												if($this->getMode() == "Twisted Titanium")
 												{ // we are using the Twisted Titanium mode
 
-													// if we have more crewmembers than them
-														// they crash
-														// we get 1 point
-														// we lose a crewmember (can be automatic rather than a choice)
-													// if we have fewer crewmembers than them
-														// we crash
-														// they get 1 point
-														// they lose a crewmember
-													
+													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
+													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
 
+													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith)
+													{ // if we have more crewmembers than them
+
+														// they crash
+														$this->crashSaucer($saucerWeCollideWith, $saucerMoving);
+
+														// we get 1 point
+														$this->incrementPoints($playerMoving);
+
+														// we lose a crewmember (can be automatic rather than a choice)
+														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so now one gets a reward for this crash
+
+														// do not move any further because
+														return $moveEventList;
+													}
+													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith)
+													{ // if we have fewer crewmembers than them
+
+														// we crash
+														$this->crashSaucer($saucerMoving, $saucerWeCollideWith);
+
+														// they get 1 point
+														$ownerOfSaucerWeCollidedWith = $this->getOwnerIdOfOstrich($saucerWeCollideWith);
+														$this->incrementPoints($ownerOfSaucerWeCollidedWith);
+
+														// they lose a crewmember
+														$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so now one gets a reward for this crash
+
+														// do not move any further because
+														return $moveEventList;
+													}
 												}
 										}
 								}
@@ -9350,6 +9396,47 @@ echo("<br>");
 														// do not move any further because
 														return $moveEventList;
 												}
+
+												if($this->getMode() == "Twisted Titanium")
+												{ // we are using the Twisted Titanium mode
+
+													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
+													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
+
+													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith)
+													{ // if we have more crewmembers than them
+
+														// they crash
+														$this->crashSaucer($saucerWeCollideWith, $saucerMoving);
+
+														// we get 1 point
+														$this->incrementPoints($playerMoving);
+
+														// we lose a crewmember (can be automatic rather than a choice)
+														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so now one gets a reward for this crash
+
+														// do not move any further because
+														return $moveEventList;
+													}
+													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith)
+													{ // if we have fewer crewmembers than them
+
+														// we crash
+														$this->crashSaucer($saucerMoving, $saucerWeCollideWith);
+
+														// they get 1 point
+														$ownerOfSaucerWeCollidedWith = $this->getOwnerIdOfOstrich($saucerWeCollideWith);
+														$this->incrementPoints($ownerOfSaucerWeCollidedWith);
+
+														// they lose a crewmember
+														$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so now one gets a reward for this crash
+
+														// do not move any further because
+														return $moveEventList;
+													}
+												}
 										}
 								}
 
@@ -9558,6 +9645,47 @@ echo("<br>");
 														// do not move any further because
 														return $moveEventList;
 												}
+
+												if($this->getMode() == "Twisted Titanium")
+												{ // we are using the Twisted Titanium mode
+
+													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
+													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
+
+													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith)
+													{ // if we have more crewmembers than them
+
+														// they crash
+														$this->crashSaucer($saucerWeCollideWith, $saucerMoving);
+
+														// we get 1 point
+														$this->incrementPoints($playerMoving);
+
+														// we lose a crewmember (can be automatic rather than a choice)
+														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so now one gets a reward for this crash
+
+														// do not move any further because
+														return $moveEventList;
+													}
+													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith)
+													{ // if we have fewer crewmembers than them
+
+														// we crash
+														$this->crashSaucer($saucerMoving, $saucerWeCollideWith);
+
+														// they get 1 point
+														$ownerOfSaucerWeCollidedWith = $this->getOwnerIdOfOstrich($saucerWeCollideWith);
+														$this->incrementPoints($ownerOfSaucerWeCollidedWith);
+
+														// they lose a crewmember
+														$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so now one gets a reward for this crash
+
+														// do not move any further because
+														return $moveEventList;
+													}
+												}
 										}
 								}
 
@@ -9762,6 +9890,47 @@ echo("<br>");
 														// do not move any further because
 														return $moveEventList;
 												}
+
+												if($this->getMode() == "Twisted Titanium")
+												{ // we are using the Twisted Titanium mode
+
+													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
+													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
+
+													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith)
+													{ // if we have more crewmembers than them
+
+														// they crash
+														$this->crashSaucer($saucerWeCollideWith, $saucerMoving);
+
+														// we get 1 point
+														$this->incrementPoints($playerMoving);
+
+														// we lose a crewmember (can be automatic rather than a choice)
+														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so now one gets a reward for this crash
+
+														// do not move any further because
+														return $moveEventList;
+													}
+													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith)
+													{ // if we have fewer crewmembers than them
+
+														// we crash
+														$this->crashSaucer($saucerMoving, $saucerWeCollideWith);
+
+														// they get 1 point
+														$ownerOfSaucerWeCollidedWith = $this->getOwnerIdOfOstrich($saucerWeCollideWith);
+														$this->incrementPoints($ownerOfSaucerWeCollidedWith);
+
+														// they lose a crewmember
+														$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so now one gets a reward for this crash
+
+														// do not move any further because
+														return $moveEventList;
+													}
+												}
 										}
 								}
 
@@ -9788,6 +9957,13 @@ echo("<br>");
 
 		function updatePlayerScores()
 		{
+			$mode = $this->getMode();
+			if($mode == "Twisted Titanium")
+			{ // we are using the Twisted Titanium mode
+				// do not mess with player scores
+			}
+			else
+			{ // base game mode
 				$allPlayers = self::getObjectListFromDB( "SELECT player_id
 																											 FROM player" );
 
@@ -9804,6 +9980,75 @@ echo("<br>");
 								'player_score' => $thisPlayerScore
 						) );
 				}
+			}
+		}
+
+		function incPlayerScore($player_id, $delta)
+		{
+			// Update DB
+			$this->DbQuery("UPDATE player SET player_score = player_score + $delta WHERE player_id = $player_id");
+
+			//$newScore = $this->getPlayerScore($player_id);
+			//echo "newScore:".$newScore." playerId:".$player_id;
+
+
+				$this->notifyAllPlayers(
+					"updateScore",
+					'',
+					[
+						'player_id' => $player_id,
+						'player_name' => $this->getPlayerNameById($player_id),
+						'delta' => $delta,
+						'player_score' => $this->getPlayerScore($player_id)
+					]
+				);
+			
+		}
+
+		function decPlayerScore($player_id, $delta)
+		{
+			// Update DB
+			$this->DbQuery("UPDATE player SET player_score = player_score - $delta WHERE player_id = $player_id");
+
+			//$newScore = $this->getPlayerScore($player_id);
+			//echo "newScore:".$newScore." playerId:".$player_id;
+
+
+				$this->notifyAllPlayers(
+					"updateScore",
+					'',
+					[
+						'player_id' => $player_id,
+						'player_name' => $this->getPlayerNameById($player_id),
+						'delta' => $delta,
+						'player_score' => $this->getPlayerScore($player_id)
+					]
+				);
+			
+		}
+
+		function getPlayerScore($player_id)
+		{
+			return (int) $this->getUniqueValueFromDb(
+				"SELECT player_score FROM player WHERE player_id = $player_id"
+			);
+		}
+
+		function incrementPoints($playerId)
+		{
+			//echo "incrementPoints playerId:".$playerId;
+
+			$this->incPlayerScore($playerId, 1);
+		}
+
+		function decrementPoints($playerId)
+		{
+			$score = $this->getPlayerScore($playerId);
+
+			if($score > 0)
+			{ // they have at least 1 point
+				$this->decPlayerScore($playerId, 1);
+			}
 		}
 
 		function getSaucerWithProbe()
@@ -9936,6 +10181,30 @@ echo("<br>");
 			}
 
 			self::notifyAllPlayers( "startMessage", $message, array() );
+		}
+
+		function crashSaucer($saucerCrashed, $saucerWhoseTurnItIs)
+		{
+
+				// set the saucer murderer so we know to give them a reward and put in the message log
+				$this->setSaucerMurderer($saucerCrashed, $saucerWhoseTurnItIs);
+
+				$ownerOfMurderer = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+				$ownerOfMurderee = $this->getOwnerIdOfOstrich($saucerCrashed);
+
+				self::incStat( 1, 'saucers_you_crashed', $ownerOfMurderer ); // add stat that the current player pushed an ostrich off a cliff
+				self::incStat( 1, 'times_you_crashed', $ownerOfMurderee ); // add a stat that the owner of the ostrich who fell off the cliff was pushed off a cliff
+
+				// move them off the board and notify players
+				$this->placeSaucerOnSpace($saucerCrashed, 0, 0);
+
+				// say they're already been penalized for "crashing" so no one gets a reward for it
+				//$this->markCrashPenaltyRendered($saucerCrashed);
+
+				// reset pushed setting so we don't think a saucer was pushed when we do our next move
+				$this->resetPushedForAllSaucers();
+
+				//throw new feException( "executeSkipPhaseShifter");
 		}
 
 		function giveProbe($newSaucerGettingProbe, $reason)
@@ -10171,6 +10440,35 @@ echo("<br>");
 
 													$this->markCrashPenaltyRendered($ostrichColor); // make sure no one gets an energy for knocking them off
 												}
+
+												if($this->getMode() == "Twisted Titanium")
+												{ // we are using the Twisted Titanium mode
+													//echo 'tt1';
+
+													$score = $this->getPlayerScore($ownerOfOstrichTakingTurn);
+													if($score > 0)
+													{ // they have at least 1 point
+
+														self::notifyAllPlayers( "twistedLoseAPoint", clienttranslate( '${saucerWhoCrashedText} loses a point.' ), array(
+															'player_name' => self::getActivePlayerName(),
+															'ostrichName' => $this->getOstrichName($ostrichColor),
+															'saucerWhoCrashedText' => $ostrichColorText,
+															'saucerWhoIsStealingText' => $saucerMurdererText
+														) );
+													}
+													else
+													{
+														self::notifyAllPlayers( "twistedNoLoseAPoint", clienttranslate( '${saucerWhoCrashedText} does not have any points to lose.' ), array(
+														'player_name' => self::getActivePlayerName(),
+														'ostrichName' => $this->getOstrichName($ostrichColor),
+														'saucerWhoCrashedText' => $ostrichColorText,
+														'saucerWhoIsStealingText' => $saucerMurdererText
+														) );
+													}
+
+													$this->decrementPoints($ownerOfOstrich); // they lose a point if they have one
+													$this->markCrashPenaltyRendered($ostrichColor); // they do not need to lose a crewmember
+												}
 											}
 										}
 										else
@@ -10186,6 +10484,21 @@ echo("<br>");
 */
 												self::incStat( 1, 'saucers_you_crashed', $ownerOfOstrichTakingTurn ); // add stat that the current player pushed an ostrich off a cliff
 												self::incStat( 1, 'times_you_crashed', $ownerOfOstrich ); // add a stat that the owner of the ostrich who fell off the cliff was pushed off a cliff
+
+												if($this->getMode() == "Twisted Titanium")
+												{ // we are using the Twisted Titanium mode
+													//echo 'tt2';
+													$this->markCrashPenaltyRendered($ostrichColor); // make sure no one gets to steal for knocking them off
+
+													self::notifyAllPlayers( "twistedLoseAPoint", clienttranslate( '${saucerWhoIsStealingText} cannot steal like in the base game but they get an Energy.' ), array(
+														'player_name' => self::getActivePlayerName(),
+														'ostrichName' => $this->getOstrichName($ostrichColor),
+														'saucerWhoCrashedText' => $ostrichColorText,
+														'saucerWhoIsStealingText' => $saucerMurdererText
+													) );
+
+													$this->giveSaucerEnergy($ostrichTakingTurn); // give the saucer an energy
+												}
 										}
 								}
 						}
@@ -10718,42 +11031,67 @@ echo("<br>");
 
 		function isEndGameConditionMet()
 		{
+			if($this->getMode() == "Twisted Titanium")
+			{ // we are using the Twisted Titanium mode
+
+				$allPlayers = self::getObjectListFromDB( "SELECT player_id FROM player" );
+				foreach( $allPlayers as $player )
+				{ // go through each player
+
+					//echo "playerID is " + $player['player_id'];
+					$playerId = $player['player_id'];
+					$playerScore = $this->getPlayerScore($playerId);
+
+					if($playerScore > 4)
+					{ // this player has 5 or more points (they win!)
+						return true;
+					}
+				}
+
+				// if a player has 5 or more points, they win
+				return false;
+			}
+			else
+			{ // we are in base game mode
 
 				$playerSql = "SELECT player_id ";
-        $playerSql .= "FROM player ";
-        $dbresPlayer = self::DbQuery( $playerSql );
-        while( $player = mysql_fetch_assoc( $dbresPlayer ) )
-        { // go through each player
-						$player_id = $player['player_id'];
-						$numberOfOstrichesThisPlayerHas = 0;
-						$numberOfFullyGarmentedOstrichesThisPlayerHas = 0;
+				$playerSql .= "FROM player ";
+				$dbresPlayer = self::DbQuery( $playerSql );
+				while( $player = mysql_fetch_assoc( $dbresPlayer ) )
+				{ // go through each player
+					$player_id = $player['player_id'];
+					$numberOfOstrichesThisPlayerHas = 0;
+					$numberOfFullyGarmentedOstrichesThisPlayerHas = 0;
 
-						$ostrichSql = "SELECT ostrich_color ";
-		        $ostrichSql .= "FROM ostrich ";
-						$ostrichSql .= "WHERE ostrich_owner=$player_id";
-		        $dbresOstrich = self::DbQuery( $ostrichSql );
-		        while( $ostrich = mysql_fetch_assoc( $dbresOstrich ) )
-		        { // go through each ostrich of this player
-								$numberOfOstrichesThisPlayerHas++; // add one to the number of ostriches this player has
+					$ostrichSql = "SELECT ostrich_color ";
+				    $ostrichSql .= "FROM ostrich ";
+					$ostrichSql .= "WHERE ostrich_owner=$player_id";
+				    $dbresOstrich = self::DbQuery( $ostrichSql );
 
-								$ostrichColor = $ostrich['ostrich_color']; // save which color ostrich this is
+					while( $ostrich = mysql_fetch_assoc( $dbresOstrich ) )
+					{ // go through each ostrich of this player
+						$numberOfOstrichesThisPlayerHas++; // add one to the number of ostriches this player has
 
-								// set the garment types to false
-								$hasHeadGarment = false;
-								$hasBodyGarment = false;
-								$hasLegsGarment = false;
-								$hasFeetGarment = false;
+						$ostrichColor = $ostrich['ostrich_color']; // save which color ostrich this is
 
-								$garmentSql = "SELECT garment_type ";
-				        $garmentSql .= "FROM garment ";
-								$garmentSql .= "WHERE garment_location='$ostrichColor'";
-				        $dbresGarment = self::DbQuery( $garmentSql );
-				        while( $ostrich = mysql_fetch_assoc( $dbresGarment ) )
-				        { // go through each garment this ostrich has
-										$garmentType = $ostrich['garment_type'];
+						// set the garment types to false
+						$hasHeadGarment = false;
+						$hasBodyGarment = false;
+						$hasLegsGarment = false;
+						$hasFeetGarment = false;
 
-										switch($garmentType)
-										{
+						$garmentSql = "SELECT garment_type ";
+				    	$garmentSql .= "FROM garment ";
+						$garmentSql .= "WHERE garment_location='$ostrichColor'";
+				    	$dbresGarment = self::DbQuery( $garmentSql );
+				        
+						while( $ostrich = mysql_fetch_assoc( $dbresGarment ) )
+				       	{ // go through each garment this ostrich has
+					
+							$garmentType = $ostrich['garment_type'];
+
+							switch($garmentType)
+							{
 												case 0:
 														$hasHeadGarment = true;
 												break;
@@ -10766,26 +11104,27 @@ echo("<br>");
 												case 3:
 														$hasFeetGarment = true;
 												break;
-										}
-								}
-
-								if($hasHeadGarment && $hasBodyGarment && $hasLegsGarment && $hasFeetGarment)
-								//if($hasFeetGarment)
-								{ // this ostrich has all required garment types
-										$numberOfFullyGarmentedOstrichesThisPlayerHas++; // add one to the number of fully garmented ostriches this player has
-								}
+							}
 						}
 
-
-
-						if($numberOfOstrichesThisPlayerHas == $numberOfFullyGarmentedOstrichesThisPlayerHas)
-						{ // all of this player's ostriches are fully garmented
-							//throw new feException( "isEndGameConditionMet numberOfOstrichesThisPlayerHas:$numberOfOstrichesThisPlayerHas numberOfFullyGarmentedOstrichesThisPlayerHas:$numberOfFullyGarmentedOstrichesThisPlayerHas");
-								return true;
+						if($hasHeadGarment && $hasBodyGarment && $hasLegsGarment && $hasFeetGarment)
+						//if($hasFeetGarment)
+						{ // this ostrich has all required garment types
+							$numberOfFullyGarmentedOstrichesThisPlayerHas++; // add one to the number of fully garmented ostriches this player has
 						}
-        }
-//throw new feException( "isEndGameConditionMet numberOfOstrichesThisPlayerHas:$numberOfOstrichesThisPlayerHas numberOfFullyGarmentedOstrichesThisPlayerHas:$numberOfFullyGarmentedOstrichesThisPlayerHas");
+					}
+
+					if($numberOfOstrichesThisPlayerHas == $numberOfFullyGarmentedOstrichesThisPlayerHas)
+					{ // all of this player's ostriches are fully garmented
+						//throw new feException( "isEndGameConditionMet numberOfOstrichesThisPlayerHas:$numberOfOstrichesThisPlayerHas numberOfFullyGarmentedOstrichesThisPlayerHas:$numberOfFullyGarmentedOstrichesThisPlayerHas");
+						return true;
+					}
+			    }
+
+				//throw new feException( "isEndGameConditionMet numberOfOstrichesThisPlayerHas:$numberOfOstrichesThisPlayerHas numberOfFullyGarmentedOstrichesThisPlayerHas:$numberOfFullyGarmentedOstrichesThisPlayerHas");
 				return false;
+			}
+
 		}
 
 		// Set the state when we are STARTING a player's turn based on which actions are available to them.
@@ -10900,7 +11239,7 @@ echo("<br>");
 		}
 
 		function goToEndGame()
-		{
+		{	
 			$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
 
 			// add one to turn count for current player because normally this only get incremented at the end of a turn
@@ -10913,7 +11252,8 @@ echo("<br>");
 		// Note: A pushed saucer does not go in here.
 		function setState_AfterMovementEvents($saucerMoving, $moveType, $wasPushed=false)
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+
+				$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
 
 				$currentState = $this->getStateName();
 
@@ -11014,6 +11354,8 @@ echo("<br>");
 						}
 
 				}
+
+				
 		}
 
 //////////////////////////////////////////////////////////////////////////////
@@ -11255,25 +11597,7 @@ echo("<br>");
 
 				$this->activateUpgrade($saucerWhoseTurnItIs, "Proximity Mines");
 
-				// set the saucer murderer so we know to give them a reward and put in the message log
-				$this->setSaucerMurderer($saucerCrashed, $saucerWhoseTurnItIs);
-
-				$ownerOfMurderer = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
-				$ownerOfMurderee = $this->getOwnerIdOfOstrich($saucerCrashed);
-
-				self::incStat( 1, 'saucers_you_crashed', $ownerOfMurderer ); // add stat that the current player pushed an ostrich off a cliff
-				self::incStat( 1, 'times_you_crashed', $ownerOfMurderee ); // add a stat that the owner of the ostrich who fell off the cliff was pushed off a cliff
-
-				// move them off the board and notify players
-				$this->placeSaucerOnSpace($saucerCrashed, 0, 0);
-
-				// say they're already been penalized for "crashing" so no one gets a reward for it
-				//$this->markCrashPenaltyRendered($saucerCrashed);
-
-				// reset pushed setting so we don't think a saucer was pushed when we do our next move
-				$this->resetPushedForAllSaucers();
-
-				//throw new feException( "executeSkipPhaseShifter");
+				$this->crashSaucer($saucerCrashed, $saucerWhoseTurnItIs);
 
 				// figure out which type of move this is
 				$moveType = $this->getMoveTypeWeAreExecuting();
@@ -11326,7 +11650,7 @@ echo("<br>");
 
 		function executeSkipStealCrewmember($saucerWhoCrashed)
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
 
 				// mark that the player chose not to pass this round
 				//$this->setSkippedStealing($saucerWhoseTurnItIs, 1);
@@ -11543,6 +11867,89 @@ echo("<br>");
 				{
 					$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
+		}
+
+		// Moves a Crewmember from a saucer mat to the Lost Crewmembers.
+		function moveCrewmemberToLostCrewmembers($saucerLosing)
+		{
+			$crewmemberColor = "unknown";
+			$crewmemberTypeId = -1;
+			$crewmemberType = "unknown";
+
+			// get any crewmember on the saucer
+			$crewmembersOnSaucer = $this->getCrewmembersOnSaucer($saucerLosing);
+			foreach($crewmembersOnSaucer as $crewmember)
+			{ // go through each crewmember on our saucer
+
+				// get the crewmember type
+				$crewmemberTypeId = $crewmember['garment_type'];
+				$crewmemberColor = $crewmember['garment_color'];
+				$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
+			}
+
+			if($crewmemberColor == "unknown" || $crewmemberType == "unknown" || $crewmemberTypeId == -1)
+			{
+				throw new feException( "Could now find a crewmember to lose. ($crewmemberColor, $crewmemberType, $crewmemberTypeId)");
+			}
+
+			$crewmemberId = $this->getGarmentIdFromType($crewmemberType, $crewmemberColor);
+			
+			//echo "The garment at ($thisX,$currentY) is: $garmentId <br>";
+
+			// before we change anything in the database, check if we already have a primary for this crewmember type
+			$currentPrimaryCrewmemberId = $this->getPrimaryCrewmemberId($saucerLosing, $crewmemberTypeId);
+
+			// see where this crewmember is (board, saucer, etc.) before the move to the saucer
+			$currentLocation = $this->getCrewmemberLocationFromId($crewmemberId);
+			//$saucerGivingPrimaryCrewmemberId = $this->getPrimaryCrewmemberId($currentLocation, $crewmemberTypeId);
+
+			if($currentLocation != "board" && $currentLocation != "pile")
+			{ // saucer to saucer transfer (SHOULD WE REMOVE THIS AND JUST ALWAYS CALL SET CREWMEMBERPRIMARYANDEXTRAS?)
+				// go through each crewmember for the GIVING saucer and set the primary and extras to make sure it's accurate
+				$this->setCrewmemberPrimaryAndExtras($currentLocation, $crewmemberTypeId);
+			}
+
+			// see if it was primary on the originating saucer (if it's coming from a saucer)
+			$wasPreviouslyPrimary = $this->isPrimaryCrewmember($crewmemberId);
+			//throw new feException( "wasPreviouslyPrimary for crewmember ($crewmemberId): $wasPreviouslyPrimary saucerGivingPrimaryCrewmemberId: $saucerGivingPrimaryCrewmemberId");
+
+				
+
+			// give the garment to the saucer in the database (set garment_location to the color)
+			$this->giveCrewmemberToLostCrewmembers($crewmemberId, clienttranslate("but they crash the other Saucer and gain a point"));
+
+			$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerLosing);
+			$isPrimary = $this->isPrimaryCrewmember($crewmemberId);
+
+			if($currentLocation != "board" && $currentLocation != "pile" &&
+				$wasPreviouslyPrimary)
+			{ // this is moving from a Saucer to another Saucer and it was Primary on the other saucer
+
+				// go through each crewmember for the GIVING saucer and set the primary and extras
+				$this->setCrewmemberPrimaryAndExtras($currentLocation, $crewmemberTypeId);
+
+				// get the new primary on the saucer giving the crewmember
+				$newPrimaryCrewmemberId = $this->getPrimaryCrewmemberId($currentLocation, $crewmemberTypeId);
+
+				//throw new feException( "newPrimaryCrewmemberId:$newPrimaryCrewmemberId currentLocation:$currentLocation crewmemberTypeId:$crewmemberTypeId");
+
+				if($newPrimaryCrewmemberId != "")
+				{ // there is an extras that can slide into the primary slot
+
+					$newPrimaryCrewmemberColor = $this->getCrewmemberColorFromId($newPrimaryCrewmemberId);
+					$newPrimaryCrewmemberTypeId = $this->getCrewmemberTypeIdFromId($newPrimaryCrewmemberId);
+					$newPrimaryCrewmemberType = $this->convertGarmentTypeIntToString($newPrimaryCrewmemberTypeId);
+
+					self::notifyAllPlayers( "moveCrewmemberToSaucerPrimary", '', array(
+							'crewmemberType' => $newPrimaryCrewmemberType,
+							'crewmemberColor' => $newPrimaryCrewmemberColor,
+							'sourceSaucerColor' => $currentLocation,
+							'destinationSaucerColor' => $currentLocation,
+							'isPrimary' => true
+					) );
+
+				}
+			}
 		}
 
 		// Moves a Crewmember from the board or another saucer to a new saucer.
@@ -11813,6 +12220,24 @@ echo("<br>");
 				{
 					$this->gamestate->nextState( "endSaucerTurnCleanUp" );
 				}
+		}
+
+		function loseCrewmember($saucerLosingCrewmember, $reason)
+		{
+			$saucerLosingHighlightedText = $this->convertColorToHighlightedText($saucerLosingCrewmember);
+
+			self::notifyAllPlayers( "losingCrewmember", clienttranslate( '${saucerLosingHighlightedText} lost a Crewmember because ${reason}.' ), array(
+				'saucerLosingHighlightedText' => $saucerLosingHighlightedText,
+				'reason' => $reason
+			) );
+
+			//throw new feException( "moveCrewmemberToSaucerMat $saucerReceiving $crewmemberTypeText $crewmemberColor");
+
+			// give the crewmember to the saucer in the DB and notify the UI
+			$this->moveCrewmemberToLostCrewmembers($saucerLosingCrewmember);
+
+			// mark that the reward for this crash has been acquired so we don't let them have multiple rewards
+			//$this->markCrashPenaltyRendered($saucerLosingCrewmember); // commented out because this is currently only used in twisted titanium where the crashing is backwards from base game (if the base game or another mode starts using this, they will have to call this for the saucer outside of this method)
 		}
 
 		function executeChooseOstrichToGoNext()
@@ -14056,8 +14481,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				// if any of a player's saucers have taken less turns than the other, return false
 				// if any player has taken less turns than another players, return false
 
-				$allPlayers = self::getObjectListFromDB( "SELECT player_id
-																											 FROM player" );
+				$allPlayers = self::getObjectListFromDB( "SELECT player_id FROM player" );
 				foreach( $allPlayers as $player )
 				{ // go through each player
 						//echo "playerID is " + $player['player_id'];

@@ -8327,8 +8327,21 @@ console.log("success... onClickUpgradeCardInHand");
           var garmentColor = notif.args.garmentColor;
           var garmentType = notif.args.garmentType;
 
-          this.slideToObject( 'crewmember_'+garmentType+'_'+garmentColor, 'garment_holder_'+garmentType+'_'+garmentColor).play();
+          //this.slideToObject( 'crewmember_'+garmentType+'_'+garmentColor, 'garment_holder_'+garmentType+'_'+garmentColor).play();
 
+          var source = 'crewmember_'+garmentType+'_'+garmentColor;
+          var destination = 'garment_holder_'+garmentType+'_'+garmentColor;
+          var animationId = this.slideToObject( source, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
+            dojo.connect(animationId, 'onEnd', () => {
+
+                var rotatingClass = 'played_'+garmentType;
+                dojo.removeClass( source, rotatingClass ); // remove transform property because otherwise it will be rotated as it would be on ship mat
+            });
+            animationId.play();
+
+          // remove it from the player board of the previous saucer
+          var sourceSaucerColor = notif.args.sourceSaucerColor;
+          this.removeCrewmemberFromPlayerBoard(sourceSaucerColor, garmentColor, garmentType);
         },
 
         notif_otherPlayerTrapSet: function( notif )
