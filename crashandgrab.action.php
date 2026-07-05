@@ -79,7 +79,7 @@
         self::setAjaxMode();
         $databaseId = self::getArg( "upgradeDatabaseId", AT_posint, true ); // 1, 2, 3
 
-        $color = $this->game->getOstrichWhoseTurnItIs();
+        $color = $this->game->getActiveSaucer();
 
         $this->game->executeClickedUpgradeCardInHand( $databaseId, $color );
         self::ajaxResponse( );

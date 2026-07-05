@@ -1024,7 +1024,7 @@ class CrashAndGrab extends Table
 				}
 				elseif($currentState == "askPreTurnToPlaceCrashedSaucer")
 				{ // we are placing a crashed saucer before a player's turn
-						$saucerToPlace = $this->getOstrichWhoseTurnItIs();
+						$saucerToPlace = $this->getActiveSaucer();
 				}
 
 				$saucerColorFriendly = $this->convertColorToText($saucerToPlace);
@@ -2521,7 +2521,7 @@ echo("<br>");
 		function getOtherUncrashedSaucers()
 		{
 				$result = array();
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$allOtherSaucers = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner
 																					 FROM ostrich WHERE ostrich_color<>'$saucerWhoseTurnItIs' ORDER BY ostrich_owner" );
@@ -2549,7 +2549,7 @@ echo("<br>");
 		function getPulseCannonSaucers()
 		{
 				$result = array();
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$allOtherSaucers = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner
 																					 FROM ostrich WHERE ostrich_color<>'$saucerWhoseTurnItIs' ORDER BY ostrich_owner" );
@@ -3209,7 +3209,7 @@ echo("<br>");
 		function getDiscardableGarments()
 		{
 				$result = array();
-				$ostrichWhoMustDiscard = $this->getOstrichWhoseTurnItIs(); // get the ostrich who must discard
+				$ostrichWhoMustDiscard = $this->getActiveSaucer(); // get the ostrich who must discard
 
 				$allGarmentsFromThisOstrich = self::getObjectListFromDB( "SELECT garment_id, garment_color, garment_type
 																							FROM garment
@@ -3857,7 +3857,7 @@ echo("<br>");
 		function getStealableGarments()
 		{
 				$result = array();
-				$stealerOstrich = $this->getOstrichWhoseTurnItIs(); // the only time you can steal garments is if it's your turn so it's always this ostrich who gets to steal
+				$stealerOstrich = $this->getActiveSaucer(); // the only time you can steal garments is if it's your turn so it's always this ostrich who gets to steal
 				$stealerOwner = $this->getOwnerIdOfOstrich($stealerOstrich);
 
 				$nextOstrichToStealFromValue = $this->getNextOstrichToStealFromValue();
@@ -6525,7 +6525,7 @@ echo("<br>");
 		// - the saucer has an off-colored crewmember
 		function hasPendingCrashPenalty($saucer)
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				if($this->getNumberOfPlayers() == 2)
 				{ // each player has 2 saucers so we must check for crashes of either saucer
@@ -7377,7 +7377,7 @@ echo("<br>");
 				$this->resetOstrichSpawnOrderForOstrich($ostrichColor); // take them out of the queue for ostrich respawning
 
 				// notify the players that the ostrich has respawned so they know where it is
-				$ostrichTakingTurn = $this->getOstrichWhoseTurnItIs();
+				$ostrichTakingTurn = $this->getActiveSaucer();
 				$boardValue = $this->getBoardSpaceType($closestCrates[0]['board_x'], $closestCrates[0]['board_y']);
 				$ostrichOwner = $this->getOwnerIdOfOstrich($ostrichColor);
 				self::notifyAllPlayers( "moveOstrich", clienttranslate( '${player_name} pulled the ${ostrichName} ostrich back up and onto a crate.' ), array(
@@ -7512,7 +7512,7 @@ echo("<br>");
 
 		function getTrapCardToExecute()
 		{
-				$ostrichWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$ostrichWhoseTurnItIs = $this->getActiveSaucer();
 				$trapCardsPlayedOnOstrich = self::getObjectListFromDB( "SELECT card_location ostrichPlayedOn, card_location_arg playerWhoPlayedTrap, card_id uniqueCardId, card_type_arg typeOfTrap, card_type trapName
 																											 FROM trapCards
 																											 WHERE card_location='$ostrichWhoseTurnItIs'" );
@@ -8643,7 +8643,7 @@ echo("<br>");
 				return ""; // there are multiple ostriches, neither has gone, and neither has been chosen to go first
 		}
 
-		function getOstrichWhoseTurnItIs()
+		function getActiveSaucer()
 		{
 				$activePlayer = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). Active Player = player whose turn it is.
 
@@ -9152,6 +9152,9 @@ echo("<br>");
 
 														// we get 1 point
 														$this->incrementPoints($playerMoving);
+
+														// add an event to the move list for losing a crewmember
+														//array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
 														// we lose a crewmember (TODO: Make this a choice which they lose)
 														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
@@ -10387,7 +10390,7 @@ echo("<br>");
 		// If so, notify players that they fell off, set their respawn order, and update stats.
 		function sendCliffFallsToPlayers()
 		{
-				$ostrichTakingTurn = $this->getOstrichWhoseTurnItIs();
+				$ostrichTakingTurn = $this->getActiveSaucer();
 				$ownerOfOstrichTakingTurn = $this->getOwnerIdOfOstrich($ostrichTakingTurn); // get the player whose turn it is
 
 				$allOstriches = $this->getSaucersInOrder();
@@ -11137,7 +11140,7 @@ echo("<br>");
 		*/
 		function setState_PreMovement()
 		{
-				$ostrichWhoseTurnItIs = $this->getOstrichWhoseTurnItIs(); // the ostrich whose turn it is (empty string if we don't know)
+				$ostrichWhoseTurnItIs = $this->getActiveSaucer(); // the ostrich whose turn it is (empty string if we don't know)
 				$trapPlayedOnOstrichWhoseTurnItIs = $this->getNextTrapPlayedOnOstrich($ostrichWhoseTurnItIs);
 
 				//echo "ostrichHasPlayedX is $ostrichHasPlayedX for ostrich $ostrich_whose_turn_it_is <br>";
@@ -11399,7 +11402,7 @@ echo("<br>");
 		{
 				// rotate a tile chosen by Quake Maker
 
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				// mark that we have activated Quake Maker
 				$this->activateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, 18);
@@ -11453,7 +11456,7 @@ echo("<br>");
 
 		function executePulseCannonSelectSaucer($saucerColor)
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$mySaucerX = $this->getSaucerXLocation($saucerWhoseTurnItIs);
 				$mySaucerY = $this->getSaucerYLocation($saucerWhoseTurnItIs);
 
@@ -11537,7 +11540,7 @@ echo("<br>");
 
 		function executeEnergyRewardSelection($saucerCrashed)
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				// give the saucer an energy
 				$this->giveSaucerEnergy($saucerWhoseTurnItIs);
@@ -11552,7 +11555,7 @@ echo("<br>");
 
 		function executeActivateWasteAccelerator()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$this->activateUpgrade($saucerWhoseTurnItIs, "Waste Accelerator");
 
@@ -11572,7 +11575,7 @@ echo("<br>");
 
 		function executeSkipWasteAccelerator()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$distance = $this->getSaucerLastDistance($saucerWhoseTurnItIs);
 				$spacesMoved = $this->getSpacesMoved($saucerWhoseTurnItIs);
@@ -11593,7 +11596,7 @@ echo("<br>");
 
 		function executeActivateProximityMines($saucerCrashed)
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$this->activateUpgrade($saucerWhoseTurnItIs, "Proximity Mines");
 
@@ -11607,7 +11610,7 @@ echo("<br>");
 
 		function executeSkipProximityMines()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				// finish any movement that still remains
 				$this->gamestate->nextState( "executingMove" );
@@ -11615,7 +11618,7 @@ echo("<br>");
 
 		function executeActivateHyperdrive()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$this->activateUpgrade($saucerWhoseTurnItIs, "Hyperdrive");
 
@@ -11627,7 +11630,7 @@ echo("<br>");
 
 		function executeSkipHyperdrive()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				// set asked_to_activate_this_round to 1 so we don't ask again
 				$this->setAskedToActivateUpgrade($saucerWhoseTurnItIs, "Hyperdrive");
@@ -11637,7 +11640,7 @@ echo("<br>");
 
 		function executeSkipGiveAwayCrewmember()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				// mark that the player chose not to pass this round
 				$this->setSkippedGivingAway($saucerWhoseTurnItIs, 1);
@@ -11666,7 +11669,7 @@ echo("<br>");
 
 		function executeSkipPassCrewmember()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				// mark that the player chose not to pass this round
 				$this->setSkippedPassing($saucerWhoseTurnItIs, 1);
@@ -11679,7 +11682,7 @@ echo("<br>");
 
 		function executeSkipTakeCrewmember()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				// mark that the player chose not to take this round
 				$this->setSkippedTaking($saucerWhoseTurnItIs, 1);
@@ -11774,7 +11777,7 @@ echo("<br>");
 		function executeTractorBeamCrewmember($crewmemberType, $crewmemberColor)
 		{
 			//throw new feException( "executeTractorBeamCrewmember");
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerColorHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 				self::notifyAllPlayers( "tractorBeamUsed", clienttranslate( '${saucerColorHighlightedText} used Tractor Beam.' ), array(
@@ -11806,7 +11809,7 @@ echo("<br>");
 		function executeDistressSignalerTakeCrewmember($crewmemberType, $crewmemberColor)
 		{
 			//throw new feException( "crewmemberType:$crewmemberType crewmemberColor:$crewmemberColor");
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerColorHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 				self::notifyAllPlayers( "distressSignalerUsed", clienttranslate( '${saucerColorHighlightedText} used Distress Signaler.' ), array(
@@ -12071,8 +12074,8 @@ echo("<br>");
 
 		function executeAirlockCrewmember($crewmemberType, $crewmemberColor)
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
-				$saucerColorHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
+				$activeSaucer = $this->getActiveSaucer(); // note this needs to be the active saucer rather than getSaucerWhoseTurnItIs because airlock may have happened on another saucer's turn and then we just temporarily changed them to the active player
+				$saucerColorHighlightedText = $this->convertColorToHighlightedText($activeSaucer);
 
 				self::notifyAllPlayers( "airlockUsed", clienttranslate( '${saucerColorHighlightedText} used Airlock.' ), array(
 					'saucerColorHighlightedText' => $saucerColorHighlightedText
@@ -12083,8 +12086,8 @@ echo("<br>");
 				$crashSiteX = $this->getGarmentXLocation($crewmemberOnBoardId);
 				$crashSiteY = $this->getGarmentYLocation($crewmemberOnBoardId);
 
-				// give the crewmember to the saucer int he DB and notify the UI
-				$this->moveCrewmemberToSaucerMat($saucerWhoseTurnItIs, $crewmemberType, $crewmemberColor);
+				// give the crewmember to the saucer in the DB and notify the UI
+				$this->moveCrewmemberToSaucerMat($activeSaucer, $crewmemberType, $crewmemberColor);
 
 				// get the ID of the highest crewmember available for exchange (in case they picked up 2 on the same turn)
 				$crewmemberIdTaken = $this->getHighestAirlockExchangeableId();
@@ -12104,7 +12107,17 @@ echo("<br>");
 				else
 				{
 					// allow them to undo if they wish
-					$this->gamestate->nextState( "finalizeMove" );
+					//$this->gamestate->nextState( "finalizeMove" ); // REMOVED THIS BECAUSE I THINK THIS WILL ALLOW THEM TO SKIP OTHER AFTER-MOVEMENT THINGS
+
+					// decide the state to go to after the move
+					$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs(); // now we need the sacuer whose turn it is, not just the active saucer
+					if($saucerWhoseTurnItIs != $activeSaucer)
+						{ // the airlock saucer was pushed into picking up a crewmember
+								$ownerOfActualTurnTaker = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+								//throw new feException( "owner: $ownerOfActualTurnTaker");
+								$this->gamestate->changeActivePlayer($ownerOfActualTurnTaker);
+						}
+					$this->setState_AfterMovementEvents($saucerWhoseTurnItIs, "Unknown"); // we don't know which type of move was being executed when they had to airlock this crewmember
 				}
 		}
 
@@ -12130,12 +12143,12 @@ echo("<br>");
 //throw new feException( "saucerReceiving:$saucerReceiving");
 				if($areWePassing)
 				{ // we are passing a crewmember from one of our saucers to the other one
-						$saucerGiving = $this->getOstrichWhoseTurnItIs();
+						$saucerGiving = $this->getActiveSaucer();
 						$saucerReceiving = $this->getPlayersOtherSaucer($saucerGiving);
 				}
 				elseif($areWeTaking)
 				{ // we are taking a crewmember from one of our saucers to the other one
-						$saucerReceiving = $this->getOstrichWhoseTurnItIs();
+						$saucerReceiving = $this->getActiveSaucer();
 						$saucerGiving = $this->getPlayersOtherSaucer($saucerReceiving);
 				}
 
@@ -12195,7 +12208,7 @@ echo("<br>");
 
 		function executeGiveAwayCrewmember($crewmemberTypeText, $crewmemberColor, $saucerReceiving)
 		{
-				$saucerGiving = $this->getOstrichWhoseTurnItIs();
+				$saucerGiving = $this->getActiveSaucer();
 				$saucerGivingHighlightedText = $this->convertColorToHighlightedText($saucerGiving);
 				$saucerReceivingHighlightedText = $this->convertColorToHighlightedText($saucerReceiving);
 
@@ -12231,6 +12244,7 @@ echo("<br>");
 				'reason' => $reason
 			) );
 
+			echo "losing crewmember saucerLosingHighlightedText:".$saucerLosingHighlightedText;
 			//throw new feException( "moveCrewmemberToSaucerMat $saucerReceiving $crewmemberTypeText $crewmemberColor");
 
 			// give the crewmember to the saucer in the DB and notify the UI
@@ -12242,7 +12256,7 @@ echo("<br>");
 
 		function executeChooseOstrichToGoNext()
 		{
-				$ostrich = $this->getOstrichWhoseTurnItIs();
+				$ostrich = $this->getActiveSaucer();
 				$this->setSaucerToChosen($ostrich);
 
 				$this->gamestate->nextState( "zigChosen" ); // stay in this phase
@@ -12339,7 +12353,7 @@ echo("<br>");
 		// The player has just moved their saucer and decided not to undo it.
 		function executeClickedFinalizeMove()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$distanceType = $this->getSaucerDistanceType($saucerWhoseTurnItIs);
 
 				$cardId = $this->getMoveCardIdFromSaucerDistanceType($saucerWhoseTurnItIs, $distanceType);
@@ -12777,7 +12791,7 @@ echo("<br>");
 				else
 				*/
 				if(count($airlockExchangeableCrewmembers) > 0 && $spaceType != "S" && $saucerWeCollideWith == "")
-				{ // there is at least one crewmember that can be exchanged
+				{ // there is at least one crewmember that can be exchanged with airlock (needs to happen here in case they were pushed)
 
 						// get the ID of the highest crewmember available for exchange (in case they picked up 2 on the same turn)
 						$crewmemberIdTaken = $this->getHighestAirlockExchangeableId();
@@ -12820,7 +12834,7 @@ echo("<br>");
 					$this->gamestate->nextState( "askToWasteAccelerate" );
 				}
 				elseif($moveType == 'Landing Legs')
-				{ // the moved because they had Landing Legs
+				{ // they moved because they had Landing Legs
 
 						if($spaceType == 'S')
 						{
@@ -12850,7 +12864,7 @@ echo("<br>");
 				}
 				elseif($moveType == 'Pulse Cannon')
 				{ // the moved because they had Pulse Cannon
-						$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+						$saucerWhoseTurnItIs = $this->getActiveSaucer();
 						$stateUsedIn = $this->getUpgradeValue5($saucerWhoseTurnItIs, "Pulse Cannon");
 
 						// get the saucer we pushed with pulse cannon
@@ -12891,7 +12905,7 @@ echo("<br>");
 				}
 				elseif($moveType == 'Blast Off Thrusters')
 				{ // the moved because they had Blast Off Thrusters
-						$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+						$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 						// reset the upgrade value_1 and value_2 for all saucers so we know movement upgrades have been used already
 						$this->resetAllUpgradeValues();
@@ -12923,7 +12937,7 @@ echo("<br>");
 
 		function getMoveTypeWeAreExecuting()
 		{
-				$saucerColor = $this->getOstrichWhoseTurnItIs();
+				$saucerColor = $this->getActiveSaucer();
 
 				//$blast = $this->getUpgradeValue2($saucerColor, "Blast Off Thrusters");
 				//throw new feException( "blast: $blast");
@@ -13141,7 +13155,7 @@ echo("<br>");
 				$allEvents = array();
 
 				// if the saucer moving was pushed, it's a different saucer whose turn it is and sometimes we need to know this
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				//self::debug( "getMovingEvents saucerMoving:$saucerMoving" );
 
@@ -13208,7 +13222,7 @@ echo("<br>");
 		// This is called when a player clicks a direction button to use an Accelerator, a Booster, or choose their direction if they have Time Machine.
 		function executeDirectionClick( $direction )
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs(); // you can only zag on your own turn
+				$saucerWhoseTurnItIs = $this->getActiveSaucer(); // you can only zag on your own turn
 				$ownerOfSaucerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
 
 				$currentState = $this->getStateName();
@@ -13343,7 +13357,7 @@ echo("<br>");
 
 		function executeDraw2Zigs()
 		{
-				$activeOstrich = $this->getOstrichWhoseTurnItIs();
+				$activeOstrich = $this->getActiveSaucer();
 				$ownerOfActiveOstrich = $this->getOwnerIdOfOstrich($activeOstrich);
 
 				$cards = $this->movementCards->pickCards( 2, 'movementCardDeck', $ownerOfActiveOstrich );
@@ -13374,7 +13388,7 @@ echo("<br>");
 		function executeSkipActivateStartOfTurnUpgrade()
 		{
 				self::checkAction( 'skipActivateUpgrade' ); // make sure we can take this action from this state
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$this->setAskedToActivateForAllStartOfTurnSaucerUpgrades($saucerWhoseTurnItIs);
 
@@ -13385,7 +13399,7 @@ echo("<br>");
 		function executeSkipActivateEndOfTurnUpgrade()
 		{
 				self::checkAction( 'skipActivateUpgrade' ); // make sure we can take this action from this state
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$this->setAskedToActivateForAllEndOfTurnSaucerUpgrades($saucerWhoseTurnItIs);
 
@@ -13396,7 +13410,7 @@ echo("<br>");
 		function executeSkipActivateSpecificEndOfTurnUpgrade($collectorNumber)
 		{
 				self::checkAction( 'skipActivateUpgrade' ); // make sure we can take this action from this state
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$this->setAskedToActivateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, $collectorNumber);
 //throw new feException( "executeSkipActivateSpecificEndOfTurnUpgrade");
@@ -13416,7 +13430,7 @@ echo("<br>");
 		function executeSkipActivateSpecificStartOfTurnUpgrade($collectorNumber)
 		{
 				self::checkAction( 'skipActivateUpgrade' ); // make sure we can take this action from this state
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				$this->setAskedToActivateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, $collectorNumber);
 
@@ -13437,7 +13451,7 @@ echo("<br>");
 		function executeActivateUpgrade($collectorNumber)
 		{
 				self::checkAction( 'activateUpgrade' ); // make sure we can take this action from this state
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				// set this to activated
 				$this->activateUpgradeWithCollectorNumber($saucerWhoseTurnItIs, $collectorNumber);
@@ -13889,7 +13903,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 				self::checkAction( 'chooseUpgradeSpace', false ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php) -- the false argument says don't check if we are the active player because we might be replacing a garment on another player's turn
 				$formattedSpace = $xLocation.'_'.$yLocation;
-				$saucerColor = $this->getOstrichWhoseTurnItIs();
+				$saucerColor = $this->getActiveSaucer();
 				$direction = $this->getDirectionFromLocation($saucerColor, $xLocation, $yLocation);
 
 				$skipNotify = false; // true if we want to skip adding to the message log which upgrade was used
@@ -14028,7 +14042,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 				self::checkAction( 'chooseSaucerSpace', false ); // Check that this is player's turn and that it is a "possible action" at this game state (see states.inc.php) -- the false argument says don't check if we are the active player because we might be replacing a garment on another player's turn
 				$formattedSpace = $xLocation.'_'.$yLocation;
-				$saucerColor = $this->getOstrichWhoseTurnItIs();
+				$saucerColor = $this->getActiveSaucer();
 
 				$currentState = $this->getStateName();
 				if($currentState == "chooseCrashSiteRegenerationGateway")
@@ -14101,7 +14115,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 			//throw new feException( "executeSkipBooster" );
 				//$this->sendCliffFallsToPlayers(); // check if the ostrich moving fell off a cliff, and if so, tell players and update stats
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$this->setSkippedBoosting($saucerWhoseTurnItIs, 1);
 
 				//$this->gamestate->nextState( "finalizeMove" ); // set the state now that moving is complete
@@ -14538,7 +14552,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		{
 				$playerWhoseTurnItWas = self::getActivePlayerId(); // Current Player = player who played the current player action (the one who made the AJAX request). In general, only use this in multiplayer states. Active Player = player whose turn it is.
 				$nameOfPlayerWhoseTurnItWas = $this->getPlayerNameFromPlayerId($playerWhoseTurnItWas);
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$highlightedSaucerColor = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 				// reset crewmember properties
@@ -15525,7 +15539,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		// saucers will take their first turn.
 		function saucerTurnStart()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				//throw new feException( "saucerWhoseTurnItIs:$saucerWhoseTurnItIs");
 
@@ -15690,7 +15704,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function checkStartOfTurnUpgrades()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$countOfStartOfTurnUpgrades = count($this->getAllStartOfTurnUpgradesToActivateForSaucer($saucerWhoseTurnItIs));
 				if($countOfStartOfTurnUpgrades > 0)
 				{ // saucer has at least one start of turn upgrade active
@@ -15707,7 +15721,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function checkForRevealDecisions()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$distanceType = $this->getSaucerDistanceType($saucerWhoseTurnItIs); // 0=X, 1=2, 2=3
 				$direction = $this->getSaucerDirection($saucerWhoseTurnItIs); // sun
 				$saucerColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
@@ -16173,7 +16187,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				}
 				elseif($currentState == "askPreTurnToPlaceCrashedSaucer")
 				{ // we are placing a crashed saucer before a player's turn
-						$saucerToPlace = $this->getOstrichWhoseTurnItIs();
+						$saucerToPlace = $this->getActiveSaucer();
 				}
 
 				$saucerColorFriendly = $this->convertColorToText($saucerToPlace);
@@ -16187,7 +16201,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetLandingLegSpaces()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(17);
 
@@ -16204,7 +16218,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetAfterburnerSpaces()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(3);
 
@@ -16221,7 +16235,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetOrganicTriangulatorSpaces()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(26);
 
@@ -16238,7 +16252,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetBlastOffThrustersSpaces()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(1);
 
@@ -16255,7 +16269,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetAllUnoccupiedCrashSites()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 				// return both the location of all the
@@ -16267,7 +16281,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetEndOfTurnUpgradesToActivate()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 				return array(
@@ -16278,7 +16292,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetStartOfTurnUpgradesToActivate()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 
 				return array(
 						'startOfTurnUpgradesToActivate' => self::getStartOfTurnUpgradesToActivateForSaucer($saucerWhoseTurnItIs)
@@ -16287,7 +16301,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetPulseCannonSaucers()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(4);
 
@@ -16312,7 +16326,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetTractorBeamCrewmembers()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(5);
 
@@ -16328,7 +16342,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetDistressSignalerTakeCrewmembers()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(11);
 
@@ -16344,7 +16358,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetDistressSignalerGiveCrewmembers()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(11);
 
@@ -16375,7 +16389,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argAskToProximityMine()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
 
@@ -16393,7 +16407,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argAskToWasteAccelerate()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
 
@@ -16405,7 +16419,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argChooseAcceleratorDistance()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
 
@@ -16427,7 +16441,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argChooseBoosterDistance()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
 
@@ -16449,7 +16463,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argAskToRotationalStabilizer()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				//$saucerToCrash = $this->nextPendingCrashReward($saucerWhoseTurnItIs);
 
@@ -16462,7 +16476,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetAirlockCrewmembers()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerWhoseTurnItIsColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				$upgradeName = $this->getUpgradeTitleFromCollectorNumber(20);
 
@@ -16512,7 +16526,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetPassableCrewmembers()
 		{
-				$saucerColorGiving = $this->getOstrichWhoseTurnItIs();
+				$saucerColorGiving = $this->getActiveSaucer();
 				$saucerColorReceiving = $this->getPlayersOtherSaucer($saucerColorGiving);
 				$saucerGivingText = $this->convertColorToHighlightedText($saucerColorGiving);
 				$saucerReceivingText = $this->convertColorToHighlightedText($saucerColorReceiving);
@@ -16541,7 +16555,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetTakeableCrewmembers()
 		{
-				$saucerColorReceiving = $this->getOstrichWhoseTurnItIs();
+				$saucerColorReceiving = $this->getActiveSaucer();
 				$saucerColorGiving = $this->getPlayersOtherSaucer($saucerColorReceiving);
 				$saucerGivingText = $this->convertColorToHighlightedText($saucerColorGiving);
 				$saucerReceivingText = $this->convertColorToHighlightedText($saucerColorReceiving);
@@ -16570,7 +16584,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetUpgradesToPlay()
 		{
-				$saucerColor = $this->getOstrichWhoseTurnItIs();
+				$saucerColor = $this->getActiveSaucer();
 				$saucerColorText = $this->convertColorToHighlightedText($saucerColor);
 
 				// return both the location of all the
@@ -16582,7 +16596,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetGiveAwayCrewmembers()
 		{
-				$saucerGivingAway = $this->getOstrichWhoseTurnItIs();
+				$saucerGivingAway = $this->getActiveSaucer();
 				$saucerGivingAwayText = $this->convertColorToHighlightedText($saucerGivingAway);
 
 				// get a list of all the saucers other than the one who is giving away
@@ -16599,7 +16613,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetLostCrewmembers()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 				return array(
 						'saucerHighlighted' => $saucerHighlightedText,
@@ -16627,7 +16641,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetAllXMoves()
 		{
-				$saucerColor = $this->getOstrichWhoseTurnItIs();
+				$saucerColor = $this->getActiveSaucer();
 				
 				$direction = $this->getSaucerDirection($saucerColor);
 				if($this->hasOverrideToken($saucerColor) || 
@@ -16683,7 +16697,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetSaucerAcceleratorMoves()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 				$moveType = $this->getMoveTypeWeAreExecuting();
@@ -16698,7 +16712,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetSaucerBoosterMoves()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerHighlightedText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 				$moveType = $this->getMoveTypeWeAreExecuting();
@@ -16713,7 +16727,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetSaucerColor()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$saucerColorFriendly = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
 
 				// return the saucer color so it can be used in the description
@@ -16724,7 +16738,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetSaucerMoveCardInfo()
 		{
-				$saucerWhoseTurnItIs = $this->getOstrichWhoseTurnItIs();
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
 				$distanceType = $this->getSaucerDistanceType($saucerWhoseTurnItIs); // 0=X, 1=2, 2=3
 				$direction = $this->getSaucerDirection($saucerWhoseTurnItIs);
 				$saucerColorText = $this->convertColorToHighlightedText($saucerWhoseTurnItIs);
@@ -16925,7 +16939,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 //throw new feException( "saucerMoving: $saucerMoving");
 				if($saucerMoving == '')
 				{ // we didn't find a saucer that was pushed and still needs to move
-							$saucerMoving = $this->getOstrichWhoseTurnItIs();
+							$saucerMoving = $this->getActiveSaucer();
 				}
 
 				$this->executeSaucerMove($saucerMoving);
