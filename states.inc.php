@@ -593,7 +593,7 @@ $machinestates = array(
         "action" => "executeMove",
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "updateGameProgression" => true,
-        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "executingMove" => 70, "endGame" => 99 )
+        "transitions" => array(  "chooseIfYouWillUseBooster" => 32, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "askToProximityMine" => 67, "endSaucerTurnCleanUp" => 50, "checkForRevealDecisions" => 38, "chooseCrewmembersToTake" => 57, "chooseCrewmemberToAirlock" => 63, "askToWasteAccelerate" => 71, "chooseAcceleratorDistance" => 66, "executingMove" => 70, "chooseCrewmemberToLose" => 75, "endGame" => 99 )
     ),
 
     71 => array(
@@ -632,6 +632,16 @@ $machinestates = array(
         'args' => 'argGetOrganicTriangulatorSpaces',
         "possibleactions" => array( "chooseUpgradeSpace", "skipActivateUpgrade" ),
         "transitions" => array(  "endSaucerTurnCleanUp" => 50, "finalizeMove" => 49, "chooseAcceleratorDirection" => 9, "checkForRevealDecisions" => 38, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "askWhichEndOfTurnUpgradeToUse" => 53, "zombiePass" => 98 )
+    ),
+
+    75 => array(
+        "name" => "chooseCrewmemberToLose",
+        "description" => clienttranslate('${saucerColorLosing} is choosing which Crewmember to lose.'),
+        "descriptionmyturn" => clienttranslate('Choose which Crewmember ${saucerColorLosing} will lose.'),
+        "type" => "activeplayer",
+        'args' => 'argGetLosableCrewmembers',
+        "possibleactions" => array( "chooseCrewmember" ),
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49, "endGame" => 99, "zombiePass" => 98 )
     ),
 
 

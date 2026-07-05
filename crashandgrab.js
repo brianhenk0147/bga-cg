@@ -2487,6 +2487,18 @@ console.log("owner:"+saucer.owner+" color:"+saucer.color);
                       }
                   break;
 
+                  case 'chooseCrewmemberToLose':
+                      if ( this.isCurrentPlayerActive() )
+                      { // we are the active player
+
+                          console.log('loseable crewmembers:');
+                          console.log(args.losableCrewmembers);
+
+                          // add a button for each offcolored crewmember they have
+                          this.showLosableCrewmemberButtons(args.losableCrewmembers);
+                      }
+                  break;
+
                   case 'placeCrewmemberChooseCrewmember':
                       if ( this.isCurrentPlayerActive() )
                       { // we are the active player
@@ -6072,6 +6084,26 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             }
         },
 
+        showLosableCrewmemberButtons: function(crewmemberList)
+        {
+            if(!crewmemberList)
+                return;
+
+            for (const crewmember of crewmemberList)
+            { // go through each crewmember
+                var crewmemberColor = crewmember['crewmemberColor'];
+                var crewmemberTypeString = crewmember['crewmemberTypeText'];
+
+                console.log("losable crewmember color:"+crewmemberColor+" losable crewmember type:"+crewmemberTypeString);
+
+                //var htmlOfSpace = 'square_'+space; // square_6_5
+                //console.log("highlighting space: " + htmlOfSpace);
+                //this.highlightSpace(htmlOfSpace);
+
+                this.addActionButton( 'losableCrewmember_'+crewmemberColor+'_'+crewmemberTypeString+'_button', '<div id="button_'+crewmemberTypeString+'_'+crewmemberColor+'" class="crewmember crewmember_'+crewmemberTypeString+'_'+crewmemberColor+'"></div>', 'onClickLosableCrewmember', null, null, 'gray');
+            }
+        },
+
         showStealableCrewmemberButtons: function(stealableCrewmembers)
         {
 
@@ -6503,6 +6535,17 @@ console.log("initializePlayedUpgrades owner:"+saucer.owner+" color:"+saucer.colo
             var crewmemberColor = node.split('_')[1]; // 228848
 
             this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteTakeCrewmember.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
+            }, function( is_error) { } );
+        },
+
+        onClickLosableCrewmember: function( evt )
+        {
+            var node = evt.currentTarget.id; // takeableCrewmember_228848_pilot_button
+            console.log("onClickLosableCrewmember node:"+node);
+            var crewmemberType = node.split('_')[2]; // pilot
+            var crewmemberColor = node.split('_')[1]; // 228848
+
+            this.ajaxcall( "/crashandgrab/crashandgrab/actExecuteChooseCrewmemberToLose.html", { stolenType: crewmemberType, stolenColor: crewmemberColor, lock: true }, this, function( result ) {
             }, function( is_error) { } );
         },
 
@@ -8336,6 +8379,9 @@ console.log("success... onClickUpgradeCardInHand");
 
                 var rotatingClass = 'played_'+garmentType;
                 dojo.removeClass( source, rotatingClass ); // remove transform property because otherwise it will be rotated as it would be on ship mat
+
+                // give it a new parent so it's no longer on the player's saucer
+                this.attachToNewParent(source, destination);
             });
             animationId.play();
 
@@ -8599,6 +8645,11 @@ console.log("success... onClickUpgradeCardInHand");
 
             // commented out because allCrewmembers does not have up-to-date garment_location field so it sets wiggling incorrectly and I cannot figure out why
             //this.resetWiggling(allCrewmembers);
+        },
+
+        notif_losingCrewmember: function( notif )
+        {
+
         },
 
    });

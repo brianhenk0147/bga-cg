@@ -3756,8 +3756,8 @@ echo("<br>");
 				$saucerColorFriendlyCrashed = $this->convertColorToHighlightedText($crashedSaucer);
 				$saucerColorFriendlyStealer = $this->convertColorToHighlightedText($stealerSaucer);
 
-				$totalCrewmembersOfStealer = $this->getStationedCrewmembersForPlayer($stealerOwner);
-				$totalCrewmembersOfCrashed = $this->getStationedCrewmembersForPlayer($crashedOwner);
+				$totalCrewmembersOfStealer = $this->countTotalStationedCrewmembersForPlayer($stealerOwner);
+				$totalCrewmembersOfCrashed = $this->countTotalStationedCrewmembersForPlayer($crashedOwner);
 
 				//echo "totalCrewmembersOfStealer:$totalCrewmembersOfStealer totalCrewmembersOfCrashed:$totalCrewmembersOfCrashed";
 				// get offcolored crewmembers
@@ -6843,6 +6843,40 @@ echo("<br>");
 				self::DbQuery( $sql );
 		}
 
+		function setCrewmemberToLose($saucerLosingCrewmember)
+		{
+				$sql = "UPDATE ostrich SET crewmember_to_lose=1 WHERE ";
+				$sql .= "ostrich_color='".$saucerLosingCrewmember."'";
+				self::DbQuery( $sql );
+		}
+
+		function resetCrewmemberToLose($saucerLosingCrewmember)
+		{
+				$sql = "UPDATE ostrich SET crewmember_to_lose=0 WHERE ";
+				$sql .= "ostrich_color='".$saucerLosingCrewmember."'";
+				self::DbQuery( $sql );
+		}
+
+		/// Returns the first saucer it comes to who needs to lose a crewmember, otherwise empty string.
+		function getCrewmemberToLose()
+		{
+			$saucers = self::getObjectListFromDB( "SELECT ostrich_color, ostrich_owner
+												   FROM ostrich
+												   WHERE crewmember_to_lose=1 LIMIT 1" );
+
+			foreach( $saucers as $saucer )
+			{ // go through each ostrich (should only be 1)
+
+				$player = $saucer['ostrich_owner'];
+				$color = $saucer['ostrich_color'];
+
+				//throw new feException( "Times activated:$timesActivatedCloakingDevice color:$color boardSpaceType:$boardSpaceType");
+				return $color;
+			}
+
+			return "";
+		}
+
 		function hasOverrideToken($saucerColor)
 		{
 				$overrideTokenValue = self::getUniqueValueFromDb("SELECT has_override_token FROM ostrich WHERE ostrich_color='$saucerColor'");
@@ -9156,9 +9190,10 @@ echo("<br>");
 														// add an event to the move list for losing a crewmember
 														//array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
-														// we lose a crewmember (TODO: Make this a choice which they lose)
-														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
-														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so now one gets a reward for this crash
+														// we lose a crewmember
+														$this->chooseCrewmemberToLose($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														//$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so no one gets a reward for this crash
 
 														// do not move any further because
 														return $moveEventList;
@@ -9173,9 +9208,10 @@ echo("<br>");
 														$ownerOfSaucerWeCollidedWith = $this->getOwnerIdOfOstrich($saucerWeCollideWith);
 														$this->incrementPoints($ownerOfSaucerWeCollidedWith);
 
-														// they lose a crewmember (TODO: Make this a choice which they lose)
-														$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
-														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so now one gets a reward for this crash
+														// they lose a crewmember
+														$this->chooseCrewmemberToLose($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														//$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so no one gets a reward for this crash
 
 														// do not move any further because
 														return $moveEventList;
@@ -9415,9 +9451,10 @@ echo("<br>");
 														// we get 1 point
 														$this->incrementPoints($playerMoving);
 
-														// we lose a crewmember (can be automatic rather than a choice)
-														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
-														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so now one gets a reward for this crash
+														// we lose a crewmember
+														$this->chooseCrewmemberToLose($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														//$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so no one gets a reward for this crash
 
 														// do not move any further because
 														return $moveEventList;
@@ -9433,8 +9470,9 @@ echo("<br>");
 														$this->incrementPoints($ownerOfSaucerWeCollidedWith);
 
 														// they lose a crewmember
-														$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
-														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so now one gets a reward for this crash
+														$this->chooseCrewmemberToLose($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														//$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so no one gets a reward for this crash
 
 														// do not move any further because
 														return $moveEventList;
@@ -9664,9 +9702,10 @@ echo("<br>");
 														// we get 1 point
 														$this->incrementPoints($playerMoving);
 
-														// we lose a crewmember (can be automatic rather than a choice)
-														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
-														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so now one gets a reward for this crash
+														// we lose a crewmember
+														$this->chooseCrewmemberToLose($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														//$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so no one gets a reward for this crash
 
 														// do not move any further because
 														return $moveEventList;
@@ -9682,8 +9721,9 @@ echo("<br>");
 														$this->incrementPoints($ownerOfSaucerWeCollidedWith);
 
 														// they lose a crewmember
-														$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
-														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so now one gets a reward for this crash
+														$this->chooseCrewmemberToLose($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														//$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so no one gets a reward for this crash
 
 														// do not move any further because
 														return $moveEventList;
@@ -9909,9 +9949,10 @@ echo("<br>");
 														// we get 1 point
 														$this->incrementPoints($playerMoving);
 
-														// we lose a crewmember (can be automatic rather than a choice)
-														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
-														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so now one gets a reward for this crash
+														// we lose a crewmember
+														$this->chooseCrewmemberToLose($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														//$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so no one gets a reward for this crash
 
 														// do not move any further because
 														return $moveEventList;
@@ -9927,8 +9968,9 @@ echo("<br>");
 														$this->incrementPoints($ownerOfSaucerWeCollidedWith);
 
 														// they lose a crewmember
-														$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
-														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so now one gets a reward for this crash
+														$this->chooseCrewmemberToLose($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														//$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
+														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so no one gets a reward for this crash
 
 														// do not move any further because
 														return $moveEventList;
@@ -11255,7 +11297,6 @@ echo("<br>");
 		// Note: A pushed saucer does not go in here.
 		function setState_AfterMovementEvents($saucerMoving, $moveType, $wasPushed=false)
 		{
-
 				$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
 
 				$currentState = $this->getStateName();
@@ -11279,6 +11320,9 @@ echo("<br>");
 				$airlockExchangeableCrewmembers = $this->getAirlockExchangeableCrewmembers();
 				//$count = count($airlockExchangeableCrewmembers);
 				//throw new feException("airlockExchangeableCrewmembers count ($count).");
+
+				// see if we are playing Twisted Titanium and we need to choose which crewmember we lose after a collision
+				$saucerWithCrewmemberToLose = $this->getCrewmemberToLose();
 
 				/*
 				if($this->isEndGameConditionMet())
@@ -11324,6 +11368,20 @@ echo("<br>");
 				else if($this->canSaucerTakeCrewmembers($saucerWhoseTurnItIs) && $moveType != "Blast Off Thrusters")
 				{ // they passed by their other Saucer and can take from them
 						$this->gamestate->nextState( "chooseCrewmembersToTake" ); // need to ask the player if they want to use a zag, and if so, which direction they want to travel
+				}
+				else if($saucerWithCrewmemberToLose != "")
+				{ // we are playing Twisted Titanium and someone needs to choose which Crewmember to lose after a collision
+					
+					if($saucerWhoseTurnItIs != $saucerWithCrewmemberToLose)
+					{ // the saucer who needs to lose a crewmember was not the one moving
+						$ownerOfSaucerLosing = $this->getOwnerIdOfOstrich($saucerWithCrewmemberToLose);
+						//throw new feException( "owner: $ownerOfActualTurnTaker");
+
+						// change the active player to the one who is losing a crewmember
+						$this->gamestate->changeActivePlayer($ownerOfSaucerLosing);
+					}
+
+					$this->gamestate->nextState( "chooseCrewmemberToLose" ); // need to ask the player which Crewmember they want to lose
 				}
 				else if($currentState == "crashPenaltyAskWhichToSteal")
 				{ // they were just asked which penalty they wanted for crashing someone
@@ -11680,19 +11738,6 @@ echo("<br>");
 				$this->setState_AfterMovementEvents($saucerWhoseTurnItIs, $moveType); // set to true because we're already passed the boosting if we're passing so that is safest
 		}
 
-		function executeSkipTakeCrewmember()
-		{
-				$saucerWhoseTurnItIs = $this->getActiveSaucer();
-
-				// mark that the player chose not to take this round
-				$this->setSkippedTaking($saucerWhoseTurnItIs, 1);
-
-				// figure out which type of move this is
-				$moveType = $this->getMoveTypeWeAreExecuting();
-
-				$this->setState_AfterMovementEvents($saucerWhoseTurnItIs, $moveType); // set to true because we're already passed the boosting if we're taking so that is safest
-		}
-
 		// Coming from using either: 
 		//    Regeneration Gateway: When your Saucer is placed, you choose the Crash Site.
 		//    Saucer Teleporter: At the end of your turn, if you have not crashed, move to any empty Crash Site.
@@ -11873,22 +11918,43 @@ echo("<br>");
 		}
 
 		// Moves a Crewmember from a saucer mat to the Lost Crewmembers.
-		function moveCrewmemberToLostCrewmembers($saucerLosing)
+		// Set $specificCrewmemberTypeText and $specificCrewmemberColor to the one to lose or else it will get a random one.
+		function moveCrewmemberToLostCrewmembers($saucerLosing, $specificCrewmemberTypeText="", $specificCrewmemberColor="")
 		{
+			//throw new feException( "moveCrewmemberToLostCrewmembers");
+
+			$crewmemberType = "unknown";
+			if($specificCrewmemberTypeText != "")
+			{
+				$crewmemberType = $specificCrewmemberTypeText;
+			}
+			//throw new feException( "specificCrewmemberTypeText:$specificCrewmemberTypeText");
+
 			$crewmemberColor = "unknown";
 			$crewmemberTypeId = -1;
-			$crewmemberType = "unknown";
+			if($specificCrewmemberColor != "")
+			{
+				$crewmemberColor = $specificCrewmemberColor;
 
-			// get any crewmember on the saucer
-			$crewmembersOnSaucer = $this->getCrewmembersOnSaucer($saucerLosing);
-			foreach($crewmembersOnSaucer as $crewmember)
-			{ // go through each crewmember on our saucer
-
-				// get the crewmember type
-				$crewmemberTypeId = $crewmember['garment_type'];
-				$crewmemberColor = $crewmember['garment_color'];
-				$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
+				$crewmemberId = $this->getGarmentIdFromType($crewmemberType, $crewmemberColor);
+				$crewmemberTypeId = $this->getCrewmemberTypeIdFromId($crewmemberId);
 			}
+
+			if($crewmemberTypeId == -1)
+			{
+				// get any crewmember on the saucer
+				$crewmembersOnSaucer = $this->getCrewmembersOnSaucer($saucerLosing);
+				foreach($crewmembersOnSaucer as $crewmember)
+				{ // go through each crewmember on our saucer
+
+					// get the crewmember type
+					$crewmemberTypeId = $crewmember['garment_type'];
+					$crewmemberColor = $crewmember['garment_color'];
+					$crewmemberType = $this->convertGarmentTypeIntToString($crewmemberTypeId);
+				}
+			}
+
+			//throw new feException( "crewmemberType:$crewmemberType crewmemberColor:$crewmemberColor crewmemberTypeId:$crewmemberTypeId");
 
 			if($crewmemberColor == "unknown" || $crewmemberType == "unknown" || $crewmemberTypeId == -1)
 			{
@@ -12235,6 +12301,39 @@ echo("<br>");
 				}
 		}
 
+		// Called by the UI when they have selected a crewmember to lose.
+		function executeChooseCrewmemberToLose($crewmemberTypeText, $crewmemberColor, $saucerLosing)
+		{
+			//throw new feException( "executeChooseCrewmemberToLose");
+				$saucerLosing = $this->getActiveSaucer();
+				$saucerLosingHighlightedText = $this->convertColorToHighlightedText($saucerLosing);
+
+				//throw new feException( "executeChooseCrewmemberToLose $saucerLosing $crewmemberTypeText $crewmemberColor");
+
+				// give the crewmember to the saucer in the DB and notify the UI
+				$this->moveCrewmemberToLostCrewmembers($saucerLosing, $crewmemberTypeText, $crewmemberColor);
+
+				// mark that this saucer has chosen the crewmember to lose so we don't keep asking
+				$this->resetCrewmemberToLose($saucerLosing);
+
+				// mark that the reward for this crash has been acquired so we don't let them have multiple rewards
+				//$this->markCrashPenaltyRendered($saucerGiving);
+
+				$saucerWhoseTurnItIs = $this->getSaucerWhoseTurnItIs();
+				if($saucerWhoseTurnItIs != $saucerLosing)
+					{ // the saucer who needs to lose a crewmember was not the one moving
+						$ownerOfSaucerWhoseTurnItIs = $this->getOwnerIdOfOstrich($saucerWhoseTurnItIs);
+						//throw new feException( "owner: $ownerOfActualTurnTaker");
+
+						// change the active player to the one whose turn it is
+						$this->gamestate->changeActivePlayer($ownerOfSaucerWhoseTurnItIs);
+					}
+
+				// decide the state to go to after the move
+				$this->setState_AfterMovementEvents($saucerWhoseTurnItIs, "Unknown");
+		}
+
+		/// Called by the backend to lose a crewmember without getting to choose which one.
 		function loseCrewmember($saucerLosingCrewmember, $reason)
 		{
 			$saucerLosingHighlightedText = $this->convertColorToHighlightedText($saucerLosingCrewmember);
@@ -12244,7 +12343,7 @@ echo("<br>");
 				'reason' => $reason
 			) );
 
-			echo "losing crewmember saucerLosingHighlightedText:".$saucerLosingHighlightedText;
+			//echo "losing crewmember saucerLosingHighlightedText:".$saucerLosingHighlightedText;
 			//throw new feException( "moveCrewmemberToSaucerMat $saucerReceiving $crewmemberTypeText $crewmemberColor");
 
 			// give the crewmember to the saucer in the DB and notify the UI
@@ -12252,6 +12351,23 @@ echo("<br>");
 
 			// mark that the reward for this crash has been acquired so we don't let them have multiple rewards
 			//$this->markCrashPenaltyRendered($saucerLosingCrewmember); // commented out because this is currently only used in twisted titanium where the crashing is backwards from base game (if the base game or another mode starts using this, they will have to call this for the saucer outside of this method)
+		}
+
+		/// Lose a crewmember but choose which one you lose. This will make the UI ask which one you want to lose.
+		function chooseCrewmemberToLose($saucerLosingCrewmember, $reason)
+		{
+			$saucerLosingHighlightedText = $this->convertColorToHighlightedText($saucerLosingCrewmember);
+
+			self::notifyAllPlayers( "losingCrewmember", clienttranslate( '${saucerLosingHighlightedText} lost a Crewmember because ${reason}.' ), array(
+				'saucerLosingHighlightedText' => $saucerLosingHighlightedText,
+				'reason' => $reason
+			) );
+
+			//echo "chooseCrewmemberToLose saucerLosingCrewmember:".$saucerLosingHighlightedText;
+			//throw new feException( "moveCrewmemberToSaucerMat $saucerReceiving $crewmemberTypeText $crewmemberColor");
+
+			// mark in the database that this saucer needs to lose a crewmember
+			$this->setCrewmemberToLose($saucerLosingCrewmember);
 		}
 
 		function executeChooseOstrichToGoNext()
@@ -12790,6 +12906,9 @@ echo("<br>");
 				}
 				else
 				*/
+
+				// CHECK ALL THINGS THAT INTERRUPT A MOVE THAT IS IN PROGRESS BEFORE GOING TO GET STATE AFTER MOVE
+
 				if(count($airlockExchangeableCrewmembers) > 0 && $spaceType != "S" && $saucerWeCollideWith == "")
 				{ // there is at least one crewmember that can be exchanged with airlock (needs to happen here in case they were pushed)
 
@@ -16580,6 +16699,45 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						'saucerColorReceiving' => $saucerReceivingText,
 						'takeableCrewmembers' => $eligibleToPass
 				);
+		}
+
+		function argGetLosableCrewmembers()
+		{
+				$saucerColorLosing = $this->getActiveSaucer();
+				$saucerLosingText = $this->convertColorToHighlightedText($saucerColorLosing);
+
+				$eligibleToLose = $this->getLosableCrewmembersOnSaucer($saucerColorLosing);
+
+				// return both the array of crewmembers and anything needed in the messaging
+				return array(
+						'saucerColorLosing' => $saucerLosingText,
+						'losableCrewmembers' => $eligibleToLose
+				);
+		}
+
+		function getLosableCrewmembersOnSaucer($saucerColor)
+		{
+				$losableCrewmembers = array();
+
+				// get all crewmembers the saucer whose turn it is has taken of that type
+				$crewmembersOnSaucer = $this->getCrewmembersOnSaucer($saucerColor);
+				foreach( $crewmembersOnSaucer as $crewmember )
+				{ // go through each crewmember on this saucer
+						$crewmemberTypeOnSaucer = $crewmember['garment_type'];
+						$crewmemberColorOnSaucer = $crewmember['garment_color'];
+						$crewmemberIdOnSaucer = $crewmember['garment_id'];
+						$crewmemberTypeStringOnSaucer = $this->convertGarmentTypeIntToString($crewmemberTypeOnSaucer);
+
+						$crewmemberDetails = array();
+						$crewmemberDetails['crewmemberId'] = $crewmemberIdOnSaucer;
+						$crewmemberDetails['crewmemberType'] = $crewmemberTypeOnSaucer;
+						$crewmemberDetails['crewmemberTypeText'] = $crewmemberTypeStringOnSaucer;
+						$crewmemberDetails['crewmemberColor'] = $crewmemberColorOnSaucer;
+
+						array_push($losableCrewmembers, $crewmemberDetails);
+				}
+
+				return $losableCrewmembers;
 		}
 
 		function argGetUpgradesToPlay()

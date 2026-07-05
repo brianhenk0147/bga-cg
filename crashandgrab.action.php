@@ -348,6 +348,16 @@
         self::ajaxResponse( );
     }
 
+    public function actExecuteChooseCrewmemberToLose()
+    {
+        self::setAjaxMode();
+        $stolenType = self::getArg( "stolenType", AT_alphanum, true ); // scientist
+        $stolenColor = self::getArg( "stolenColor", AT_alphanum, true ); // ff0000, 0000ff, etc.
+
+        $this->game->executeChooseCrewmemberToLose( $stolenType, $stolenColor, false, true );
+        self::ajaxResponse( );
+    }
+
     public function actExecuteGiveAwayCrewmember()
     {
         self::setAjaxMode();
