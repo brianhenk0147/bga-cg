@@ -31,31 +31,31 @@
 
 CREATE TABLE IF NOT EXISTS `movementCards` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `card_type` varchar(16) NOT NULL,
-  `card_type_arg` int(11) NOT NULL,
-  `card_location` varchar(30) NOT NULL,
-  `card_location_arg` int(11) NOT NULL,
-  `card_ostrich` varchar(16) NOT NULL,
+  `card_type` varchar(16) NOT NULL DEFAULT '',
+  `card_type_arg` int(11) NOT NULL DEFAULT 0,
+  `card_location` varchar(30) NOT NULL DEFAULT '',
+  `card_location_arg` int(11) NOT NULL DEFAULT 0,
+  `card_ostrich` varchar(16) NOT NULL DEFAULT '',
   `card_chosen_state` varchar(16) NOT NULL DEFAULT 'unchosen',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `trapCards` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `card_type` varchar(16) NOT NULL,
-  `card_type_arg` int(11) NOT NULL,
-  `card_location` varchar(30) NOT NULL,
-  `card_location_arg` int(11) NOT NULL,
-  `card_ostrich` varchar(16) NOT NULL,
+  `card_type` varchar(16) NOT NULL DEFAULT '',
+  `card_type_arg` int(11) NOT NULL DEFAULT 0,
+  `card_location` varchar(30) NOT NULL DEFAULT '',
+  `card_location_arg` int(11) NOT NULL DEFAULT 0,
+  `card_ostrich` varchar(16) NOT NULL DEFAULT '',
   PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `upgradeCards` (
   `card_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `card_type` varchar(16) NOT NULL,
-  `card_type_arg` int(11) NOT NULL,
-  `card_location` varchar(30) NOT NULL,
-  `card_location_arg` int(11) NOT NULL,
+  `card_type` varchar(64) NOT NULL DEFAULT '',
+  `card_type_arg` int(11) NOT NULL DEFAULT 0,
+  `card_location` varchar(30) NOT NULL DEFAULT '',
+  `card_location_arg` int(11) NOT NULL DEFAULT 0,
   `card_is_played` smallint(5) unsigned NOT NULL DEFAULT '0',
   `times_activated_this_round` smallint(5) unsigned NOT NULL DEFAULT '0',
   `asked_to_activate_this_round` smallint(5) unsigned NOT NULL DEFAULT '0',
@@ -69,35 +69,35 @@ CREATE TABLE IF NOT EXISTS `upgradeCards` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `board` (
-  `board_x` smallint(5) unsigned NOT NULL,
-  `board_y` smallint(5) unsigned NOT NULL,
-  `board_space_type` varchar(16) NOT NULL,
+  `board_x` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `board_y` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `board_space_type` varchar(16) NOT NULL DEFAULT '',
   PRIMARY KEY (`board_x`,`board_y`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `ostrich` (
-  `ostrich_x` smallint(5) unsigned NOT NULL,
-  `ostrich_y` smallint(5) unsigned NOT NULL,
-  `ostrich_owner` int(10) unsigned NOT NULL,
-  `ostrich_color` varchar(16) NOT NULL,
-  `ostrich_last_direction` varchar(16) NOT NULL,
-  `ostrich_last_distance` int(10) unsigned NOT NULL,
-  `ostrich_zig_direction` varchar(16) NOT NULL,
+  `ostrich_x` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `ostrich_y` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `ostrich_owner` int(10) unsigned NOT NULL DEFAULT 0,
+  `ostrich_color` varchar(16) NOT NULL DEFAULT '',
+  `ostrich_last_direction` varchar(16) NOT NULL DEFAULT '',
+  `ostrich_last_distance` int(10) unsigned NOT NULL DEFAULT 0,
+  `ostrich_zig_direction` varchar(16) NOT NULL DEFAULT '',
   `ostrich_zig_distance` int(10) unsigned NOT NULL DEFAULT '20',
   `ostrich_chosen_x_value` int(10) unsigned NOT NULL DEFAULT '11',
   `saucer_original_turn_distance` int(10) unsigned NOT NULL DEFAULT '13',
-  `ostrich_last_turn_order` smallint(5) unsigned NOT NULL,
-  `ostrich_has_zag` smallint(5) unsigned NOT NULL,
-  `ostrich_is_chosen` smallint(5) unsigned NOT NULL,
-  `ostrich_turns_taken` int(10) unsigned NOT NULL,
-  `ostrich_has_crown` smallint(5) unsigned NOT NULL,
-  `ostrich_is_dizzy` smallint(5) unsigned NOT NULL,
-  `ostrich_cliff_respawn_order` smallint(5) unsigned NOT NULL,
-  `ostrich_causing_cliff_fall` varchar(16) NOT NULL,
-  `ostrich_steal_garment_order` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `crash_penalty_rendered` smallint(5) unsigned NOT NULL,
-  `energy_quantity` int(10) unsigned NOT NULL,
-  `booster_quantity` int(10) unsigned NOT NULL,
+  `ostrich_last_turn_order` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `ostrich_has_zag` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `ostrich_is_chosen` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `ostrich_turns_taken` int(10) unsigned NOT NULL DEFAULT 0,
+  `ostrich_has_crown` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `ostrich_is_dizzy` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `ostrich_cliff_respawn_order` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `ostrich_causing_cliff_fall` varchar(16) NOT NULL DEFAULT '',
+  `ostrich_steal_garment_order` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `crash_penalty_rendered` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `energy_quantity` int(10) unsigned NOT NULL DEFAULT '0',
+  `booster_quantity` int(10) unsigned NOT NULL DEFAULT '0',
   `passed_by_other_saucer` smallint(5) unsigned NOT NULL DEFAULT '0',
   `skipped_passing` smallint(5) unsigned NOT NULL DEFAULT '0',
   `skipped_taking` smallint(5) unsigned NOT NULL DEFAULT '0',
@@ -115,22 +115,22 @@ CREATE TABLE IF NOT EXISTS `ostrich` (
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `tile` (
-  `tile_number` smallint(5) unsigned NOT NULL,
-  `tile_position` smallint(5) unsigned NOT NULL,
-  `tile_x` smallint(5) unsigned NOT NULL,
-  `tile_y` smallint(5) unsigned NOT NULL,
-  `tile_use_side_A` smallint(5) unsigned NOT NULL,
-  `tile_degree_rotation` smallint(5) unsigned NOT NULL,
+  `tile_number` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `tile_position` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `tile_x` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `tile_y` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `tile_use_side_A` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `tile_degree_rotation` smallint(5) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`tile_number`)
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `garment` (
   `garment_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `garment_x` smallint(5) unsigned NOT NULL,
-  `garment_y` smallint(5) unsigned NOT NULL,
-  `garment_location` varchar(30) NOT NULL,
-  `garment_color` varchar(16) NOT NULL,
-  `garment_type` smallint(5) unsigned NOT NULL,
+  `garment_x` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `garment_y` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `garment_location` varchar(30) NOT NULL DEFAULT '',
+  `garment_color` varchar(16) NOT NULL DEFAULT '',
+  `garment_type` smallint(5) unsigned NOT NULL DEFAULT 0,
   `airlock_exchangeable` smallint(5) unsigned NOT NULL DEFAULT '0',
   `taken_with_distress` smallint(5) unsigned NOT NULL DEFAULT '0',
   `is_primary` smallint(5) unsigned NOT NULL DEFAULT '0',

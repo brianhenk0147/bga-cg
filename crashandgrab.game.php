@@ -306,9 +306,9 @@ class CrashAndGrab extends Table
 		}				
 		$maxCrewmembersNeededToWin = ($numberOfPlayers * 4); // get the maximum number of garments that can be acquired before someone wins
 
-		$numberOfSeatedCrewmembers = $this->countTotalSeatedCrewmembers();
+		$numberOfStationedCrewmembers = $this->countTotalStationedCrewmembers();
 
-		$percentageCompleted = intval(100 * ($numberOfSeatedCrewmembers / $maxCrewmembersNeededToWin)); // divide current by max and multiply by 100 to get an integer between 1-100
+		$percentageCompleted = intval(100 * ($numberOfStationedCrewmembers / $maxCrewmembersNeededToWin)); // divide current by max and multiply by 100 to get an integer between 1-100
 
 		//throw new feException( "PROGRESSION number of garments acquired " . $numberOfGarmentsAcquired . " and max garments " . $maxGarments . " and percentageCompleted " . $percentageCompleted);
 
@@ -3756,8 +3756,8 @@ echo("<br>");
 				$saucerColorFriendlyCrashed = $this->convertColorToHighlightedText($crashedSaucer);
 				$saucerColorFriendlyStealer = $this->convertColorToHighlightedText($stealerSaucer);
 
-				$totalCrewmembersOfStealer = $this->getSeatedCrewmembersForPlayer($stealerOwner);
-				$totalCrewmembersOfCrashed = $this->getSeatedCrewmembersForPlayer($crashedOwner);
+				$totalCrewmembersOfStealer = $this->getStationedCrewmembersForPlayer($stealerOwner);
+				$totalCrewmembersOfCrashed = $this->getStationedCrewmembersForPlayer($crashedOwner);
 
 				//echo "totalCrewmembersOfStealer:$totalCrewmembersOfStealer totalCrewmembersOfCrashed:$totalCrewmembersOfCrashed";
 				// get offcolored crewmembers
@@ -3771,7 +3771,7 @@ echo("<br>");
 				{ // we have not yet sent this notification (since this is in an arg for a state, we will get multiple notifications if we do not do this)
 					
 					if($totalCrewmembersOfStealer > $totalCrewmembersOfCrashed)
-					{ // stealer has more seated Crewmembers than the crashed saucer
+					{ // stealer has more stationed Crewmembers than the crashed saucer
 
 						if($this->getNumberOfPlayers() == 2)
 						{ // 2 SAUCERS PER PLAYER
@@ -7395,7 +7395,7 @@ echo("<br>");
 
 		}
 
-		function countTotalSeatedCrewmembers()
+		function countTotalStationedCrewmembers()
 		{
 				return self::getUniqueValueFromDb("SELECT COUNT(garment_id) FROM garment WHERE garment_location<>'board' AND garment_location<>'pile' AND garment_location<>'chosen' AND is_primary=1");
 		}
@@ -7405,7 +7405,7 @@ echo("<br>");
 				return self::getUniqueValueFromDb("SELECT COUNT(garment_id) FROM garment WHERE garment_location='$saucerColor'");
 		}
 
-		function getSeatedCrewmembersForSaucer($saucerColor)
+		function countTotalStationedCrewmembersForSaucer($saucerColor)
 		{
 				$distinctCrewmemberTypes = self::getObjectListFromDB("SELECT DISTINCT(garment_type) FROM garment WHERE garment_location='$saucerColor'");
 
@@ -7414,13 +7414,13 @@ echo("<br>");
 				return $count;
 		}
 
-		function getSeatedCrewmembersForPlayer($playerId)
+		function countTotalStationedCrewmembersForPlayer($playerId)
 		{
 			$totalCrewmembers = 0;
 			$allPlayersSaucers = $this->getSaucersForPlayer($playerId);
 			foreach( $allPlayersSaucers as $saucer )
 			{ // go through each saucer owned by this player
-				$totalCrewmembers += $this->getSeatedCrewmembersForSaucer($saucer['ostrich_color']);
+				$totalCrewmembers += $this->countTotalStationedCrewmembersForSaucer($saucer['ostrich_color']);
 			}
 			
 			return $totalCrewmembers;
@@ -9153,7 +9153,7 @@ echo("<br>");
 														// we get 1 point
 														$this->incrementPoints($playerMoving);
 
-														// we lose a crewmember (can be automatic rather than a choice)
+														// we lose a crewmember (TODO: Make this a choice which they lose)
 														$this->loseCrewmember($saucerMoving, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
 														$this->markCrashPenaltyRendered($saucerWeCollideWith); // mark this crash penalty rendered so now one gets a reward for this crash
 
@@ -9170,7 +9170,7 @@ echo("<br>");
 														$ownerOfSaucerWeCollidedWith = $this->getOwnerIdOfOstrich($saucerWeCollideWith);
 														$this->incrementPoints($ownerOfSaucerWeCollidedWith);
 
-														// they lose a crewmember
+														// they lose a crewmember (TODO: Make this a choice which they lose)
 														$this->loseCrewmember($saucerWeCollideWith, clienttranslate("they had more Crewmembers than the Saucer they collided with"));
 														$this->markCrashPenaltyRendered($saucerMoving); // mark this crash penalty rendered so now one gets a reward for this crash
 
@@ -10399,11 +10399,11 @@ echo("<br>");
 
 						$boardValue = $this->getBoardSpaceTypeForOstrich($ostrichColor); // get the type of space of the ostrich who just moved
 						$ownerOfOstrich = $this->getOwnerIdOfOstrich($ostrichColor); // get the player who controls the ostrich moving
-
+//echo "boardValue:".$boardValue;
 
 						if($boardValue == "D")
 						{ // this saucer is off a cliff
-//echo "ostrichColor:".$ostrichColor." ostrichColorText:".$ostrichColorText." saucerMurderer:".$saucerMurderer." saucerMurdererText:".$saucerMurdererText;
+//echo "ostrichColor:".$ostrichColor." saucerMurderer:".$saucerMurderer;
 								if($saucerMurderer == '')
 								{ // we have not yet set this saucer's murderer
 
@@ -16031,7 +16031,7 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						{ // go through each saucer owned by this player
 
 								$saucerColor = $saucer['ostrich_color'];
-								$totalCrewmembersOfSaucer = $this->getSeatedCrewmembersForSaucer($saucerColor);
+								$totalCrewmembersOfSaucer = $this->countTotalStationedCrewmembersForSaucer($saucerColor);
 								$playersDictionary[$playerId]['saucerColor'] = $saucerColor;
 
 								$playersDictionary[$playerId]['crewmemberCount'] += $totalCrewmembersOfSaucer;
