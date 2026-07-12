@@ -440,6 +440,7 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Regeneration Gateway', 'type_arg' => 13, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Kinetic Siphon', 'type_arg' => 14, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Cargo Hold', 'type_arg' => 15, 'card_location' => 'deck','nbr' => 1),
+						array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Landing Legs', 'type_arg' => 17, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Quake Maker', 'type_arg' => 18, 'card_location' => 'deck', 'nbr' => 1),
 						array( 'type' => 'Airlock', 'type_arg' => 20, 'card_location' => 'deck','nbr' => 1),
@@ -447,13 +448,6 @@ class CrashAndGrab extends Table
 						array( 'type' => 'Boost Amplifier', 'type_arg' => 25, 'card_location' => 'deck','nbr' => 1),
 						array( 'type' => 'Organic Triangulator', 'type_arg' => 26, 'card_location' => 'deck','nbr' => 1)
 				);
-
-				if($this->getMode() != "Twisted Titanium")
-				{ // we are NOT using the Twisted Titanium mode
-
-						// Proximity Mines doesn't work in Twisted Titanium
-						array_push($cardsList, array( 'type' => 'Proximity Mines', 'type_arg' => 16, 'card_location' => 'deck','nbr' => 1));
-				}
 				
 				
 				if($this->getNumberOfPlayers() > 2)
@@ -3023,7 +3017,14 @@ echo("<br>");
 
 						// Proximity Mines
 						case 16:
+							if($this->getMode() == "Twisted Titanium")
+							{ // we are using the Twisted Titanium mode
+								return clienttranslate( 'When comparing Crewmember counts to resolve collisions, you win ties.');
+							}
+							else
+							{ // NOT using Twisted Titanium
 								return clienttranslate( 'Crash any Saucer you collide with instead of pushing it.');
+							}
 
 						// Landing Legs
 						case 17:
@@ -3052,6 +3053,7 @@ echo("<br>");
 						// Organic Triangulator
 						case 26:
 							return clienttranslate( 'At the end of your turn where you did not pick up or steal a Crewmember, move to any empty space.');
+
 				}
 		}
 
@@ -8552,6 +8554,20 @@ echo("<br>");
 				return self::getUniqueValueFromDb($turnsSql);
 		}
 
+		function getSaucerLosingCrewmember()
+		{
+			$allSaucers = $this->getAllSaucers();
+			foreach( $allSaucers as $saucer )
+			{ // go through each saucer
+				$color = $saucer['ostrich_color'];
+				$crewmemberToLose = $saucer['crewmember_to_lose'];
+				if($crewmemberToLose == 1)
+				{
+					return $color;
+				}
+			}
+		}
+
 		function getSaucerWhoseTurnItIs()
 		{
 				$minimumSaucerTurns = $this->getLowestTurnsASaucerHasTaken(); // min number turns a saucer has taken
@@ -9155,22 +9171,7 @@ echo("<br>");
 													$this->activateUpgradeWithCollectorNumber($saucerMoving, 14); // make as played so we don't give it to them more than once/turn
 												}
 
-												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
-												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
-												   !$wasPushed)
-												{ // this saucer has proximity mines played
-
-													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
-
-														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collide with it
-														// we'll clear these out if they choose not to phase shift
-														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
-														$this->setPushedDistance($saucerWeCollideWith, $distance);
-														$this->setPushedDirection($saucerWeCollideWith, $direction);
-
-														// do not move any further because they will need to answer a question
-														return $moveEventList;
-												}
+												
 
 												if($this->getMode() == "Twisted Titanium")
 												{ // we are using the Twisted Titanium mode
@@ -9178,8 +9179,12 @@ echo("<br>");
 													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
 													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
 
-													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith)
-													{ // if we have more crewmembers than them
+													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith || 
+														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
+														($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+														$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+														!$wasPushed))
+													{ // if we have more crewmembers than them (or we have equal to and Proximity Mines)
 
 														// they crash
 														$this->crashSaucer($saucerWeCollideWith, $saucerMoving);
@@ -9198,7 +9203,11 @@ echo("<br>");
 														// do not move any further because
 														return $moveEventList;
 													}
-													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith)
+													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith || 
+														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
+														($this->doesSaucerHaveUpgradePlayed($saucerWeCollideWith, "Proximity Mines") &&
+														$this->isUpgradePlayable($saucerWeCollideWith, 'Proximity Mines')) && 
+														!$wasPushed))
 													{ // if we have fewer crewmembers than them
 
 														// we crash
@@ -9215,6 +9224,25 @@ echo("<br>");
 
 														// do not move any further because
 														return $moveEventList;
+													}
+												}
+												else
+												{ // NOT using Twisted Titanium mode
+													if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+													$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+													!$wasPushed)
+													{ // this saucer has proximity mines played
+
+														array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
+															// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collide with it
+															// we'll clear these out if they choose not to phase shift
+															$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
+															$this->setPushedDistance($saucerWeCollideWith, $distance);
+															$this->setPushedDirection($saucerWeCollideWith, $direction);
+
+															// do not move any further because they will need to answer a question
+															return $moveEventList;
 													}
 												}
 										}
@@ -9419,22 +9447,7 @@ echo("<br>");
 													$this->activateUpgradeWithCollectorNumber($saucerMoving, 14); // make as played so we don't give it to them more than once/turn
 												}
 
-												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
-												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
-												   !$wasPushed)
-												{ // this saucer has proximity mines played and it's their turn
-
-													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
-
-														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
-														// we'll clear these out if they choose not to phase shift
-														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
-														$this->setPushedDistance($saucerWeCollideWith, $distance);
-														$this->setPushedDirection($saucerWeCollideWith, $direction);
-
-														// do not move any further because
-														return $moveEventList;
-												}
+												
 
 												if($this->getMode() == "Twisted Titanium")
 												{ // we are using the Twisted Titanium mode
@@ -9442,8 +9455,16 @@ echo("<br>");
 													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
 													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
 
-													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith)
-													{ // if we have more crewmembers than them
+													//$countCrewMoving = count($crewmembersForSaucerMoving);
+													//$countCrewCollide = count($crewmembersForSaucerWeCollideWith);
+													//throw new feException( "crewmembersForSaucerMoving:$crewmembersForSaucerMoving crewmembersForSaucerWeCollideWith:$crewmembersForSaucerWeCollideWith");
+													
+													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith || 
+														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
+														($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+														$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+														!$wasPushed))
+													{ // if we have more crewmembers than them (or we have equal to and Proximity Mines)
 
 														// they crash
 														$this->crashSaucer($saucerWeCollideWith, $saucerMoving);
@@ -9459,7 +9480,11 @@ echo("<br>");
 														// do not move any further because
 														return $moveEventList;
 													}
-													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith)
+													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith || 
+														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
+														($this->doesSaucerHaveUpgradePlayed($saucerWeCollideWith, "Proximity Mines") &&
+														$this->isUpgradePlayable($saucerWeCollideWith, 'Proximity Mines')) && 
+														!$wasPushed))
 													{ // if we have fewer crewmembers than them
 
 														// we crash
@@ -9476,6 +9501,25 @@ echo("<br>");
 
 														// do not move any further because
 														return $moveEventList;
+													}
+												}
+												else
+												{ // NOT using Twisted Titanium
+													if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+													$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+													!$wasPushed)
+													{ // this saucer has proximity mines played and it's their turn
+
+														array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
+
+															// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
+															// we'll clear these out if they choose not to phase shift
+															$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
+															$this->setPushedDistance($saucerWeCollideWith, $distance);
+															$this->setPushedDirection($saucerWeCollideWith, $direction);
+
+															// do not move any further because
+															return $moveEventList;
 													}
 												}
 										}
@@ -9669,23 +9713,7 @@ echo("<br>");
 													$this->activateUpgradeWithCollectorNumber($saucerMoving, 14); // make as played so we don't give it to them more than once/turn
 												}
 
-												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
-												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
-												   !$wasPushed)
-												{ // this saucer has proximity mines played
-
-													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
-
-
-														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
-														// we'll clear these out if they choose not to phase shift
-														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
-														$this->setPushedDistance($saucerWeCollideWith, $distance);
-														$this->setPushedDirection($saucerWeCollideWith, $direction);
-
-														// do not move any further because
-														return $moveEventList;
-												}
+												
 
 												if($this->getMode() == "Twisted Titanium")
 												{ // we are using the Twisted Titanium mode
@@ -9693,8 +9721,12 @@ echo("<br>");
 													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
 													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
 
-													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith)
-													{ // if we have more crewmembers than them
+													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith || 
+														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
+														($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+														$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+														!$wasPushed))
+													{ // if we have more crewmembers than them (or we have equal to and Proximity Mines)
 
 														// they crash
 														$this->crashSaucer($saucerWeCollideWith, $saucerMoving);
@@ -9710,7 +9742,11 @@ echo("<br>");
 														// do not move any further because
 														return $moveEventList;
 													}
-													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith)
+													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith || 
+														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
+														($this->doesSaucerHaveUpgradePlayed($saucerWeCollideWith, "Proximity Mines") &&
+														$this->isUpgradePlayable($saucerWeCollideWith, 'Proximity Mines')) && 
+														!$wasPushed))
 													{ // if we have fewer crewmembers than them
 
 														// we crash
@@ -9727,6 +9763,26 @@ echo("<br>");
 
 														// do not move any further because
 														return $moveEventList;
+													}
+												}
+												else
+												{ // NOT using Twisted Titanium
+													if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+													$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+													!$wasPushed)
+													{ // this saucer has proximity mines played
+
+														array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
+
+															// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
+															// we'll clear these out if they choose not to phase shift
+															$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
+															$this->setPushedDistance($saucerWeCollideWith, $distance);
+															$this->setPushedDirection($saucerWeCollideWith, $direction);
+
+															// do not move any further because
+															return $moveEventList;
 													}
 												}
 										}
@@ -9916,23 +9972,7 @@ echo("<br>");
 													$this->activateUpgradeWithCollectorNumber($saucerMoving, 14); // make as played so we don't give it to them more than once/turn
 												}
 
-												if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
-												   $this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
-												   !$wasPushed)
-												{ // this saucer has proximity mines played
-
-													array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
-
-													
-														// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
-														// we'll clear these out if they choose not to phase shift
-														$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
-														$this->setPushedDistance($saucerWeCollideWith, $distance);
-														$this->setPushedDirection($saucerWeCollideWith, $direction);
-
-														// do not move any further because
-														return $moveEventList;
-												}
+												
 
 												if($this->getMode() == "Twisted Titanium")
 												{ // we are using the Twisted Titanium mode
@@ -9940,8 +9980,12 @@ echo("<br>");
 													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
 													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
 
-													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith)
-													{ // if we have more crewmembers than them
+													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith || 
+														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
+														($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+														$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+														!$wasPushed))
+													{ // if we have more crewmembers than them (or we have equal to and Proximity Mines)
 
 														// they crash
 														$this->crashSaucer($saucerWeCollideWith, $saucerMoving);
@@ -9957,7 +10001,11 @@ echo("<br>");
 														// do not move any further because
 														return $moveEventList;
 													}
-													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith)
+													else if($crewmembersForSaucerMoving < $crewmembersForSaucerWeCollideWith || 
+														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
+														($this->doesSaucerHaveUpgradePlayed($saucerWeCollideWith, "Proximity Mines") &&
+														$this->isUpgradePlayable($saucerWeCollideWith, 'Proximity Mines')) && 
+														!$wasPushed))
 													{ // if we have fewer crewmembers than them
 
 														// we crash
@@ -9974,6 +10022,26 @@ echo("<br>");
 
 														// do not move any further because
 														return $moveEventList;
+													}
+												}
+												else
+												{ // NOT using Twisted Titanium
+													if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
+													$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
+													!$wasPushed)
+													{ // this saucer has proximity mines played
+
+														array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
+
+														
+															// mark in the database that this saucer has been collided with and will need to execute its move if we decide to collid with it
+															// we'll clear these out if they choose not to phase shift
+															$this->setPushedOnSaucerTurn($saucerWeCollideWith, $saucerMoving);
+															$this->setPushedDistance($saucerWeCollideWith, $distance);
+															$this->setPushedDirection($saucerWeCollideWith, $direction);
+
+															// do not move any further because
+															return $moveEventList;
 													}
 												}
 										}
@@ -11087,8 +11155,8 @@ echo("<br>");
 					$playerId = $player['player_id'];
 					$playerScore = $this->getPlayerScore($playerId);
 
-					if($playerScore > 4)
-					{ // this player has 5 or more points (they win!)
+					if($playerScore > 2)
+					{ // this player has 3 or more points (they win!)
 						return true;
 					}
 				}
@@ -12302,10 +12370,9 @@ echo("<br>");
 		}
 
 		// Called by the UI when they have selected a crewmember to lose.
-		function executeChooseCrewmemberToLose($crewmemberTypeText, $crewmemberColor, $saucerLosing)
+		function executeChooseCrewmemberToLose($crewmemberTypeText, $crewmemberColor)
 		{
-			//throw new feException( "executeChooseCrewmemberToLose");
-				$saucerLosing = $this->getActiveSaucer();
+				$saucerLosing = $this->getSaucerLosingCrewmember();
 				$saucerLosingHighlightedText = $this->convertColorToHighlightedText($saucerLosing);
 
 				//throw new feException( "executeChooseCrewmemberToLose $saucerLosing $crewmemberTypeText $crewmemberColor");
@@ -12365,9 +12432,14 @@ echo("<br>");
 
 			//echo "chooseCrewmemberToLose saucerLosingCrewmember:".$saucerLosingHighlightedText;
 			//throw new feException( "moveCrewmemberToSaucerMat $saucerReceiving $crewmemberTypeText $crewmemberColor");
+			
+			$crewmembersOnSaucer = $this->getCrewmembersOnSaucer($saucerLosingCrewmember);
+			if(count($crewmembersOnSaucer) > 0)
+			{ // they have at least 1 saucer	
 
-			// mark in the database that this saucer needs to lose a crewmember
-			$this->setCrewmemberToLose($saucerLosingCrewmember);
+				// mark in the database that this saucer needs to lose a crewmember
+				$this->setCrewmemberToLose($saucerLosingCrewmember);
+			}
 		}
 
 		function executeChooseOstrichToGoNext()
@@ -12929,8 +13001,9 @@ echo("<br>");
 						$this->gamestate->nextState( "chooseCrewmemberToAirlock" );
 				}
 				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") && $saucerWeCollideWith != "" &&
-				$this->isUpgradePlayable($saucerMoving, 'Proximity Mines'))
-				{ // this saucer has proximity mines played and we are colliding with another saucer
+				$this->isUpgradePlayable($saucerMoving, 'Proximity Mines') && 
+				$this->getMode() != "Twisted Titanium")
+				{ // this saucer has proximity mines played and we are colliding with another saucer and we are NOT using Twisted Titanium
 
 						$this->gamestate->nextState( "askToProximityMine" );
 				}
@@ -16703,8 +16776,11 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 		function argGetLosableCrewmembers()
 		{
-				$saucerColorLosing = $this->getActiveSaucer();
+				//$saucerColorLosing = $this->getActiveSaucer();
+				$saucerColorLosing = $this->getSaucerLosingCrewmember();
 				$saucerLosingText = $this->convertColorToHighlightedText($saucerColorLosing);
+
+				//echo "saucerColorLosing: $saucerColorLosing";
 
 				$eligibleToLose = $this->getLosableCrewmembersOnSaucer($saucerColorLosing);
 
@@ -16718,6 +16794,8 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 		function getLosableCrewmembersOnSaucer($saucerColor)
 		{
 				$losableCrewmembers = array();
+
+				//echo "saucerColor: $saucerColor";
 
 				// get all crewmembers the saucer whose turn it is has taken of that type
 				$crewmembersOnSaucer = $this->getCrewmembersOnSaucer($saucerColor);

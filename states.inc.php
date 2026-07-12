@@ -252,7 +252,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerBoosterMoves',
         "possibleactions" => array( "clickUseBooster", "clickSkipBooster", "clickMoveDirection", "clickAcceleratorDirection" ),
-    		"transitions" => array( "chooseBoosterDistance" => 33, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70, "zombiePass" => 98 )
+    		"transitions" => array( "chooseBoosterDistance" => 33, "endSaucerTurnCleanUp" => 50, "chooseAcceleratorDirection" => 9, "finalizeMove" => 49, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "chooseIfYouWillUseBooster" => 32, "chooseCrewmemberToAirlock" => 63, "executingMove" => 70, "zombiePass" => 98, "chooseCrewmemberToLose" => 75 )
     ),
 
     33 => array(
