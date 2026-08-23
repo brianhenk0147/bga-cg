@@ -14785,6 +14785,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 						$this->activePrevPlayer(); // go to the next player counter-clockwise in turn order
 				}
 
+				// BGA's documentation says that when you give a player their turn, you should give them extra time
+				$newPlayerId = $this->getActivePlayerId();
+				$this->giveExtraTime($newPlayerId);
+
 				// increment turn count
 				$currentTurn = $this->getGameStateValue('CURRENT_TURN');
 				$this->setGameStateValue('CURRENT_TURN', $currentTurn + 1);
@@ -16292,6 +16296,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 								// make them go first in turn order
 								$this->gamestate->changeActivePlayer( $playerId );
 
+								// BGA's documentation says that when you give a player their turn, you should give them extra time.
+								// They otherwise would get extra time after another player takes a turn so we need to also do it when they are the first player of the round.
+								$this->giveExtraTime($playerId);
+
 								return; // we don't need to go any further
 						}
 				}
@@ -16338,6 +16346,10 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 
 													// make them go first in turn order
 													$this->gamestate->changeActivePlayer( $playerId );
+
+													// BGA's documentation says that when you give a player their turn, you should give them extra time.
+													// They otherwise would get extra time after another player takes a turn so we need to also do it when they are the first player of the round.
+													$this->giveExtraTime($playerId);
 
 													return; // we don't need to go any further
 											}
