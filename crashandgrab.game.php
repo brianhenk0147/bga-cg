@@ -3758,8 +3758,14 @@ echo("<br>");
 				$saucerColorFriendlyCrashed = $this->convertColorToHighlightedText($crashedSaucer);
 				$saucerColorFriendlyStealer = $this->convertColorToHighlightedText($stealerSaucer);
 
-				$totalCrewmembersOfStealer = $this->countTotalStationedCrewmembersForPlayer($stealerOwner);
-				$totalCrewmembersOfCrashed = $this->countTotalStationedCrewmembersForPlayer($crashedOwner);
+				$totalCrewmembersOfStealer = $this->countTotalStationedCrewmembersForSaucer($stealerOwner);
+				$totalCrewmembersOfCrashed = $this->countTotalStationedCrewmembersForSaucer($crashedOwner);
+				if(false)
+				{ // this is the version where, in 2-player games, you count up stationed crewmembers from BOTH saucers, which we found to be confusing for people
+
+					$totalCrewmembersOfStealer = $this->countTotalStationedCrewmembersForPlayer($stealerOwner);
+					$totalCrewmembersOfCrashed = $this->countTotalStationedCrewmembersForPlayer($crashedOwner);
+				}
 
 				//echo "totalCrewmembersOfStealer:$totalCrewmembersOfStealer totalCrewmembersOfCrashed:$totalCrewmembersOfCrashed";
 				// get offcolored crewmembers
