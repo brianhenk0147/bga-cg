@@ -9236,8 +9236,8 @@ echo("<br>");
 												{ // NOT using Twisted Titanium mode
 													if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 													$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
-													!$wasPushed)
-													{ // this saucer has proximity mines played
+													!$wasPushed && !$this->isSaucerCrashed($saucerWeCollideWith))
+													{ // this saucer has proximity mines played, they were not pushed, and the saucer they collided with is not already off the board
 
 														array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
 
@@ -9513,7 +9513,7 @@ echo("<br>");
 												{ // NOT using Twisted Titanium
 													if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 													$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
-													!$wasPushed)
+													!$wasPushed && !$this->isSaucerCrashed($saucerWeCollideWith))
 													{ // this saucer has proximity mines played and it's their turn
 
 														array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $thisX, 'destination_Y' => $currentY));
@@ -9775,7 +9775,7 @@ echo("<br>");
 												{ // NOT using Twisted Titanium
 													if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 													$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
-													!$wasPushed)
+													!$wasPushed && !$this->isSaucerCrashed($saucerWeCollideWith))
 													{ // this saucer has proximity mines played
 
 														array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
@@ -10032,9 +10032,10 @@ echo("<br>");
 												}
 												else
 												{ // NOT using Twisted Titanium
+//throw new feException( "saucerWeCollideWith:"+$saucerWeCollideWith);
 													if(($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") &&
 													$this->isUpgradePlayable($saucerMoving, 'Proximity Mines')) && 
-													!$wasPushed)
+													!$wasPushed && !$this->isSaucerCrashed($saucerWeCollideWith))
 													{ // this saucer has proximity mines played
 
 														array_push($moveEventList, array( 'event_type' => 'midMoveQuestion', 'saucer_moving' => $saucerMoving, 'destination_X' => $currentX, 'destination_Y' => $thisY));
@@ -13006,7 +13007,9 @@ echo("<br>");
 						//throw new feException( "1");
 						$this->gamestate->nextState( "chooseCrewmemberToAirlock" );
 				}
-				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") && $saucerWeCollideWith != "" &&
+				elseif($this->doesSaucerHaveUpgradePlayed($saucerMoving, "Proximity Mines") && 
+				$saucerWeCollideWith != "" &&
+				!$this->isSaucerCrashed($saucerWeCollideWith) &&
 				$this->isUpgradePlayable($saucerMoving, 'Proximity Mines') && 
 				$this->getMode() != "Twisted Titanium")
 				{ // this saucer has proximity mines played and we are colliding with another saucer and we are NOT using Twisted Titanium
