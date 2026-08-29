@@ -11813,6 +11813,19 @@ echo("<br>");
 				$this->setState_AfterMovementEvents($saucerWhoseTurnItIs, $moveType); // set to true because we're already passed the boosting if we're passing so that is safest
 		}
 
+		function executeSkipTakeCrewmember()
+		{
+				$saucerWhoseTurnItIs = $this->getActiveSaucer();
+
+				// mark that the player chose not to pass this round
+				$this->setSkippedTaking($saucerWhoseTurnItIs, 1);
+
+				// figure out which type of move this is
+				$moveType = $this->getMoveTypeWeAreExecuting();
+
+				$this->setState_AfterMovementEvents($saucerWhoseTurnItIs, $moveType); // set to true because we're already passed the boosting if we're passing so that is safest
+		}
+
 		// Coming from using either: 
 		//    Regeneration Gateway: When your Saucer is placed, you choose the Crash Site.
 		//    Saucer Teleporter: At the end of your turn, if you have not crashed, move to any empty Crash Site.
