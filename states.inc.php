@@ -381,7 +381,7 @@ $machinestates = array(
     		"type" => "activeplayer",
         'args' => 'argGetSaucerColor',
         "possibleactions" => array( "undoMove" ),
-    		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "beginTurn" => 44, "checkStartOfTurnUpgrades" => 24, "zombiePass" => 98 )
+    		"transitions" => array(  "endSaucerTurnCleanUp" => 50, "beginTurn" => 44, "checkStartOfTurnUpgrades" => 24, "zombiePass" => 98, "saucerTurnStart" => 27 )
     ),
 
     50 => array(
