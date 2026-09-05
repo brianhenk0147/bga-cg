@@ -9182,8 +9182,8 @@ echo("<br>");
 												if($this->getMode() == "Twisted Titanium")
 												{ // we are using the Twisted Titanium mode
 
-													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
-													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
+													$crewmembersForSaucerMoving = $this->countTotalStationedCrewmembersForSaucer($saucerMoving);
+													$crewmembersForSaucerWeCollideWith = $this->countTotalStationedCrewmembersForSaucer($saucerWeCollideWith);
 
 													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith || 
 														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
@@ -9458,8 +9458,8 @@ echo("<br>");
 												if($this->getMode() == "Twisted Titanium")
 												{ // we are using the Twisted Titanium mode
 
-													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
-													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
+													$crewmembersForSaucerMoving = $this->countTotalStationedCrewmembersForSaucer($saucerMoving);
+													$crewmembersForSaucerWeCollideWith = $this->countTotalStationedCrewmembersForSaucer($saucerWeCollideWith);
 
 													//$countCrewMoving = count($crewmembersForSaucerMoving);
 													//$countCrewCollide = count($crewmembersForSaucerWeCollideWith);
@@ -9724,8 +9724,8 @@ echo("<br>");
 												if($this->getMode() == "Twisted Titanium")
 												{ // we are using the Twisted Titanium mode
 
-													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
-													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
+													$crewmembersForSaucerMoving = $this->countTotalStationedCrewmembersForSaucer($saucerMoving);
+													$crewmembersForSaucerWeCollideWith = $this->countTotalStationedCrewmembersForSaucer($saucerWeCollideWith);
 
 													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith || 
 														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
@@ -9983,8 +9983,8 @@ echo("<br>");
 												if($this->getMode() == "Twisted Titanium")
 												{ // we are using the Twisted Titanium mode
 
-													$crewmembersForSaucerMoving = $this->countTotalCrewmembersForSaucer($saucerMoving);
-													$crewmembersForSaucerWeCollideWith = $this->countTotalCrewmembersForSaucer($saucerWeCollideWith);
+													$crewmembersForSaucerMoving = $this->countTotalStationedCrewmembersForSaucer($saucerMoving);
+													$crewmembersForSaucerWeCollideWith = $this->countTotalStationedCrewmembersForSaucer($saucerWeCollideWith);
 
 													if($crewmembersForSaucerMoving > $crewmembersForSaucerWeCollideWith || 
 														($crewmembersForSaucerMoving == $crewmembersForSaucerWeCollideWith && 
@@ -10157,6 +10157,10 @@ echo("<br>");
 		function incrementPoints($playerId)
 		{
 			//echo "incrementPoints playerId:".$playerId;
+			$playerName = $this->getPlayerNameFromPlayerId($playerId);
+			self::notifyAllPlayers( "gainPoint", clienttranslate( '${player_name} gains a point.' ), array(
+															'player_name' => $playerName
+														) );
 
 			$this->incPlayerScore($playerId, 1);
 		}
@@ -10350,6 +10354,9 @@ echo("<br>");
 						break;
 					case "TiedWentLast":
 						$message = clienttranslate( '${ostrichName} gets the Probe because they are tied for the least stationed Crewmembers and won the tie-breaker of going later in the previous round.' );
+						break;
+					case "TwistedLeast":
+						$message = clienttranslate( '${ostrichName} gets the Probe because they have the least points.' );
 						break;
 				}
 				
@@ -10610,14 +10617,30 @@ echo("<br>");
 													//echo 'tt2';
 													$this->markCrashPenaltyRendered($ostrichColor); // make sure no one gets to steal for knocking them off
 
-													self::notifyAllPlayers( "twistedLoseAPoint", clienttranslate( '${saucerWhoIsStealingText} cannot steal like in the base game but they get an Energy.' ), array(
-														'player_name' => self::getActivePlayerName(),
-														'ostrichName' => $this->getOstrichName($ostrichColor),
-														'saucerWhoCrashedText' => $ostrichColorText,
-														'saucerWhoIsStealingText' => $saucerMurdererText
-													) );
-
 													$this->giveSaucerEnergy($ostrichTakingTurn); // give the saucer an energy
+
+													$crewmembersForSaucerMurderer = $this->countTotalCrewmembersForSaucer($ostrichTakingTurn);
+													if($crewmembersForSaucerMurderer > 0)
+													{
+														$this->chooseCrewmemberToLose($ostrichTakingTurn, clienttranslate("they crashed another saucer")); // murderer loses a crewmember
+														$this->incrementPoints($ownerOfOstrichTakingTurn); // give murderer owner a point
+
+														self::notifyAllPlayers( "twistedGainAPointForCrash", clienttranslate( '${saucerWhoIsStealingText} gets a point for knocking ${saucerWhoCrashedText} off the board.' ), array(
+															'player_name' => self::getActivePlayerName(),
+															'ostrichName' => $this->getOstrichName($ostrichColor),
+															'saucerWhoCrashedText' => $ostrichColorText,
+															'saucerWhoIsStealingText' => $saucerMurdererText
+														) );
+													}
+													else
+													{
+														self::notifyAllPlayers( "twistedDoNotGainAPointForCrash", clienttranslate( '${saucerWhoIsStealingText} did not have a Crewmember to lose, so they do not get a point for crashing ${saucerWhoCrashedText}.' ), array(
+															'player_name' => self::getActivePlayerName(),
+															'ostrichName' => $this->getOstrichName($ostrichColor),
+															'saucerWhoCrashedText' => $ostrichColorText,
+															'saucerWhoIsStealingText' => $saucerMurdererText
+														) );
+													}
 												}
 										}
 								}
@@ -11162,8 +11185,8 @@ echo("<br>");
 					$playerId = $player['player_id'];
 					$playerScore = $this->getPlayerScore($playerId);
 
-					if($playerScore > 2)
-					{ // this player has 3 or more points (they win!)
+					if($playerScore > 3)
+					{ // this player has 4 or more points (they win!)
 						return true;
 					}
 				}
@@ -12073,7 +12096,7 @@ echo("<br>");
 				
 
 			// give the garment to the saucer in the database (set garment_location to the color)
-			$this->giveCrewmemberToLostCrewmembers($crewmemberId, clienttranslate("but they crash the other Saucer and gain a point"));
+			$this->giveCrewmemberToLostCrewmembers($crewmemberId, clienttranslate("but they crashed the other Saucer and gain a point"));
 
 			$saucerMovingHighlightedText = $this->convertColorToHighlightedText($saucerLosing);
 			$isPrimary = $this->isPrimaryCrewmember($crewmemberId);
@@ -16254,38 +16277,39 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 				{ // go through each player
 						$playerId = $player['player_id'];
 						$playersDictionary[$playerId] = array();
-						$playersDictionary[$playerId]['crewmemberCount'] = 0;
 						$playersDictionary[$playerId]['playerId'] = $playerId;
 						$playersDictionary[$playerId]['saucerColor'] = 'unknown';
+
+						$totalPoints = $this->getPlayerScore($playerId);
+						$playersDictionary[$playerId]['totalPoints'] = $totalPoints;
 
 						$allPlayersSaucers = $this->getSaucersForPlayer($playerId);
 						foreach( $allPlayersSaucers as $saucer )
 						{ // go through each saucer owned by this player
 
 								$saucerColor = $saucer['ostrich_color'];
-								$totalCrewmembersOfSaucer = $this->countTotalStationedCrewmembersForSaucer($saucerColor);
-								$playersDictionary[$playerId]['saucerColor'] = $saucerColor;
-
-								$playersDictionary[$playerId]['crewmemberCount'] += $totalCrewmembersOfSaucer;
+								
+								$playersDictionary[$playerId]['saucerColor'] = $saucerColor; // add a random saucer owned by this player here
 						}
+						
 				}
 
-				// figure out what the lowest total crewmember count is
-				$lowestCrewmemberCount = 100;
+				// figure out what the lowest total points
+				$lowestPoints = 100;
 				foreach( $playersDictionary as $playerCounts )
 				{
-						if($playerCounts['crewmemberCount'] < $lowestCrewmemberCount)
-						{
-								$lowestCrewmemberCount = $playerCounts['crewmemberCount'];
+						if($playerCounts['totalPoints'] < $lowestPoints)
+						{ // this is the lowest amounts of points we've seen so far
+								$lowestPoints = $playerCounts['totalPoints'];
 						}
 				}
 
-				// gather all the players with the lowest total crewmembers
+				// gather all the players with the least points
 				$playersWithLeastCrewmembers = array();
 				foreach( $playersDictionary as $playerCounts )
 				{
-						if($playerCounts['crewmemberCount'] == $lowestCrewmemberCount)
-						{
+						if($playerCounts['totalPoints'] == $lowestPoints)
+						{ // this player is tied for least points
 								array_push($playersWithLeastCrewmembers, $playerCounts);
 						}
 				}
@@ -16303,7 +16327,15 @@ self::debug( "notifyPlayersAboutTrapsSet player_id:$id ostrichTakingTurn:$name" 
 										$saucerColor = $saucer['ostrich_color'];
 
 										// they get the probe
-										$this->giveProbe($saucerColor, "Least");
+										if($this->getMode() == "Twisted Titanium")
+										{ // we are using the Twisted Titanium mode
+											$this->giveProbe($saucerColor, "TwistedLeast");
+										}
+										else
+										{ // we are NOT using the Twisted Titanium mode
+											$this->giveProbe($saucerColor, "Least");
+
+										}
 								}
 
 								// make them go first in turn order

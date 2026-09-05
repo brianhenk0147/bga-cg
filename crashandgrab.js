@@ -8369,11 +8369,28 @@ console.log("success... onClickUpgradeCardInHand");
 
           var garmentColor = notif.args.garmentColor;
           var garmentType = notif.args.garmentType;
+          var sourceSaucerColor = notif.args.sourceSaucerColor;
 
           //this.slideToObject( 'crewmember_'+garmentType+'_'+garmentColor, 'garment_holder_'+garmentType+'_'+garmentColor).play();
 
-          var source = 'crewmember_'+garmentType+'_'+garmentColor;
           var destination = 'garment_holder_'+garmentType+'_'+garmentColor;
+          var source = 'crewmember_'+garmentType+'_'+garmentColor;
+          if( !$(source ) )
+          { // it doesn't exist so it must be in extras
+             var uniqueId = this.getCrewmemberUniqueId(garmentColor, garmentType);
+            
+             this.removeExtraCrewmemberFromSaucerMat(sourceSaucerColor, garmentColor, garmentType); // remove it from the extras for this saucer
+
+            // place a new crewmember at the destination (no sliding but whatever)
+            dojo.place( this.format_block( 'jstpl_garment', {
+                      color: garmentColor,
+                      garment_type: garmentType,
+                      size: "crewmember",
+                      small: ""
+            } ) , destination );
+          }
+          
+          console.log("source:"+source+" destination:"+destination);
           var animationId = this.slideToObject( source, destination, this.ANIMATION_SPEED_CREWMEMBER_PICKUP );
             dojo.connect(animationId, 'onEnd', () => {
 
