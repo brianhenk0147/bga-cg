@@ -641,7 +641,7 @@ $machinestates = array(
         "type" => "activeplayer",
         'args' => 'argGetLosableCrewmembers',
         "possibleactions" => array( "chooseCrewmember" ),
-        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49, "endGame" => 99, "zombiePass" => 98 )
+        "transitions" => array(  "endSaucerTurnCleanUp" => 50, "chooseCrewmembersToPass" => 56, "chooseCrewmembersToTake" => 57, "finalizeMove" => 49, "chooseCrewmemberToLose" => 75, "endGame" => 99, "zombiePass" => 98 )
     ),
 
 
