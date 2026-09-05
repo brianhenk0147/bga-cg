@@ -7473,6 +7473,11 @@ echo("<br>");
 				return self::getObjectListFromDB("SELECT * FROM upgradeCards WHERE card_location='deck'");
 		}
 
+		function countUpgradesInDeck()
+		{
+				return self::getUniqueValueFromDb("SELECT COUNT(card_id) FROM upgradeCards WHERE card_location='deck'");
+		}
+
 		function countDrawnCards()
 		{
 				return self::getUniqueValueFromDb("SELECT COUNT(card_id) FROM upgradeCards WHERE card_location='drawn'");
@@ -11369,7 +11374,7 @@ echo("<br>");
 				{ // see if they want to use any end of turn upgrades
 						$this->gamestate->nextState( "askWhichEndOfTurnUpgradeToUse" );
 				}
-				elseif($this->getEnergyCountForSaucer($saucerWhoseTurnItIs) > 1)
+				elseif($this->getEnergyCountForSaucer($saucerWhoseTurnItIs) > 1 && $this->countUpgradesInDeck() > 0)
 				{ // see if they can upgrade their ship
 						$this->gamestate->nextState( "askWhichUpgradeToPlay" );
 				}
