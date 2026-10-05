@@ -7468,14 +7468,16 @@ echo("<br>");
 			return $totalCrewmembers;
 		}
 
+		
 		function getUpgradesInDeck()
 		{
 				return self::getObjectListFromDB("SELECT * FROM upgradeCards WHERE card_location='deck'");
 		}
 
-		function countUpgradesInDeck()
+		// This counts how many upgrades are either in the active deck or in the discard ready to be re-shuffled.
+		function countUpgradesInDeckOrDiscard()
 		{
-				return self::getUniqueValueFromDb("SELECT COUNT(card_id) FROM upgradeCards WHERE card_location='deck'");
+				return self::getUniqueValueFromDb("SELECT COUNT(card_id) FROM upgradeCards WHERE card_location='deck' || card_location='discard'");
 		}
 
 		function countDrawnCards()
@@ -11374,7 +11376,7 @@ echo("<br>");
 				{ // see if they want to use any end of turn upgrades
 						$this->gamestate->nextState( "askWhichEndOfTurnUpgradeToUse" );
 				}
-				elseif($this->getEnergyCountForSaucer($saucerWhoseTurnItIs) > 1 && $this->countUpgradesInDeck() > 0)
+				elseif($this->getEnergyCountForSaucer($saucerWhoseTurnItIs) > 1 && $this->countUpgradesInDeckOrDiscard() > 0)
 				{ // see if they can upgrade their ship
 						$this->gamestate->nextState( "askWhichUpgradeToPlay" );
 				}
